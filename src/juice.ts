@@ -1,5 +1,5 @@
 /**
- * juice.ts — 画面シェイク・ヒットストップ・スローモーション・フラッシュ
+ * juice.ts — 画面シェイク・フラッシュ
  */
 
 export class JuiceManager {
@@ -12,13 +12,6 @@ export class JuiceManager {
   shakeOffsetY = 0;
   shakeRotation = 0;
 
-  // ===== ヒットストップ =====
-  private hitStopFrames = 0;
-
-  // ===== スローモーション =====
-  private slowTimer = 0;
-  private slowScale = 1.0;
-
   // ===== フラッシュ =====
   flashAlpha = 0;
   flashR = 1; flashG = 1; flashB = 1;
@@ -27,12 +20,9 @@ export class JuiceManager {
   ballFlashTimer = 0;
 
   // ===== コンボ表示 =====
-  comboDisplay = 0;     // 表示するコンボ数
+  comboDisplay = 0;
   comboDisplayTimer = 0;
   comboDisplayScale = 1;
-
-  // ===== ステージクリアスロー =====
-  private stageClearTimer = 0;
 
   shake(amp: number, dur: number, rotAmp = 0.5) {
     if (amp > this.shakeAmp) {
@@ -41,20 +31,6 @@ export class JuiceManager {
       this.shakeTime   = dur;
       this.shakeRotAmp = rotAmp;
     }
-  }
-
-  hitStop(frames: number) {
-    if (frames > this.hitStopFrames) this.hitStopFrames = frames;
-  }
-
-  slowMo(duration: number, scale = 0.3) {
-    this.slowTimer = duration;
-    this.slowScale = scale;
-  }
-
-  stageClearSlow() {
-    this.stageClearTimer = 1.0;
-    this.slowScale = 0.2;
   }
 
   flash(r: number, g: number, b: number, alpha: number) {
@@ -74,22 +50,12 @@ export class JuiceManager {
     this.comboDisplayScale = 1.0 + combo * 0.05;
   }
 
-  /** ヒットストップ中は dt=0 を返す。スローは dt*scale を返す。 */
+  /** rawDt をそのまま返す（スローモーション・ヒットストップは廃止） */
   getGameDt(rawDt: number): number {
-    if (this.hitStopFrames > 0) return 0;
-    let dt = rawDt;
-    if (this.slowTimer > 0) dt *= this.slowScale;
-    if (this.stageClearTimer > 0) dt *= this.slowScale;
-    return dt;
+    return rawDt;
   }
 
   update(rawDt: number) {
-    // ヒットストップ（フレームカウント）
-    if (this.hitStopFrames > 0) {
-      this.hitStopFrames--;
-      // シェイク・フラッシュは進める
-    }
-
     // シェイク
     if (this.shakeTime > 0) {
       this.shakeTime -= rawDt;
@@ -114,16 +80,6 @@ export class JuiceManager {
 
     // ボールフラッシュ
     if (this.ballFlashTimer > 0) this.ballFlashTimer -= rawDt;
-
-    // スローモーション
-    if (this.slowTimer > 0) {
-      this.slowTimer -= rawDt;
-      if (this.slowTimer <= 0) this.slowScale = 1.0;
-    }
-    if (this.stageClearTimer > 0) {
-      this.stageClearTimer -= rawDt;
-      if (this.stageClearTimer <= 0) this.slowScale = 1.0;
-    }
 
     // コンボ表示フェードアウト
     if (this.comboDisplayTimer > 0) {
