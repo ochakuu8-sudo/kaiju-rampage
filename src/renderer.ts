@@ -52,8 +52,8 @@ void main() {
     if (d > 1.0) discard;
     float glow = 1.0 - smoothstep(0.6, 1.0, d);
     fragColor = vec4(v_color.rgb + glow * 0.4, v_color.a);
-  } else if (v_size.y >= 25.0) {
-    // ビル: 窓グリッド描画
+  } else if (v_size.y >= 35.0) {
+    // 高層ビル (apartment/office/tower/skyscraper): 窓グリッド描画
     vec2 uv  = v_uv + vec2(0.5);          // 0..1
     vec2 px  = uv * v_size;               // ビル内ピクセル座標
     float sw = v_size.x;
@@ -64,7 +64,7 @@ void main() {
     bool isSideWall = px.x < 2.0 || px.x > sw - 2.0;
 
     if (isRoof) {
-      fragColor = vec4(v_color.rgb * 0.7, v_color.a);
+      fragColor = vec4(v_color.rgb * 0.65, v_color.a);
     } else if (isBase || isSideWall) {
       fragColor = v_color;
     } else {
@@ -82,8 +82,34 @@ void main() {
         fragColor = v_color;
       }
     }
+  } else if (v_size.y >= 22.0) {
+    // 店舗 (shop h=25): ショーウィンドウ + 看板帯
+    vec2 uv  = v_uv + vec2(0.5);
+    vec2 px  = uv * v_size;
+    float sh = v_size.y;
+
+    bool isSign   = px.y > sh - 4.0;          // 上部看板帯
+    bool isWindow = px.y < 10.0 && px.y > 2.0 && px.x > 2.0 && px.x < v_size.x - 2.0;
+
+    if (isSign) {
+      fragColor = vec4(v_color.rgb * 1.2, v_color.a);
+    } else if (isWindow) {
+      // ショーウィンドウ: 明るい暖色
+      fragColor = vec4(min(v_color.rgb + vec3(0.3, 0.25, 0.1), vec3(1.0)), v_color.a);
+    } else {
+      fragColor = v_color;
+    }
   } else {
-    fragColor = v_color;
+    // 住宅 (house h=20): 上部を屋根として暗め
+    vec2 uv  = v_uv + vec2(0.5);
+    vec2 px  = uv * v_size;
+    float sh = v_size.y;
+    bool isRoof = px.y > sh - 5.0;
+    if (isRoof) {
+      fragColor = vec4(v_color.rgb * 0.7, v_color.a);
+    } else {
+      fragColor = v_color;
+    }
   }
 }`;
 

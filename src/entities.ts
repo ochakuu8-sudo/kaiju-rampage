@@ -1,5 +1,5 @@
 /**
- * entities.ts — Ball, Flipper, Building, Bumper
+ * entities.ts — Ball, Flipper, Building, Bumper, Furniture
  */
 
 import * as C from './constants';
@@ -118,21 +118,16 @@ export class Flipper {
   /** ボールにフリッパー速度を付与 */
   applyImpulse(vx: number, vy: number): [number, number] {
     // pressed かつ上向きに振っている間だけ強打ち出し
-    // 左: angle増加（-30°→+30°）→ angularVel>0
-    // 右: angle減少（210°→150°）→ angularVel<0
     const isRising = this.pressed && (
       this.isLeft ? this.angularVel > 0.5 : this.angularVel < -0.5
     );
     if (!isRising) return [vx, vy];
 
-    // フリッパー上面の法線
-    // 左: (-sin(angle),  cos(angle))  = 90°CCW from arm
-    // 右: ( sin(angle), -cos(angle))  = 90°CW  from arm
     const s = Math.sin(this.angle);
     const c = Math.cos(this.angle);
     let nx = this.isLeft ? -s :  s;
     let ny = this.isLeft ?  c : -c;
-    if (ny < 0.3) ny = 0.3; // 必ず上向き成分を確保
+    if (ny < 0.3) ny = 0.3;
     const len = Math.sqrt(nx * nx + ny * ny);
     const power = C.FLIPPER_POWER * (1.0 + Math.abs(this.angularVel) * 0.01);
     return [(nx / len) * power, (ny / len) * power];
@@ -144,10 +139,10 @@ export class Flipper {
 const BUILDING_PALETTES: ReadonlyArray<readonly [number,number,number]> = [
   [0.55, 0.55, 0.60], // コンクリートグレー
   [0.45, 0.35, 0.30], // レンガ茶
-  [0.30, 0.40, 0.50], // ガラス青
+  [0.30, 0.40, 0.55], // ガラス青
   [0.50, 0.45, 0.35], // サンドベージュ
   [0.60, 0.60, 0.55], // 明るいグレー
-  [0.35, 0.35, 0.45], // スレートブルー
+  [0.35, 0.35, 0.48], // スレートブルー
   [0.50, 0.38, 0.35], // テラコッタ
 ];
 
@@ -309,3 +304,179 @@ export class BumperManager {
   }
 }
 
+// ===== STREET FURNITURE =====
+
+export type FurnitureType = 'tree' | 'vending' | 'bench' | 'car' | 'traffic_light' | 'mailbox';
+
+export interface FurnitureItem {
+  type: FurnitureType;
+  x: number;
+  y: number;
+  hp: number;
+  active: boolean;
+  score: number;
+  // traffic light
+  lightTimer: number;
+  lightState: number; // 0=red, 1=yellow, 2=green
+}
+
+// AABB half-sizes for each furniture type
+const FURNITURE_HW: Record<FurnitureType, number> = {
+  tree:          C.TREE_W / 2,
+  vending:       C.VENDING_W / 2,
+  bench:         C.BENCH_W / 2,
+  car:           C.CAR_W / 2,
+  traffic_light: C.TRAFFIC_LIGHT_W / 2,
+  mailbox:       C.MAILBOX_W / 2,
+};
+const FURNITURE_HH: Record<FurnitureType, number> = {
+  tree:          C.TREE_H / 2,
+  vending:       C.VENDING_H / 2,
+  bench:         C.BENCH_H / 2,
+  car:           C.CAR_H / 2,
+  traffic_light: C.TRAFFIC_LIGHT_H / 2,
+  mailbox:       C.MAILBOX_H / 2,
+};
+
+// Traffic light cycle durations per state (seconds)
+const LIGHT_DURATIONS = [3.0, 0.8, 3.0]; // red, yellow, green
+
+export class FurnitureManager {
+  items: FurnitureItem[] = [];
+
+  load(defs: Array<{ type: FurnitureType; x: number; y: number; hp?: number; score?: number }>) {
+    this.items = [];
+    for (const d of defs) {
+      this.items.push({
+        type: d.type,
+        x: d.x,
+        y: d.y,
+        hp: d.hp ?? 1,
+        active: true,
+        score: d.score ?? 50,
+        lightTimer: LIGHT_DURATIONS[0],
+        lightState: 0,
+      });
+    }
+  }
+
+  update(dt: number) {
+    for (const item of this.items) {
+      if (!item.active) continue;
+      if (item.type === 'traffic_light') {
+        item.lightTimer -= dt;
+        if (item.lightTimer <= 0) {
+          item.lightState = (item.lightState + 1) % 3;
+          item.lightTimer = LIGHT_DURATIONS[item.lightState];
+        }
+      }
+    }
+  }
+
+  checkBallHit(bx: number, by: number, br: number): FurnitureItem | null {
+    for (const item of this.items) {
+      if (!item.active) continue;
+      // Skip trees (non-destructible, but collideable)
+      if (item.type === 'tree') continue;
+      const hw = FURNITURE_HW[item.type];
+      const hh = FURNITURE_HH[item.type];
+      // Circle vs AABB
+      const nearX = Math.max(item.x - hw, Math.min(bx, item.x + hw));
+      const nearY = Math.max(item.y - hh, Math.min(by, item.y + hh));
+      const dx = bx - nearX, dy = by - nearY;
+      if (dx * dx + dy * dy < br * br) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  damage(item: FurnitureItem): boolean {
+    item.hp--;
+    if (item.hp <= 0) {
+      item.active = false;
+      return true;
+    }
+    return false;
+  }
+
+  fillInstances(buf: Float32Array, startIdx: number): number {
+    let n = startIdx;
+    for (const item of this.items) {
+      if (!item.active) continue;
+
+      switch (item.type) {
+        case 'tree': {
+          // Trunk
+          writeInst(buf, n++, item.x, item.y - C.TREE_H * 0.25, 3, C.TREE_H * 0.5,
+            0.35, 0.22, 0.10, 1);
+          // Foliage (circle)
+          const fr = C.TREE_W * 0.7;
+          writeInst(buf, n++, item.x, item.y + C.TREE_H * 0.2, fr * 2, fr * 2,
+            0.15, 0.45, 0.15, 1, 0, 1);
+          break;
+        }
+        case 'vending': {
+          // Body
+          writeInst(buf, n++, item.x, item.y, C.VENDING_W, C.VENDING_H,
+            0.2, 0.5, 0.8, 1);
+          // Front stripe
+          writeInst(buf, n++, item.x, item.y - 1, C.VENDING_W, 3,
+            1.0, 0.2, 0.2, 1);
+          break;
+        }
+        case 'bench': {
+          // Seat
+          writeInst(buf, n++, item.x, item.y, C.BENCH_W, 2,
+            0.45, 0.30, 0.15, 1);
+          // Legs
+          writeInst(buf, n++, item.x - C.BENCH_W * 0.3, item.y - 2, 2, 3,
+            0.35, 0.22, 0.10, 1);
+          writeInst(buf, n++, item.x + C.BENCH_W * 0.3, item.y - 2, 2, 3,
+            0.35, 0.22, 0.10, 1);
+          break;
+        }
+        case 'car': {
+          // Car body (bottom)
+          writeInst(buf, n++, item.x, item.y - 1, C.CAR_W, C.CAR_H * 0.55,
+            0.3, 0.55, 0.75, 1);
+          // Car top
+          writeInst(buf, n++, item.x, item.y + C.CAR_H * 0.2, C.CAR_W * 0.65, C.CAR_H * 0.45,
+            0.25, 0.45, 0.65, 1);
+          // Windows
+          writeInst(buf, n++, item.x, item.y + C.CAR_H * 0.22, C.CAR_W * 0.5, C.CAR_H * 0.3,
+            0.65, 0.85, 0.95, 0.8);
+          break;
+        }
+        case 'traffic_light': {
+          // Pole
+          writeInst(buf, n++, item.x, item.y - C.TRAFFIC_LIGHT_H * 0.1,
+            2, C.TRAFFIC_LIGHT_H * 1.2,
+            0.3, 0.3, 0.3, 1);
+          // Housing
+          writeInst(buf, n++, item.x, item.y + C.TRAFFIC_LIGHT_H * 0.3,
+            C.TRAFFIC_LIGHT_W, C.TRAFFIC_LIGHT_H,
+            0.15, 0.15, 0.15, 1);
+          // Light (color depends on state)
+          const lr = item.lightState === 0 ? 1.0 : (item.lightState === 1 ? 1.0 : 0.1);
+          const lg2 = item.lightState === 0 ? 0.1 : (item.lightState === 1 ? 0.8 : 1.0);
+          const lb2 = 0.1;
+          writeInst(buf, n++, item.x, item.y + C.TRAFFIC_LIGHT_H * 0.3,
+            C.TRAFFIC_LIGHT_W - 1, C.TRAFFIC_LIGHT_W - 1,
+            lr, lg2, lb2, 0.95, 0, 1);
+          break;
+        }
+        case 'mailbox': {
+          // Body
+          writeInst(buf, n++, item.x, item.y, C.MAILBOX_W, C.MAILBOX_H,
+            0.8, 0.15, 0.15, 1);
+          // Slot stripe
+          writeInst(buf, n++, item.x, item.y + 1, C.MAILBOX_W, 1.5,
+            0.2, 0.1, 0.1, 1);
+          break;
+        }
+      }
+    }
+    return n - startIdx;
+  }
+}

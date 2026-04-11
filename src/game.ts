@@ -1,24 +1,25 @@
 /**
  * game.ts — メインゲームループ + 全システム統合
  *
- * 描画順（仕様書 9-1 より）:
+ * 描画順:
  *  1. 背景クリア
- *  2. 壁・レール
+ *  2. 壁・レール・道路・路地
  *  3. 建物
- *  4. 人間
- *  5. バンパー
- *  6. フリッパー
- *  7. ボール（トレイル含む）
- *  8. パーティクル
- *  9. フラッシュオーバーレイ
- *  10. UI (DOM)
+ *  4. 街路家具
+ *  5. 人間
+ *  6. バンパー
+ *  7. フリッパー
+ *  8. ボール（トレイル含む）
+ *  9. パーティクル
+ *  10. フラッシュオーバーレイ
+ *  11. UI (DOM)
  */
 
 import * as C from './constants';
 import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
 import { SoundEngine } from './sound';
-import { Ball, Flipper, BuildingManager } from './entities';
+import { Ball, Flipper, BuildingManager, FurnitureManager } from './entities';
 import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
@@ -36,14 +37,15 @@ const SHARED_BUF = new Float32Array(3200 * INST_F);
 type GameState = 'playing' | 'ball_lost' | 'stage_clear' | 'game_over';
 
 export class Game {
-  private renderer: Renderer;
-  private input:    InputManager;
-  private sound:    SoundEngine;
-  private humans:   HumanManager;
-  private particles:ParticleManager;
-  private juice:    JuiceManager;
-  private ui:       UIManager;
-  private buildings:BuildingManager;
+  private renderer:  Renderer;
+  private input:     InputManager;
+  private sound:     SoundEngine;
+  private humans:    HumanManager;
+  private particles: ParticleManager;
+  private juice:     JuiceManager;
+  private ui:        UIManager;
+  private buildings: BuildingManager;
+  private furniture: FurnitureManager;
 
   private ball:     Ball;
   private flippers: [Flipper, Flipper];
@@ -57,8 +59,6 @@ export class Game {
   private stateTimer= 0;
 
   // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
-  // ピボット: (±85, -165)
-  // 左坂: (-180, -98) → (-85, -165)  center=(-132.5,-131.5) angle≈-0.611rad hw≈58
   private readonly SLOPE_L = { cx: -132.5, cy: -131.5, hw: 58, hh: 6, angle: -0.611 };
   private readonly SLOPE_R = { cx:  132.5, cy: -131.5, hw: 58, hh: 6, angle:  0.611 };
 
@@ -71,10 +71,10 @@ export class Game {
     this.juice     = new JuiceManager();
     this.ui        = new UIManager();
     this.buildings = new BuildingManager();
+    this.furniture = new FurnitureManager();
     this.ball      = new Ball();
     this.flippers  = [new Flipper(true), new Flipper(false)];
 
-    // ゲームオーバー画面のタップ → リスタート
     this.input.registerRestartTap(document.getElementById('gameover')!);
     this.input.onRestart(() => this.restart());
 
@@ -88,6 +88,7 @@ export class Game {
   private loadStage(level: number) {
     const cfg = getStage(level);
     this.buildings.load(cfg.buildings);
+    this.furniture.load(cfg.furniture);
     this.humans.reset();
     this.particles.reset();
     this.ball.reset();
@@ -116,7 +117,7 @@ export class Game {
 
   private startLoop() {
     const loop = (now: number) => {
-      const rawDt = Math.min((now - this.lastTime) / 1000, 0.05); // 最大50ms
+      const rawDt = Math.min((now - this.lastTime) / 1000, 0.05);
       this.lastTime = now;
       this.update(rawDt);
       this.render();
@@ -159,25 +160,18 @@ export class Game {
     // === playing ===
     const dt = this.juice.getGameDt(rawDt);
 
-    // フリッパー入力
     this.flippers[0].setPressed(this.input.leftPressed);
     this.flippers[1].setPressed(this.input.rightPressed);
     this.flippers[0].update(dt);
     this.flippers[1].update(dt);
 
-    // ボール物理
     if (dt > 0) this.updateBall(dt);
 
-    // 建物更新
     this.buildings.update(dt);
-
-    // 人間更新
+    this.furniture.update(dt);
     this.humans.update(dt, this.ball.x, this.ball.y);
-
-    // パーティクル更新
     this.particles.update(dt);
 
-    // コンボタイムアウト
     if (this.comboTimer > 0) {
       this.comboTimer -= dt;
       if (this.comboTimer <= 0) {
@@ -187,7 +181,6 @@ export class Game {
       }
     }
 
-    // ステージクリア判定
     if (this.buildings.allDestroyed()) {
       this.onStageClear();
     }
@@ -197,8 +190,6 @@ export class Game {
     const b = this.ball;
     if (!b.active) return;
 
-    // ===== サブステップ物理（トンネリング防止）=====
-    // max速度25px/frame ÷ 4 = 6.25px/substep < OBB厚12px → 貫通しない
     const SUB = 4;
     const dts = dt / SUB;
 
@@ -207,13 +198,11 @@ export class Game {
     let bldResult: { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
 
     for (let s = 0; s < SUB; s++) {
-      // 重力・移動
       b.vy -= C.GRAVITY * dts * 60;
       b.x  += b.vx * dts * 60;
       b.y  += b.vy * dts * 60;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
 
-      // ----- 壁 -----
       if (b.x - C.BALL_RADIUS < C.WORLD_MIN_X) {
         b.x  = C.WORLD_MIN_X + C.BALL_RADIUS;
         b.vx = Math.abs(b.vx) * C.WALL_DAMPING;
@@ -230,7 +219,6 @@ export class Game {
         wallSoundNeeded = true;
       }
 
-      // ----- 坂（静的OBB）-----
       for (const slope of [this.SLOPE_L, this.SLOPE_R]) {
         const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, slope);
         if (res) {
@@ -240,7 +228,6 @@ export class Game {
         }
       }
 
-      // ----- フリッパー -----
       for (const fl of this.flippers) {
         const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, fl.getOBB());
         if (res) {
@@ -253,7 +240,6 @@ export class Game {
         }
       }
 
-      // ----- 建物（初回ヒットのみ位置解決、イベントはループ後）-----
       if (!bldResult) {
         const h = this.buildings.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
         if (h) {
@@ -266,7 +252,6 @@ export class Game {
 
     } // end substep
 
-    // ===== サウンド（1フレームに1回）=====
     if (flipperSoundNeeded) {
       this.sound.flipper();
       this.juice.ballHitFlash();
@@ -288,6 +273,18 @@ export class Game {
         this.juice.ballHitFlash();
         this.particles.spawnSpark(b.x, b.y, 4);
       }
+    }
+
+    // ===== 家具衝突 =====
+    const furnitureHit = this.furniture.checkBallHit(b.x, b.y, C.BALL_RADIUS);
+    if (furnitureHit) {
+      const destroyed = this.furniture.damage(furnitureHit);
+      this.score += furnitureHit.score * (destroyed ? 2 : 1);
+      this.ui.setScore(this.score);
+      this.particles.spawnSpark(b.x, b.y, 3);
+      this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
+      // Simple bounce off furniture
+      b.vy = Math.abs(b.vy) * C.WALL_DAMPING;
     }
 
     // ===== 人間潰し =====
@@ -315,7 +312,6 @@ export class Game {
       }
     }
 
-    // ===== ボールロスト =====
     if (b.y < C.FALLOFF_Y) {
       this.onBallLost();
     }
@@ -339,13 +335,11 @@ export class Game {
       this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
     }
 
-    // パーティクル
     const debrisCount = 10 + bld.maxHp * 5;
     this.particles.spawnDebris(cx, cy, debrisCount, 0.6, 0.6, 0.7);
     this.particles.spawnSmoke(cx, cy, 4);
     this.particles.spawnSpark(cx, cy, 8);
 
-    // 人間スポーン
     const n = randInt(bld.humanMin, bld.humanMax);
     this.humans.spawn(cx, cy, n);
   }
@@ -365,7 +359,7 @@ export class Game {
       this.onGameOver();
     } else {
       this.state = 'ball_lost';
-      this.stateTimer = 1.2; // 1.2秒後にボール復活
+      this.stateTimer = 1.2;
     }
   }
 
@@ -374,10 +368,7 @@ export class Game {
     this.stateTimer = 3.0;
     this.sound.stageClear();
     this.juice.flash(0, 1, 0, 0.4);
-
-    // 残った人間をすべて逃がしてボーナス（逃がすだけ、スコアはなし）
-    const bonusScore = this.humans.activeCount * 0;
-    this.ui.showStageClear(bonusScore);
+    this.ui.showStageClear(0);
   }
 
   private onGameOver() {
@@ -393,45 +384,43 @@ export class Game {
   private render() {
     const shake = this.juice.getShake();
 
-    // ------ 1. 背景グラデーション ------
     this.renderer.drawBackground();
 
     let instCount = 0;
 
-    // ------ 2. 壁・レール・道路・街灯ポール ------
+    // ------ 壁・道路・路地・街灯ポール ------
     instCount = this.fillWalls(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 3. 建物 ------
-    instCount = 0;
-    instCount += this.buildings.fillInstances(SHARED_BUF, 0);
+    // ------ 建物 ------
+    instCount = this.buildings.fillInstances(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 街灯電球（建物より手前に光らせる）------
+    // ------ 街灯電球 ------
     instCount = this.fillBulbs(SHARED_BUF, 0);
     if (instCount > 0) this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 4. 人間 ------
-    instCount = 0;
-    instCount += this.humans.fillInstances(SHARED_BUF, 0);
+    // ------ 街路家具 ------
+    instCount = this.furniture.fillInstances(SHARED_BUF, 0);
+    if (instCount > 0) this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 人間 ------
+    instCount = this.humans.fillInstances(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 6. フリッパー ------
-    instCount = 0;
-    instCount += this.fillFlippers(SHARED_BUF, 0);
+    // ------ フリッパー ------
+    instCount = this.fillFlippers(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 7. ボール（トレイル + 本体） ------
-    instCount = 0;
-    instCount += this.fillBall(SHARED_BUF, 0);
+    // ------ ボール（トレイル + 本体） ------
+    instCount = this.fillBall(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 8. パーティクル ------
-    instCount = 0;
-    instCount += this.particles.fillInstances(SHARED_BUF, 0);
+    // ------ パーティクル ------
+    instCount = this.particles.fillInstances(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
-    // ------ 9. フラッシュ ------
+    // ------ フラッシュ ------
     this.renderer.drawFlash(
       this.juice.flashR, this.juice.flashG, this.juice.flashB,
       this.juice.flashAlpha
@@ -444,45 +433,82 @@ export class Game {
     const W  = C.WORLD_MAX_X * 2; // 360
 
     // 左壁
-    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, 1);
     // 右壁
-    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, 1);
     // 上壁
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC + 0.05, 1);
     // UI区切り線
     writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
-    // ストリートエリア下境界
-    writeInst(buf, n++, 0, C.STREET_Y_MIN - 3, W, 2, 0.1, 0.1, 0.2, 0.35);
 
     // ===== 坂 =====
     const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;
-    writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.5, 0.5, 0.65, 1, la);
+    writeInst(buf, n++, lcx, lcy, lhw * 2, lhh * 2, 0.5, 0.5, 0.65, 1, la);
     const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
-    writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.5, 0.5, 0.65, 1, ra);
+    writeInst(buf, n++, rcx, rcy, rhw * 2, rhh * 2, 0.5, 0.5, 0.65, 1, ra);
 
     // ガター外壁
     writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
     writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
 
-    // ===== 道路・歩道（奥の通り） =====
-    const BSY = C.BACK_STREET_Y,  BSH = C.BACK_STREET_HEIGHT,  BSW = C.BACK_SIDEWALK_HEIGHT;
-    const FSY = C.FRONT_STREET_Y, FSH = C.FRONT_STREET_HEIGHT, FSW = C.FRONT_SIDEWALK_HEIGHT;
-    const [rr,rg,rb] = C.ROAD_COLOR;
-    const [sr,sg,sb] = C.SIDEWALK_COLOR;
-    const [lr,lg,lb] = C.ROAD_LINE_COLOR;
-    // 奥: 上歩道 / 道路 / 下歩道 / 中央線
-    writeInst(buf, n++, 0, BSY + BSH/2 + BSW/2, W, BSW, sr, sg, sb, 1);
-    writeInst(buf, n++, 0, BSY,                  W, BSH, rr, rg, rb, 1);
-    writeInst(buf, n++, 0, BSY - BSH/2 - BSW/2, W, BSW, sr, sg, sb, 1);
-    writeInst(buf, n++, 0, BSY,                  W, 1,   lr, lg, lb, 1);
-    // 手前: 上歩道 / 道路 / 下歩道 / 中央線
-    writeInst(buf, n++, 0, FSY + FSH/2 + FSW/2, W, FSW, sr, sg, sb, 1);
-    writeInst(buf, n++, 0, FSY,                  W, FSH, rr, rg, rb, 1);
-    writeInst(buf, n++, 0, FSY - FSH/2 - FSW/2, W, FSW, sr, sg, sb, 1);
-    writeInst(buf, n++, 0, FSY,                  W, 1,   lr, lg, lb, 1);
+    // ===== 道路色 =====
+    const [rr, rg, rb] = C.ROAD_COLOR;
+    const [sr, sg, sb] = C.SIDEWALK_COLOR;
+    const [lr, lg, lb] = C.ROAD_LINE_COLOR;
+    const [ar, ag, ab] = C.ALLEY_COLOR;
+
+    // ===== 奥の通り (BACK_STREET_Y=240, H=12) =====
+    const BSY = C.BACK_STREET_Y, BSH = C.BACK_STREET_H, BSW = C.BACK_SIDEWALK_H;
+    writeInst(buf, n++, 0, BSY + BSH / 2 + BSW / 2, W, BSW, sr, sg, sb, 1);  // 上歩道
+    writeInst(buf, n++, 0, BSY,                      W, BSH, rr, rg, rb, 1);  // 道路
+    writeInst(buf, n++, 0, BSY - BSH / 2 - BSW / 2, W, BSW, sr, sg, sb, 1);  // 下歩道
+    writeInst(buf, n++, 0, BSY,                      W, 1.5, lr, lg, lb, 1);  // 中央線
+
+    // ===== メイン道路 (MAIN_STREET_Y=130, H=24) =====
+    const MSY = C.MAIN_STREET_Y, MSH = C.MAIN_STREET_H, MSW = C.MAIN_SIDEWALK_H;
+    writeInst(buf, n++, 0, MSY + MSH / 2 + MSW / 2, W, MSW, sr, sg, sb, 1);  // 上歩道
+    writeInst(buf, n++, 0, MSY,                      W, MSH, rr, rg, rb, 1);  // 道路
+    writeInst(buf, n++, 0, MSY - MSH / 2 - MSW / 2, W, MSW, sr, sg, sb, 1);  // 下歩道
+    // 中央二重線
+    writeInst(buf, n++, 0, MSY + 2, W, 1.5, lr, lg, lb, 1);
+    writeInst(buf, n++, 0, MSY - 2, W, 1.5, lr, lg, lb, 1);
+
+    // ===== 手前の通り (FRONT_STREET_Y=40, H=16) =====
+    const FSY = C.FRONT_STREET_Y, FSH = C.FRONT_STREET_H, FSW = C.FRONT_SIDEWALK_H;
+    writeInst(buf, n++, 0, FSY + FSH / 2 + FSW / 2, W, FSW, sr, sg, sb, 1);  // 上歩道
+    writeInst(buf, n++, 0, FSY,                      W, FSH, rr, rg, rb, 1);  // 道路
+    writeInst(buf, n++, 0, FSY - FSH / 2 - FSW / 2, W, FSW, sr, sg, sb, 1);  // 下歩道
+    writeInst(buf, n++, 0, FSY,                      W, 1.5, lr, lg, lb, 1);  // 中央線
+
+    // ===== 縦路地1 (X=-65, W=20) =====
+    const ay1 = (C.ALLEY_Y_MIN + C.ALLEY_Y_MAX) / 2;
+    const ah  = C.ALLEY_Y_MAX - C.ALLEY_Y_MIN;
+    writeInst(buf, n++, C.ALLEY_1_X, ay1, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
+    // 路地境界線
+    writeInst(buf, n++, C.ALLEY_1_X - C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
+    writeInst(buf, n++, C.ALLEY_1_X + C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
+
+    // ===== 縦路地2 (X=65, W=20) =====
+    writeInst(buf, n++, C.ALLEY_2_X, ay1, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
+    writeInst(buf, n++, C.ALLEY_2_X - C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
+    writeInst(buf, n++, C.ALLEY_2_X + C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
+
+    // ===== 横断歩道 (交差点) =====
+    // 路地×メイン道路 の4交差点
+    const cwW = C.ALLEY_WIDTH - 2;
+    const stripeH = 2.5;
+    const stripeGap = 4;
+    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+      for (let sy2 = MSY - MSH / 2 + 1; sy2 < MSY + MSH / 2; sy2 += stripeGap) {
+        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.6, 0.6, 0.6, 0.4);
+      }
+      for (let sy2 = FSY - FSH / 2 + 1; sy2 < FSY + FSH / 2; sy2 += stripeGap) {
+        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.6, 0.6, 0.6, 0.4);
+      }
+    }
 
     // ===== 街灯ポール =====
-    const [pr,pg,pb] = C.STREETLIGHT_POLE_COLOR;
+    const [pr, pg, pb] = C.STREETLIGHT_POLE_COLOR;
     for (const { x, base } of C.STREETLIGHTS) {
       const pcy = base + C.STREETLIGHT_POLE_H / 2;
       writeInst(buf, n++, x, pcy, C.STREETLIGHT_POLE_W, C.STREETLIGHT_POLE_H, pr, pg, pb, 1);
@@ -509,7 +535,6 @@ export class Game {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.7, gg = isFlash ? 1 : 0.7, gb = isFlash ? 1 : 0.8;
       writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
-      // ピボット点マーク（端点固定）
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 1, 0.6, 0.2, 1, 0, 1);
     }
     return n - start;
@@ -521,7 +546,6 @@ export class Game {
     let n = start;
     const isFl = this.juice.isBallFlashing();
 
-    // トレイル
     for (let t = 0; t < C.TRAIL_LEN; t++) {
       const age = t / C.TRAIL_LEN;
       const idx = (b.trailHead - 1 - t + C.TRAIL_LEN) % C.TRAIL_LEN;
@@ -532,10 +556,9 @@ export class Game {
       writeInst(buf, n++, tx, ty, sz, sz, 1, 0.5 - age * 0.3, 0.1, alpha, 0, 1);
     }
 
-    // 本体
-    const r = isFl ? 1   : 1;
-    const g = isFl ? 1   : 0.55;
-    const bv= isFl ? 1   : 0.1;
+    const r = isFl ? 1 : 1;
+    const g = isFl ? 1 : 0.55;
+    const bv = isFl ? 1 : 0.1;
     const d = C.BALL_RADIUS * 2;
     writeInst(buf, n++, b.x, b.y, d, d, r, g, bv, 1, 0, 1);
 
