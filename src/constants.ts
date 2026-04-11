@@ -18,7 +18,7 @@ export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
 export const BALL_START_X = -150;
-export const BALL_START_Y = -140;
+export const BALL_START_Y = -100;
 export const TRAIL_LEN = 12;
 export const INITIAL_BALLS = 3;
 
