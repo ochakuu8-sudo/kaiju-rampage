@@ -18,9 +18,11 @@ const MODE_FREE  = 2; // 自由（ブロック内パニック逃走）
 
 // 道路 Y 中心と許容幅
 const H_ROADS = [
-  { y: C.FRONT_STREET_Y, tol: C.FRONT_STREET_H / 2 + 2 },
-  { y: C.MAIN_STREET_Y,  tol: C.MAIN_STREET_H  / 2 + 2 },
-  { y: C.BACK_STREET_Y,  tol: C.BACK_STREET_H  / 2 + 2 },
+  { y: C.HILLTOP_STREET_Y,   tol: C.HILLTOP_STREET_H   / 2 + 2 },
+  { y: C.UPPER_STREET_Y,     tol: C.UPPER_STREET_H     / 2 + 2 },
+  { y: C.MAIN_STREET_Y,      tol: C.MAIN_STREET_H      / 2 + 2 },
+  { y: C.LOWER_STREET_Y,     tol: C.LOWER_STREET_H     / 2 + 2 },
+  { y: C.RIVERSIDE_STREET_Y, tol: C.RIVERSIDE_STREET_H / 2 + 2 },
 ];
 
 // 路地 X 中心と許容幅

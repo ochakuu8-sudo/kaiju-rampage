@@ -7,8 +7,6 @@ export const WORLD_MIN_Y = -290;
 export const WORLD_MAX_Y = 290;
 
 // ===== ゾーン Y境界 =====
-export const STREET_Y_MIN = 40;
-export const STREET_Y_MAX = 250;
 export const FLIPPER_PIVOT_X = 85;   // フリッパーピボットX（両側、符号は左右で反転）
 export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との接合点）
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
@@ -20,7 +18,7 @@ export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
 export const BALL_START_X = -150;
-export const BALL_START_Y = -133;
+export const BALL_START_Y = -140;
 export const TRAIL_LEN = 12;
 export const INITIAL_BALLS = 3;
 
@@ -89,49 +87,36 @@ export const SHAKE_LARGE_DUR   = 0.20;
 export const HITSTOP_SMALL = 3;  // frames
 export const HITSTOP_LARGE = 5;
 
-// ===== 街レイアウト: 3本の横道路 =====
-export const BACK_STREET_Y        = 240;  // 奥の通り 中心Y
-export const BACK_STREET_H        = 12;
-export const BACK_SIDEWALK_H      = 4;
+// ===== 街レイアウト: 5本の横道路 =====
+export const HILLTOP_STREET_Y   = 240;  export const HILLTOP_STREET_H   = 10;
+export const UPPER_STREET_Y     = 175;  export const UPPER_STREET_H     = 14;
+export const MAIN_STREET_Y      = 100;  export const MAIN_STREET_H      = 24;
+export const LOWER_STREET_Y     = 15;   export const LOWER_STREET_H     = 16;
+export const RIVERSIDE_STREET_Y = -70;  export const RIVERSIDE_STREET_H = 12;
 
-export const MAIN_STREET_Y        = 130;  // メイン道路 中心Y
-export const MAIN_STREET_H        = 24;
-export const MAIN_SIDEWALK_H      = 4;
+export const SIDEWALK_H = 4;
 
-export const FRONT_STREET_Y       = 40;   // 手前の通り 中心Y
-export const FRONT_STREET_H       = 16;
-export const FRONT_SIDEWALK_H     = 4;
+// ベースライン (ビル接地点 = 道路上端 + 歩道)
+export const HILLTOP_BASE   = HILLTOP_STREET_Y   + HILLTOP_STREET_H   / 2 + SIDEWALK_H; // 249
+export const UPPER_BASE     = UPPER_STREET_Y     + UPPER_STREET_H     / 2 + SIDEWALK_H; // 186
+export const MAIN_BASE      = MAIN_STREET_Y      + MAIN_STREET_H      / 2 + SIDEWALK_H; // 116
+export const LOWER_BASE     = LOWER_STREET_Y     + LOWER_STREET_H     / 2 + SIDEWALK_H; // 27
+export const RIVERSIDE_BASE = RIVERSIDE_STREET_Y + RIVERSIDE_STREET_H / 2 + SIDEWALK_H; // -60
 
-// 後方互換 (旧名称 → 新名称)
-export const BACK_STREET_HEIGHT   = BACK_STREET_H;
-export const BACK_SIDEWALK_HEIGHT = BACK_SIDEWALK_H;
-export const FRONT_STREET_HEIGHT  = FRONT_STREET_H;
-export const FRONT_SIDEWALK_HEIGHT= FRONT_SIDEWALK_H;
+// 路地 (非対称)
+export const ALLEY_1_X   = -50;
+export const ALLEY_2_X   =  80;
+export const ALLEY_WIDTH  = 18;
+export const ALLEY_Y_MIN  = -55;  // 川沿いまで
+export const ALLEY_Y_MAX  = 244;  // 丘まで
 
-// 2本の縦路地
-export const ALLEY_1_X   = -65;  // 路地1 中心X
-export const ALLEY_WIDTH  = 20;
-export const ALLEY_2_X   =  65;  // 路地2 中心X
-export const ALLEY_Y_MIN = 48;   // 路地の縦範囲 (hand road sidewalk up to back road sidewalk)
-export const ALLEY_Y_MAX = 234;
+// 街の範囲
+export const STREET_Y_MIN = -78;  // RIVERSIDE - 8
+export const STREET_Y_MAX = 250;
 
-// ベースライン (ビル接地点 = 歩道上端)
-export const BACK_BASE  = BACK_STREET_Y  + BACK_STREET_H  / 2 + BACK_SIDEWALK_H;  // 250: 装飾用背景ビル
-export const MAIN_BASE  = MAIN_STREET_Y  + MAIN_STREET_H  / 2 + MAIN_SIDEWALK_H;  // 146: ブロックA/B/C
-export const FRONT_BASE = FRONT_STREET_Y + FRONT_STREET_H / 2 + FRONT_SIDEWALK_H; // 52:  ブロックD/E/F
-
-// 6ブロックの境界
-export const BLOCK_ABC_Y_MIN  = MAIN_BASE;   // 146
-export const BLOCK_ABC_Y_MAX  = BACK_BASE;   // 250
-export const BLOCK_DEF_Y_MIN  = FRONT_BASE;  // 52
-export const BLOCK_DEF_Y_MAX  = MAIN_STREET_Y - MAIN_STREET_H / 2 - MAIN_SIDEWALK_H; // 118
-
-export const BLOCK_LEFT_X_MIN  = -180;
-export const BLOCK_LEFT_X_MAX  = -75;
-export const BLOCK_MID_X_MIN   = -55;
-export const BLOCK_MID_X_MAX   =  55;
-export const BLOCK_RIGHT_X_MIN =  75;
-export const BLOCK_RIGHT_X_MAX =  180;
+// 人間の行動範囲
+export const HUMAN_Y_MIN = RIVERSIDE_STREET_Y - 8;  // -78
+export const HUMAN_Y_MAX = HILLTOP_STREET_Y   + 8;  // 248
 
 // 道路・歩道の色
 export const ROAD_COLOR:      readonly [number,number,number,number] = [0.35, 0.35, 0.38, 1];
@@ -147,11 +132,14 @@ export const STREETLIGHT_BULB_R = 2.5;
 export const STREETLIGHT_BULB_COLOR: readonly [number,number,number,number] = [1.0, 0.9, 0.5, 0.0];
 
 export const STREETLIGHTS: ReadonlyArray<{ x: number; base: number }> = [
-  { x: -155, base: MAIN_BASE }, { x: -100, base: MAIN_BASE },
-  { x:  -30, base: MAIN_BASE }, { x:   30, base: MAIN_BASE },
-  { x:  100, base: MAIN_BASE }, { x:  155, base: MAIN_BASE },
-  { x: -140, base: FRONT_BASE }, { x:  -40, base: FRONT_BASE },
-  { x:   50, base: FRONT_BASE }, { x:  140, base: FRONT_BASE },
+  // メイン道路沿い
+  { x: -160, base: MAIN_BASE }, { x: -80, base: MAIN_BASE },
+  { x:    0, base: MAIN_BASE }, { x:  80, base: MAIN_BASE },
+  { x:  160, base: MAIN_BASE },
+  // 住宅街沿い
+  { x: -140, base: UPPER_BASE }, { x:  50, base: UPPER_BASE }, { x: 150, base: UPPER_BASE },
+  // 下の通り沿い
+  { x: -120, base: LOWER_BASE }, { x:  60, base: LOWER_BASE },
 ];
 
 // ===== 街路樹・調度品 =====
@@ -174,7 +162,3 @@ export const MAILBOX_H = 6;
 // 信号機
 export const TRAFFIC_LIGHT_W = 4;
 export const TRAFFIC_LIGHT_H = 10;
-
-// ===== 人間の行動範囲 =====
-export const HUMAN_Y_MIN = FRONT_STREET_Y - 8;  // ~32
-export const HUMAN_Y_MAX = BACK_STREET_Y  + 8;  // ~248

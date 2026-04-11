@@ -641,7 +641,7 @@ export interface VehicleItem {
 
 interface VehicleDef {
   type: 'car' | 'bus' | 'truck' | 'ambulance';
-  lane: 'main' | 'front' | 'back';
+  lane: 'hilltop' | 'upper' | 'main' | 'lower' | 'riverside';
   direction: 1 | -1;
   speed: number;
   interval: number;
@@ -713,10 +713,19 @@ export class VehicleManager {
   }
 
   private spawnVehicle(def: VehicleDef) {
-    const laneY = def.lane === 'main'  ? C.MAIN_STREET_Y  :
-                  def.lane === 'front' ? C.FRONT_STREET_Y : C.BACK_STREET_Y;
-    const laneH = def.lane === 'main'  ? C.MAIN_STREET_H  :
-                  def.lane === 'front' ? C.FRONT_STREET_H : C.BACK_STREET_H;
+    const laneY =
+      def.lane === 'hilltop'   ? C.HILLTOP_STREET_Y   :
+      def.lane === 'upper'     ? C.UPPER_STREET_Y     :
+      def.lane === 'main'      ? C.MAIN_STREET_Y      :
+      def.lane === 'lower'     ? C.LOWER_STREET_Y     :
+      def.lane === 'riverside' ? C.RIVERSIDE_STREET_Y : C.MAIN_STREET_Y;
+
+    const laneH =
+      def.lane === 'hilltop'   ? C.HILLTOP_STREET_H   :
+      def.lane === 'upper'     ? C.UPPER_STREET_H     :
+      def.lane === 'main'      ? C.MAIN_STREET_H      :
+      def.lane === 'lower'     ? C.LOWER_STREET_H     :
+      def.lane === 'riverside' ? C.RIVERSIDE_STREET_H : C.MAIN_STREET_H;
     const yOffset = def.direction === 1 ? -laneH / 4 : laneH / 4;
 
     const typeInfo = VEHICLE_DEFS_DATA[def.type];

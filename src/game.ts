@@ -63,8 +63,8 @@ export class Game {
   private bgBottomR = 0.82; private bgBottomG = 0.90; private bgBottomB = 0.96;
 
   // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
-  private readonly SLOPE_L = { cx: -132.5, cy: -176.5, hw: 58, hh: 6, angle: -0.611 };
-  private readonly SLOPE_R = { cx:  132.5, cy: -176.5, hw: 58, hh: 6, angle:  0.611 };
+  private readonly SLOPE_L = { cx: -132.5, cy: -155, hw: 73, hh: 6, angle: -0.856 };
+  private readonly SLOPE_R = { cx:  132.5, cy: -155, hw: 73, hh: 6, angle:  0.856 };
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
@@ -480,86 +480,86 @@ export class Game {
 
   private fillWalls(buf: Float32Array, start: number): number {
     let n = start;
+    const W = 360;
     const WC = 0.18;
-    const W  = C.WORLD_MAX_X * 2; // 360
 
-    // 左壁
-    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, 1);
-    // 右壁
-    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, 1);
-    // 上壁
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC + 0.05, 1);
-    // UI区切り線
+    // Side walls
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    // Top wall
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
+    // UI divider
     writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
 
-    // ===== 坂 =====
+    // Slopes
     const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;
-    writeInst(buf, n++, lcx, lcy, lhw * 2, lhh * 2, 0.5, 0.5, 0.65, 1, la);
+    writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.5, 0.5, 0.65, 1, la);
     const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
-    writeInst(buf, n++, rcx, rcy, rhw * 2, rhh * 2, 0.5, 0.5, 0.65, 1, ra);
+    writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.5, 0.5, 0.65, 1, ra);
 
-    // ガター外壁
+    // Gutter walls
     writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
     writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
 
-    // ===== 道路色 =====
-    const [rr, rg, rb] = C.ROAD_COLOR;
-    const [sr, sg, sb] = C.SIDEWALK_COLOR;
-    const [lr, lg, lb] = C.ROAD_LINE_COLOR;
-    const [ar, ag, ab] = C.ALLEY_COLOR;
+    // === 5 horizontal roads ===
+    const [rr,rg,rb] = C.ROAD_COLOR;
+    const [sr,sg,sb] = C.SIDEWALK_COLOR;
+    const [lr2,lg2,lb2] = C.ROAD_LINE_COLOR;
 
-    // ===== 奥の通り (BACK_STREET_Y=240, H=12) =====
-    const BSY = C.BACK_STREET_Y, BSH = C.BACK_STREET_H, BSW = C.BACK_SIDEWALK_H;
-    writeInst(buf, n++, 0, BSY + BSH / 2 + BSW / 2, W, BSW, sr, sg, sb, 1);  // 上歩道
-    writeInst(buf, n++, 0, BSY,                      W, BSH, rr, rg, rb, 1);  // 道路
-    writeInst(buf, n++, 0, BSY - BSH / 2 - BSW / 2, W, BSW, sr, sg, sb, 1);  // 下歩道
-    writeInst(buf, n++, 0, BSY,                      W, 1.5, lr, lg, lb, 1);  // 中央線
-
-    // ===== メイン道路 (MAIN_STREET_Y=130, H=24) =====
-    const MSY = C.MAIN_STREET_Y, MSH = C.MAIN_STREET_H, MSW = C.MAIN_SIDEWALK_H;
-    writeInst(buf, n++, 0, MSY + MSH / 2 + MSW / 2, W, MSW, sr, sg, sb, 1);  // 上歩道
-    writeInst(buf, n++, 0, MSY,                      W, MSH, rr, rg, rb, 1);  // 道路
-    writeInst(buf, n++, 0, MSY - MSH / 2 - MSW / 2, W, MSW, sr, sg, sb, 1);  // 下歩道
-    // 中央二重線
-    writeInst(buf, n++, 0, MSY + 2, W, 1.5, lr, lg, lb, 1);
-    writeInst(buf, n++, 0, MSY - 2, W, 1.5, lr, lg, lb, 1);
-
-    // ===== 手前の通り (FRONT_STREET_Y=40, H=16) =====
-    const FSY = C.FRONT_STREET_Y, FSH = C.FRONT_STREET_H, FSW = C.FRONT_SIDEWALK_H;
-    writeInst(buf, n++, 0, FSY + FSH / 2 + FSW / 2, W, FSW, sr, sg, sb, 1);  // 上歩道
-    writeInst(buf, n++, 0, FSY,                      W, FSH, rr, rg, rb, 1);  // 道路
-    writeInst(buf, n++, 0, FSY - FSH / 2 - FSW / 2, W, FSW, sr, sg, sb, 1);  // 下歩道
-    writeInst(buf, n++, 0, FSY,                      W, 1.5, lr, lg, lb, 1);  // 中央線
-
-    // ===== 縦路地1 (X=-65, W=20) =====
-    const ay1 = (C.ALLEY_Y_MIN + C.ALLEY_Y_MAX) / 2;
-    const ah  = C.ALLEY_Y_MAX - C.ALLEY_Y_MIN;
-    writeInst(buf, n++, C.ALLEY_1_X, ay1, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
-    // 路地境界線
-    writeInst(buf, n++, C.ALLEY_1_X - C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
-    writeInst(buf, n++, C.ALLEY_1_X + C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
-
-    // ===== 縦路地2 (X=65, W=20) =====
-    writeInst(buf, n++, C.ALLEY_2_X, ay1, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
-    writeInst(buf, n++, C.ALLEY_2_X - C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
-    writeInst(buf, n++, C.ALLEY_2_X + C.ALLEY_WIDTH / 2, ay1, 1.5, ah, sr, sg, sb, 0.6);
-
-    // ===== 横断歩道 (交差点) =====
-    // 路地×メイン道路 の4交差点
-    const cwW = C.ALLEY_WIDTH - 2;
-    const stripeH = 2.5;
-    const stripeGap = 4;
-    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
-      for (let sy2 = MSY - MSH / 2 + 1; sy2 < MSY + MSH / 2; sy2 += stripeGap) {
-        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.95, 0.95, 0.95, 0.7);
+    const drawRoad = (cy: number, h: number, doubleCenter = false) => {
+      writeInst(buf, n++, 0, cy + h/2 + C.SIDEWALK_H/2, W, C.SIDEWALK_H, sr, sg, sb, 1); // upper sidewalk
+      writeInst(buf, n++, 0, cy,                          W, h,            rr, rg, rb, 1); // road
+      writeInst(buf, n++, 0, cy - h/2 - C.SIDEWALK_H/2, W, C.SIDEWALK_H, sr, sg, sb, 1); // lower sidewalk
+      if (doubleCenter) {
+        writeInst(buf, n++, 0, cy + 2, W, 1.5, lr2, lg2, lb2, 1);
+        writeInst(buf, n++, 0, cy - 2, W, 1.5, lr2, lg2, lb2, 1);
+      } else {
+        writeInst(buf, n++, 0, cy, W, 1.5, lr2, lg2, lb2, 1);
       }
-      for (let sy2 = FSY - FSH / 2 + 1; sy2 < FSY + FSH / 2; sy2 += stripeGap) {
-        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.95, 0.95, 0.95, 0.7);
+    };
+
+    drawRoad(C.HILLTOP_STREET_Y,   C.HILLTOP_STREET_H,   false);
+    drawRoad(C.UPPER_STREET_Y,     C.UPPER_STREET_H,     false);
+    drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H,      true);  // double center line
+    drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H,     false);
+    drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H, false);
+
+    // === 2 vertical alleys ===
+    const [ar,ag,ab] = C.ALLEY_COLOR;
+    const ay  = (C.ALLEY_Y_MIN + C.ALLEY_Y_MAX) / 2;
+    const ah  = C.ALLEY_Y_MAX - C.ALLEY_Y_MIN;
+    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+      writeInst(buf, n++, ax, ay, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
+      writeInst(buf, n++, ax - C.ALLEY_WIDTH/2, ay, 1.5, ah, sr, sg, sb, 0.6);
+      writeInst(buf, n++, ax + C.ALLEY_WIDTH/2, ay, 1.5, ah, sr, sg, sb, 0.6);
+    }
+
+    // === Crosswalks at alley × road intersections ===
+    const cwW = C.ALLEY_WIDTH - 2;
+    const stripeH = 2.5, stripeGap = 4;
+    const roads = [
+      { cy: C.HILLTOP_STREET_Y,   h: C.HILLTOP_STREET_H },
+      { cy: C.UPPER_STREET_Y,     h: C.UPPER_STREET_H },
+      { cy: C.MAIN_STREET_Y,      h: C.MAIN_STREET_H },
+      { cy: C.LOWER_STREET_Y,     h: C.LOWER_STREET_H },
+      { cy: C.RIVERSIDE_STREET_Y, h: C.RIVERSIDE_STREET_H },
+    ];
+    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+      for (const road of roads) {
+        for (let sy = road.cy - road.h/2 + 1; sy < road.cy + road.h/2; sy += stripeGap) {
+          writeInst(buf, n++, ax, sy, cwW, stripeH, 0.95, 0.95, 0.95, 0.7);
+        }
       }
     }
 
-    // ===== 街灯ポール =====
-    const [pr, pg, pb] = C.STREETLIGHT_POLE_COLOR;
+    // === River / fall zone visualization ===
+    // Water (blue-tinted rect near FALLOFF_Y)
+    writeInst(buf, n++, 0, C.FALLOFF_Y + 10, W, 30, 0.25, 0.50, 0.80, 0.55);
+    writeInst(buf, n++, 0, C.FALLOFF_Y + 10, W,  2, 0.60, 0.80, 0.95, 0.4); // wave line 1
+    writeInst(buf, n++, 0, C.FALLOFF_Y + 18, W,  2, 0.60, 0.80, 0.95, 0.3); // wave line 2
+
+    // === Streetlight poles ===
+    const [pr,pg,pb] = C.STREETLIGHT_POLE_COLOR;
     for (const { x, base } of C.STREETLIGHTS) {
       const pcy = base + C.STREETLIGHT_POLE_H / 2;
       writeInst(buf, n++, x, pcy, C.STREETLIGHT_POLE_W, C.STREETLIGHT_POLE_H, pr, pg, pb, 1);
