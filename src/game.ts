@@ -415,14 +415,14 @@ export class Game {
   // ===== RENDER =====
 
   private render() {
-    const cfg = getStage(this.stage);
-    this.renderer.clear(cfg.bgR, cfg.bgG, cfg.bgB);
     const shake = this.juice.getShake();
+
+    // ------ 1. 背景グラデーション ------
+    this.renderer.drawBackground();
 
     let instCount = 0;
 
-    // ------ 2. 壁・レール ------
-    // 左右の斜面（フリッパー横）
+    // ------ 2. 壁・レール・道路・街灯ポール ------
     instCount = this.fillWalls(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
@@ -430,6 +430,10 @@ export class Game {
     instCount = 0;
     instCount += this.buildings.fillInstances(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 街灯電球（建物より手前に光らせる）------
+    instCount = this.fillBulbs(SHARED_BUF, 0);
+    if (instCount > 0) this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
     // ------ 4. 人間 ------
     instCount = 0;
@@ -466,30 +470,65 @@ export class Game {
   private fillWalls(buf: Float32Array, start: number): number {
     let n = start;
     const WC = 0.18;
+    const W  = C.WORLD_MAX_X * 2; // 360
 
     // 左壁
     writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
     // 右壁
     writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
     // 上壁
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, C.WORLD_MAX_X * 2, 4, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
     // UI区切り線
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.5);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
     // ストリートエリア下境界
-    writeInst(buf, n++, 0, C.STREET_Y_MIN - 3, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.35);
+    writeInst(buf, n++, 0, C.STREET_Y_MIN - 3, W, 2, 0.1, 0.1, 0.2, 0.35);
 
-    // ===== 左坂: (-180,-80) → (-85,-180)  フリッパー外端に接続 =====
+    // ===== 坂 =====
     const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;
     writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.5, 0.5, 0.65, 1, la);
-
-    // ===== 右坂: (+180,-80) → (+85,-180) =====
     const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
     writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.5, 0.5, 0.65, 1, ra);
 
-    // フリッパーピボット下の縦仕切り（ガター外壁）
+    // ガター外壁
     writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
     writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
 
+    // ===== 道路・歩道（奥の通り） =====
+    const BSY = C.BACK_STREET_Y,  BSH = C.BACK_STREET_HEIGHT,  BSW = C.BACK_SIDEWALK_HEIGHT;
+    const FSY = C.FRONT_STREET_Y, FSH = C.FRONT_STREET_HEIGHT, FSW = C.FRONT_SIDEWALK_HEIGHT;
+    const [rr,rg,rb] = C.ROAD_COLOR;
+    const [sr,sg,sb] = C.SIDEWALK_COLOR;
+    const [lr,lg,lb] = C.ROAD_LINE_COLOR;
+    // 奥: 上歩道 / 道路 / 下歩道 / 中央線
+    writeInst(buf, n++, 0, BSY + BSH/2 + BSW/2, W, BSW, sr, sg, sb, 1);
+    writeInst(buf, n++, 0, BSY,                  W, BSH, rr, rg, rb, 1);
+    writeInst(buf, n++, 0, BSY - BSH/2 - BSW/2, W, BSW, sr, sg, sb, 1);
+    writeInst(buf, n++, 0, BSY,                  W, 1,   lr, lg, lb, 1);
+    // 手前: 上歩道 / 道路 / 下歩道 / 中央線
+    writeInst(buf, n++, 0, FSY + FSH/2 + FSW/2, W, FSW, sr, sg, sb, 1);
+    writeInst(buf, n++, 0, FSY,                  W, FSH, rr, rg, rb, 1);
+    writeInst(buf, n++, 0, FSY - FSH/2 - FSW/2, W, FSW, sr, sg, sb, 1);
+    writeInst(buf, n++, 0, FSY,                  W, 1,   lr, lg, lb, 1);
+
+    // ===== 街灯ポール =====
+    const [pr,pg,pb] = C.STREETLIGHT_POLE_COLOR;
+    for (const { x, base } of C.STREETLIGHTS) {
+      const pcy = base + C.STREETLIGHT_POLE_H / 2;
+      writeInst(buf, n++, x, pcy, C.STREETLIGHT_POLE_W, C.STREETLIGHT_POLE_H, pr, pg, pb, 1);
+    }
+
+    return n - start;
+  }
+
+  /** 街灯電球（半透明の暖色円） */
+  private fillBulbs(buf: Float32Array, start: number): number {
+    let n = start;
+    const [br, bg, bb, ba] = C.STREETLIGHT_BULB_COLOR;
+    const d = C.STREETLIGHT_BULB_R * 2;
+    for (const { x, base } of C.STREETLIGHTS) {
+      const bcy = base + C.STREETLIGHT_POLE_H + C.STREETLIGHT_BULB_R * 0.5;
+      writeInst(buf, n++, x, bcy, d, d, br, bg, bb, ba, 0, 1);
+    }
     return n - start;
   }
 

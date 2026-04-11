@@ -141,6 +141,16 @@ export class Flipper {
 
 // ===== BUILDING =====
 
+const BUILDING_PALETTES: ReadonlyArray<readonly [number,number,number]> = [
+  [0.55, 0.55, 0.60], // コンクリートグレー
+  [0.45, 0.35, 0.30], // レンガ茶
+  [0.30, 0.40, 0.50], // ガラス青
+  [0.50, 0.45, 0.35], // サンドベージュ
+  [0.60, 0.60, 0.55], // 明るいグレー
+  [0.35, 0.35, 0.45], // スレートブルー
+  [0.50, 0.38, 0.35], // テラコッタ
+];
+
 export interface BuildingData {
   x: number;    // 左端
   y: number;    // 下端
@@ -154,6 +164,7 @@ export interface BuildingData {
   active: boolean;
   destroyTimer: number; // >0 = 崩壊アニメ中
   flashTimer: number;   // ヒット時フラッシュ
+  baseColor: readonly [number,number,number];
 }
 
 export class BuildingManager {
@@ -163,6 +174,7 @@ export class BuildingManager {
     this.buildings = [];
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
+      const baseColor = BUILDING_PALETTES[Math.floor(Math.random() * BUILDING_PALETTES.length)];
       this.buildings.push({
         x: d.x - def.w / 2,
         y: d.y,
@@ -174,6 +186,7 @@ export class BuildingManager {
         active: true,
         destroyTimer: 0,
         flashTimer: 0,
+        baseColor,
       });
     }
   }
@@ -226,19 +239,24 @@ export class BuildingManager {
     let n = startIdx;
     for (const b of this.buildings) {
       if (!b.active) continue;
-      const scale = b.destroyTimer > 0
-        ? Math.max(0, b.destroyTimer / 0.2)
-        : 1;
-      // HP で色を暗くする（ヒビ表現）
-      const dmgRatio = b.hp / b.maxHp;
-      const bright = b.flashTimer > 0 ? 1.0 : (0.45 + dmgRatio * 0.45);
-      // 建物サイズで色相を変える
-      const hue = (b.w * 3.7 + b.y * 1.1) % 1.0;
-      const [cr, cg, cb] = hsvToRgb(hue, 0.55, bright);
+      const scale = b.destroyTimer > 0 ? Math.max(0, b.destroyTimer / 0.2) : 1;
+
+      let cr: number, cg: number, cb: number;
+      if (b.flashTimer > 0) {
+        cr = cg = cb = 1.0;
+      } else {
+        const dmgRatio = 1 - b.hp / b.maxHp;
+        const darken   = 1 - dmgRatio * 0.4;
+        const redShift = dmgRatio * 0.15;
+        cr = Math.min(1, b.baseColor[0] * darken + redShift);
+        cg = b.baseColor[1] * darken;
+        cb = b.baseColor[2] * darken;
+      }
+
       const drawW = b.w * scale;
       const drawH = b.h * scale;
-      const drawX = b.x + b.w / 2; // 中心X
-      const drawY = b.y + b.h / 2; // 中心Y
+      const drawX = b.x + b.w / 2;
+      const drawY = b.y + b.h / 2;
       writeInst(buf, n++, drawX, drawY, drawW, drawH, cr, cg, cb, 1, 0, 0);
     }
     return n - startIdx;
@@ -291,19 +309,3 @@ export class BumperManager {
   }
 }
 
-// ===== HSV→RGB ユーティリティ =====
-function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
-  const i = Math.floor(h * 6);
-  const f = h * 6 - i;
-  const p = v * (1 - s);
-  const q = v * (1 - f * s);
-  const t = v * (1 - (1 - f) * s);
-  switch (i % 6) {
-    case 0: return [v, t, p];
-    case 1: return [q, v, p];
-    case 2: return [p, v, t];
-    case 3: return [p, q, v];
-    case 4: return [t, p, v];
-    default: return [v, p, q];
-  }
-}

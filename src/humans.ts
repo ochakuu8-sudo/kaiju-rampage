@@ -73,18 +73,20 @@ export class HumanManager {
       this.px[i] += this.vx[i] * boost * dt;
       this.py[i] += this.vy[i] * boost * dt;
 
-      // 壁反射
-      if (this.px[i] < C.WORLD_MIN_X + C.HUMAN_W) {
-        this.px[i] = C.WORLD_MIN_X + C.HUMAN_W;
-        this.vx[i] = Math.abs(this.vx[i]);
+      // Y方向: 道路エリア内でバウンド
+      const yMin = C.HUMAN_Y_MIN + C.HUMAN_H / 2;
+      const yMax = C.HUMAN_Y_MAX - C.HUMAN_H / 2;
+      if (this.py[i] < yMin) {
+        this.py[i] = yMin;
+        this.vy[i] = Math.abs(this.vy[i]);
       }
-      if (this.px[i] > C.WORLD_MAX_X - C.HUMAN_W) {
-        this.px[i] = C.WORLD_MAX_X - C.HUMAN_W;
-        this.vx[i] = -Math.abs(this.vx[i]);
+      if (this.py[i] > yMax) {
+        this.py[i] = yMax;
+        this.vy[i] = -Math.abs(this.vy[i]);
       }
 
-      // 画面上端 or 下端 → 逃走成功（消滅）
-      if (this.py[i] > C.WORLD_MAX_Y || this.py[i] < C.WORLD_MIN_Y) {
+      // X方向: 画面端まで走って逃走
+      if (this.px[i] < C.WORLD_MIN_X + 5 || this.px[i] > C.WORLD_MAX_X - 5) {
         this.state[i] = ST_INACTIVE;
       }
 

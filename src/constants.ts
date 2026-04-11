@@ -79,3 +79,39 @@ export const SHAKE_LARGE_DUR   = 0.20;
 // ===== ジュース: ヒットストップ =====
 export const HITSTOP_SMALL = 3;  // frames
 export const HITSTOP_LARGE = 5;
+
+// ===== 街レイアウト =====
+export const BACK_STREET_Y       = 165;  // 奥の通り 中心Y (world 290)
+export const BACK_STREET_HEIGHT  = 20;
+export const BACK_SIDEWALK_HEIGHT= 4;
+export const FRONT_STREET_Y      = 55;   // 手前の通り 中心Y
+export const FRONT_STREET_HEIGHT = 18;
+export const FRONT_SIDEWALK_HEIGHT = 4;
+
+// 歩道上端 = ビル接地ベースライン
+export const BACK_BASE  = BACK_STREET_Y  + BACK_STREET_HEIGHT  / 2 + BACK_SIDEWALK_HEIGHT;  // 179
+export const FRONT_BASE = FRONT_STREET_Y + FRONT_STREET_HEIGHT / 2 + FRONT_SIDEWALK_HEIGHT; // 68
+
+// 道路・歩道の色
+export const ROAD_COLOR:     readonly [number,number,number,number] = [0.12, 0.12, 0.14, 1];
+export const SIDEWALK_COLOR: readonly [number,number,number,number] = [0.20, 0.20, 0.22, 1];
+export const ROAD_LINE_COLOR:readonly [number,number,number,number] = [0.35, 0.35, 0.20, 1];
+
+// ===== 街灯 =====
+export const STREETLIGHT_POLE_W = 1.5;
+export const STREETLIGHT_POLE_H = 18;
+export const STREETLIGHT_POLE_COLOR: readonly [number,number,number,number] = [0.25, 0.25, 0.28, 1];
+export const STREETLIGHT_BULB_R = 2.5;
+export const STREETLIGHT_BULB_COLOR: readonly [number,number,number,number] = [1.0, 0.9, 0.5, 0.7];
+
+export const STREETLIGHTS: ReadonlyArray<{ x: number; base: number }> = [
+  { x: -160, base: BACK_BASE  }, { x:  -80, base: BACK_BASE  },
+  { x:    0, base: BACK_BASE  }, { x:   80, base: BACK_BASE  },
+  { x:  160, base: BACK_BASE  },
+  { x: -130, base: FRONT_BASE }, { x:  -40, base: FRONT_BASE },
+  { x:   50, base: FRONT_BASE }, { x:  140, base: FRONT_BASE },
+];
+
+// ===== 人間の行動範囲 =====
+export const HUMAN_Y_MIN = FRONT_STREET_Y - FRONT_STREET_HEIGHT / 2 - 5; // ~41
+export const HUMAN_Y_MAX = BACK_STREET_Y  + BACK_STREET_HEIGHT  / 2 + 5; // ~180

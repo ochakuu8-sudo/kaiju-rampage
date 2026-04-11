@@ -22,6 +22,7 @@ uniform vec2 u_shake;
 
 out vec4  v_color;
 out vec2  v_uv;
+out vec2  v_size;
 out float v_circle;
 
 void main() {
@@ -31,7 +32,8 @@ void main() {
   vec2 world   = rotated + i_pos + u_shake;
   gl_Position  = u_proj * vec4(world, 0.0, 1.0);
   v_color  = i_color;
-  v_uv     = a_vert;
+  v_uv     = a_vert;       // -0.5..0.5
+  v_size   = i_size;       // pixel size of the quad
   v_circle = i_circle;
 }`;
 
@@ -39,14 +41,47 @@ const FS_INST = `#version 300 es
 precision highp float;
 in vec4  v_color;
 in vec2  v_uv;
+in vec2  v_size;
 in float v_circle;
 out vec4 fragColor;
+
 void main() {
   if (v_circle > 0.5) {
+    // 円描画
     float d = length(v_uv) * 2.0;
     if (d > 1.0) discard;
     float glow = 1.0 - smoothstep(0.6, 1.0, d);
     fragColor = vec4(v_color.rgb + glow * 0.4, v_color.a);
+  } else if (v_size.y >= 25.0) {
+    // ビル: 窓グリッド描画
+    vec2 uv  = v_uv + vec2(0.5);          // 0..1
+    vec2 px  = uv * v_size;               // ビル内ピクセル座標
+    float sw = v_size.x;
+    float sh = v_size.y;
+
+    bool isRoof     = px.y > sh - 3.0;
+    bool isBase     = px.y < 2.0;
+    bool isSideWall = px.x < 2.0 || px.x > sw - 2.0;
+
+    if (isRoof) {
+      fragColor = vec4(v_color.rgb * 0.7, v_color.a);
+    } else if (isBase || isSideWall) {
+      fragColor = v_color;
+    } else {
+      float gW = 6.0, gH = 8.0;
+      float modX = mod(px.x - 2.0, gW);
+      float modY = mod(px.y - 2.0, gH);
+      bool win = modX >= 1.0 && modX < gW - 1.0 && modY >= 1.0 && modY < gH - 1.5;
+      if (win) {
+        vec2 cell = floor((px - vec2(2.0)) / vec2(gW, gH));
+        float rnd = fract(sin(dot(cell, vec2(127.1, 311.7))) * 43758.5453);
+        float br  = 0.7 + rnd * 0.3;
+        vec3  wc  = vec3(1.0, 0.85, 0.4) * br * 0.5;
+        fragColor = vec4(min(v_color.rgb + wc, vec3(1.0)), v_color.a);
+      } else {
+        fragColor = v_color;
+      }
+    }
   } else {
     fragColor = v_color;
   }
@@ -61,6 +96,19 @@ precision mediump float;
 uniform vec4 u_color;
 out vec4 fragColor;
 void main() { fragColor = u_color; }`;
+
+const VS_BG = `#version 300 es
+in vec2 a_pos;
+out vec2 v_uv;
+void main() { gl_Position = vec4(a_pos, 0.0, 1.0); v_uv = a_pos * 0.5 + 0.5; }`;
+
+const FS_BG = `#version 300 es
+precision mediump float;
+in vec2 v_uv;
+uniform vec3 u_top;
+uniform vec3 u_bot;
+out vec4 fragColor;
+void main() { fragColor = vec4(mix(u_bot, u_top, v_uv.y), 1.0); }`;
 
 // ===== ユーティリティ =====
 
@@ -99,6 +147,10 @@ export class Renderer {
   private fsProg: WebGLProgram;
   private fsVAO: WebGLVertexArrayObject;
   private u_fsColor: WebGLUniformLocation;
+
+  private bgProg: WebGLProgram;
+  private u_bgTop: WebGLUniformLocation;
+  private u_bgBot: WebGLUniformLocation;
 
   // 共有インスタンスバッファ（呼び出し元が直接書き込む）
   readonly instBuf: Float32Array;
@@ -161,6 +213,11 @@ export class Renderer {
     gl.bindVertexArray(null);
     this.u_fsColor = gl.getUniformLocation(this.fsProg, 'u_color')!;
 
+    // ---- background gradient program (shares fsVAO) ----
+    this.bgProg  = linkProgram(gl, VS_BG, FS_BG);
+    this.u_bgTop = gl.getUniformLocation(this.bgProg, 'u_top')!;
+    this.u_bgBot = gl.getUniformLocation(this.bgProg, 'u_bot')!;
+
     // orthographic projection: world(-180..180, WORLD_MIN_Y..WORLD_MAX_Y) → clip
     this.proj = this.makeOrtho(-180, 180, WORLD_MIN_Y, WORLD_MAX_Y);
 
@@ -183,6 +240,17 @@ export class Renderer {
     const gl = this.gl;
     gl.clearColor(r, g, b, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
+  }
+
+  /** 夜空グラデーション背景を描画（clearの代わりに使用） */
+  drawBackground() {
+    const gl = this.gl;
+    gl.useProgram(this.bgProg);
+    gl.uniform3f(this.u_bgTop, 0.03, 0.03, 0.12);
+    gl.uniform3f(this.u_bgBot, 0.08, 0.06, 0.06);
+    gl.bindVertexArray(this.fsVAO);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    gl.bindVertexArray(null);
   }
 
   /**
