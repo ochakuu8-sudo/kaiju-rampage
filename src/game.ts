@@ -32,7 +32,8 @@ import {
 import type { BuildingData } from './entities';
 
 // 静的インスタンスバッファ（再利用でGCゼロ）
-const SHARED_BUF = new Float32Array(3200 * INST_F);
+// 5000 = 2000人間 + 2000パーティクル + 1000シーン/その他
+const SHARED_BUF = new Float32Array(5000 * INST_F);
 
 type GameState = 'playing' | 'ball_lost' | 'stage_clear' | 'game_over';
 
@@ -384,43 +385,27 @@ export class Game {
   private render() {
     const shake = this.juice.getShake();
 
+    // ------ 1. 背景グラデーション ------
     this.renderer.drawBackground();
 
-    let instCount = 0;
+    // ------ バッチ1: シーン背景 (道路→ビル→家具→電球) ------
+    // 同一シェーダーのインスタンスをまとめて1ドローコールで描画
+    let n = 0;
+    n += this.fillWalls(SHARED_BUF, n);
+    n += this.buildings.fillInstances(SHARED_BUF, n);
+    n += this.furniture.fillInstances(SHARED_BUF, n);
+    n += this.fillBulbs(SHARED_BUF, n);
+    this.renderer.drawInstances(SHARED_BUF, n, shake);
 
-    // ------ 壁・道路・路地・街灯ポール ------
-    instCount = this.fillWalls(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+    // ------ バッチ2: エンティティ (人間→フリッパー→ボール→パーティクル) ------
+    n = 0;
+    n += this.humans.fillInstances(SHARED_BUF, n);
+    n += this.fillFlippers(SHARED_BUF, n);
+    n += this.fillBall(SHARED_BUF, n);
+    n += this.particles.fillInstances(SHARED_BUF, n);
+    this.renderer.drawInstances(SHARED_BUF, n, shake);
 
-    // ------ 建物 ------
-    instCount = this.buildings.fillInstances(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ 街灯電球 ------
-    instCount = this.fillBulbs(SHARED_BUF, 0);
-    if (instCount > 0) this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ 街路家具 ------
-    instCount = this.furniture.fillInstances(SHARED_BUF, 0);
-    if (instCount > 0) this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ 人間 ------
-    instCount = this.humans.fillInstances(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ フリッパー ------
-    instCount = this.fillFlippers(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ ボール（トレイル + 本体） ------
-    instCount = this.fillBall(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ パーティクル ------
-    instCount = this.particles.fillInstances(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ フラッシュ ------
+    // ------ フラッシュオーバーレイ ------
     this.renderer.drawFlash(
       this.juice.flashR, this.juice.flashG, this.juice.flashB,
       this.juice.flashAlpha

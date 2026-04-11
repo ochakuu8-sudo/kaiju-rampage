@@ -37,16 +37,16 @@ export type BuildingSize = 'house' | 'shop' | 'apartment' | 'office' | 'tower' |
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
 }> = {
-  house:      { w: 16, h: 20, hp: 1, score: 100,  humanMin: 2,  humanMax: 4  },
-  shop:       { w: 22, h: 25, hp: 1, score: 150,  humanMin: 3,  humanMax: 5  },
-  apartment:  { w: 24, h: 40, hp: 2, score: 300,  humanMin: 5,  humanMax: 8  },
-  office:     { w: 30, h: 55, hp: 2, score: 400,  humanMin: 6,  humanMax: 10 },
-  tower:      { w: 35, h: 70, hp: 3, score: 600,  humanMin: 8,  humanMax: 12 },
-  skyscraper: { w: 28, h: 90, hp: 4, score: 1000, humanMin: 10, humanMax: 15 },
+  house:      { w: 16, h: 20, hp: 1, score: 100,  humanMin: 4,  humanMax: 8  },
+  shop:       { w: 22, h: 25, hp: 1, score: 150,  humanMin: 5,  humanMax: 10 },
+  apartment:  { w: 24, h: 40, hp: 2, score: 300,  humanMin: 8,  humanMax: 15 },
+  office:     { w: 30, h: 55, hp: 2, score: 400,  humanMin: 10, humanMax: 18 },
+  tower:      { w: 35, h: 70, hp: 3, score: 600,  humanMin: 15, humanMax: 25 },
+  skyscraper: { w: 28, h: 90, hp: 4, score: 1000, humanMin: 20, humanMax: 30 },
 };
 
 // ===== 人間 =====
-export const MAX_HUMANS = 500;
+export const MAX_HUMANS = 2000;
 export const HUMAN_W = 3;
 export const HUMAN_H = 6;
 export const HUMAN_BASE_SPEED = 65; // px/s

@@ -160,7 +160,7 @@ function linkProgram(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLP
 
 // per-instance layout (floats): pos(2) size(2) color(4) rot(1) circle(1) = 10
 export const INST_F = 10;
-const MAX_INST = 3200;
+const MAX_INST = 5000;  // 2000 humans + 2000 particles + 1000 scene/misc
 
 export class Renderer {
   readonly gl: WebGL2RenderingContext;
