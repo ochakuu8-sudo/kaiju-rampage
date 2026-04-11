@@ -59,9 +59,9 @@ export class Game {
 
   // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
   // ピボット: (±85, -165)
-  // 左坂: (-180, -120) → (-85, -165)  center=(-132.5,-142.5) angle≈-0.441rad hw≈53
-  private readonly SLOPE_L = { cx: -132.5, cy: -142.5, hw: 53, hh: 6, angle: -0.441 };
-  private readonly SLOPE_R = { cx:  132.5, cy: -142.5, hw: 53, hh: 6, angle:  0.441 };
+  // 左坂: (-180, -98) → (-85, -165)  center=(-132.5,-131.5) angle≈-0.611rad hw≈58
+  private readonly SLOPE_L = { cx: -132.5, cy: -131.5, hw: 58, hh: 6, angle: -0.611 };
+  private readonly SLOPE_R = { cx:  132.5, cy: -131.5, hw: 58, hh: 6, angle:  0.611 };
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
