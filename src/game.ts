@@ -94,7 +94,6 @@ export class Game {
     this.humans.reset();
     this.particles.reset();
     this.ball.reset();
-    this.juice.slowMo(0);
   }
 
   private restart() {
@@ -335,9 +334,6 @@ export class Game {
       this.sound.humanCrush(this.combo);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
 
-      if (this.combo >= C.COMBO_SLOW_THRESHOLD) {
-        this.juice.slowMo(0.3, 0.3);
-      }
       if (this.combo >= C.COMBO_MAX) {
         this.juice.flash(1, 0.8, 0, 0.4);
       }
@@ -362,11 +358,9 @@ export class Game {
     const isLarge = bld.maxHp >= 3;
     if (isLarge) {
       this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR, 1.5);
-      this.juice.hitStop(C.HITSTOP_LARGE);
       this.juice.flash(1, 1, 1, 0.35);
     } else {
       this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
-      this.juice.hitStop(C.HITSTOP_SMALL);
     }
 
     // パーティクル
@@ -403,7 +397,6 @@ export class Game {
     this.state = 'stage_clear';
     this.stateTimer = 3.0;
     this.sound.stageClear();
-    this.juice.stageClearSlow();
     this.juice.flash(0, 1, 0, 0.4);
 
     // 残った人間をすべて逃がしてボーナス（逃がすだけ、スコアはなし）
