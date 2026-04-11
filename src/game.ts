@@ -28,7 +28,7 @@ import {
   resolveCircleOBB,
   clampSpeed, rand, randInt
 } from './physics';
-import type { BuildingData } from './entities';
+import type { BuildingData, BumperData } from './entities';
 
 // 静的インスタンスバッファ（再利用でGCゼロ）
 const SHARED_BUF = new Float32Array(3200 * INST_F);
@@ -202,75 +202,100 @@ export class Game {
     const b = this.ball;
     if (!b.active) return;
 
-    // 重力
-    b.vy -= C.GRAVITY * dt * 60;
+    // ===== サブステップ物理（トンネリング防止）=====
+    // max速度25px/frame ÷ 4 = 6.25px/substep < OBB厚12px → 貫通しない
+    const SUB = 4;
+    const dts = dt / SUB;
 
-    // 移動
-    b.x += b.vx * dt * 60;
-    b.y += b.vy * dt * 60;
+    let wallSoundNeeded    = false;
+    let flipperSoundNeeded = false;
+    let bldResult: { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
+    let bmpResult: { bump: BumperData;  newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
 
-    // 速度制限
-    [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
-
-    // ===== 壁衝突 =====
-    // 左壁
-    if (b.x - C.BALL_RADIUS < C.WORLD_MIN_X) {
-      b.x = C.WORLD_MIN_X + C.BALL_RADIUS;
-      b.vx = Math.abs(b.vx) * C.WALL_DAMPING;
-      this.sound.wallHit();
-    }
-    // 右壁
-    if (b.x + C.BALL_RADIUS > C.WORLD_MAX_X) {
-      b.x = C.WORLD_MAX_X - C.BALL_RADIUS;
-      b.vx = -Math.abs(b.vx) * C.WALL_DAMPING;
-      this.sound.wallHit();
-    }
-    // 上壁
-    if (b.y + C.BALL_RADIUS > C.WORLD_MAX_Y - 40) {
-      b.y = C.WORLD_MAX_Y - 40 - C.BALL_RADIUS;
-      b.vy = -Math.abs(b.vy) * C.WALL_DAMPING;
-      this.sound.wallHit();
-    }
-
-    // ===== 坂（静的OBB壁）衝突 =====
-    for (const slope of [this.SLOPE_L, this.SLOPE_R]) {
-      const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, slope);
-      if (res) {
-        [b.x, b.y, b.vx, b.vy] = res;
-        this.sound.wallHit();
-        break;
-      }
-    }
-
-    // ===== フリッパー衝突 =====
-    for (const fl of this.flippers) {
-      const obb = fl.getOBB();
-      const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, obb);
-      if (res) {
-        [b.x, b.y, b.vx, b.vy] = res;
-        // フリッパーが上昇中なら打ち出し力付与
-        const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
-        b.vx = nvx;
-        b.vy = nvy;
-        [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
-        this.sound.flipper();
-        this.juice.ballHitFlash();
-        break;
-      }
-    }
-
-    // ===== 建物衝突 =====
-    const bldHit = this.buildings.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
-    if (bldHit) {
-      const { bld, newBx, newBy, newVx, newVy } = bldHit;
-      b.x = newBx; b.y = newBy; b.vx = newVx; b.vy = newVy;
+    for (let s = 0; s < SUB; s++) {
+      // 重力・移動
+      b.vy -= C.GRAVITY * dts * 60;
+      b.x  += b.vx * dts * 60;
+      b.y  += b.vy * dts * 60;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
 
+      // ----- 壁 -----
+      if (b.x - C.BALL_RADIUS < C.WORLD_MIN_X) {
+        b.x  = C.WORLD_MIN_X + C.BALL_RADIUS;
+        b.vx = Math.abs(b.vx) * C.WALL_DAMPING;
+        wallSoundNeeded = true;
+      }
+      if (b.x + C.BALL_RADIUS > C.WORLD_MAX_X) {
+        b.x  = C.WORLD_MAX_X - C.BALL_RADIUS;
+        b.vx = -Math.abs(b.vx) * C.WALL_DAMPING;
+        wallSoundNeeded = true;
+      }
+      if (b.y + C.BALL_RADIUS > C.WORLD_MAX_Y - 40) {
+        b.y  = C.WORLD_MAX_Y - 40 - C.BALL_RADIUS;
+        b.vy = -Math.abs(b.vy) * C.WALL_DAMPING;
+        wallSoundNeeded = true;
+      }
+
+      // ----- 坂（静的OBB）-----
+      for (const slope of [this.SLOPE_L, this.SLOPE_R]) {
+        const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, slope);
+        if (res) {
+          [b.x, b.y, b.vx, b.vy] = res;
+          wallSoundNeeded = true;
+          break;
+        }
+      }
+
+      // ----- フリッパー -----
+      for (const fl of this.flippers) {
+        const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, fl.getOBB());
+        if (res) {
+          [b.x, b.y, b.vx, b.vy] = res;
+          const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
+          b.vx = nvx; b.vy = nvy;
+          [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+          flipperSoundNeeded = true;
+          break;
+        }
+      }
+
+      // ----- 建物（初回ヒットのみ位置解決、イベントはループ後）-----
+      if (!bldResult) {
+        const h = this.buildings.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
+        if (h) {
+          bldResult = h;
+          b.x = h.newBx; b.y = h.newBy;
+          b.vx = h.newVx; b.vy = h.newVy;
+          [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+        }
+      }
+
+      // ----- バンパー（初回ヒットのみ位置解決）-----
+      if (!bmpResult) {
+        const h = this.bumpers.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
+        if (h) {
+          bmpResult = h;
+          b.x = h.newBx; b.y = h.newBy;
+          b.vx = h.newVx; b.vy = h.newVy;
+        }
+      }
+    } // end substep
+
+    // ===== サウンド（1フレームに1回）=====
+    if (flipperSoundNeeded) {
+      this.sound.flipper();
+      this.juice.ballHitFlash();
+    } else if (wallSoundNeeded) {
+      this.sound.wallHit();
+    }
+
+    // ===== 建物ダメージ =====
+    if (bldResult) {
+      const { bld } = bldResult;
       const destroyed = this.buildings.damage(bld);
       if (destroyed) {
         this.onBuildingDestroyed(bld);
       } else {
-        // ヒット演出
         this.score += 10;
         this.ui.setScore(this.score);
         this.sound.buildingHit();
@@ -280,11 +305,8 @@ export class Game {
       }
     }
 
-    // ===== バンパー衝突 =====
-    const bmpHit = this.bumpers.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
-    if (bmpHit) {
-      const { newBx, newBy, newVx, newVy } = bmpHit;
-      b.x = newBx; b.y = newBy; b.vx = newVx; b.vy = newVy;
+    // ===== バンパースコア =====
+    if (bmpResult) {
       this.score += C.BUMPER_SCORE;
       this.ui.setScore(this.score);
       this.sound.bumper();
@@ -313,11 +335,9 @@ export class Game {
       this.sound.humanCrush(this.combo);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
 
-      // コンボ5以上でスローモーション
       if (this.combo >= C.COMBO_SLOW_THRESHOLD) {
         this.juice.slowMo(0.3, 0.3);
       }
-      // コンボ10でフラッシュ
       if (this.combo >= C.COMBO_MAX) {
         this.juice.flash(1, 0.8, 0, 0.4);
       }
@@ -328,7 +348,6 @@ export class Game {
       this.onBallLost();
     }
 
-    // トレイル記録
     b.recordTrail();
   }
 
