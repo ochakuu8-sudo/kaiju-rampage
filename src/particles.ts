@@ -147,6 +147,116 @@ export class ParticleManager {
     }
   }
 
+  /** ガラス破片 */
+  spawnGlass(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(50, 180);
+      this.emit(
+        x + rand(-5, 5), y + rand(-5, 5),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        0.85, 0.95, 1.0,
+        rand(2, 5), rand(0.3, 0.7),
+        true, false, rand(-4, 4)
+      );
+    }
+  }
+
+  /** 水しぶき */
+  spawnWater(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.8, 0.8); // mostly upward
+      const spd = rand(60, 200);
+      this.emit(
+        x + rand(-4, 4), y,
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        0.30, 0.65, 1.0,
+        rand(3, 6), rand(0.4, 0.9),
+        true, true
+      );
+    }
+  }
+
+  /** 花びら */
+  spawnFlower(x: number, y: number, count: number) {
+    const colors: Array<[number,number,number]> = [
+      [0.95, 0.45, 0.70],
+      [0.95, 0.90, 0.20],
+      [1.00, 1.00, 1.00],
+      [0.90, 0.50, 0.80],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(20, 80);
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.emit(
+        x + rand(-6, 6), y + rand(-2, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + 30,
+        c[0], c[1], c[2],
+        rand(3, 6), rand(0.6, 1.4),
+        true, true, rand(-2, 2)
+      );
+    }
+  }
+
+  /** 紙吹雪 */
+  spawnConfetti(x: number, y: number, count: number) {
+    const colors: Array<[number,number,number]> = [
+      [1.0, 0.2, 0.2], [0.2, 0.6, 1.0], [0.2, 0.9, 0.2],
+      [1.0, 0.9, 0.1], [0.9, 0.2, 0.9],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-1.2, 1.2);
+      const spd = rand(50, 150);
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.emit(
+        x + rand(-8, 8), y,
+        Math.cos(angle) * spd + rand(-30, 30), Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(3, 6), rand(0.8, 1.5),
+        true, false, rand(-5, 5)
+      );
+    }
+  }
+
+  /** 食べ物 */
+  spawnFood(x: number, y: number, count: number) {
+    const colors: Array<[number,number,number]> = [
+      [0.60, 0.35, 0.15], [0.95, 0.95, 0.88], [0.90, 0.20, 0.15], [0.95, 0.85, 0.10],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(40, 140);
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.emit(
+        x + rand(-5, 5), y + rand(-5, 5),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(3, 7), rand(0.4, 0.9),
+        true, false, rand(-4, 4)
+      );
+    }
+  }
+
+  /** 電気スパーク */
+  spawnElectric(x: number, y: number, count: number) {
+    const colors: Array<[number,number,number]> = [
+      [1.0, 0.95, 0.3], [1.0, 0.60, 0.1], [1.0, 1.0, 1.0],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(80, 250);
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.emit(
+        x + rand(-3, 3), y + rand(-3, 3),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(2, 4), rand(0.05, 0.20),
+        false, true
+      );
+    }
+  }
+
   update(dt: number) {
     for (let i = 0; i < C.MAX_PARTICLES; i++) {
       if (this.state[i] === ST_DEAD) continue;

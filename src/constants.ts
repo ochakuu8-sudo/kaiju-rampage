@@ -33,16 +33,22 @@ export const FLIPPER_POWER = 16;
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 
 // ===== 建物 =====
-export type BuildingSize = 'house' | 'shop' | 'apartment' | 'office' | 'tower' | 'skyscraper';
+export type BuildingSize = 'house' | 'shop' | 'apartment' | 'office' | 'tower' | 'skyscraper' | 'convenience' | 'restaurant' | 'school' | 'hospital' | 'temple' | 'parking';
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
 }> = {
-  house:      { w: 16, h: 20, hp: 1, score: 100,  humanMin: 4,  humanMax: 8  },
-  shop:       { w: 22, h: 25, hp: 1, score: 150,  humanMin: 5,  humanMax: 10 },
-  apartment:  { w: 24, h: 40, hp: 2, score: 300,  humanMin: 8,  humanMax: 15 },
-  office:     { w: 30, h: 55, hp: 2, score: 400,  humanMin: 10, humanMax: 18 },
-  tower:      { w: 35, h: 70, hp: 3, score: 600,  humanMin: 15, humanMax: 25 },
-  skyscraper: { w: 28, h: 90, hp: 4, score: 1000, humanMin: 20, humanMax: 30 },
+  house:       { w: 16, h: 20, hp: 1, score: 100,  humanMin: 4,  humanMax: 8  },
+  shop:        { w: 22, h: 25, hp: 1, score: 150,  humanMin: 5,  humanMax: 10 },
+  apartment:   { w: 24, h: 40, hp: 2, score: 300,  humanMin: 8,  humanMax: 15 },
+  office:      { w: 30, h: 55, hp: 2, score: 400,  humanMin: 10, humanMax: 18 },
+  tower:       { w: 35, h: 70, hp: 3, score: 600,  humanMin: 15, humanMax: 25 },
+  skyscraper:  { w: 28, h: 90, hp: 4, score: 1000, humanMin: 20, humanMax: 30 },
+  convenience: { w: 24, h: 22, hp: 1, score: 120,  humanMin: 5,  humanMax: 10 },
+  restaurant:  { w: 20, h: 28, hp: 1, score: 130,  humanMin: 5,  humanMax: 12 },
+  school:      { w: 40, h: 45, hp: 3, score: 550,  humanMin: 20, humanMax: 40 },
+  hospital:    { w: 35, h: 50, hp: 3, score: 500,  humanMin: 12, humanMax: 22 },
+  temple:      { w: 30, h: 30, hp: 2, score: 350,  humanMin: 6,  humanMax: 12 },
+  parking:     { w: 36, h: 35, hp: 2, score: 300,  humanMin: 3,  humanMax: 6  },
 };
 
 // ===== 人間 =====
@@ -128,17 +134,17 @@ export const BLOCK_RIGHT_X_MIN =  75;
 export const BLOCK_RIGHT_X_MAX =  180;
 
 // 道路・歩道の色
-export const ROAD_COLOR:      readonly [number,number,number,number] = [0.12, 0.12, 0.14, 1];
-export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.20, 0.20, 0.22, 1];
-export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.35, 0.35, 0.20, 1];
-export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.10, 0.10, 0.12, 1];
+export const ROAD_COLOR:      readonly [number,number,number,number] = [0.35, 0.35, 0.38, 1];
+export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.72, 0.68, 0.60, 1];
+export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.90, 0.90, 0.60, 1];
+export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.30, 0.30, 0.32, 1];
 
 // ===== 街灯 =====
 export const STREETLIGHT_POLE_W = 1.5;
 export const STREETLIGHT_POLE_H = 18;
 export const STREETLIGHT_POLE_COLOR: readonly [number,number,number,number] = [0.25, 0.25, 0.28, 1];
 export const STREETLIGHT_BULB_R = 2.5;
-export const STREETLIGHT_BULB_COLOR: readonly [number,number,number,number] = [1.0, 0.9, 0.5, 0.7];
+export const STREETLIGHT_BULB_COLOR: readonly [number,number,number,number] = [1.0, 0.9, 0.5, 0.0];
 
 export const STREETLIGHTS: ReadonlyArray<{ x: number; base: number }> = [
   { x: -155, base: MAIN_BASE }, { x: -100, base: MAIN_BASE },
@@ -151,7 +157,7 @@ export const STREETLIGHTS: ReadonlyArray<{ x: number; base: number }> = [
 // ===== 街路樹・調度品 =====
 export const TREE_W = 8;
 export const TREE_H = 14;
-export const TREE_COLOR: readonly [number,number,number,number] = [0.15, 0.45, 0.15, 1];
+export const TREE_COLOR: readonly [number,number,number,number] = [0.25, 0.60, 0.25, 1];
 
 export const VENDING_W = 5;
 export const VENDING_H = 10;

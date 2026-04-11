@@ -160,7 +160,7 @@ function linkProgram(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLP
 
 // per-instance layout (floats): pos(2) size(2) color(4) rot(1) circle(1) = 10
 export const INST_F = 10;
-const MAX_INST = 5000;  // 2000 humans + 2000 particles + 1000 scene/misc
+const MAX_INST = 8000;  // 2000 humans + 2000 particles + 4000 scene/vehicles/misc
 
 export class Renderer {
   readonly gl: WebGL2RenderingContext;
@@ -269,12 +269,12 @@ export class Renderer {
     gl.clear(gl.COLOR_BUFFER_BIT);
   }
 
-  /** 夜空グラデーション背景を描画（clearの代わりに使用） */
-  drawBackground() {
+  /** 空グラデーション背景を描画（clearの代わりに使用） */
+  drawBackground(tr = 0.03, tg = 0.03, tb = 0.12, br = 0.08, bg = 0.06, bb = 0.06) {
     const gl = this.gl;
     gl.useProgram(this.bgProg);
-    gl.uniform3f(this.u_bgTop, 0.03, 0.03, 0.12);
-    gl.uniform3f(this.u_bgBot, 0.08, 0.06, 0.06);
+    gl.uniform3f(this.u_bgTop, tr, tg, tb);
+    gl.uniform3f(this.u_bgBot, br, bg, bb);
     gl.bindVertexArray(this.fsVAO);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);

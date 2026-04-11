@@ -29,12 +29,22 @@ export interface FurnitureDef {
   score?: number;
 }
 
+export interface VehicleDef {
+  type: 'car' | 'bus' | 'truck' | 'ambulance';
+  lane: 'main' | 'front' | 'back';
+  direction: 1 | -1;
+  speed: number;
+  interval: number;
+}
+
 export interface StageConfig {
   level: number;
   buildings: BuildingDef[];
   bumpers: BumperDef[];
   furniture: FurnitureDef[];
-  bgR: number; bgG: number; bgB: number;
+  vehicles: VehicleDef[];
+  bgTopR: number; bgTopG: number; bgTopB: number;
+  bgBottomR: number; bgBottomG: number; bgBottomB: number;
 }
 
 // ヘルパー: ビル定義
@@ -58,20 +68,22 @@ export const STAGES: StageConfig[] = [
     level: 1,
     buildings: [
       // Block A (left-back)
-      b(-155, MAIN_BASE, 'house'), b(-135, MAIN_BASE, 'house'), b(-115, MAIN_BASE, 'house'), b(-95, MAIN_BASE, 'shop'),
+      b(-155, MAIN_BASE, 'house'), b(-135, MAIN_BASE, 'convenience'), b(-115, MAIN_BASE, 'house'), b(-95, MAIN_BASE, 'shop'),
       // Block B (mid-back)
-      b(-35, MAIN_BASE, 'shop'), b(-10, MAIN_BASE, 'apartment'), b(20, MAIN_BASE, 'shop'),
+      b(-35, MAIN_BASE, 'restaurant'), b(-10, MAIN_BASE, 'apartment'), b(20, MAIN_BASE, 'shop'),
       // Block C (right-back)
-      b(95,  MAIN_BASE, 'house'), b(115, MAIN_BASE, 'house'), b(140, MAIN_BASE, 'office'), b(162, MAIN_BASE, 'house'),
+      b(95,  MAIN_BASE, 'house'), b(115, MAIN_BASE, 'school'), b(140, MAIN_BASE, 'office'), b(162, MAIN_BASE, 'house'),
       // Block D (left-front)
-      b(-150, FRONT_BASE, 'shop'), b(-125, FRONT_BASE, 'shop'), b(-100, FRONT_BASE, 'shop'),
+      b(-150, FRONT_BASE, 'shop'), b(-125, FRONT_BASE, 'parking'), b(-100, FRONT_BASE, 'shop'),
       // Block E (mid-front)
-      b(-25,  FRONT_BASE, 'apartment'), b(5,  FRONT_BASE, 'tower'), b(30, FRONT_BASE, 'apartment'),
+      b(-25,  FRONT_BASE, 'hospital'), b(5,  FRONT_BASE, 'tower'), b(30, FRONT_BASE, 'apartment'),
       // Block F (right-front)
-      b(100,  FRONT_BASE, 'house'), b(120, FRONT_BASE, 'house'), b(145, FRONT_BASE, 'house'),
+      b(100,  FRONT_BASE, 'temple'), b(120, FRONT_BASE, 'house'), b(145, FRONT_BASE, 'house'),
+      // Extra
+      b(-170, FRONT_BASE, 'house'), b(168, FRONT_BASE, 'convenience'),
     ],
     bumpers: [
-      { x: -80, y: 15 }, { x: 0, y: 25 }, { x: 80, y: 15 },
+      { x: -90, y: 18 }, { x: 0, y: 25 }, { x: 90, y: 18 }, { x: 0, y: -30 },
     ],
     furniture: [
       // Trees along main road sidewalks
@@ -84,8 +96,31 @@ export const STAGES: StageConfig[] = [
       f('bench', -45, SW_FRONT, 1, 60), f('bench', 145, SW_MAIN, 1, 60),
       // Mailboxes
       f('mailbox', -170, SW_FRONT, 1, 40), f('mailbox', 170, SW_MAIN, 1, 40),
+      // New furniture types
+      f('bicycle', -60, SW_MAIN, 1, 70), f('bicycle', 100, SW_FRONT, 1, 70),
+      f('flower_bed', 50, SW_MAIN, 1, 60), f('flower_bed', -140, SW_FRONT, 1, 60),
+      f('sign_board', -105, SW_FRONT, 1, 80), f('sign_board', 155, SW_MAIN, 1, 80),
+      f('garbage', -30, SW_FRONT, 1, 30), f('garbage', 75, SW_MAIN, 1, 30),
+      f('power_pole', -175, SW_MAIN, 1, 50), f('power_pole', 175, SW_FRONT, 1, 50),
+      f('hydrant', 35, SW_FRONT, 1, 100), f('hydrant', -55, SW_MAIN, 1, 100),
+      f('fountain', 0, SW_MAIN, 2, 200),
+      f('parasol', 120, SW_FRONT, 1, 90), f('parasol', -100, SW_MAIN, 1, 90),
+      // Traffic lights at alley intersections
+      f('traffic_light', -75, SW_MAIN, 1, 100), f('traffic_light', 75, SW_MAIN, 1, 100),
+      f('traffic_light', -75, SW_FRONT, 1, 100), f('traffic_light', 75, SW_FRONT, 1, 100),
+      // Cars parked
+      f('car', -40, SW_MAIN, 1, 120), f('car', 160, SW_FRONT, 1, 120),
     ],
-    bgR: 0.06, bgG: 0.06, bgB: 0.10,
+    vehicles: [
+      { type: 'car',   lane: 'main',  direction:  1, speed: 60,  interval: 4.0 },
+      { type: 'car',   lane: 'main',  direction: -1, speed: 55,  interval: 5.0 },
+      { type: 'bus',   lane: 'main',  direction:  1, speed: 40,  interval: 8.0 },
+      { type: 'car',   lane: 'front', direction:  1, speed: 50,  interval: 3.5 },
+      { type: 'truck', lane: 'front', direction:  1, speed: 35,  interval: 10.0 },
+      { type: 'car',   lane: 'back',  direction: -1, speed: 45,  interval: 7.0 },
+    ],
+    bgTopR: 0.45, bgTopG: 0.68, bgTopB: 0.95,
+    bgBottomR: 0.82, bgBottomG: 0.90, bgBottomB: 0.96,
   },
 
   // ===== Stage 2: 発展する街 =====
@@ -125,7 +160,16 @@ export const STAGES: StageConfig[] = [
       // Mailboxes
       f('mailbox', 170, SW_FRONT, 1, 40),
     ],
-    bgR: 0.06, bgG: 0.04, bgB: 0.10,
+    vehicles: [
+      { type: 'car',   lane: 'main',  direction:  1, speed: 65,  interval: 3.5 },
+      { type: 'car',   lane: 'main',  direction: -1, speed: 60,  interval: 4.5 },
+      { type: 'bus',   lane: 'main',  direction:  1, speed: 42,  interval: 7.0 },
+      { type: 'car',   lane: 'front', direction:  1, speed: 55,  interval: 3.0 },
+      { type: 'truck', lane: 'front', direction: -1, speed: 38,  interval: 9.0 },
+      { type: 'car',   lane: 'back',  direction: -1, speed: 50,  interval: 6.0 },
+    ],
+    bgTopR: 0.40, bgTopG: 0.55, bgTopB: 0.88,
+    bgBottomR: 0.75, bgBottomG: 0.82, bgBottomB: 0.92,
   },
 
   // ===== Stage 3: 都市化 =====
@@ -169,7 +213,16 @@ export const STAGES: StageConfig[] = [
       // Mailboxes
       f('mailbox', -170, SW_MAIN, 1, 40), f('mailbox', 168, SW_FRONT, 1, 40),
     ],
-    bgR: 0.08, bgG: 0.04, bgB: 0.06,
+    vehicles: [
+      { type: 'car',   lane: 'main',  direction:  1, speed: 70,  interval: 3.0 },
+      { type: 'car',   lane: 'main',  direction: -1, speed: 65,  interval: 4.0 },
+      { type: 'bus',   lane: 'main',  direction: -1, speed: 45,  interval: 6.5 },
+      { type: 'truck', lane: 'main',  direction:  1, speed: 40,  interval: 8.0 },
+      { type: 'car',   lane: 'front', direction:  1, speed: 60,  interval: 2.5 },
+      { type: 'car',   lane: 'back',  direction: -1, speed: 55,  interval: 5.0 },
+    ],
+    bgTopR: 0.35, bgTopG: 0.48, bgTopB: 0.80,
+    bgBottomR: 0.68, bgBottomG: 0.75, bgBottomB: 0.88,
   },
 
   // ===== Stage 4: 大都市 =====
@@ -213,12 +266,27 @@ export const STAGES: StageConfig[] = [
       // Benches
       f('bench', -165, SW_FRONT, 1, 60), f('bench', 163, SW_MAIN, 1, 60),
     ],
-    bgR: 0.08, bgG: 0.02, bgB: 0.06,
+    vehicles: [
+      { type: 'car',   lane: 'main',  direction:  1, speed: 75,  interval: 2.5 },
+      { type: 'car',   lane: 'main',  direction: -1, speed: 70,  interval: 3.0 },
+      { type: 'bus',   lane: 'main',  direction:  1, speed: 48,  interval: 6.0 },
+      { type: 'truck', lane: 'main',  direction: -1, speed: 42,  interval: 7.5 },
+      { type: 'car',   lane: 'front', direction:  1, speed: 65,  interval: 2.0 },
+      { type: 'car',   lane: 'back',  direction: -1, speed: 60,  interval: 4.0 },
+    ],
+    bgTopR: 0.30, bgTopG: 0.40, bgTopB: 0.72,
+    bgBottomR: 0.60, bgBottomG: 0.68, bgBottomB: 0.82,
   },
 ];
 
 export function getStage(level: number): StageConfig {
   if (level <= STAGES.length) return STAGES[level - 1];
-  const base = { ...STAGES[STAGES.length - 1] };
-  return { ...base, level };
+  // For levels beyond what's defined, scale up stage 1
+  const base = STAGES[0];
+  const scale = 1 + (level - 1) * 0.2;
+  return {
+    ...base,
+    level,
+    buildings: base.buildings.map(bld => ({ ...bld })),
+  };
 }

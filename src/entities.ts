@@ -137,14 +137,27 @@ export class Flipper {
 // ===== BUILDING =====
 
 const BUILDING_PALETTES: ReadonlyArray<readonly [number,number,number]> = [
-  [0.55, 0.55, 0.60], // コンクリートグレー
-  [0.45, 0.35, 0.30], // レンガ茶
-  [0.30, 0.40, 0.55], // ガラス青
-  [0.50, 0.45, 0.35], // サンドベージュ
-  [0.60, 0.60, 0.55], // 明るいグレー
-  [0.35, 0.35, 0.48], // スレートブルー
-  [0.50, 0.38, 0.35], // テラコッタ
+  [0.92, 0.90, 0.85], // cream white
+  [0.85, 0.75, 0.65], // sand beige
+  [0.70, 0.82, 0.92], // pastel blue
+  [0.80, 0.70, 0.60], // terracotta
+  [0.75, 0.85, 0.70], // mint green
+  [0.88, 0.82, 0.75], // warm grey
+  [0.82, 0.78, 0.90], // lavender
+  [0.90, 0.85, 0.70], // butter
+  [0.95, 0.88, 0.80], // peach
+  [0.78, 0.80, 0.85], // cool grey
 ];
+
+// Type-specific base colors for new building types
+const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,number,number]>> = {
+  convenience: [0.95, 0.95, 0.90],
+  restaurant:  [0.85, 0.70, 0.55],
+  school:      [0.80, 0.85, 0.75],
+  hospital:    [0.95, 0.95, 0.98],
+  temple:      [0.80, 0.55, 0.35],
+  parking:     [0.60, 0.60, 0.65],
+};
 
 export interface BuildingData {
   x: number;    // 左端
@@ -160,6 +173,7 @@ export interface BuildingData {
   destroyTimer: number; // >0 = 崩壊アニメ中
   flashTimer: number;   // ヒット時フラッシュ
   baseColor: readonly [number,number,number];
+  size: C.BuildingSize;
 }
 
 export class BuildingManager {
@@ -169,7 +183,8 @@ export class BuildingManager {
     this.buildings = [];
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
-      const baseColor = BUILDING_PALETTES[Math.floor(Math.random() * BUILDING_PALETTES.length)];
+      const baseColor = BUILDING_TYPE_COLORS[d.size] ??
+        BUILDING_PALETTES[Math.floor(Math.random() * BUILDING_PALETTES.length)];
       this.buildings.push({
         x: d.x - def.w / 2,
         y: d.y,
@@ -182,6 +197,7 @@ export class BuildingManager {
         destroyTimer: 0,
         flashTimer: 0,
         baseColor,
+        size: d.size,
       });
     }
   }
@@ -269,14 +285,28 @@ export interface BumperData {
 
 export class BumperManager {
   bumpers: BumperData[] = [];
+  tempBumpers: Array<{ x: number; y: number; r: number; ttl: number; flashTimer: number }> = [];
 
   load(defs: Array<{ x: number; y: number }>) {
     this.bumpers = defs.map(d => ({ x: d.x, y: d.y, r: C.BUMPER_RADIUS, flashTimer: 0 }));
+    this.tempBumpers = [];
+  }
+
+  addTemporaryBumper(x: number, y: number, duration: number) {
+    this.tempBumpers.push({ x, y, r: C.BUMPER_RADIUS, ttl: duration, flashTimer: 0 });
   }
 
   update(dt: number) {
     for (const b of this.bumpers) {
       if (b.flashTimer > 0) b.flashTimer -= dt;
+    }
+    for (let i = this.tempBumpers.length - 1; i >= 0; i--) {
+      this.tempBumpers[i].ttl -= dt;
+      if (this.tempBumpers[i].ttl <= 0) {
+        this.tempBumpers.splice(i, 1);
+      } else if (this.tempBumpers[i].flashTimer > 0) {
+        this.tempBumpers[i].flashTimer -= dt;
+      }
     }
   }
 
@@ -284,11 +314,20 @@ export class BumperManager {
     bx: number, by: number, br: number,
     vx: number, vy: number
   ): { bump: BumperData; newBx: number; newBy: number; newVx: number; newVy: number } | null {
+    // Check permanent bumpers
     for (const b of this.bumpers) {
       if (circleCircle(bx, by, br, b.x, b.y, b.r)) {
         const [nbx, nby, nvx, nvy] = resolveBumper(bx, by, br, vx, vy, b.x, b.y, b.r, C.BUMPER_FORCE);
         b.flashTimer = 0.1;
         return { bump: b, newBx: nbx, newBy: nby, newVx: nvx, newVy: nvy };
+      }
+    }
+    // Check temporary bumpers
+    for (const tb of this.tempBumpers) {
+      if (circleCircle(bx, by, br, tb.x, tb.y, tb.r)) {
+        const [nbx, nby, nvx, nvy] = resolveBumper(bx, by, br, vx, vy, tb.x, tb.y, tb.r, C.BUMPER_FORCE);
+        tb.flashTimer = 0.1;
+        return { bump: { x: tb.x, y: tb.y, r: tb.r, flashTimer: tb.flashTimer }, newBx: nbx, newBy: nby, newVx: nvx, newVy: nvy };
       }
     }
     return null;
@@ -300,13 +339,18 @@ export class BumperManager {
       const glow = b.flashTimer > 0 ? 1.0 : 0.0;
       writeInst(buf, n++, b.x, b.y, b.r * 2, b.r * 2, 0.3 + glow * 0.6, 0.6 + glow * 0.4, 1.0, 1, 0, 1);
     }
+    for (const tb of this.tempBumpers) {
+      const glow = tb.flashTimer > 0 ? 1.0 : 0.0;
+      // Temp bumpers are cyan/teal colored
+      writeInst(buf, n++, tb.x, tb.y, tb.r * 2, tb.r * 2, 0.2 + glow * 0.6, 0.9, 0.8 + glow * 0.2, 0.85, 0, 1);
+    }
     return n - startIdx;
   }
 }
 
 // ===== STREET FURNITURE =====
 
-export type FurnitureType = 'tree' | 'vending' | 'bench' | 'car' | 'traffic_light' | 'mailbox';
+export type FurnitureType = 'tree' | 'vending' | 'bench' | 'car' | 'traffic_light' | 'mailbox' | 'bicycle' | 'flower_bed' | 'parasol' | 'sign_board' | 'garbage' | 'power_pole' | 'hydrant' | 'fountain';
 
 export interface FurnitureItem {
   type: FurnitureType;
@@ -328,6 +372,14 @@ const FURNITURE_HW: Record<FurnitureType, number> = {
   car:           C.CAR_W / 2,
   traffic_light: C.TRAFFIC_LIGHT_W / 2,
   mailbox:       C.MAILBOX_W / 2,
+  bicycle:       5,
+  flower_bed:    6,
+  parasol:       5,
+  sign_board:    3,
+  garbage:       3,
+  power_pole:    1.5,
+  hydrant:       2,
+  fountain:      8,
 };
 const FURNITURE_HH: Record<FurnitureType, number> = {
   tree:          C.TREE_H / 2,
@@ -336,6 +388,14 @@ const FURNITURE_HH: Record<FurnitureType, number> = {
   car:           C.CAR_H / 2,
   traffic_light: C.TRAFFIC_LIGHT_H / 2,
   mailbox:       C.MAILBOX_H / 2,
+  bicycle:       3,
+  flower_bed:    2.5,
+  parasol:       5,
+  sign_board:    6,
+  garbage:       3,
+  power_pole:    9,
+  hydrant:       2.5,
+  fountain:      5,
 };
 
 // Traffic light cycle durations per state (seconds)
@@ -475,6 +535,262 @@ export class FurnitureManager {
             0.2, 0.1, 0.1, 1);
           break;
         }
+        case 'bicycle': {
+          // Frame (horizontal)
+          writeInst(buf, n++, item.x, item.y, 10, 3, 0.45, 0.30, 0.18, 1);
+          // Wheels
+          writeInst(buf, n++, item.x - 4, item.y - 1, 4, 4, 0.25, 0.25, 0.25, 1, 0, 1);
+          writeInst(buf, n++, item.x + 4, item.y - 1, 4, 4, 0.25, 0.25, 0.25, 1, 0, 1);
+          break;
+        }
+        case 'flower_bed': {
+          // Soil base
+          writeInst(buf, n++, item.x, item.y - 1, 12, 3, 0.40, 0.28, 0.18, 1);
+          // Green foliage
+          writeInst(buf, n++, item.x, item.y + 1, 10, 4, 0.30, 0.70, 0.25, 1);
+          // Flower dots
+          writeInst(buf, n++, item.x - 3, item.y + 2, 3, 3, 0.95, 0.35, 0.55, 1, 0, 1);
+          writeInst(buf, n++, item.x + 3, item.y + 2, 3, 3, 0.95, 0.90, 0.20, 1, 0, 1);
+          break;
+        }
+        case 'parasol': {
+          // Pole
+          writeInst(buf, n++, item.x, item.y - 2, 2, 12, 0.60, 0.50, 0.40, 1);
+          // Canopy (circle)
+          writeInst(buf, n++, item.x, item.y + 5, 10, 10, 0.95, 0.40, 0.25, 0.9, 0, 1);
+          break;
+        }
+        case 'sign_board': {
+          // Post
+          writeInst(buf, n++, item.x, item.y - 3, 2, 8, 0.50, 0.45, 0.40, 1);
+          // Board
+          writeInst(buf, n++, item.x, item.y + 2, 8, 5, 0.95, 0.90, 0.20, 1);
+          break;
+        }
+        case 'garbage': {
+          writeInst(buf, n++, item.x, item.y, 6, 6, 0.25, 0.35, 0.25, 1);
+          // Lid
+          writeInst(buf, n++, item.x, item.y + 3.5, 7, 2, 0.30, 0.40, 0.30, 1);
+          break;
+        }
+        case 'power_pole': {
+          // Pole
+          writeInst(buf, n++, item.x, item.y + 1, 3, 18, 0.35, 0.28, 0.22, 1);
+          // Cross arm
+          writeInst(buf, n++, item.x, item.y + 10, 10, 2, 0.35, 0.28, 0.22, 1);
+          break;
+        }
+        case 'hydrant': {
+          // Base
+          writeInst(buf, n++, item.x, item.y - 1, 5, 3, 0.85, 0.10, 0.10, 1);
+          // Top
+          writeInst(buf, n++, item.x, item.y + 1.5, 4, 3, 0.90, 0.15, 0.15, 1);
+          // Cap
+          writeInst(buf, n++, item.x, item.y + 3, 3, 2, 0.95, 0.80, 0.10, 1);
+          break;
+        }
+        case 'fountain': {
+          // Basin
+          writeInst(buf, n++, item.x, item.y - 2, 16, 6, 0.55, 0.75, 0.90, 1);
+          // Water surface
+          writeInst(buf, n++, item.x, item.y, 14, 4, 0.35, 0.65, 0.95, 0.8);
+          // Water spout circles
+          if (item.hp > 0) {
+            writeInst(buf, n++, item.x, item.y + 5, 5, 5, 0.55, 0.85, 1.0, 0.7, 0, 1);
+            writeInst(buf, n++, item.x, item.y + 8, 3, 3, 0.75, 0.95, 1.0, 0.5, 0, 1);
+          }
+          break;
+        }
+      }
+    }
+    return n - startIdx;
+  }
+
+  /** Check if ball hits an active fountain (acts as bumper) */
+  checkFountainBumper(bx: number, by: number, br: number): FurnitureItem | null {
+    for (const item of this.items) {
+      if (!item.active || item.type !== 'fountain' || item.hp <= 0) continue;
+      const hw = FURNITURE_HW[item.type];
+      const hh = FURNITURE_HH[item.type];
+      const nearX = Math.max(item.x - hw, Math.min(bx, item.x + hw));
+      const nearY = Math.max(item.y - hh, Math.min(by, item.y + hh));
+      const dx = bx - nearX, dy = by - nearY;
+      if (dx * dx + dy * dy < br * br) return item;
+    }
+    return null;
+  }
+}
+
+// ===== VEHICLE =====
+
+export interface VehicleItem {
+  type: 'car' | 'bus' | 'truck' | 'ambulance';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  hp: number;
+  maxHp: number;
+  score: number;
+  speed: number;
+  active: boolean;
+  flashTimer: number;
+  isAmbulance?: boolean;
+  ambTimer?: number;
+}
+
+interface VehicleDef {
+  type: 'car' | 'bus' | 'truck' | 'ambulance';
+  lane: 'main' | 'front' | 'back';
+  direction: 1 | -1;
+  speed: number;
+  interval: number;
+}
+
+const VEHICLE_DEFS_DATA: Record<string, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
+  car:       { w: 20, h: 10, maxHp: 1, score: 120, speedMin: 50, speedMax: 70  },
+  bus:       { w: 28, h: 12, maxHp: 2, score: 200, speedMin: 35, speedMax: 50  },
+  truck:     { w: 24, h: 12, maxHp: 2, score: 180, speedMin: 30, speedMax: 45  },
+  ambulance: { w: 22, h: 10, maxHp: 1, score: 500, speedMin: 100, speedMax: 120 },
+};
+
+// Car color palette (deterministic by position)
+const CAR_COLORS: ReadonlyArray<readonly [number, number, number]> = [
+  [0.80, 0.20, 0.20],
+  [0.20, 0.30, 0.80],
+  [0.20, 0.60, 0.20],
+  [0.70, 0.70, 0.10],
+  [0.50, 0.50, 0.50],
+  [0.85, 0.55, 0.20],
+  [0.60, 0.20, 0.70],
+];
+
+export class VehicleManager {
+  vehicles: VehicleItem[] = [];
+  private defs: VehicleDef[] = [];
+  private spawnTimers: number[] = [];
+
+  load(defs: VehicleDef[]) {
+    this.defs = defs;
+    this.spawnTimers = defs.map(d => d.interval * Math.random());
+    this.vehicles = [];
+  }
+
+  update(dt: number) {
+    // Update spawn timers
+    for (let i = 0; i < this.defs.length; i++) {
+      this.spawnTimers[i] -= dt;
+      if (this.spawnTimers[i] <= 0) {
+        this.spawnTimers[i] = this.defs[i].interval;
+        this.spawnVehicle(this.defs[i]);
+      }
+    }
+    // Move vehicles
+    for (const v of this.vehicles) {
+      if (!v.active) continue;
+      v.x += v.speed * dt;
+      if (v.flashTimer > 0) v.flashTimer -= dt;
+      if (v.ambTimer !== undefined) {
+        v.ambTimer -= dt;
+        if (v.ambTimer <= 0) v.active = false;
+      }
+      // Despawn when off-screen
+      const margin = 40;
+      if (v.x > 180 + margin || v.x < -180 - margin) v.active = false;
+    }
+    // Remove inactive
+    this.vehicles = this.vehicles.filter(v => v.active);
+  }
+
+  spawnAmbulance(x: number, y: number) {
+    const v: VehicleItem = {
+      type: 'ambulance', x, y,
+      w: 22, h: 10, hp: 1, maxHp: 1, score: 500,
+      speed: 110, active: true, flashTimer: 0,
+      isAmbulance: true, ambTimer: 10,
+    };
+    this.vehicles.push(v);
+  }
+
+  private spawnVehicle(def: VehicleDef) {
+    const laneY = def.lane === 'main'  ? C.MAIN_STREET_Y  :
+                  def.lane === 'front' ? C.FRONT_STREET_Y : C.BACK_STREET_Y;
+    const laneH = def.lane === 'main'  ? C.MAIN_STREET_H  :
+                  def.lane === 'front' ? C.FRONT_STREET_H : C.BACK_STREET_H;
+    const yOffset = def.direction === 1 ? -laneH / 4 : laneH / 4;
+
+    const typeInfo = VEHICLE_DEFS_DATA[def.type];
+    const startX = def.direction === 1 ? -180 - typeInfo.w / 2 : 180 + typeInfo.w / 2;
+    const speed = (typeInfo.speedMin + Math.random() * (typeInfo.speedMax - typeInfo.speedMin)) * def.direction;
+
+    this.vehicles.push({
+      type: def.type,
+      x: startX,
+      y: laneY + yOffset,
+      w: typeInfo.w,
+      h: typeInfo.h,
+      hp: typeInfo.maxHp,
+      maxHp: typeInfo.maxHp,
+      score: typeInfo.score,
+      speed,
+      active: true,
+      flashTimer: 0,
+    });
+  }
+
+  checkBallHit(bx: number, by: number, br: number): VehicleItem | null {
+    for (const v of this.vehicles) {
+      if (!v.active) continue;
+      const hw = v.w / 2, hh = v.h / 2;
+      const nearX = Math.max(v.x - hw, Math.min(bx, v.x + hw));
+      const nearY = Math.max(v.y - hh, Math.min(by, v.y + hh));
+      const dx = bx - nearX, dy = by - nearY;
+      if (dx * dx + dy * dy < br * br) return v;
+    }
+    return null;
+  }
+
+  damage(v: VehicleItem): boolean {
+    v.hp--;
+    v.flashTimer = 0.1;
+    if (v.hp <= 0) { v.active = false; return true; }
+    return false;
+  }
+
+  fillInstances(buf: Float32Array, startIdx: number): number {
+    let n = startIdx;
+    for (const v of this.vehicles) {
+      if (!v.active) continue;
+      const isFlash = v.flashTimer > 0;
+      let cr: number, cg: number, cb: number;
+
+      if (v.type === 'ambulance') {
+        cr = 0.98; cg = 0.98; cb = 0.98;
+      } else if (v.type === 'bus') {
+        cr = 0.95; cg = 0.80; cb = 0.10;
+      } else if (v.type === 'truck') {
+        cr = 0.50; cg = 0.55; cb = 0.60;
+      } else {
+        const ci = Math.abs(Math.floor(v.x * 7 + v.y * 13)) % CAR_COLORS.length;
+        [cr, cg, cb] = CAR_COLORS[ci];
+      }
+
+      if (isFlash) { cr = cg = cb = 1; }
+
+      // Vehicle body
+      writeInst(buf, n++, v.x, v.y, v.w, v.h, cr, cg, cb, 1);
+
+      // Windows (darker top strip)
+      writeInst(buf, n++, v.x, v.y + 2, v.w * 0.7, v.h * 0.4, 0.65, 0.85, 0.95, 0.8);
+
+      // Wheels (2 small circles)
+      writeInst(buf, n++, v.x - v.w / 2 + 3, v.y - v.h / 2 + 1, 4, 4, 0.12, 0.12, 0.12, 1, 0, 1);
+      writeInst(buf, n++, v.x + v.w / 2 - 3, v.y - v.h / 2 + 1, 4, 4, 0.12, 0.12, 0.12, 1, 0, 1);
+
+      // Ambulance: red cross
+      if (v.type === 'ambulance' && !isFlash) {
+        writeInst(buf, n++, v.x, v.y, 3, 9, 0.90, 0.10, 0.10, 1);
+        writeInst(buf, n++, v.x, v.y, 9, 3, 0.90, 0.10, 0.10, 1);
       }
     }
     return n - startIdx;

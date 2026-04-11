@@ -19,21 +19,21 @@ import * as C from './constants';
 import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
 import { SoundEngine } from './sound';
-import { Ball, Flipper, BuildingManager, FurnitureManager } from './entities';
+import { Ball, Flipper, BuildingManager, FurnitureManager, BumperManager, VehicleManager } from './entities';
 import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
 import { getStage } from './stages';
 import {
-  resolveCircleOBB,
+  resolveCircleOBB, resolveBumper,
   clampSpeed, rand, randInt
 } from './physics';
 import type { BuildingData } from './entities';
 
 // 静的インスタンスバッファ（再利用でGCゼロ）
-// 5000 = 2000人間 + 2000パーティクル + 1000シーン/その他
-const SHARED_BUF = new Float32Array(5000 * INST_F);
+// 8000 = 2000人間 + 2000パーティクル + 4000シーン/車両/その他
+const SHARED_BUF = new Float32Array(8000 * INST_F);
 
 type GameState = 'playing' | 'ball_lost' | 'stage_clear' | 'game_over';
 
@@ -47,6 +47,8 @@ export class Game {
   private ui:        UIManager;
   private buildings: BuildingManager;
   private furniture: FurnitureManager;
+  private bumpers:   BumperManager;
+  private vehicles:  VehicleManager;
 
   private ball:     Ball;
   private flippers: [Flipper, Flipper];
@@ -58,6 +60,10 @@ export class Game {
   private stage     = 1;
   private state: GameState = 'playing';
   private stateTimer= 0;
+
+  // Background gradient colors (set from stage config)
+  private bgTopR = 0.45; private bgTopG = 0.68; private bgTopB = 0.95;
+  private bgBottomR = 0.82; private bgBottomG = 0.90; private bgBottomB = 0.96;
 
   // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
   private readonly SLOPE_L = { cx: -132.5, cy: -131.5, hw: 58, hh: 6, angle: -0.611 };
@@ -73,6 +79,8 @@ export class Game {
     this.ui        = new UIManager();
     this.buildings = new BuildingManager();
     this.furniture = new FurnitureManager();
+    this.bumpers   = new BumperManager();
+    this.vehicles  = new VehicleManager();
     this.ball      = new Ball();
     this.flippers  = [new Flipper(true), new Flipper(false)];
 
@@ -90,6 +98,10 @@ export class Game {
     const cfg = getStage(level);
     this.buildings.load(cfg.buildings);
     this.furniture.load(cfg.furniture);
+    this.bumpers.load(cfg.bumpers);
+    this.vehicles.load(cfg.vehicles);
+    this.bgTopR = cfg.bgTopR; this.bgTopG = cfg.bgTopG; this.bgTopB = cfg.bgTopB;
+    this.bgBottomR = cfg.bgBottomR; this.bgBottomG = cfg.bgBottomG; this.bgBottomB = cfg.bgBottomB;
     this.humans.reset();
     this.particles.reset();
     this.ball.reset();
@@ -170,6 +182,8 @@ export class Game {
 
     this.buildings.update(dt);
     this.furniture.update(dt);
+    this.bumpers.update(dt);
+    this.vehicles.update(dt);
     this.humans.update(dt, this.ball.x, this.ball.y);
     this.particles.update(dt);
 
@@ -251,6 +265,14 @@ export class Game {
         }
       }
 
+      // Bumper collision
+      const bumpRes = this.bumpers.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
+      if (bumpRes) {
+        b.x = bumpRes.newBx; b.y = bumpRes.newBy;
+        b.vx = bumpRes.newVx; b.vy = bumpRes.newVy;
+        [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+      }
+
     } // end substep
 
     if (flipperSoundNeeded) {
@@ -276,16 +298,84 @@ export class Game {
       }
     }
 
+    // ===== バンパースコア =====
+    if (this.bumpers.bumpers.some(bp => bp.flashTimer > 0)) {
+      this.score += C.BUMPER_SCORE;
+      this.ui.setScore(this.score);
+      this.particles.spawnSpark(b.x, b.y, 3);
+      this.juice.ballHitFlash();
+    }
+
+    // ===== 噴水バンパー =====
+    const fountainHit = this.furniture.checkFountainBumper(b.x, b.y, C.BALL_RADIUS);
+    if (fountainHit) {
+      // Bounce like a bumper
+      const dx = b.x - fountainHit.x;
+      const dy = b.y - fountainHit.y;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const nx = dx / len, ny = dy / len;
+      const dot = b.vx * nx + b.vy * ny;
+      if (dot < 0) {
+        b.vx -= 2 * dot * nx;
+        b.vy -= 2 * dot * ny;
+        const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        if (spd < C.BUMPER_FORCE) {
+          b.vx = (b.vx / spd) * C.BUMPER_FORCE;
+          b.vy = (b.vy / spd) * C.BUMPER_FORCE;
+        }
+      }
+      this.particles.spawnWater(b.x, b.y, 6);
+      this.score += 50;
+      this.ui.setScore(this.score);
+    }
+
     // ===== 家具衝突 =====
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, C.BALL_RADIUS);
     if (furnitureHit) {
       const destroyed = this.furniture.damage(furnitureHit);
       this.score += furnitureHit.score * (destroyed ? 2 : 1);
       this.ui.setScore(this.score);
-      this.particles.spawnSpark(b.x, b.y, 3);
+      // Type-specific particles
+      if (furnitureHit.type === 'hydrant' && destroyed) {
+        this.particles.spawnWater(b.x, b.y, 12);
+        this.bumpers.addTemporaryBumper(furnitureHit.x, furnitureHit.y, 5.0);
+      } else if (furnitureHit.type === 'flower_bed' && destroyed) {
+        this.particles.spawnFlower(b.x, b.y, 10);
+      } else if (furnitureHit.type === 'sign_board' && destroyed) {
+        this.particles.spawnConfetti(b.x, b.y, 8);
+      } else if (furnitureHit.type === 'power_pole' && destroyed) {
+        this.particles.spawnElectric(b.x, b.y, 12);
+      } else if (furnitureHit.type === 'garbage' && destroyed) {
+        this.particles.spawnFood(b.x, b.y, 6);
+      } else if (furnitureHit.type === 'tree' || furnitureHit.type === 'vending') {
+        this.particles.spawnDebris(b.x, b.y, 4, 0.5, 0.4, 0.3);
+      } else {
+        this.particles.spawnSpark(b.x, b.y, 3);
+      }
       this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
       // Simple bounce off furniture
       b.vy = Math.abs(b.vy) * C.WALL_DAMPING;
+    }
+
+    // ===== 車両衝突 =====
+    const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, C.BALL_RADIUS);
+    if (vehicleHit) {
+      // Reflect ball velocity (simple horizontal bounce)
+      b.vx = -b.vx * C.WALL_DAMPING;
+      b.vy = Math.abs(b.vy) * C.WALL_DAMPING + 2;
+      [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+      const destroyed = this.vehicles.damage(vehicleHit);
+      this.score += vehicleHit.score * (destroyed ? 1 : 0) + 30;
+      this.ui.setScore(this.score);
+      if (destroyed) {
+        this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
+        this.particles.spawnSpark(b.x, b.y, 6);
+        this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
+      } else {
+        this.particles.spawnSpark(b.x, b.y, 3);
+        this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
+      }
+      this.juice.ballHitFlash();
     }
 
     // ===== 人間潰し =====
@@ -337,9 +427,29 @@ export class Game {
     }
 
     const debrisCount = 10 + bld.maxHp * 5;
-    this.particles.spawnDebris(cx, cy, debrisCount, 0.6, 0.6, 0.7);
+    // Use debris color matching building type
+    const [dr, dg, db] = bld.baseColor;
+    this.particles.spawnDebris(cx, cy, debrisCount, dr, dg, db);
     this.particles.spawnSmoke(cx, cy, 4);
     this.particles.spawnSpark(cx, cy, 8);
+
+    // Hospital destroyed: spawn ambulance
+    if (bld.size === 'hospital') {
+      this.vehicles.spawnAmbulance(cx < 0 ? 190 : -190, C.MAIN_STREET_Y);
+    }
+    // School destroyed: confetti
+    if (bld.size === 'school') {
+      this.particles.spawnConfetti(cx, cy, 15);
+    }
+    // Temple destroyed: extra sparks + flash
+    if (bld.size === 'temple') {
+      this.particles.spawnElectric(cx, cy, 10);
+      this.juice.flash(1.0, 0.7, 0.2, 0.25);
+    }
+    // Restaurant destroyed: food particles
+    if (bld.size === 'restaurant') {
+      this.particles.spawnFood(cx, cy, 10);
+    }
 
     const n = randInt(bld.humanMin, bld.humanMax);
     this.humans.spawn(cx, cy, n);
@@ -386,20 +496,25 @@ export class Game {
     const shake = this.juice.getShake();
 
     // ------ 1. 背景グラデーション ------
-    this.renderer.drawBackground();
+    this.renderer.drawBackground(
+      this.bgTopR, this.bgTopG, this.bgTopB,
+      this.bgBottomR, this.bgBottomG, this.bgBottomB
+    );
 
-    // ------ バッチ1: シーン背景 (道路→ビル→家具→電球) ------
+    // ------ バッチ1: シーン背景 (道路→ビル→家具→車両→電球) ------
     // 同一シェーダーのインスタンスをまとめて1ドローコールで描画
     let n = 0;
     n += this.fillWalls(SHARED_BUF, n);
     n += this.buildings.fillInstances(SHARED_BUF, n);
     n += this.furniture.fillInstances(SHARED_BUF, n);
+    n += this.vehicles.fillInstances(SHARED_BUF, n);
     n += this.fillBulbs(SHARED_BUF, n);
     this.renderer.drawInstances(SHARED_BUF, n, shake);
 
-    // ------ バッチ2: エンティティ (人間→フリッパー→ボール→パーティクル) ------
+    // ------ バッチ2: エンティティ (人間→バンパー→フリッパー→ボール→パーティクル) ------
     n = 0;
     n += this.humans.fillInstances(SHARED_BUF, n);
+    n += this.bumpers.fillInstances(SHARED_BUF, n);
     n += this.fillFlippers(SHARED_BUF, n);
     n += this.fillBall(SHARED_BUF, n);
     n += this.particles.fillInstances(SHARED_BUF, n);
@@ -485,10 +600,10 @@ export class Game {
     const stripeGap = 4;
     for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
       for (let sy2 = MSY - MSH / 2 + 1; sy2 < MSY + MSH / 2; sy2 += stripeGap) {
-        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.6, 0.6, 0.6, 0.4);
+        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.95, 0.95, 0.95, 0.7);
       }
       for (let sy2 = FSY - FSH / 2 + 1; sy2 < FSY + FSH / 2; sy2 += stripeGap) {
-        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.6, 0.6, 0.6, 0.4);
+        writeInst(buf, n++, ax, sy2, cwW, stripeH, 0.95, 0.95, 0.95, 0.7);
       }
     }
 
