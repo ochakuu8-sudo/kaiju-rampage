@@ -57,11 +57,11 @@ export class Game {
   private state: GameState = 'playing';
   private stateTimer= 0;
 
-  // ===== 坂OBB（静的壁）: フリッパー外端に接続 =====
-  // FLIPPER_Y=-200, 左フリッパー外端(rest): (-84.6, -180)
-  // 坂: (-180, -80) → (-85, -180)  center=(-132.5, -130) angle≈-0.813rad hw≈69
-  private readonly SLOPE_L = { cx: -132.5, cy: -130, hw: 69, hh: 6, angle: -0.813 };
-  private readonly SLOPE_R = { cx:  132.5, cy: -130, hw: 69, hh: 6, angle:  0.813 };
+  // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
+  // ピボット: (±85, -165)
+  // 左坂: (-180, -65) → (-85, -165)  center=(-132.5,-115) angle≈-0.813rad hw≈69
+  private readonly SLOPE_L = { cx: -132.5, cy: -115, hw: 69, hh: 6, angle: -0.813 };
+  private readonly SLOPE_R = { cx:  132.5, cy: -115, hw: 69, hh: 6, angle:  0.813 };
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
@@ -474,11 +474,9 @@ export class Game {
     const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
     writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.5, 0.5, 0.65, 1, ra);
 
-    // フリッパー下の縦仕切り（坂の内側を塞いで隙間をなくす）
-    // 左: x=-85 から FLIPPER_Y まで
-    writeInst(buf, n++, -85, C.FLIPPER_Y + 10, 6, 40, 0.4, 0.4, 0.55, 1);
-    // 右: x=+85 から FLIPPER_Y まで
-    writeInst(buf, n++,  85, C.FLIPPER_Y + 10, 6, 40, 0.4, 0.4, 0.55, 1);
+    // フリッパーピボット下の縦仕切り（ガター外壁）
+    writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
+    writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
 
     return n - start;
   }
@@ -489,8 +487,8 @@ export class Game {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.7, gg = isFlash ? 1 : 0.7, gb = isFlash ? 1 : 0.8;
       writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
-      // ピボット点マーク
-      writeInst(buf, n++, fl.cx, fl.cy, 6, 6, 1, 0.6, 0.2, 1, 0, 1);
+      // ピボット点マーク（端点固定）
+      writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 1, 0.6, 0.2, 1, 0, 1);
     }
     return n - start;
   }

@@ -46,10 +46,10 @@ export const STAGES: StageConfig[] = [
   {
     level: 1,
     buildings: [
-      ...buildGrid(6, 3, -130, 80, 50, 70, ['small', 'medium', 'small']),
+      ...buildGrid(6, 3, -130, 60, 50, 60, ['small', 'medium', 'small']),
     ],
     bumpers: [
-      { x: -80, y: 20 }, { x: 0, y: 30 }, { x: 80, y: 20 },
+      { x: -80, y: 15 }, { x: 0, y: 25 }, { x: 80, y: 15 },
     ],
     bgR: 0.06, bgG: 0.06, bgB: 0.10,
   },
@@ -57,12 +57,12 @@ export const STAGES: StageConfig[] = [
   {
     level: 2,
     buildings: [
-      ...buildGrid(6, 3, -130, 80, 50, 70, ['medium', 'large', 'medium']),
-      { x: -120, y: 220, size: 'large' }, { x: 120, y: 220, size: 'large' },
+      ...buildGrid(6, 3, -130, 60, 50, 60, ['medium', 'large', 'medium']),
+      { x: -120, y: 175, size: 'large' }, { x: 120, y: 175, size: 'large' },
     ],
     bumpers: [
       { x: -100, y: 10 }, { x: 0,    y: 25 }, { x: 100, y: 10 },
-      { x: -50,  y: 45 }, { x: 50,   y: 45 },
+      { x: -50,  y: 40 }, { x: 50,   y: 40 },
     ],
     bgR: 0.06, bgG: 0.04, bgB: 0.10,
   },
@@ -70,11 +70,11 @@ export const STAGES: StageConfig[] = [
   {
     level: 3,
     buildings: [
-      ...buildGrid(7, 4, -150, 70, 45, 65, ['large', 'medium', 'large', 'medium']),
+      ...buildGrid(7, 4, -150, 50, 45, 55, ['large', 'medium', 'large', 'medium']),
     ],
     bumpers: [
-      { x: -110, y: 5 }, { x: -40, y: 30 }, { x: 40, y: 30 }, { x: 110, y: 5 },
-      { x:    0, y: 10 },
+      { x: -110, y: 5 }, { x: -40, y: 28 }, { x: 40, y: 28 }, { x: 110, y: 5 },
+      { x:    0, y: 12 },
     ],
     bgR: 0.08, bgG: 0.04, bgB: 0.06,
   },
@@ -82,11 +82,11 @@ export const STAGES: StageConfig[] = [
   {
     level: 4,
     buildings: [
-      ...buildGrid(7, 4, -150, 70, 45, 65, ['large', 'large', 'large']),
-      { x: 0, y: 240, size: 'large' },
+      ...buildGrid(7, 4, -150, 50, 45, 55, ['large', 'large', 'large']),
+      { x: 0, y: 210, size: 'large' },
     ],
     bumpers: [
-      { x: -120, y: 0 }, { x: -60, y: 35 }, { x: 0, y: 15 }, { x: 60, y: 35 }, { x: 120, y: 0 },
+      { x: -120, y: 0 }, { x: -60, y: 32 }, { x: 0, y: 15 }, { x: 60, y: 32 }, { x: 120, y: 0 },
     ],
     bgR: 0.08, bgG: 0.02, bgB: 0.06,
   },

@@ -3,7 +3,7 @@
  * インスタンシングで全エンティティを 10 draw call 以下に収める
  */
 
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from './constants';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, WORLD_MIN_Y, WORLD_MAX_Y } from './constants';
 
 // ===== シェーダーソース =====
 
@@ -161,8 +161,8 @@ export class Renderer {
     gl.bindVertexArray(null);
     this.u_fsColor = gl.getUniformLocation(this.fsProg, 'u_color')!;
 
-    // orthographic projection: world(-180..180, -320..320) → clip
-    this.proj = this.makeOrtho(-180, 180, -320, 320);
+    // orthographic projection: world(-180..180, WORLD_MIN_Y..WORLD_MAX_Y) → clip
+    this.proj = this.makeOrtho(-180, 180, WORLD_MIN_Y, WORLD_MAX_Y);
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

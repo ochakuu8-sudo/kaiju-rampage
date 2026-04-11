@@ -1,33 +1,32 @@
 // ===== スクリーン =====
 export const CANVAS_WIDTH = 360;
-export const CANVAS_HEIGHT = 640;
+export const CANVAS_HEIGHT = 580;
 export const WORLD_MIN_X = -180;
 export const WORLD_MAX_X = 180;
-export const WORLD_MIN_Y = -320;
-export const WORLD_MAX_Y = 320;
+export const WORLD_MIN_Y = -290;
+export const WORLD_MAX_Y = 290;
 
 // ===== ゾーン Y境界 =====
-export const STREET_Y_MIN = 60;
-export const STREET_Y_MAX = 260;
-export const FLIPPER_Y = -200;   // フリッパー中心Y（画面下部）
-export const FALLOFF_Y = -290;   // これ以下でボールロスト
+export const STREET_Y_MIN = 50;
+export const STREET_Y_MAX = 230;
+export const FLIPPER_PIVOT_X = 85;   // フリッパーピボットX（両側、符号は左右で反転）
+export const FLIPPER_PIVOT_Y = -165; // フリッパーピボットY（坂との接合点）
+export const FALLOFF_Y = -275;       // これ以下でボールロスト
 
 // ===== ボール =====
 export const BALL_RADIUS = 9;
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
-// ランチャーなし: ボールはプレイフィールド中央上部から自然落下
+// ランチャーなし: ボールはプレイフィールド中央から自然落下
 export const BALL_START_X = 0;
-export const BALL_START_Y = 80;
+export const BALL_START_Y = 0;
 export const TRAIL_LEN = 12;
 export const INITIAL_BALLS = 3;
 
 // ===== フリッパー =====
 export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
-export const FLIPPER_LEFT_X = -50;
-export const FLIPPER_RIGHT_X = 50;
 export const FLIPPER_REST_DEG = -30;
 export const FLIPPER_ACTIVE_DEG = 30;
 export const FLIPPER_POWER = 16;

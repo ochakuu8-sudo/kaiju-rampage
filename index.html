@@ -15,11 +15,12 @@
     }
     #wrap {
       position: relative;
-      width: 360px; height: 640px;
+      width: 360px; height: 580px;
+      transform-origin: center center;
     }
     canvas {
       display: block;
-      width: 360px; height: 640px;
+      width: 360px; height: 580px;
       image-rendering: pixelated;
     }
     #overlay {
@@ -63,7 +64,7 @@
 </head>
 <body>
 <div id="wrap">
-  <canvas id="gameCanvas" width="360" height="640"></canvas>
+  <canvas id="gameCanvas" width="360" height="580"></canvas>
   <div id="overlay">
     <div id="score">SCORE: 0</div>
     <div id="hi">BEST: 0</div>

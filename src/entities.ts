@@ -51,26 +51,40 @@ export class Ball {
 
 export class Flipper {
   isLeft: boolean;
-  cx: number;
-  cy = C.FLIPPER_Y;
-  angle: number;           // 現在の角度 (radians)
+  pivotX: number;  // 固定ピボット座標（坂との接合点）
+  pivotY: number;
+  cx: number;      // OBB中心X（動的、ピボット+アーム方向で計算）
+  cy: number;      // OBB中心Y（動的）
+  angle: number;   // 現在の角度 (radians): アーム方向 = (cos(angle), sin(angle))
   targetAngle: number;
   angularVel = 0;
   pressed = false;
 
   constructor(isLeft: boolean) {
     this.isLeft = isLeft;
-    this.cx = isLeft ? C.FLIPPER_LEFT_X : C.FLIPPER_RIGHT_X;
-    const restRad = (C.FLIPPER_REST_DEG * Math.PI / 180) * (isLeft ? 1 : -1);
-    this.angle       = restRad;
-    this.targetAngle = restRad;
+    // ピボットは坂の接合点: 左=(-85,-165), 右=(+85,-165)
+    this.pivotX = isLeft ? -C.FLIPPER_PIVOT_X : C.FLIPPER_PIVOT_X;
+    this.pivotY = C.FLIPPER_PIVOT_Y;
+
+    // 左: rest=-30°, right: rest=210°(=180-(-30))
+    const restDeg = isLeft ? C.FLIPPER_REST_DEG : (180 - C.FLIPPER_REST_DEG);
+    this.angle       = restDeg * Math.PI / 180;
+    this.targetAngle = this.angle;
+
+    // 初期OBB中心を計算
+    const arm = C.FLIPPER_W / 2;
+    this.cx = this.pivotX + arm * Math.cos(this.angle);
+    this.cy = this.pivotY + arm * Math.sin(this.angle);
   }
 
   setPressed(v: boolean) {
     this.pressed = v;
-    const activeDeg = C.FLIPPER_ACTIVE_DEG * (this.isLeft ? 1 : -1);
-    const restDeg   = C.FLIPPER_REST_DEG   * (this.isLeft ? 1 : -1);
-    this.targetAngle = (v ? activeDeg : restDeg) * Math.PI / 180;
+    // 左: active=+30°, rest=-30°
+    // 右: active=150°(=180-30), rest=210°(=180-(-30))
+    const targetDeg = this.isLeft
+      ? (v ? C.FLIPPER_ACTIVE_DEG : C.FLIPPER_REST_DEG)
+      : (v ? (180 - C.FLIPPER_ACTIVE_DEG) : (180 - C.FLIPPER_REST_DEG));
+    this.targetAngle = targetDeg * Math.PI / 180;
   }
 
   update(dt: number) {
@@ -84,9 +98,13 @@ export class Flipper {
     } else {
       this.angle += Math.sign(diff) * maxStep;
     }
+    // OBB中心をピボット+アーム半分で更新
+    const arm = C.FLIPPER_W / 2;
+    this.cx = this.pivotX + arm * Math.cos(this.angle);
+    this.cy = this.pivotY + arm * Math.sin(this.angle);
   }
 
-  /** OBBを返す */
+  /** OBBを返す（中心は動的計算済み） */
   getOBB() {
     return {
       cx:    this.cx,
@@ -100,17 +118,20 @@ export class Flipper {
   /** ボールにフリッパー速度を付与 */
   applyImpulse(vx: number, vy: number): [number, number] {
     // pressed かつ上向きに振っている間だけ強打ち出し
+    // 左: angle増加（-30°→+30°）→ angularVel>0
+    // 右: angle減少（210°→150°）→ angularVel<0
     const isRising = this.pressed && (
       this.isLeft ? this.angularVel > 0.5 : this.angularVel < -0.5
     );
-    // 静止フリッパーは反射速度をそのまま返す（resolveCircleOBBが処理済み）
     if (!isRising) return [vx, vy];
 
-    // フリッパー面の法線（表面に対して上向き垂直）
+    // フリッパー上面の法線
+    // 左: (-sin(angle),  cos(angle))  = 90°CCW from arm
+    // 右: ( sin(angle), -cos(angle))  = 90°CW  from arm
     const s = Math.sin(this.angle);
     const c = Math.cos(this.angle);
-    let nx = -s;   // 法線 x
-    let ny =  c;   // 法線 y（上方向）
+    let nx = this.isLeft ? -s :  s;
+    let ny = this.isLeft ?  c : -c;
     if (ny < 0.3) ny = 0.3; // 必ず上向き成分を確保
     const len = Math.sqrt(nx * nx + ny * ny);
     const power = C.FLIPPER_POWER * (1.0 + Math.abs(this.angularVel) * 0.01);
