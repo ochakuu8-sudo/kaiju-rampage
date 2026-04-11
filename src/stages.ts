@@ -61,5 +61,6 @@ export const STAGES: StageConfig[] = [
 ];
 
 export function getStage(level: number): StageConfig {
-  return STAGES[Math.min(level, STAGES.length - 1)];
+  // Convert 1-indexed level to 0-indexed array access
+  return STAGES[Math.min(level - 1, STAGES.length - 1)];
 }

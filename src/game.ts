@@ -8,7 +8,7 @@ import { JuiceManager } from './juice';
 import { SoundEngine } from './sound';
 import { UIManager } from './ui';
 import { getStage } from './stages';
-import { circleAABBCollision, circleCollision, circleOBBCollision } from './physics';
+import { circleAABBCollision, circleCollision, circleOBBCollision, circleAABBNormal, reflectVelocity } from './physics';
 
 export class Game {
   renderer: Renderer;
@@ -102,8 +102,12 @@ export class Game {
         // Damage building
         this.buildings.damage(building);
 
-        // Bounce ball
-        this.ball.vy = Math.abs(this.ball.vy);
+        // Bounce ball using collision normal
+        const [normalX, normalY] = circleAABBNormal(
+          { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
+          { x: building.x, y: building.y, width: buildingConfig.width, height: buildingConfig.height }
+        );
+        [this.ball.vx, this.ball.vy] = reflectVelocity(this.ball.vx, this.ball.vy, normalX, normalY, C.BALL_WALL_DAMPING);
 
         // VFX
         this.sound.playSound('building_hit');
