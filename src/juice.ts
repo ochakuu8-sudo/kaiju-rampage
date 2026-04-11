@@ -1,104 +1,146 @@
-export interface ShakeConfig {
-  amplitude: number;
-  duration: number;
-}
+/**
+ * juice.ts — 画面シェイク・ヒットストップ・スローモーション・フラッシュ
+ */
 
 export class JuiceManager {
-  // Screen shake
-  shakeAmplitude: number = 0;
-  shakeDuration: number = 0;
-  shakeTimer: number = 0;
-  shakeFreq: number = 25; // Hz
+  // ===== 画面シェイク =====
+  private shakeAmp  = 0;
+  private shakeDur  = 0;
+  private shakeTime = 0;
+  private shakeRotAmp = 0;
+  shakeOffsetX = 0;
+  shakeOffsetY = 0;
+  shakeRotation = 0;
 
-  // Hit stop (freeze frame)
-  hitStopDuration: number = 0;
-  hitStopTimer: number = 0;
+  // ===== ヒットストップ =====
+  private hitStopFrames = 0;
 
-  // Slow motion
-  timeScale: number = 1.0;
-  slowDuration: number = 0;
-  slowTimer: number = 0;
-  slowScale: number = 1.0;
+  // ===== スローモーション =====
+  private slowTimer = 0;
+  private slowScale = 1.0;
 
-  // Flash overlay
-  flashAlpha: number = 0;
-  flashDuration: number = 0;
-  flashTimer: number = 0;
+  // ===== フラッシュ =====
+  flashAlpha = 0;
+  flashR = 1; flashG = 1; flashB = 1;
 
-  update(dt: number) {
-    // Update shake
-    if (this.shakeTimer > 0) {
-      this.shakeTimer -= dt;
-    } else {
-      this.shakeAmplitude = 0;
-    }
+  // ===== ボールフラッシュ =====
+  ballFlashTimer = 0;
 
-    // Update hit stop
-    if (this.hitStopTimer > 0) {
-      this.hitStopTimer -= dt;
-    }
+  // ===== コンボ表示 =====
+  comboDisplay = 0;     // 表示するコンボ数
+  comboDisplayTimer = 0;
+  comboDisplayScale = 1;
 
-    // Update slow motion
-    if (this.slowTimer > 0) {
-      this.slowTimer -= dt;
-      const t = 1 - this.slowTimer / this.slowDuration;
-      this.timeScale = 1 + (this.slowScale - 1) * (1 - Math.cos(t * Math.PI) / 2);
-    } else {
-      this.timeScale = 1.0;
-    }
+  // ===== ステージクリアスロー =====
+  private stageClearTimer = 0;
 
-    // Update flash
-    if (this.flashTimer > 0) {
-      this.flashTimer -= dt;
-      const t = 1 - this.flashTimer / this.flashDuration;
-      this.flashAlpha = Math.max(0, 1 - t * t) * 0.3;
-    } else {
-      this.flashAlpha = 0;
+  shake(amp: number, dur: number, rotAmp = 0.5) {
+    if (amp > this.shakeAmp) {
+      this.shakeAmp    = amp;
+      this.shakeDur    = dur;
+      this.shakeTime   = dur;
+      this.shakeRotAmp = rotAmp;
     }
   }
 
-  triggerShake(config: ShakeConfig) {
-    this.shakeAmplitude = config.amplitude;
-    this.shakeDuration = config.duration;
-    this.shakeTimer = config.duration;
+  hitStop(frames: number) {
+    if (frames > this.hitStopFrames) this.hitStopFrames = frames;
   }
 
-  triggerHitStop(duration: number) {
-    this.hitStopDuration = duration;
-    this.hitStopTimer = duration;
-  }
-
-  triggerSlowMotion(duration: number, scale: number = 0.3) {
-    this.slowDuration = duration;
+  slowMo(duration: number, scale = 0.3) {
     this.slowTimer = duration;
     this.slowScale = scale;
   }
 
-  triggerFlash(duration: number = 0.1) {
-    this.flashDuration = duration;
-    this.flashTimer = duration;
+  stageClearSlow() {
+    this.stageClearTimer = 1.0;
+    this.slowScale = 0.2;
   }
 
-  getShakeOffset(): [number, number] {
-    if (this.shakeAmplitude === 0) return [0, 0];
-
-    const progress = 1 - this.shakeTimer / this.shakeDuration;
-    const decay = Math.cos((progress * Math.PI) / 2); // ease-out
-    const theta = this.shakeTimer * this.shakeFreq * Math.PI * 2;
-
-    const amp = this.shakeAmplitude * decay;
-    return [
-      Math.cos(theta) * amp,
-      Math.sin(theta) * amp,
-    ];
+  flash(r: number, g: number, b: number, alpha: number) {
+    if (alpha > this.flashAlpha) {
+      this.flashAlpha = alpha;
+      this.flashR = r; this.flashG = g; this.flashB = b;
+    }
   }
 
-  getTimeScale(): number {
-    if (this.hitStopTimer > 0) return 0; // Complete freeze during hitstop
-    return this.timeScale;
+  ballHitFlash() {
+    this.ballFlashTimer = 0.05;
   }
 
-  getFlashAlpha(): number {
-    return this.flashAlpha;
+  showCombo(combo: number) {
+    this.comboDisplay      = combo;
+    this.comboDisplayTimer = 0.5;
+    this.comboDisplayScale = 1.0 + combo * 0.05;
+  }
+
+  /** ヒットストップ中は dt=0 を返す。スローは dt*scale を返す。 */
+  getGameDt(rawDt: number): number {
+    if (this.hitStopFrames > 0) return 0;
+    let dt = rawDt;
+    if (this.slowTimer > 0) dt *= this.slowScale;
+    if (this.stageClearTimer > 0) dt *= this.slowScale;
+    return dt;
+  }
+
+  update(rawDt: number) {
+    // ヒットストップ（フレームカウント）
+    if (this.hitStopFrames > 0) {
+      this.hitStopFrames--;
+      // シェイク・フラッシュは進める
+    }
+
+    // シェイク
+    if (this.shakeTime > 0) {
+      this.shakeTime -= rawDt;
+      const t = Math.max(0, this.shakeTime / this.shakeDur);
+      const amp = this.shakeAmp * t;
+      this.shakeOffsetX = (Math.random() * 2 - 1) * amp;
+      this.shakeOffsetY = (Math.random() * 2 - 1) * amp;
+      this.shakeRotation = (Math.random() * 2 - 1) * this.shakeRotAmp * t * Math.PI / 180;
+      if (this.shakeTime <= 0) {
+        this.shakeOffsetX = 0;
+        this.shakeOffsetY = 0;
+        this.shakeRotation = 0;
+        this.shakeAmp = 0;
+      }
+    }
+
+    // フラッシュ減衰
+    if (this.flashAlpha > 0) {
+      this.flashAlpha -= rawDt * 5;
+      if (this.flashAlpha < 0) this.flashAlpha = 0;
+    }
+
+    // ボールフラッシュ
+    if (this.ballFlashTimer > 0) this.ballFlashTimer -= rawDt;
+
+    // スローモーション
+    if (this.slowTimer > 0) {
+      this.slowTimer -= rawDt;
+      if (this.slowTimer <= 0) this.slowScale = 1.0;
+    }
+    if (this.stageClearTimer > 0) {
+      this.stageClearTimer -= rawDt;
+      if (this.stageClearTimer <= 0) this.slowScale = 1.0;
+    }
+
+    // コンボ表示フェードアウト
+    if (this.comboDisplayTimer > 0) {
+      this.comboDisplayTimer -= rawDt;
+      this.comboDisplayScale = Math.max(0.5, this.comboDisplayScale - rawDt * 3);
+    }
+  }
+
+  getShake(): [number, number] {
+    return [this.shakeOffsetX, this.shakeOffsetY];
+  }
+
+  isBallFlashing(): boolean {
+    return this.ballFlashTimer > 0;
+  }
+
+  isComboVisible(): boolean {
+    return this.comboDisplayTimer > 0 && this.comboDisplay >= 2;
   }
 }

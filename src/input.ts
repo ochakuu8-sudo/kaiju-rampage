@@ -1,100 +1,61 @@
+/**
+ * input.ts — タッチ & キーボード入力
+ */
+
 export class InputManager {
-  leftPressed = false;
+  leftPressed  = false;
   rightPressed = false;
+  private _onRestart: (() => void) | null = null;
 
-  constructor() {
-    this.setupTouchListeners();
-    this.setupKeyboardListeners();
+  constructor(canvas: HTMLCanvasElement) {
+    // タッチ
+    canvas.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: false });
+    canvas.addEventListener('touchend',   this._onTouchEnd.bind(this),   { passive: false });
+    canvas.addEventListener('touchmove',  (e) => e.preventDefault(),     { passive: false });
+
+    // キーボード（デバッグ用）
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'ArrowLeft'  || e.code === 'KeyZ') this.leftPressed  = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyX') this.rightPressed = true;
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft'  || e.code === 'KeyZ') this.leftPressed  = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyX') this.rightPressed = false;
+    });
   }
 
-  private setupTouchListeners() {
-    document.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
-    document.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
-    document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-  }
-
-  private setupKeyboardListeners() {
-    document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-    document.addEventListener('keyup', (e) => this.handleKeyUp(e));
-  }
-
-  private handleKeyDown(e: KeyboardEvent) {
-    const key = e.key.toLowerCase();
-    // Left flipper: Z or ArrowLeft
-    if (key === 'z' || key === 'arrowleft') {
-      this.leftPressed = true;
-      e.preventDefault();
-    }
-    // Right flipper: / or ArrowRight
-    if (key === '/' || key === 'arrowright') {
-      this.rightPressed = true;
-      e.preventDefault();
-    }
-    // Both flippers: Space
-    if (key === ' ') {
-      this.leftPressed = true;
-      this.rightPressed = true;
-      e.preventDefault();
-    }
-  }
-
-  private handleKeyUp(e: KeyboardEvent) {
-    const key = e.key.toLowerCase();
-    // Left flipper: Z or ArrowLeft
-    if (key === 'z' || key === 'arrowleft') {
-      this.leftPressed = false;
-      e.preventDefault();
-    }
-    // Right flipper: / or ArrowRight
-    if (key === '/' || key === 'arrowright') {
-      this.rightPressed = false;
-      e.preventDefault();
-    }
-    // Both flippers: Space
-    if (key === ' ') {
-      this.leftPressed = false;
-      this.rightPressed = false;
-      e.preventDefault();
-    }
-  }
-
-  private handleTouchStart(e: TouchEvent) {
+  private _onTouchStart(e: TouchEvent) {
     e.preventDefault();
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const mid  = rect.left + rect.width / 2;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      if (t.clientX < mid) this.leftPressed  = true;
+      else                  this.rightPressed = true;
+    }
+  }
+
+  private _onTouchEnd(e: TouchEvent) {
+    e.preventDefault();
+    // 全タッチを確認してリリース
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const mid  = rect.left + rect.width / 2;
+    let hasLeft = false, hasRight = false;
     for (let i = 0; i < e.touches.length; i++) {
-      const touch = e.touches[i];
-      const x = touch.clientX;
-      const viewportWidth = window.innerWidth;
-
-      if (x < viewportWidth / 2) {
-        this.leftPressed = true;
-      } else {
-        this.rightPressed = true;
-      }
+      const t = e.touches[i];
+      if (t.clientX < mid) hasLeft  = true;
+      else                  hasRight = true;
     }
+    this.leftPressed  = hasLeft;
+    this.rightPressed = hasRight;
   }
 
-  private handleTouchEnd(e: TouchEvent) {
-    e.preventDefault();
-    if (e.touches.length === 0) {
-      this.leftPressed = false;
-      this.rightPressed = false;
-    } else {
-      // Update based on remaining touches
-      let hasLeft = false;
-      let hasRight = false;
-      const viewportWidth = window.innerWidth;
+  onRestart(cb: () => void) {
+    this._onRestart = cb;
+  }
 
-      for (let i = 0; i < e.touches.length; i++) {
-        const touch = e.touches[i];
-        if (touch.clientX < viewportWidth / 2) {
-          hasLeft = true;
-        } else {
-          hasRight = true;
-        }
-      }
-
-      this.leftPressed = hasLeft;
-      this.rightPressed = hasRight;
-    }
+  registerRestartTap(el: HTMLElement) {
+    el.addEventListener('click',     () => this._onRestart?.());
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); this._onRestart?.(); }, { passive: false });
   }
 }

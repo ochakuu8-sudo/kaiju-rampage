@@ -1,193 +1,181 @@
-import * as C from './constants';
+/**
+ * particles.ts — パーティクル SoA (最大 2000 個)
+ */
 
-export interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-  lifetime: number;
-  maxLifetime: number;
-  gravity: boolean;
-  rotation?: number;
-  angularVelocity?: number;
-}
+import * as C from './constants';
+import { rand } from './physics';
+import { writeInst, INST_F } from './renderer';
+
+const ST_DEAD = 0;
+const ST_ALIVE = 1;
 
 export class ParticleManager {
-  particles: (Particle | null)[] = [];
-  count: number = 0;
+  // SoA
+  px:   Float32Array = new Float32Array(C.MAX_PARTICLES);
+  py:   Float32Array = new Float32Array(C.MAX_PARTICLES);
+  vx:   Float32Array = new Float32Array(C.MAX_PARTICLES);
+  vy:   Float32Array = new Float32Array(C.MAX_PARTICLES);
+  life: Float32Array = new Float32Array(C.MAX_PARTICLES); // 残り寿命 (秒)
+  maxLife: Float32Array = new Float32Array(C.MAX_PARTICLES);
+  size: Float32Array = new Float32Array(C.MAX_PARTICLES);
+  r:    Float32Array = new Float32Array(C.MAX_PARTICLES);
+  g:    Float32Array = new Float32Array(C.MAX_PARTICLES);
+  b:    Float32Array = new Float32Array(C.MAX_PARTICLES);
+  gravity: Uint8Array = new Uint8Array(C.MAX_PARTICLES); // 重力あり？
+  circle:  Uint8Array = new Uint8Array(C.MAX_PARTICLES); // 円形？
+  rot:  Float32Array = new Float32Array(C.MAX_PARTICLES);
+  rotV: Float32Array = new Float32Array(C.MAX_PARTICLES);
+  state: Uint8Array = new Uint8Array(C.MAX_PARTICLES);
 
-  // SoA for rendering
-  positions: Float32Array;
-  radii: Float32Array;
-  colors: Float32Array;
+  private head = 0; // 次のスロット検索開始位置
 
-  constructor() {
-    this.positions = new Float32Array(C.MAX_PARTICLES * 2);
-    this.radii = new Float32Array(C.MAX_PARTICLES);
-    this.colors = new Float32Array(C.MAX_PARTICLES * 4);
+  reset() {
+    this.state.fill(ST_DEAD);
+  }
 
-    // Preallocate particle array
-    for (let i = 0; i < C.MAX_PARTICLES; i++) {
-      this.particles.push(null);
+  private alloc(): number {
+    // 循環探索でデッドスロットを再利用
+    for (let tries = 0; tries < C.MAX_PARTICLES; tries++) {
+      const i = (this.head + tries) % C.MAX_PARTICLES;
+      if (this.state[i] === ST_DEAD) {
+        this.head = (i + 1) % C.MAX_PARTICLES;
+        return i;
+      }
+    }
+    // 満杯の場合は強制上書き
+    const i = this.head;
+    this.head = (this.head + 1) % C.MAX_PARTICLES;
+    return i;
+  }
+
+  private emit(
+    x: number, y: number,
+    vx: number, vy: number,
+    r: number, g: number, b: number,
+    size: number, life: number,
+    useGravity: boolean, isCircle: boolean,
+    rotV = 0
+  ) {
+    const i = this.alloc();
+    this.state[i] = ST_ALIVE;
+    this.px[i]    = x;
+    this.py[i]    = y;
+    this.vx[i]    = vx;
+    this.vy[i]    = vy;
+    this.r[i]     = r;
+    this.g[i]     = g;
+    this.b[i]     = b;
+    this.size[i]  = size;
+    this.life[i]  = life;
+    this.maxLife[i] = life;
+    this.gravity[i] = useGravity ? 1 : 0;
+    this.circle[i]  = isCircle ? 1 : 0;
+    this.rot[i]     = Math.random() * Math.PI * 2;
+    this.rotV[i]    = rotV;
+  }
+
+  /** 建物破片 */
+  spawnDebris(x: number, y: number, count: number, buildingR: number, buildingG: number, buildingB: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(40, 160);
+      this.emit(
+        x + rand(-10, 10), y + rand(-10, 10),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        buildingR * rand(0.7, 1), buildingG * rand(0.7, 1), buildingB * rand(0.7, 1),
+        rand(4, 10), rand(0.5, 1.0),
+        true, false, rand(-6, 6)
+      );
     }
   }
 
-  emit(x: number, y: number, count: number, type: 'debris' | 'blood' | 'spark') {
-    for (let i = 0; i < count && this.count < C.MAX_PARTICLES; i++) {
-      // Find next available slot
-      let idx = this.count;
-      this.particles[idx] = this.createParticle(x, y, type);
-      this.count++;
+  /** 血しぶき */
+  spawnBlood(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(30, 120);
+      const dark  = rand(0.4, 0.9);
+      this.emit(
+        x + rand(-3, 3), y + rand(-3, 3),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        dark, 0, 0,
+        rand(2, 5), rand(0.3, 0.6),
+        true, true
+      );
     }
   }
 
-  private createParticle(x: number, y: number, type: string): Particle {
-    const angle = Math.random() * Math.PI * 2;
+  /** 火花 */
+  spawnSpark(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(60, 200);
+      this.emit(
+        x, y,
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        1, rand(0.7, 1), rand(0, 0.3),
+        rand(2, 4), rand(0.1, 0.25),
+        false, true
+      );
+    }
+  }
 
-    switch (type) {
-      case 'debris': {
-        const speed = 8 + Math.random() * 6;
-        return {
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          radius: 2 + Math.random() * 2,
-          r: 0.6 + Math.random() * 0.3,
-          g: 0.3 + Math.random() * 0.2,
-          b: 0.1 + Math.random() * 0.1,
-          a: 1,
-          lifetime: 0.8,
-          maxLifetime: 0.8,
-          gravity: true,
-          rotation: Math.random() * Math.PI * 2,
-          angularVelocity: (Math.random() - 0.5) * 20,
-        };
-      }
-      case 'blood': {
-        const speed = 10 + Math.random() * 8;
-        return {
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          radius: 1 + Math.random() * 1.5,
-          r: 0.8 + Math.random() * 0.2,
-          g: Math.random() * 0.3,
-          b: Math.random() * 0.2,
-          a: 1,
-          lifetime: 0.4,
-          maxLifetime: 0.4,
-          gravity: true,
-        };
-      }
-      case 'spark': {
-        const speed = 12 + Math.random() * 10;
-        return {
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          radius: 0.5 + Math.random() * 1,
-          r: 1,
-          g: 0.8 + Math.random() * 0.2,
-          b: 0.2 + Math.random() * 0.3,
-          a: 1,
-          lifetime: 0.2,
-          maxLifetime: 0.2,
-          gravity: false,
-        };
-      }
-      default:
-        throw new Error(`Unknown particle type: ${type}`);
+  /** 煙 */
+  spawnSmoke(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const v = rand(0.4, 0.7);
+      this.emit(
+        x + rand(-12, 12), y + rand(-8, 8),
+        rand(-20, 20), rand(20, 60),
+        v, v, v,
+        rand(10, 20), rand(0.5, 1.5),
+        false, true
+      );
+    }
+  }
+
+  /** スコアポップアップ (小さい黄色い四角で代用) */
+  spawnScorePop(x: number, y: number) {
+    for (let i = 0; i < 4; i++) {
+      this.emit(
+        x + rand(-4, 4), y,
+        rand(-10, 10), rand(40, 80),
+        1, 1, 0,
+        3, 0.8,
+        false, true
+      );
     }
   }
 
   update(dt: number) {
-    for (let i = 0; i < this.count; i++) {
-      const p = this.particles[i];
-      if (!p) continue;
-
-      // Update lifetime
-      p.lifetime -= dt;
-      if (p.lifetime <= 0) {
-        this.particles[i] = null;
-        continue;
-      }
-
-      // Apply gravity
-      if (p.gravity) {
-        p.vy -= C.GRAVITY * 0.5 * dt * 60;
-      }
-
-      // Update position
-      p.x += p.vx * dt * 60;
-      p.y += p.vy * dt * 60;
-
-      // Update rotation
-      if (p.rotation !== undefined && p.angularVelocity !== undefined) {
-        p.rotation += p.angularVelocity * dt * 60;
-      }
-
-      // Fade out
-      const progress = 1 - p.lifetime / p.maxLifetime;
-      p.a = Math.max(0, 1 - progress);
-    }
-
-    // Compact array
-    let writeIdx = 0;
-    for (let i = 0; i < this.count; i++) {
-      if (this.particles[i] !== null) {
-        if (writeIdx !== i) {
-          this.particles[writeIdx] = this.particles[i];
-        }
-        writeIdx++;
-      }
-    }
-    this.count = writeIdx;
-  }
-
-  getPositions(): Float32Array {
-    for (let i = 0; i < this.count; i++) {
-      const p = this.particles[i]!;
-      this.positions[i * 2] = p.x;
-      this.positions[i * 2 + 1] = p.y;
-    }
-    return this.positions;
-  }
-
-  getRadii(): Float32Array {
-    for (let i = 0; i < this.count; i++) {
-      const p = this.particles[i]!;
-      this.radii[i] = p.radius;
-    }
-    return this.radii;
-  }
-
-  getColors(): Float32Array {
-    for (let i = 0; i < this.count; i++) {
-      const p = this.particles[i]!;
-      this.colors[i * 4] = p.r;
-      this.colors[i * 4 + 1] = p.g;
-      this.colors[i * 4 + 2] = p.b;
-      this.colors[i * 4 + 3] = p.a;
-    }
-    return this.colors;
-  }
-
-  getCount(): number {
-    return this.count;
-  }
-
-  clear() {
-    this.count = 0;
     for (let i = 0; i < C.MAX_PARTICLES; i++) {
-      this.particles[i] = null;
+      if (this.state[i] === ST_DEAD) continue;
+      this.life[i] -= dt;
+      if (this.life[i] <= 0) { this.state[i] = ST_DEAD; continue; }
+      if (this.gravity[i]) this.vy[i] -= 180 * dt; // 重力
+      this.px[i] += this.vx[i] * dt;
+      this.py[i] += this.vy[i] * dt;
+      this.rot[i] += this.rotV[i] * dt;
+      // 減速
+      this.vx[i] *= 1 - dt * 1.5;
+      this.vy[i] *= 1 - dt * 0.8;
     }
+  }
+
+  fillInstances(buf: Float32Array, startIdx: number): number {
+    let n = startIdx;
+    for (let i = 0; i < C.MAX_PARTICLES; i++) {
+      if (this.state[i] === ST_DEAD) continue;
+      const t = this.life[i] / this.maxLife[i]; // 1→0
+      const alpha = t;
+      const sz = this.size[i] * (0.5 + 0.5 * t);
+      writeInst(buf, n++,
+        this.px[i], this.py[i],
+        sz, sz,
+        this.r[i], this.g[i], this.b[i], alpha,
+        this.rot[i], this.circle[i]
+      );
+    }
+    return n - startIdx;
   }
 }

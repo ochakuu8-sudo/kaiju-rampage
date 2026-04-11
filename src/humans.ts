@@ -1,170 +1,145 @@
-import * as C from './constants';
+/**
+ * humans.ts — 人間 SoA 管理 (最大 500 体)
+ * Structure of Arrays でキャッシュ効率を最大化
+ */
 
-const HUMAN_STATE = {
-  INACTIVE: 0,
-  RUNNING: 1,
-  CRUSHED: 2,
-};
+import * as C from './constants';
+import { rand, randInt } from './physics';
+import { writeInst, INST_F } from './renderer';
+
+const ST_INACTIVE = 0;
+const ST_RUNNING  = 1;
+const ST_CRUSHED  = 2; // 潰されたフレームのみ
 
 export class HumanManager {
-  // Structure of Arrays
-  positions: Float32Array;
-  velocities: Float32Array;
-  colors: Float32Array;
-  states: Uint8Array;
-  timers: Float32Array;
-  directionTimers: Float32Array;
+  // SoA
+  px:     Float32Array = new Float32Array(C.MAX_HUMANS);
+  py:     Float32Array = new Float32Array(C.MAX_HUMANS);
+  vx:     Float32Array = new Float32Array(C.MAX_HUMANS);
+  vy:     Float32Array = new Float32Array(C.MAX_HUMANS);
+  state:  Uint8Array   = new Uint8Array(C.MAX_HUMANS);
+  timer:  Float32Array = new Float32Array(C.MAX_HUMANS); // 方向転換タイマー
+  speed:  Float32Array = new Float32Array(C.MAX_HUMANS); // 個体速度
+  scaleX: Float32Array = new Float32Array(C.MAX_HUMANS); // 潰れアニメ
 
-  count: number = 0;
-  nextIndex: number = 0;
+  activeCount = 0;
 
-  constructor() {
-    this.positions = new Float32Array(C.MAX_HUMANS * 2);
-    this.velocities = new Float32Array(C.MAX_HUMANS * 2);
-    this.colors = new Float32Array(C.MAX_HUMANS * 4);
-    this.states = new Uint8Array(C.MAX_HUMANS);
-    this.timers = new Float32Array(C.MAX_HUMANS);
-    this.directionTimers = new Float32Array(C.MAX_HUMANS);
-
-    // Initialize all as inactive
-    for (let i = 0; i < C.MAX_HUMANS; i++) {
-      this.states[i] = HUMAN_STATE.INACTIVE;
-    }
+  reset() {
+    this.state.fill(ST_INACTIVE);
+    this.activeCount = 0;
   }
 
-  spawn(x: number, y: number, count: number) {
+  /** 指定座標付近に n 体スポーン */
+  spawn(cx: number, cy: number, n: number) {
     let spawned = 0;
-
-    // First, try to find and reuse inactive slots
-    for (let i = 0; i < C.MAX_HUMANS && spawned < count; i++) {
-      if (this.states[i] !== HUMAN_STATE.INACTIVE) continue;
-
-      const idx = i;
-      const angle = (Math.random() * Math.PI * 2);
-      const speed = C.HUMAN_PANIC_SPEED * (0.8 + Math.random() * 0.4);
-
-      // Position with small random offset
-      this.positions[idx * 2] = x + (Math.random() - 0.5) * 20;
-      this.positions[idx * 2 + 1] = y + (Math.random() - 0.5) * 20;
-
-      // Velocity
-      this.velocities[idx * 2] = Math.cos(angle) * speed;
-      this.velocities[idx * 2 + 1] = Math.sin(angle) * speed;
-
-      // Color (skin tone)
-      this.colors[idx * 4] = 0.95 + (Math.random() - 0.5) * 0.1;
-      this.colors[idx * 4 + 1] = 0.7 + (Math.random() - 0.5) * 0.1;
-      this.colors[idx * 4 + 2] = 0.6 + (Math.random() - 0.5) * 0.1;
-      this.colors[idx * 4 + 3] = 1;
-
-      // State
-      this.states[idx] = HUMAN_STATE.RUNNING;
-
-      // Timers
-      this.timers[idx] = 0;
-      this.directionTimers[idx] = C.HUMAN_DIRECTION_CHANGE_INTERVAL * (0.5 + Math.random());
-
-      // Update count to track highest active index
-      this.count = Math.max(this.count, idx + 1);
+    for (let i = 0; i < C.MAX_HUMANS && spawned < n; i++) {
+      if (this.state[i] !== ST_INACTIVE) continue;
+      this.state[i] = ST_RUNNING;
+      this.px[i]    = cx + rand(-20, 20);
+      this.py[i]    = cy + rand(-5, 5);
+      const angle   = Math.random() * Math.PI * 2;
+      const spd     = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
+      this.speed[i] = spd;
+      this.vx[i]    = Math.cos(angle) * spd;
+      this.vy[i]    = Math.sin(angle) * spd;
+      this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+      this.scaleX[i]= 1;
       spawned++;
     }
-
-    // Update nextIndex to track the furthest allocated position (for reference)
-    if (this.count > this.nextIndex) {
-      this.nextIndex = this.count;
-    }
+    this.activeCount = this._countActive();
   }
 
-  update(dt: number) {
-    for (let i = 0; i < this.count; i++) {
-      if (this.states[i] === HUMAN_STATE.INACTIVE) continue; // Skip inactive
+  update(dt: number, ballX: number, ballY: number) {
+    for (let i = 0; i < C.MAX_HUMANS; i++) {
+      if (this.state[i] !== ST_RUNNING) continue;
 
-      if (this.states[i] === HUMAN_STATE.RUNNING) {
-        // Update direction timer
-        this.directionTimers[i] -= dt;
-        if (this.directionTimers[i] <= 0) {
-          // Change direction randomly
-          const angle = Math.random() * Math.PI * 2;
-          const speed = C.HUMAN_PANIC_SPEED * (0.8 + Math.random() * 0.4);
-          this.velocities[i * 2] = Math.cos(angle) * speed;
-          this.velocities[i * 2 + 1] = Math.sin(angle) * speed;
-          this.directionTimers[i] = C.HUMAN_DIRECTION_CHANGE_INTERVAL * (0.5 + Math.random());
-        }
+      // ボール接近 → 恐怖ブースト
+      const dbx = this.px[i] - ballX;
+      const dby = this.py[i] - ballY;
+      const dist2 = dbx * dbx + dby * dby;
+      const fearR  = C.HUMAN_FEAR_RADIUS * C.HUMAN_FEAR_RADIUS;
+      const boost  = dist2 < fearR ? C.HUMAN_FEAR_BOOST : 1.0;
 
-        // Update position
-        this.positions[i * 2] += this.velocities[i * 2] * dt * 60;
-        this.positions[i * 2 + 1] += this.velocities[i * 2 + 1] * dt * 60;
+      // 方向転換タイマー
+      this.timer[i] -= dt;
+      if (this.timer[i] <= 0) {
+        const angle   = Math.random() * Math.PI * 2;
+        this.vx[i] = Math.cos(angle) * this.speed[i];
+        this.vy[i] = Math.sin(angle) * this.speed[i];
+        this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+      }
 
-        // Wall bouncing
-        const minX = -180 + C.HUMAN_WIDTH / 2;
-        const maxX = 180 - C.HUMAN_WIDTH / 2;
-        const minY = -320 + C.HUMAN_HEIGHT / 2;
-        const maxY = 320 - C.HUMAN_HEIGHT / 2;
+      // 移動
+      this.px[i] += this.vx[i] * boost * dt;
+      this.py[i] += this.vy[i] * boost * dt;
 
-        if (this.positions[i * 2] < minX || this.positions[i * 2] > maxX) {
-          this.velocities[i * 2] *= -1;
-          this.positions[i * 2] = Math.max(minX, Math.min(maxX, this.positions[i * 2]));
-        }
-        if (this.positions[i * 2 + 1] < minY || this.positions[i * 2 + 1] > maxY) {
-          this.velocities[i * 2 + 1] *= -1;
-          this.positions[i * 2 + 1] = Math.max(minY, Math.min(maxY, this.positions[i * 2 + 1]));
-        }
+      // 壁反射
+      if (this.px[i] < C.WORLD_MIN_X + C.HUMAN_W) {
+        this.px[i] = C.WORLD_MIN_X + C.HUMAN_W;
+        this.vx[i] = Math.abs(this.vx[i]);
+      }
+      if (this.px[i] > C.WORLD_MAX_X - C.HUMAN_W) {
+        this.px[i] = C.WORLD_MAX_X - C.HUMAN_W;
+        this.vx[i] = -Math.abs(this.vx[i]);
+      }
 
-        // Escape detection (reached top)
-        if (this.positions[i * 2 + 1] > 300) {
-          this.states[i] = HUMAN_STATE.INACTIVE;
-        }
-      } else if (this.states[i] === HUMAN_STATE.CRUSHED) {
-        this.timers[i] -= dt;
-        if (this.timers[i] <= 0) {
-          this.states[i] = HUMAN_STATE.INACTIVE;
-        }
+      // 画面上端 or 下端 → 逃走成功（消滅）
+      if (this.py[i] > C.WORLD_MAX_Y || this.py[i] < C.WORLD_MIN_Y) {
+        this.state[i] = ST_INACTIVE;
+      }
+
+      // 潰れアニメ回復
+      if (this.scaleX[i] < 1) {
+        this.scaleX[i] = Math.min(1, this.scaleX[i] + dt * 12);
       }
     }
+    this.activeCount = this._countActive();
   }
 
-  crush(index: number) {
-    if (index < 0 || index >= this.count) return;
-    if (this.states[index] !== HUMAN_STATE.RUNNING) return; // Only crush running humans
-
-    this.states[index] = HUMAN_STATE.CRUSHED;
-    this.timers[index] = 0.1; // Brief display duration
-  }
-
-  getActiveCount(): number {
-    let count = 0;
-    for (let i = 0; i < this.count; i++) {
-      if (this.states[i] === HUMAN_STATE.RUNNING) count++;
-    }
-    return count;
-  }
-
-  clear() {
-    this.count = 0;
-    this.nextIndex = 0;
+  /**
+   * ボールとの衝突判定
+   * @returns 潰された人間のインデックス配列
+   */
+  checkCrush(ballX: number, ballY: number, ballR: number): number[] {
+    const crushed: number[] = [];
     for (let i = 0; i < C.MAX_HUMANS; i++) {
-      this.states[i] = HUMAN_STATE.INACTIVE;
+      if (this.state[i] !== ST_RUNNING) continue;
+      // 円 vs AABB (人間)
+      const hx = this.px[i] - C.HUMAN_W / 2;
+      const hy = this.py[i] - C.HUMAN_H / 2;
+      const nearX = Math.max(hx, Math.min(ballX, hx + C.HUMAN_W));
+      const nearY = Math.max(hy, Math.min(ballY, hy + C.HUMAN_H));
+      const dx = ballX - nearX, dy = ballY - nearY;
+      if (dx * dx + dy * dy < ballR * ballR) {
+        this.state[i]  = ST_INACTIVE;
+        this.scaleX[i] = 0.15; // 潰れ
+        crushed.push(i);
+      }
     }
+    return crushed;
   }
 
-  // For rendering
-  getPositions(): Float32Array {
-    return this.positions;
+  getPos(i: number): [number, number] {
+    return [this.px[i], this.py[i]];
   }
 
-  getColors(): Float32Array {
-    return this.colors;
+  /** インスタンスバッファへ書き込み */
+  fillInstances(buf: Float32Array, startIdx: number): number {
+    let n = startIdx;
+    for (let i = 0; i < C.MAX_HUMANS; i++) {
+      if (this.state[i] !== ST_RUNNING) continue;
+      const sx = C.HUMAN_W * this.scaleX[i];
+      const sy = C.HUMAN_H * (2 - this.scaleX[i]); // つぶれ時に縦に伸びる
+      writeInst(buf, n++, this.px[i], this.py[i], sx, sy, 0.9, 0.75, 0.6, 1, 0, 0);
+    }
+    return n - startIdx;
   }
 
-  getCount(): number {
-    return this.count;
-  }
-
-  getHumanAtIndex(i: number): { x: number; y: number; state: number } {
-    return {
-      x: this.positions[i * 2],
-      y: this.positions[i * 2 + 1],
-      state: this.states[i],
-    };
+  private _countActive(): number {
+    let c = 0;
+    for (let i = 0; i < C.MAX_HUMANS; i++) {
+      if (this.state[i] === ST_RUNNING) c++;
+    }
+    return c;
   }
 }

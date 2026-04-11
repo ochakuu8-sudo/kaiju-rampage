@@ -1,138 +1,157 @@
-// ========== Collision Detection Utilities ==========
+/**
+ * physics.ts — 衝突判定ヘルパー
+ */
 
-export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+// ===== 基本型 =====
+export interface Vec2 { x: number; y: number; }
+
+export interface Circle { x: number; y: number; r: number; }
+
+export interface AABB {
+  cx: number; cy: number; // 中心
+  hw: number; hh: number; // half-width/height
 }
 
-export interface Circle {
-  x: number;
-  y: number;
-  radius: number;
-}
-
-// Circle vs AABB collision
-export function circleAABBCollision(circle: Circle, rect: Rect): boolean {
-  const closestX = Math.max(rect.x - rect.width / 2, Math.min(circle.x, rect.x + rect.width / 2));
-  const closestY = Math.max(rect.y - rect.height / 2, Math.min(circle.y, rect.y + rect.height / 2));
-
-  const dx = circle.x - closestX;
-  const dy = circle.y - closestY;
-
-  return dx * dx + dy * dy < circle.radius * circle.radius;
-}
-
-// Circle vs Circle collision
-export function circleCollision(c1: Circle, c2: Circle): boolean {
-  const dx = c1.x - c2.x;
-  const dy = c1.y - c2.y;
-  const minDist = c1.radius + c2.radius;
-  return dx * dx + dy * dy < minDist * minDist;
-}
-
-// Get collision normal from circle to AABB (normalized direction)
-export function circleAABBNormal(circle: Circle, rect: Rect): [number, number] {
-  const closestX = Math.max(rect.x - rect.width / 2, Math.min(circle.x, rect.x + rect.width / 2));
-  const closestY = Math.max(rect.y - rect.height / 2, Math.min(circle.y, rect.y + rect.height / 2));
-
-  const dx = circle.x - closestX;
-  const dy = circle.y - closestY;
-  const len = Math.sqrt(dx * dx + dy * dy);
-
-  if (len < 0.001) return [1, 0]; // Default
-  return [dx / len, dy / len];
-}
-
-// Oriented Bounding Box (simplified OBB) for flipper
+// OBB (Oriented Bounding Box)
 export interface OBB {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number; // radians
+  cx: number; cy: number;
+  hw: number; hh: number;
+  angle: number; // radians
 }
 
-export function circleOBBCollision(circle: Circle, obb: OBB): boolean {
-  // Transform circle to OBB local space
-  const cos = Math.cos(-obb.rotation);
-  const sin = Math.sin(-obb.rotation);
-
-  const dx = circle.x - obb.x;
-  const dy = circle.y - obb.y;
-
-  const localX = dx * cos - dy * sin;
-  const localY = dx * sin + dy * cos;
-
-  // Check AABB collision in local space
-  const rect: Rect = {
-    x: 0,
-    y: 0,
-    width: obb.width,
-    height: obb.height,
-  };
-
-  const closestX = Math.max(-obb.width / 2, Math.min(localX, obb.width / 2));
-  const closestY = Math.max(-obb.height / 2, Math.min(localY, obb.height / 2));
-
-  const cdx = localX - closestX;
-  const cdy = localY - closestY;
-
-  return cdx * cdx + cdy * cdy < circle.radius * circle.radius;
+// ===== 円 vs AABB =====
+export function circleAABB(
+  bx: number, by: number, br: number,
+  ax: number, ay: number, aw: number, ah: number // ax,ay = 左下
+): boolean {
+  const nearX = Math.max(ax, Math.min(bx, ax + aw));
+  const nearY = Math.max(ay, Math.min(by, ay + ah));
+  const dx = bx - nearX;
+  const dy = by - nearY;
+  return dx * dx + dy * dy < br * br;
 }
 
-// Get collision normal from circle to OBB (in world space)
-export function circleOBBNormal(circle: Circle, obb: OBB): [number, number] {
-  // Transform circle to OBB local space
-  const cos = Math.cos(-obb.rotation);
-  const sin = Math.sin(-obb.rotation);
-
-  const dx = circle.x - obb.x;
-  const dy = circle.y - obb.y;
-
-  const localX = dx * cos - dy * sin;
-  const localY = dx * sin + dy * cos;
-
-  // Find closest point in local space
-  const closestX = Math.max(-obb.width / 2, Math.min(localX, obb.width / 2));
-  const closestY = Math.max(-obb.height / 2, Math.min(localY, obb.height / 2));
-
-  // Collision vector in local space
-  let normalLocalX = localX - closestX;
-  let normalLocalY = localY - closestY;
-  const len = Math.sqrt(normalLocalX * normalLocalX + normalLocalY * normalLocalY);
-
-  if (len < 0.001) return [0, 1]; // Default to up
-
-  normalLocalX /= len;
-  normalLocalY /= len;
-
-  // Transform back to world space
-  const worldNormalX = normalLocalX * cos + normalLocalY * sin;
-  const worldNormalY = -normalLocalX * sin + normalLocalY * cos;
-
-  return [worldNormalX, worldNormalY];
+/** 円 vs AABB の衝突解決。 反射後の [vx,vy] を返す */
+export function resolveCircleAABB(
+  bx: number, by: number, br: number,
+  vx: number, vy: number,
+  ax: number, ay: number, aw: number, ah: number,
+  damping = 0.78
+): [number, number, number, number] | null {
+  const nearX = Math.max(ax, Math.min(bx, ax + aw));
+  const nearY = Math.max(ay, Math.min(by, ay + ah));
+  const dx = bx - nearX;
+  const dy = by - nearY;
+  const dist2 = dx * dx + dy * dy;
+  if (dist2 >= br * br) return null;
+  const dist = Math.sqrt(dist2) || 0.001;
+  const nx = dx / dist;
+  const ny = dy / dist;
+  // 押し返し
+  const pen = br - dist;
+  const newBx = bx + nx * pen;
+  const newBy = by + ny * pen;
+  // 反射
+  const dot = vx * nx + vy * ny;
+  const newVx = (vx - 2 * dot * nx) * damping;
+  const newVy = (vy - 2 * dot * ny) * damping;
+  return [newBx, newBy, newVx, newVy];
 }
 
-// Wall collision - reflect velocity
-export function reflectVelocity(vx: number, vy: number, normalX: number, normalY: number, damping: number = 1): [number, number] {
-  const dot = vx * normalX + vy * normalY;
-  return [
-    (vx - 2 * dot * normalX) * damping,
-    (vy - 2 * dot * normalY) * damping,
-  ];
+// ===== 円 vs 円 =====
+export function circleCircle(
+  ax: number, ay: number, ar: number,
+  bx: number, by: number, br: number
+): boolean {
+  const dx = ax - bx, dy = ay - by;
+  const rad = ar + br;
+  return dx * dx + dy * dy < rad * rad;
 }
 
-// Clamp point to screen bounds
-export function clampToBounds(x: number, y: number, w: number, h: number): [number, number] {
-  const minX = -180;
-  const maxX = 180;
-  const minY = -320;
-  const maxY = 320;
+/** バンパー衝突解決: ボールを押し返し、速度を強制付与 */
+export function resolveBumper(
+  bx: number, by: number, br: number,
+  vx: number, vy: number,
+  cx: number, cy: number, cr: number,
+  force: number
+): [number, number, number, number] {
+  const dx = bx - cx, dy = by - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+  const nx = dx / dist, ny = dy / dist;
+  const overlap = br + cr - dist;
+  const newBx = bx + nx * (overlap + 0.5);
+  const newBy = by + ny * (overlap + 0.5);
+  // 強制的に押し出し速度付与
+  const newVx = nx * force;
+  const newVy = ny * force;
+  return [newBx, newBy, newVx, newVy];
+}
 
-  return [
-    Math.max(minX + w / 2, Math.min(maxX - w / 2, x)),
-    Math.max(minY + h / 2, Math.min(maxY - h / 2, y)),
-  ];
+// ===== 円 vs OBB (フリッパー用) =====
+/** OBB ローカル座標へ変換 */
+function worldToOBBLocal(px: number, py: number, obb: OBB): [number, number] {
+  const dx = px - obb.cx, dy = py - obb.cy;
+  const c = Math.cos(-obb.angle), s = Math.sin(-obb.angle);
+  return [c * dx - s * dy, s * dx + c * dy];
+}
+
+export function circleOBBOverlap(
+  bx: number, by: number, br: number,
+  obb: OBB
+): boolean {
+  const [lx, ly] = worldToOBBLocal(bx, by, obb);
+  const nearX = Math.max(-obb.hw, Math.min(lx, obb.hw));
+  const nearY = Math.max(-obb.hh, Math.min(ly, obb.hh));
+  const dx = lx - nearX, dy = ly - nearY;
+  return dx * dx + dy * dy < br * br;
+}
+
+/** 円 vs OBB 衝突解決。法線はワールド座標で返す */
+export function resolveCircleOBB(
+  bx: number, by: number, br: number,
+  vx: number, vy: number,
+  obb: OBB,
+  damping = 0.78
+): [number, number, number, number] | null {
+  const [lx, ly] = worldToOBBLocal(bx, by, obb);
+  const nearX = Math.max(-obb.hw, Math.min(lx, obb.hw));
+  const nearY = Math.max(-obb.hh, Math.min(ly, obb.hh));
+  const dlx = lx - nearX, dly = ly - nearY;
+  const dist2 = dlx * dlx + dly * dly;
+  if (dist2 >= br * br) return null;
+  const dist = Math.sqrt(dist2) || 0.001;
+  // ローカル法線 → ワールド法線
+  const lnx = dlx / dist, lny = dly / dist;
+  const c = Math.cos(obb.angle), s = Math.sin(obb.angle);
+  const nx = c * lnx - s * lny;
+  const ny = s * lnx + c * lny;
+  // 押し返し
+  const pen = br - dist;
+  const newBx = bx + nx * (pen + 0.5);
+  const newBy = by + ny * (pen + 0.5);
+  // 反射
+  const dot = vx * nx + vy * ny;
+  const newVx = (vx - 2 * dot * nx) * damping;
+  const newVy = (vy - 2 * dot * ny) * damping;
+  return [newBx, newBy, newVx, newVy];
+}
+
+/** 速度制限 */
+export function clampSpeed(vx: number, vy: number, maxSpeed: number): [number, number] {
+  const spd = Math.sqrt(vx * vx + vy * vy);
+  if (spd > maxSpeed) {
+    const k = maxSpeed / spd;
+    return [vx * k, vy * k];
+  }
+  return [vx, vy];
+}
+
+/** ランダム float */
+export function rand(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
+/** ランダム int (inclusive) */
+export function randInt(min: number, max: number): number {
+  return Math.floor(min + Math.random() * (max - min + 1));
 }

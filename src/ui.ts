@@ -1,88 +1,96 @@
-import * as C from './constants';
+/**
+ * ui.ts — DOM UI 更新（スコア・残機・コンボ・ゲームオーバー）
+ */
+
+import { COMBO_MAX } from './constants';
 
 export class UIManager {
-  score: number = 0;
-  combo: number = 0;
-  comboTimer: number = 0;
-  comboPopupScale: number = 1;
-  comboPopupTimer: number = 0;
-  ballsRemaining: number = 3;
+  private elScore    = document.getElementById('score')!;
+  private elHi       = document.getElementById('hi')!;
+  private elBalls    = document.getElementById('balls')!;
+  private elStage    = document.getElementById('stage')!;
+  private elCombo    = document.getElementById('combo')!;
+  private elGameover = document.getElementById('gameover')!;
+  private elFinalScore= document.getElementById('final-score')!;
+  private elFinalBest = document.getElementById('final-best')!;
+  private elStageClear= document.getElementById('stageclear')!;
+  private elClearBonus= document.getElementById('clear-bonus')!;
 
-  addScore(points: number) {
-    this.score += points;
+  private _score = 0;
+  private _hi    = 0;
+  private _balls = 3;
+  private _combo = 1;
+  private _stage = 1;
+
+  constructor() {
+    this._hi = parseInt(localStorage.getItem('kaiju_hi') || '0', 10);
+    this.updateHi();
   }
 
-  incrementCombo() {
-    this.combo = Math.min(this.combo + 1, C.MAX_COMBO);
-    this.comboTimer = C.COMBO_TIMEOUT;
-    this.comboPopupTimer = 0.5;
-    this.comboPopupScale = 1;
-  }
-
-  resetCombo() {
-    this.combo = 0;
-    this.comboTimer = 0;
-  }
-
-  update(dt: number) {
-    if (this.comboTimer > 0) {
-      this.comboTimer -= dt;
-      if (this.comboTimer <= 0) {
-        this.resetCombo();
-      }
-    }
-
-    if (this.comboPopupTimer > 0) {
-      this.comboPopupTimer -= dt;
-      const progress = 1 - this.comboPopupTimer / 0.5;
-      // Scale up then shrink
-      this.comboPopupScale = 1 + progress * 0.3 - progress * progress * 0.4;
+  setScore(v: number) {
+    this._score = v;
+    this.elScore.textContent = `SCORE: ${v.toLocaleString()}`;
+    if (v > this._hi) {
+      this._hi = v;
+      this.updateHi();
     }
   }
 
-  getComboMultiplier(): number {
-    return C.COMBO_SCORE_MULTIPLIER(this.combo);
+  setBalls(v: number) {
+    this._balls = v;
+    this.elBalls.textContent = '●'.repeat(Math.max(0, v)) + '○'.repeat(Math.max(0, 3 - v));
   }
 
-  lostBall() {
-    this.ballsRemaining = Math.max(0, this.ballsRemaining - 1);
+  setStage(v: number) {
+    this._stage = v;
+    this.elStage.textContent = `STAGE ${v}`;
   }
 
-  resetBalls() {
-    this.ballsRemaining = 3;
-  }
-
-  isGameOver(): boolean {
-    return this.ballsRemaining === 0;
-  }
-
-  render(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    // Score (top-left)
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 20px Arial';
-    ctx.fillText(`Score: ${this.score}`, 10, 30);
-
-    // Balls remaining (top-right)
-    ctx.textAlign = 'right';
-    ctx.fillText(`Balls: ${this.ballsRemaining}`, width - 10, 30);
-    ctx.textAlign = 'left';
-
-    // Combo display (center)
-    if (this.combo > 0) {
-      const scale = this.comboPopupScale;
-      ctx.save();
-      ctx.translate(width / 2, height / 2);
-      ctx.scale(scale, scale);
-
-      ctx.fillStyle = this.combo >= 5 ? '#ff6600' : '#ffff00';
-      ctx.font = `bold ${60 + this.combo * 5}px Arial`;
-      ctx.textAlign = 'center';
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 3;
-      ctx.strokeText(`×${this.combo}!`, 0, 0);
-      ctx.fillText(`×${this.combo}!`, 0, 0);
-
-      ctx.restore();
+  setCombo(combo: number) {
+    this._combo = combo;
+    if (combo < 2) {
+      this.elCombo.style.display = 'none';
+      return;
     }
+    this.elCombo.style.display = 'block';
+    const isMax = combo >= COMBO_MAX;
+    const txt = isMax ? `MAX×${combo}!!!` : `×${combo}!`;
+    this.elCombo.textContent = txt;
+    const base = 40 + combo * 4;
+    this.elCombo.style.fontSize = `${Math.min(base, 80)}px`;
+    this.elCombo.style.color = combo >= 5 ? (combo >= 8 ? '#ffd700' : '#ff4400') : '#ffff00';
+    // アニメーション: スケールを1より大きくして戻す
+    this.elCombo.style.transform = `translate(-50%,-50%) scale(${1.0 + combo * 0.04})`;
+    setTimeout(() => {
+      this.elCombo.style.transform = 'translate(-50%,-50%) scale(1)';
+    }, 120);
+  }
+
+  hideCombo() {
+    this.elCombo.style.display = 'none';
+  }
+
+  showGameOver(score: number) {
+    this.elFinalScore.textContent = `Score: ${score.toLocaleString()}`;
+    this.elFinalBest.textContent  = `Best: ${this._hi.toLocaleString()}`;
+    this.elGameover.classList.add('show');
+    localStorage.setItem('kaiju_hi', String(this._hi));
+  }
+
+  hideGameOver() {
+    this.elGameover.classList.remove('show');
+  }
+
+  showStageClear(bonusScore: number) {
+    this.elClearBonus.textContent = `Bonus: +${bonusScore.toLocaleString()}`;
+    this.elStageClear.classList.add('show');
+  }
+
+  hideStageClear() {
+    this.elStageClear.classList.remove('show');
+  }
+
+  private updateHi() {
+    this.elHi.textContent = `BEST: ${this._hi.toLocaleString()}`;
   }
 }

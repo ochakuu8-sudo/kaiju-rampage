@@ -1,411 +1,500 @@
+/**
+ * game.ts — メインゲームループ + 全システム統合
+ *
+ * 描画順（仕様書 9-1 より）:
+ *  1. 背景クリア
+ *  2. 壁・レール
+ *  3. 建物
+ *  4. 人間
+ *  5. バンパー
+ *  6. フリッパー
+ *  7. ボール（トレイル含む）
+ *  8. パーティクル
+ *  9. フラッシュオーバーレイ
+ *  10. UI (DOM)
+ */
+
 import * as C from './constants';
-import { Renderer } from './renderer';
+import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
-import { Ball, Flipper, BuildingManager } from './entities';
+import { SoundEngine } from './sound';
+import { Ball, Flipper, BuildingManager, BumperManager } from './entities';
 import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
-import { SoundEngine } from './sound';
 import { UIManager } from './ui';
 import { getStage } from './stages';
-import { circleAABBCollision, circleCollision, circleOBBCollision, circleAABBNormal, reflectVelocity } from './physics';
+import {
+  resolveCircleOBB,
+  clampSpeed, rand, randInt
+} from './physics';
+import type { BuildingData } from './entities';
+
+// 静的インスタンスバッファ（再利用でGCゼロ）
+const SHARED_BUF = new Float32Array(3200 * INST_F);
+
+type GameState = 'playing' | 'ball_lost' | 'stage_clear' | 'game_over';
 
 export class Game {
-  renderer: Renderer;
-  input: InputManager;
-  ball: Ball;
-  flipperLeft: Flipper;
-  flipperRight: Flipper;
-  buildings: BuildingManager;
-  humans: HumanManager;
-  particles: ParticleManager;
-  juice: JuiceManager;
-  sound: SoundEngine;
-  ui: UIManager;
+  private renderer: Renderer;
+  private input:    InputManager;
+  private sound:    SoundEngine;
+  private humans:   HumanManager;
+  private particles:ParticleManager;
+  private juice:    JuiceManager;
+  private ui:       UIManager;
+  private buildings:BuildingManager;
+  private bumpers:  BumperManager;
 
-  currentStage: number = 1;
-  gameRunning: boolean = true;
-  gameOver: boolean = false;
+  private ball:     Ball;
+  private flippers: [Flipper, Flipper];
 
-  // Track when last human was crushed for combo
-  lastCrushTime: number = 0;
+  private score     = 0;
+  private combo     = 1;
+  private comboTimer= 0;
+  private ballsLeft = C.INITIAL_BALLS;
+  private stage     = 1;
+  private state: GameState = 'playing';
+  private stateTimer= 0;
+
+  // ボールをランチャーに戻すクールダウン
+  private ballLaunchReady = false;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.renderer = new Renderer(canvas);
-    this.input = new InputManager();
-    this.ball = new Ball();
-    this.flipperLeft = new Flipper('left');
-    this.flipperRight = new Flipper('right');
-    this.buildings = new BuildingManager();
-    this.humans = new HumanManager();
+    this.renderer  = new Renderer(canvas);
+    this.input     = new InputManager(canvas);
+    this.sound     = new SoundEngine();
+    this.humans    = new HumanManager();
     this.particles = new ParticleManager();
-    this.juice = new JuiceManager();
-    this.sound = new SoundEngine();
-    this.ui = new UIManager();
+    this.juice     = new JuiceManager();
+    this.ui        = new UIManager();
+    this.buildings = new BuildingManager();
+    this.bumpers   = new BumperManager();
+    this.ball      = new Ball();
+    this.flippers  = [new Flipper(true), new Flipper(false)];
+
+    // ゲームオーバー画面のタップ → リスタート
+    this.input.registerRestartTap(document.getElementById('gameover')!);
+    this.input.onRestart(() => this.restart());
 
-    this.loadStage(this.currentStage);
-  }
-
-  loadStage(stageNumber: number) {
-    const stage = getStage(stageNumber);
-    this.buildings.clear();
-    this.humans.clear();
-    this.particles.clear();
-
-    for (const building of stage.buildings) {
-      this.buildings.addBuilding(building.x, building.y, building.type);
-    }
-
-    this.ball.reset();
-    this.ui.resetBalls();
-  }
-
-  update(dt: number) {
-    // Apply juice time scale
-    const scaledDt = dt * this.juice.getTimeScale();
-
-    // Update input and flippers
-    this.flipperLeft.isActive = this.input.leftPressed;
-    this.flipperRight.isActive = this.input.rightPressed;
-    this.flipperLeft.update(scaledDt);
-    this.flipperRight.update(scaledDt);
-
-    // Update ball
-    this.ball.update(scaledDt);
-
-    // Update buildings
-    this.buildings.update(scaledDt);
-
-    // Update humans
-    this.humans.update(scaledDt);
-
-    // Update particles
-    this.particles.update(scaledDt);
-
-    // Update UI
-    this.ui.update(scaledDt);
-
-    // Update juice
-    this.juice.update(dt);
-
-    // ========== COLLISION DETECTION ==========
-
-    // Ball vs Buildings
-    for (const building of this.buildings.buildings) {
-      if (!building.isActive || building.hp === 0) continue;
-
-      const buildingConfig = C.BUILDING_TYPES[building.type];
-      if (circleAABBCollision(
-        { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
-        { x: building.x, y: building.y, width: buildingConfig.width, height: buildingConfig.height }
-      )) {
-        // Damage building
-        this.buildings.damage(building);
-
-        // Bounce ball using collision normal
-        const [normalX, normalY] = circleAABBNormal(
-          { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
-          { x: building.x, y: building.y, width: buildingConfig.width, height: buildingConfig.height }
-        );
-        [this.ball.vx, this.ball.vy] = reflectVelocity(this.ball.vx, this.ball.vy, normalX, normalY, C.BALL_WALL_DAMPING);
-
-        // VFX
-        this.sound.playSound('building_hit');
-
-        // If building destroyed, spawn humans
-        if (building.hp === 0) {
-          const config = C.BUILDING_TYPES[building.type];
-          const humansToSpawn = building.type === 'small' ? 4 : building.type === 'medium' ? 6 : 10;
-          this.humans.spawn(building.x, building.y, humansToSpawn);
-
-          // Big juice on destroy
-          const isLarge = building.type === 'large';
-          const shakeConfig = isLarge ? C.SHAKE_LARGE_BUILD_DESTROY : C.SHAKE_BUILDING_DESTROY;
-          this.juice.triggerShake(shakeConfig);
-          this.juice.triggerHitStop(isLarge ? C.HITSTOP_LARGE_BUILD_DESTROY : C.HITSTOP_BUILDING_DESTROY);
-          this.juice.triggerFlash();
-
-          this.sound.playSound('building_destroy');
-
-          // Particles
-          this.particles.emit(building.x, building.y, 15, 'debris');
-
-          // Score
-          this.ui.addScore(config.scoreValue);
-        } else {
-          this.juice.triggerShake(C.SHAKE_BUILDING_DAMAGE);
-          this.sound.playSound('building_hit');
-        }
-      }
-    }
-
-    // Ball vs Humans
-    for (let i = 0; i < this.humans.count; i++) {
-      const human = this.humans.getHumanAtIndex(i);
-      if (human.state !== 1) continue; // Only running humans (state = 1)
-
-      if (circleAABBCollision(
-        { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
-        { x: human.x, y: human.y, width: C.HUMAN_WIDTH, height: C.HUMAN_HEIGHT }
-      )) {
-        // Crush human
-        this.humans.crush(i);
-
-        // Combo logic
-        const now = performance.now() / 1000;
-        if (now - this.lastCrushTime < C.COMBO_TIMEOUT) {
-          this.ui.incrementCombo();
-        } else {
-          this.ui.combo = 1;
-          this.ui.comboTimer = C.COMBO_TIMEOUT;
-        }
-        this.lastCrushTime = now;
-
-        // Score
-        const scorePerCrush = C.HUMAN_CRUSH_SCORE * this.ui.getComboMultiplier();
-        this.ui.addScore(scorePerCrush);
-
-        // VFX
-        this.particles.emit(human.x, human.y, 10, 'blood');
-        this.juice.triggerShake(C.SHAKE_HUMAN_CRUSH);
-        this.sound.playSound('human_crush');
-      }
-    }
-
-    // Ball vs Flippers (always detect collision, passive bounce when inactive, active launch when active)
-    const flipperOBB_L = this.flipperLeft.getOBB();
-    const flipperOBB_R = this.flipperRight.getOBB();
-
-    if (circleOBBCollision(
-      { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
-      flipperOBB_L
-    )) {
-      this.flipperLeft.launchBall(this.ball);
-      this.sound.playSound('flipper');
-      if (this.flipperLeft.isActive) {
-        this.juice.triggerFlash(0.05);
-      }
-    }
-
-    if (circleOBBCollision(
-      { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
-      flipperOBB_R
-    )) {
-      this.flipperRight.launchBall(this.ball);
-      this.sound.playSound('flipper');
-      if (this.flipperRight.isActive) {
-        this.juice.triggerFlash(0.05);
-      }
-    }
-
-    // Ball lost
-    if (this.ball.isLost()) {
-      this.ui.lostBall();
-      this.sound.playSound('ball_lost');
-
-      if (this.ui.isGameOver()) {
-        this.gameOver = true;
-        this.gameRunning = false;
-      } else {
-        this.ball.reset();
-      }
-    }
-
-    // Stage complete
-    if (this.buildings.getActiveCount() === 0 && this.buildings.buildings.length > 0) {
-      this.sound.playSound('stage_clear');
-      this.juice.triggerSlowMotion(1.0, 0.2);
-      this.juice.triggerFlash(0.2);
-
-      // Bonus for remaining humans
-      this.ui.addScore(this.humans.getActiveCount() * 50);
-
-      // Next stage
-      this.currentStage++;
-      setTimeout(() => this.loadStage(this.currentStage), 1000);
-    }
-  }
-
-  render() {
-    this.renderer.clear();
-
-    // Update shake offset
-    const [shakeX, shakeY] = this.juice.getShakeOffset();
-    this.renderer.setShakeOffset(shakeX, shakeY);
-
-    // ========== Draw Buildings ==========
-    if (this.buildings.buildings.length > 0) {
-      const positions = new Float32Array(this.buildings.buildings.length * 2);
-      const sizes = new Float32Array(this.buildings.buildings.length * 2);
-      const colors = new Float32Array(this.buildings.buildings.length * 4);
-      const rotations = new Float32Array(this.buildings.buildings.length);
-
-      for (let i = 0; i < this.buildings.buildings.length; i++) {
-        const b = this.buildings.buildings[i];
-        const config = C.BUILDING_TYPES[b.type];
-
-        positions[i * 2] = b.x;
-        positions[i * 2 + 1] = b.y;
-
-        sizes[i * 2] = config.width;
-        sizes[i * 2 + 1] = config.height * (0.5 + 0.5 * (1 - b.destructionTimer / 0.2)); // Shrink on destroy
-
-        const [r, g, bl, a] = this.buildings.getColor(b);
-        colors[i * 4] = r;
-        colors[i * 4 + 1] = g;
-        colors[i * 4 + 2] = bl;
-        colors[i * 4 + 3] = a;
-
-        rotations[i] = 0;
-      }
-
-      this.renderer.drawQuads(positions, sizes, colors, rotations, this.buildings.buildings.length);
-    }
-
-    // ========== Draw Humans ==========
-    if (this.humans.count > 0) {
-      const positions = new Float32Array(this.humans.count * 2);
-      const sizes = new Float32Array(this.humans.count * 2);
-      const colors = new Float32Array(this.humans.count * 4);
-      const rotations = new Float32Array(this.humans.count);
-
-      for (let i = 0; i < this.humans.count; i++) {
-        const pos = this.humans.getHumanAtIndex(i);
-
-        positions[i * 2] = pos.x;
-        positions[i * 2 + 1] = pos.y;
-
-        sizes[i * 2] = C.HUMAN_WIDTH;
-        sizes[i * 2 + 1] = C.HUMAN_HEIGHT;
-
-        const r = this.humans.colors[i * 4];
-        const g = this.humans.colors[i * 4 + 1];
-        const b = this.humans.colors[i * 4 + 2];
-        const a = this.humans.colors[i * 4 + 3];
-        colors[i * 4] = r;
-        colors[i * 4 + 1] = g;
-        colors[i * 4 + 2] = b;
-        colors[i * 4 + 3] = a;
-
-        rotations[i] = 0;
-      }
-
-      this.renderer.drawQuads(positions, sizes, colors, rotations, this.humans.count);
-    }
-
-    // ========== Draw Ball ==========
-    const ballPosArray = new Float32Array([this.ball.x, this.ball.y]);
-    const ballRadiiArray = new Float32Array([this.ball.radius]);
-    const ballColorArray = new Float32Array([...this.ball.color]);
-    this.renderer.drawCircles(ballPosArray, ballRadiiArray, ballColorArray, 1);
-
-    // Ball trail
-    if (this.ball.trailPositions.length > 1) {
-      const trailPositions = new Float32Array(this.ball.trailPositions.length * 2);
-      const trailRadii = new Float32Array(this.ball.trailPositions.length);
-      const trailColors = new Float32Array(this.ball.trailPositions.length * 4);
-
-      for (let i = 0; i < this.ball.trailPositions.length; i++) {
-        const [x, y] = this.ball.trailPositions[i];
-        trailPositions[i * 2] = x;
-        trailPositions[i * 2 + 1] = y;
-
-        // Fade older points
-        const age = (this.ball.trailPositions.length - i) / this.ball.trailPositions.length;
-        trailRadii[i] = this.ball.radius * (0.3 + age * 0.3);
-
-        trailColors[i * 4] = this.ball.color[0];
-        trailColors[i * 4 + 1] = this.ball.color[1];
-        trailColors[i * 4 + 2] = this.ball.color[2];
-        trailColors[i * 4 + 3] = (1 - age) * 0.5;
-      }
-
-      this.renderer.drawCircles(trailPositions, trailRadii, trailColors, this.ball.trailPositions.length);
-    }
-
-    // ========== Draw Flippers ==========
-    const flipperPositions = new Float32Array([
-      this.flipperLeft.x, this.flipperLeft.y,
-      this.flipperRight.x, this.flipperRight.y,
-    ]);
-    const flipperSizes = new Float32Array([
-      this.flipperLeft.width, this.flipperLeft.height,
-      this.flipperRight.width, this.flipperRight.height,
-    ]);
-    const flipperColors = new Float32Array([
-      ...this.flipperLeft.getColor(),
-      ...this.flipperRight.getColor(),
-    ]);
-    const flipperRotations = new Float32Array([
-      (this.flipperLeft.angle * Math.PI) / 180,
-      (this.flipperRight.angle * Math.PI) / 180,
-    ]);
-    this.renderer.drawQuads(flipperPositions, flipperSizes, flipperColors, flipperRotations, 2);
-
-    // ========== Draw Particles ==========
-    if (this.particles.count > 0) {
-      this.renderer.drawCircles(
-        this.particles.getPositions(),
-        this.particles.getRadii(),
-        this.particles.getColors(),
-        this.particles.count
-      );
-    }
-
-    // ========== Draw Flash Overlay ==========
-    const flashAlpha = this.juice.getFlashAlpha();
-    if (flashAlpha > 0) {
-      this.renderer.drawFullscreenOverlay(1, 1, 1, flashAlpha);
-    }
-
-    // ========== Draw UI (Canvas 2D overlay) ==========
-    this.renderUI();
-  }
-
-  private renderUI() {
-    // Update score display
-    const scoreDisplay = document.getElementById('score-display');
-    if (scoreDisplay) {
-      scoreDisplay.textContent = `Score: ${this.ui.score}`;
-    }
-
-    // Update balls display
-    const ballsDisplay = document.getElementById('balls-display');
-    if (ballsDisplay) {
-      ballsDisplay.textContent = `Balls: ${this.ui.ballsRemaining}`;
-    }
-
-    // Update combo display
-    const comboDisplay = document.getElementById('combo-display');
-    if (comboDisplay) {
-      if (this.ui.combo > 0) {
-        comboDisplay.textContent = `×${this.ui.combo}!`;
-        comboDisplay.style.display = 'block';
-        const scale = this.ui.comboPopupScale;
-        comboDisplay.style.transform = `translate(-50%, -50%) scale(${scale})`;
-        comboDisplay.style.color = this.ui.combo >= 5 ? '#ff6600' : '#ffff00';
-      } else {
-        comboDisplay.style.display = 'none';
-      }
-    }
-
-    // Update game over screen
-    if (this.gameOver) {
-      const overlay = document.getElementById('game-over-overlay');
-      const finalScore = document.getElementById('final-score');
-      if (overlay && finalScore) {
-        finalScore.textContent = `Final Score: ${this.ui.score}`;
-        overlay.classList.add('show');
-      }
-    }
-  }
-
-  handleGameOver() {
     this.loadStage(1);
-    this.gameOver = false;
-    this.gameRunning = true;
-    this.currentStage = 1;
-    this.ui.score = 0;
-    this.ui.combo = 0;
+    this.ui.setBalls(this.ballsLeft);
+    this.ui.setScore(0);
+
+    this.startLoop();
+  }
+
+  private loadStage(level: number) {
+    const cfg = getStage(level);
+    this.buildings.load(cfg.buildings);
+    this.bumpers.load(cfg.bumpers);
+    this.humans.reset();
+    this.particles.reset();
+    this.ball.reset();
+    this.ballLaunchReady = false;
+    this.juice.slowMo(0); // スロー解除
+  }
+
+  private restart() {
+    this.score      = 0;
+    this.combo      = 1;
+    this.comboTimer = 0;
+    this.ballsLeft  = C.INITIAL_BALLS;
+    this.stage      = 1;
+    this.state      = 'playing';
+    this.stateTimer = 0;
+    this.ui.hideGameOver();
+    this.ui.hideStageClear();
+    this.ui.setScore(0);
+    this.ui.setBalls(this.ballsLeft);
+    this.ui.setStage(1);
+    this.ui.hideCombo();
+    this.loadStage(1);
+  }
+
+  // ===== メインループ =====
+
+  private lastTime = 0;
+
+  private startLoop() {
+    const loop = (now: number) => {
+      const rawDt = Math.min((now - this.lastTime) / 1000, 0.05); // 最大50ms
+      this.lastTime = now;
+      this.update(rawDt);
+      this.render();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame((t) => { this.lastTime = t; requestAnimationFrame(loop); });
+  }
+
+  // ===== UPDATE =====
+
+  private update(rawDt: number) {
+    this.juice.update(rawDt);
+
+    if (this.state === 'game_over') return;
+
+    if (this.state === 'ball_lost') {
+      this.stateTimer -= rawDt;
+      this.particles.update(rawDt);
+      if (this.stateTimer <= 0) {
+        this.ball.reset();
+        this.ballLaunchReady = false;
+        this.state = 'playing';
+      }
+      return;
+    }
+
+    if (this.state === 'stage_clear') {
+      this.stateTimer -= rawDt;
+      this.particles.update(rawDt);
+      this.humans.update(rawDt, this.ball.x, this.ball.y);
+      if (this.stateTimer <= 0) {
+        this.stage++;
+        this.ui.hideStageClear();
+        this.loadStage(this.stage);
+        this.ui.setStage(this.stage);
+        this.state = 'playing';
+      }
+      return;
+    }
+
+    // === playing ===
+    const dt = this.juice.getGameDt(rawDt);
+
+    // フリッパー入力
+    this.flippers[0].setPressed(this.input.leftPressed);
+    this.flippers[1].setPressed(this.input.rightPressed);
+    this.flippers[0].update(dt);
+    this.flippers[1].update(dt);
+
+    // ボール物理
+    if (dt > 0) this.updateBall(dt);
+
+    // 建物・バンパー更新
+    this.buildings.update(dt);
+    this.bumpers.update(dt);
+
+    // 人間更新
+    this.humans.update(dt, this.ball.x, this.ball.y);
+
+    // パーティクル更新
+    this.particles.update(dt);
+
+    // コンボタイムアウト
+    if (this.comboTimer > 0) {
+      this.comboTimer -= dt;
+      if (this.comboTimer <= 0) {
+        this.combo = 1;
+        this.ui.hideCombo();
+        this.sound.resetComboStep();
+      }
+    }
+
+    // ステージクリア判定
+    if (this.buildings.allDestroyed()) {
+      this.onStageClear();
+    }
+  }
+
+  private updateBall(dt: number) {
+    const b = this.ball;
+    if (!b.active) return;
+
+    // 重力
+    b.vy -= C.GRAVITY * dt * 60;
+
+    // 移動
+    b.x += b.vx * dt * 60;
+    b.y += b.vy * dt * 60;
+
+    // 速度制限
+    [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+
+    // ===== 壁衝突 =====
+    // 左壁
+    if (b.x - C.BALL_RADIUS < C.WORLD_MIN_X) {
+      b.x = C.WORLD_MIN_X + C.BALL_RADIUS;
+      b.vx = Math.abs(b.vx) * C.WALL_DAMPING;
+      this.sound.wallHit();
+    }
+    // 右壁
+    if (b.x + C.BALL_RADIUS > C.WORLD_MAX_X) {
+      b.x = C.WORLD_MAX_X - C.BALL_RADIUS;
+      b.vx = -Math.abs(b.vx) * C.WALL_DAMPING;
+      this.sound.wallHit();
+    }
+    // 上壁
+    if (b.y + C.BALL_RADIUS > C.WORLD_MAX_Y - 40) {
+      b.y = C.WORLD_MAX_Y - 40 - C.BALL_RADIUS;
+      b.vy = -Math.abs(b.vy) * C.WALL_DAMPING;
+      this.sound.wallHit();
+    }
+
+    // ===== フリッパー衝突 =====
+    for (const fl of this.flippers) {
+      const obb = fl.getOBB();
+      const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, obb);
+      if (res) {
+        [b.x, b.y, b.vx, b.vy] = res;
+        // フリッパーが上昇中なら打ち出し力付与
+        const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
+        b.vx = nvx;
+        b.vy = nvy;
+        [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+        this.sound.flipper();
+        this.juice.ballHitFlash();
+        break;
+      }
+    }
+
+    // ===== 建物衝突 =====
+    const bldHit = this.buildings.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
+    if (bldHit) {
+      const { bld, newBx, newBy, newVx, newVy } = bldHit;
+      b.x = newBx; b.y = newBy; b.vx = newVx; b.vy = newVy;
+      [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+
+      const destroyed = this.buildings.damage(bld);
+      if (destroyed) {
+        this.onBuildingDestroyed(bld);
+      } else {
+        // ヒット演出
+        this.score += 10;
+        this.ui.setScore(this.score);
+        this.sound.buildingHit();
+        this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
+        this.juice.ballHitFlash();
+        this.particles.spawnSpark(b.x, b.y, 4);
+      }
+    }
+
+    // ===== バンパー衝突 =====
+    const bmpHit = this.bumpers.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
+    if (bmpHit) {
+      const { newBx, newBy, newVx, newVy } = bmpHit;
+      b.x = newBx; b.y = newBy; b.vx = newVx; b.vy = newVy;
+      this.score += C.BUMPER_SCORE;
+      this.ui.setScore(this.score);
+      this.sound.bumper();
+      this.juice.shake(C.SHAKE_HIT_AMP * 0.7, C.SHAKE_HIT_DUR * 0.7);
+      this.juice.ballHitFlash();
+      this.particles.spawnSpark(b.x, b.y, 5);
+    }
+
+    // ===== 人間潰し =====
+    const crushed = this.humans.checkCrush(b.x, b.y, C.BALL_RADIUS);
+    if (crushed.length > 0) {
+      for (const idx of crushed) {
+        const [hx, hy] = this.humans.getPos(idx);
+        this.particles.spawnBlood(hx, hy, randInt(8, 12));
+        this.particles.spawnScorePop(hx, hy);
+      }
+      const gained = crushed.length * C.HUMAN_CRUSH_SCORE * this.combo;
+      this.score += gained;
+      this.ui.setScore(this.score);
+
+      this.combo = Math.min(this.combo + crushed.length, C.COMBO_MAX);
+      this.comboTimer = C.COMBO_TIMEOUT;
+      this.ui.setCombo(this.combo);
+      this.juice.showCombo(this.combo);
+
+      this.sound.humanCrush(this.combo);
+      this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
+
+      // コンボ5以上でスローモーション
+      if (this.combo >= C.COMBO_SLOW_THRESHOLD) {
+        this.juice.slowMo(0.3, 0.3);
+      }
+      // コンボ10でフラッシュ
+      if (this.combo >= C.COMBO_MAX) {
+        this.juice.flash(1, 0.8, 0, 0.4);
+      }
+    }
+
+    // ===== ボールロスト =====
+    if (b.y < C.FALLOFF_Y) {
+      this.onBallLost();
+    }
+
+    // トレイル記録
+    b.recordTrail();
+  }
+
+  private onBuildingDestroyed(bld: BuildingData) {
+    const cx = bld.x + bld.w / 2;
+    const cy = bld.y + bld.h / 2;
+
+    this.score += bld.score;
+    this.ui.setScore(this.score);
+    this.sound.buildingDestroy();
+
+    const isLarge = bld.maxHp >= 3;
+    if (isLarge) {
+      this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR, 1.5);
+      this.juice.hitStop(C.HITSTOP_LARGE);
+      this.juice.flash(1, 1, 1, 0.35);
+    } else {
+      this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
+      this.juice.hitStop(C.HITSTOP_SMALL);
+    }
+
+    // パーティクル
+    const debrisCount = 10 + bld.maxHp * 5;
+    this.particles.spawnDebris(cx, cy, debrisCount, 0.6, 0.6, 0.7);
+    this.particles.spawnSmoke(cx, cy, 4);
+    this.particles.spawnSpark(cx, cy, 8);
+
+    // 人間スポーン
+    const n = randInt(bld.humanMin, bld.humanMax);
+    this.humans.spawn(cx, cy, n);
+  }
+
+  private onBallLost() {
+    this.ball.active = false;
+    this.ballsLeft--;
+    this.ui.setBalls(this.ballsLeft);
+    this.sound.ballLost();
+    this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
+    this.combo = 1;
+    this.comboTimer = 0;
+    this.ui.hideCombo();
+    this.sound.resetComboStep();
+
+    if (this.ballsLeft <= 0) {
+      this.onGameOver();
+    } else {
+      this.state = 'ball_lost';
+      this.stateTimer = 1.2; // 1.2秒後にボール復活
+    }
+  }
+
+  private onStageClear() {
+    this.state = 'stage_clear';
+    this.stateTimer = 3.0;
+    this.sound.stageClear();
+    this.juice.stageClearSlow();
+    this.juice.flash(0, 1, 0, 0.4);
+
+    // 残った人間をすべて逃がしてボーナス（逃がすだけ、スコアはなし）
+    const bonusScore = this.humans.activeCount * 0;
+    this.ui.showStageClear(bonusScore);
+  }
+
+  private onGameOver() {
+    this.state = 'game_over';
+    this.juice.flash(1, 0, 0, 0.6);
+    setTimeout(() => {
+      this.ui.showGameOver(this.score);
+    }, 800);
+  }
+
+  // ===== RENDER =====
+
+  private render() {
+    const cfg = getStage(this.stage);
+    this.renderer.clear(cfg.bgR, cfg.bgG, cfg.bgB);
+    const shake = this.juice.getShake();
+
+    let instCount = 0;
+
+    // ------ 2. 壁・レール ------
+    // 左右の斜面（フリッパー横）
+    instCount = this.fillWalls(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 3. 建物 ------
+    instCount = 0;
+    instCount += this.buildings.fillInstances(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 4. 人間 ------
+    instCount = 0;
+    instCount += this.humans.fillInstances(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 5. バンパー ------
+    instCount = 0;
+    instCount += this.bumpers.fillInstances(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 6. フリッパー ------
+    instCount = 0;
+    instCount += this.fillFlippers(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 7. ボール（トレイル + 本体） ------
+    instCount = 0;
+    instCount += this.fillBall(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 8. パーティクル ------
+    instCount = 0;
+    instCount += this.particles.fillInstances(SHARED_BUF, 0);
+    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
+
+    // ------ 9. フラッシュ ------
+    this.renderer.drawFlash(
+      this.juice.flashR, this.juice.flashG, this.juice.flashB,
+      this.juice.flashAlpha
+    );
+  }
+
+  private fillWalls(buf: Float32Array, start: number): number {
+    let n = start;
+    // 左壁
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0,    4, C.WORLD_MAX_Y * 2, 0.15, 0.15, 0.2, 1);
+    // 右壁
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0,    4, C.WORLD_MAX_Y * 2, 0.15, 0.15, 0.2, 1);
+    // 上壁
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, C.WORLD_MAX_X * 2, 4, 0.15, 0.15, 0.2, 1);
+    // UI区切り線（上部）
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.6);
+    // 左フリッパー横斜め壁
+    writeInst(buf, n++, C.WORLD_MIN_X + 30, -160, 60, 6, 0.3, 0.3, 0.4, 1, -0.6);
+    // 右フリッパー横斜め壁
+    writeInst(buf, n++, C.WORLD_MAX_X - 30, -160, 60, 6, 0.3, 0.3, 0.4, 1,  0.6);
+    // 中間仕切り（ストリートと中間エリア境界）
+    writeInst(buf, n++, 0, C.STREET_Y_MIN - 4, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.4);
+    return n - start;
+  }
+
+  private fillFlippers(buf: Float32Array, start: number): number {
+    let n = start;
+    for (const fl of this.flippers) {
+      const isFlash = this.juice.isBallFlashing();
+      const gr = isFlash ? 1 : 0.7, gg = isFlash ? 1 : 0.7, gb = isFlash ? 1 : 0.8;
+      writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
+      // ピボット点マーク
+      writeInst(buf, n++, fl.cx, fl.cy, 6, 6, 1, 0.6, 0.2, 1, 0, 1);
+    }
+    return n - start;
+  }
+
+  private fillBall(buf: Float32Array, start: number): number {
+    const b = this.ball;
+    if (!b.active) return 0;
+    let n = start;
+    const isFl = this.juice.isBallFlashing();
+
+    // トレイル
+    for (let t = 0; t < C.TRAIL_LEN; t++) {
+      const age = t / C.TRAIL_LEN;
+      const idx = (b.trailHead - 1 - t + C.TRAIL_LEN) % C.TRAIL_LEN;
+      const tx = b.trail[idx * 2];
+      const ty = b.trail[idx * 2 + 1];
+      const alpha = (1 - age) * 0.4;
+      const sz = C.BALL_RADIUS * 2 * (1 - age * 0.6);
+      writeInst(buf, n++, tx, ty, sz, sz, 1, 0.5 - age * 0.3, 0.1, alpha, 0, 1);
+    }
+
+    // 本体
+    const r = isFl ? 1   : 1;
+    const g = isFl ? 1   : 0.55;
+    const bv= isFl ? 1   : 0.1;
+    const d = C.BALL_RADIUS * 2;
+    writeInst(buf, n++, b.x, b.y, d, d, r, g, bv, 1, 0, 1);
+
+    return n - start;
   }
 }

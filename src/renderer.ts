@@ -1,435 +1,231 @@
-import { LOGICAL_WIDTH, LOGICAL_HEIGHT } from './constants';
+/**
+ * renderer.ts — WebGL2 描画エンジン
+ * インスタンシングで全エンティティを 10 draw call 以下に収める
+ */
 
-// ========== Matrix Utilities ==========
-export function ortho(left: number, right: number, bottom: number, top: number, near: number, far: number): Float32Array {
-  const mat = new Float32Array(16);
-  const rl = 1 / (right - left);
-  const tb = 1 / (top - bottom);
-  const fn = 1 / (far - near);
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from './constants';
 
-  mat[0] = 2 * rl;
-  mat[5] = 2 * tb;
-  mat[10] = -2 * fn;
-  mat[12] = -(right + left) * rl;
-  mat[13] = -(top + bottom) * tb;
-  mat[14] = -(far + near) * fn;
-  mat[15] = 1;
+// ===== シェーダーソース =====
 
-  return mat;
-}
+const VS_INST = `#version 300 es
+precision highp float;
+in vec2  a_vert;
+// per-instance
+in vec2  i_pos;
+in vec2  i_size;
+in vec4  i_color;
+in float i_rot;
+in float i_circle;
 
-export function translate(mat: Float32Array, x: number, y: number, z: number = 0): Float32Array {
-  const result = new Float32Array(mat);
-  result[12] += x;
-  result[13] += y;
-  result[14] += z;
-  return result;
-}
+uniform mat4 u_proj;
+uniform vec2 u_shake;
 
-// ========== Shader Compilation ==========
-function compileShader(gl: WebGL2RenderingContext, source: string, type: GLenum): WebGLShader {
-  const shader = gl.createShader(type);
-  if (!shader) throw new Error('Failed to create shader');
+out vec4  v_color;
+out vec2  v_uv;
+out float v_circle;
 
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
+void main() {
+  float c = cos(i_rot), s = sin(i_rot);
+  vec2 scaled  = a_vert * i_size;
+  vec2 rotated = vec2(c*scaled.x - s*scaled.y, s*scaled.x + c*scaled.y);
+  vec2 world   = rotated + i_pos + u_shake;
+  gl_Position  = u_proj * vec4(world, 0.0, 1.0);
+  v_color  = i_color;
+  v_uv     = a_vert;
+  v_circle = i_circle;
+}`;
 
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    const log = gl.getShaderInfoLog(shader);
-    gl.deleteShader(shader);
-    throw new Error(`Shader compilation failed: ${log}`);
+const FS_INST = `#version 300 es
+precision highp float;
+in vec4  v_color;
+in vec2  v_uv;
+in float v_circle;
+out vec4 fragColor;
+void main() {
+  if (v_circle > 0.5) {
+    float d = length(v_uv) * 2.0;
+    if (d > 1.0) discard;
+    float glow = 1.0 - smoothstep(0.6, 1.0, d);
+    fragColor = vec4(v_color.rgb + glow * 0.4, v_color.a);
+  } else {
+    fragColor = v_color;
   }
-
-  return shader;
-}
-
-function linkProgram(gl: WebGL2RenderingContext, vs: WebGLShader, fs: WebGLShader): WebGLProgram {
-  const program = gl.createProgram();
-  if (!program) throw new Error('Failed to create program');
-
-  gl.attachShader(program, vs);
-  gl.attachShader(program, fs);
-  gl.linkProgram(program);
-
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    const log = gl.getProgramInfoLog(program);
-    gl.deleteProgram(program);
-    throw new Error(`Program linking failed: ${log}`);
-  }
-
-  return program;
-}
-
-// ========== Shader Sources ==========
-const QUAD_INSTANCED_VS = `#version 300 es
-precision highp float;
-
-// Per-vertex (quad corners)
-in vec2 position;
-
-// Per-instance
-in vec2 i_position;
-in vec2 i_size;
-in vec4 i_color;
-in float i_rotation;
-
-// Uniforms
-uniform mat4 u_projection;
-uniform vec2 u_shake_offset;
-
-// Output
-out vec4 v_color;
-
-mat2 rotate2d(float angle) {
-  float s = sin(angle);
-  float c = cos(angle);
-  return mat2(c, -s, s, c);
-}
-
-void main() {
-  vec2 pos = position * i_size;
-  pos = rotate2d(i_rotation) * pos;
-  pos += i_position + u_shake_offset;
-
-  gl_Position = u_projection * vec4(pos, 0.0, 1.0);
-  v_color = i_color;
 }`;
 
-const QUAD_INSTANCED_FS = `#version 300 es
-precision highp float;
+const VS_FS = `#version 300 es
+in vec2 a_pos;
+void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`;
 
-in vec4 v_color;
-out vec4 outColor;
-
-void main() {
-  outColor = v_color;
-}`;
-
-const CIRCLE_INSTANCED_VS = `#version 300 es
-precision highp float;
-
-in vec2 position;
-in vec2 i_position;
-in float i_radius;
-in vec4 i_color;
-
-uniform mat4 u_projection;
-uniform vec2 u_shake_offset;
-
-out vec4 v_color;
-out vec2 v_uv;
-
-void main() {
-  vec2 pos = position * i_radius;
-  pos += i_position + u_shake_offset;
-
-  gl_Position = u_projection * vec4(pos, 0.0, 1.0);
-  v_color = i_color;
-  v_uv = position;
-}`;
-
-const CIRCLE_INSTANCED_FS = `#version 300 es
-precision highp float;
-
-in vec4 v_color;
-in vec2 v_uv;
-out vec4 outColor;
-
-void main() {
-  float dist = length(v_uv);
-  if (dist > 1.0) discard;
-  outColor = v_color;
-}`;
-
-const FULLSCREEN_QUAD_VS = `#version 300 es
-in vec2 position;
-out vec2 v_uv;
-
-void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
-  v_uv = position * 0.5 + 0.5;
-}`;
-
-const FULLSCREEN_QUAD_FS = `#version 300 es
-precision highp float;
-
+const FS_FS = `#version 300 es
+precision mediump float;
 uniform vec4 u_color;
-out vec4 outColor;
+out vec4 fragColor;
+void main() { fragColor = u_color; }`;
 
-void main() {
-  outColor = u_color;
-}`;
+// ===== ユーティリティ =====
 
-// ========== Renderer Class ==========
+function compileShader(gl: WebGL2RenderingContext, type: number, src: string): WebGLShader {
+  const sh = gl.createShader(type)!;
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS))
+    throw new Error(`Shader compile: ${gl.getShaderInfoLog(sh)}\n${src}`);
+  return sh;
+}
+
+function linkProgram(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLProgram {
+  const p = gl.createProgram()!;
+  gl.attachShader(p, compileShader(gl, gl.VERTEX_SHADER, vs));
+  gl.attachShader(p, compileShader(gl, gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS))
+    throw new Error('Link: ' + gl.getProgramInfoLog(p));
+  return p;
+}
+
+// per-instance layout (floats): pos(2) size(2) color(4) rot(1) circle(1) = 10
+export const INST_F = 10;
+const MAX_INST = 3200;
+
 export class Renderer {
-  gl: WebGL2RenderingContext;
-  canvas: HTMLCanvasElement;
+  readonly gl: WebGL2RenderingContext;
 
-  // Programs
-  quadProgram!: WebGLProgram;
-  circleProgram!: WebGLProgram;
-  fullscreenProgram!: WebGLProgram;
+  private prog: WebGLProgram;
+  private vao: WebGLVertexArrayObject;
+  private instVBO: WebGLBuffer;
+  private u_proj: WebGLUniformLocation;
+  private u_shake: WebGLUniformLocation;
 
-  // VAOs
-  quadVAO!: WebGLVertexArrayObject;
-  circleVAO!: WebGLVertexArrayObject;
-  fullscreenVAO!: WebGLVertexArrayObject;
+  private fsProg: WebGLProgram;
+  private fsVAO: WebGLVertexArrayObject;
+  private u_fsColor: WebGLUniformLocation;
 
-  // Uniforms
-  quadProjectionLoc!: WebGLUniformLocation;
-  circleProjectionLoc!: WebGLUniformLocation;
-  fullscreenColorLoc!: WebGLUniformLocation;
+  // 共有インスタンスバッファ（呼び出し元が直接書き込む）
+  readonly instBuf: Float32Array;
 
-  // Shake offset
-  shakeOffset = new Float32Array([0, 0]);
-  shakeRotation = 0;
-
-  // Projection matrix
-  projectionMatrix: Float32Array;
+  private proj: Float32Array;
 
   constructor(canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext('webgl2');
+    const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, powerPreference: 'high-performance' });
     if (!gl) throw new Error('WebGL2 not supported');
-
-    this.canvas = canvas;
     this.gl = gl;
 
-    // Setup projection: origin at center, Y+ up
-    this.projectionMatrix = ortho(-LOGICAL_WIDTH / 2, LOGICAL_WIDTH / 2, -LOGICAL_HEIGHT / 2, LOGICAL_HEIGHT / 2, -1, 1);
+    // ---- instanced program ----
+    this.prog = linkProgram(gl, VS_INST, FS_INST);
+    this.vao  = gl.createVertexArray()!;
+    gl.bindVertexArray(this.vao);
 
-    this.initPrograms();
-    this.initGeometry();
-    this.initUniforms();
+    // 単位クワッド
+    const quad = new Float32Array([-0.5,-0.5, 0.5,-0.5, -0.5,0.5, 0.5,0.5]);
+    const qVBO = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, qVBO);
+    gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+    const aVert = gl.getAttribLocation(this.prog, 'a_vert');
+    gl.enableVertexAttribArray(aVert);
+    gl.vertexAttribPointer(aVert, 2, gl.FLOAT, false, 0, 0);
 
-    gl.clearColor(0.05, 0.05, 0.08, 1);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  }
+    // instance buffer
+    this.instBuf = new Float32Array(MAX_INST * INST_F);
+    this.instVBO = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instVBO);
+    gl.bufferData(gl.ARRAY_BUFFER, this.instBuf.byteLength, gl.DYNAMIC_DRAW);
 
-  private initPrograms() {
-    const { gl } = this;
+    const stride = INST_F * 4;
+    const ia = (name: string, sz: number, off: number) => {
+      const loc = gl.getAttribLocation(this.prog, name);
+      if (loc < 0) return;
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, sz, gl.FLOAT, false, stride, off * 4);
+      gl.vertexAttribDivisor(loc, 1);
+    };
+    ia('i_pos',    2, 0);
+    ia('i_size',   2, 2);
+    ia('i_color',  4, 4);
+    ia('i_rot',    1, 8);
+    ia('i_circle', 1, 9);
 
-    // Quad program
-    const quadVS = compileShader(gl, QUAD_INSTANCED_VS, gl.VERTEX_SHADER);
-    const quadFS = compileShader(gl, QUAD_INSTANCED_FS, gl.FRAGMENT_SHADER);
-    this.quadProgram = linkProgram(gl, quadVS, quadFS);
-    gl.deleteShader(quadVS);
-    gl.deleteShader(quadFS);
+    gl.bindVertexArray(null);
+    this.u_proj  = gl.getUniformLocation(this.prog,  'u_proj')!;
+    this.u_shake = gl.getUniformLocation(this.prog,  'u_shake')!;
 
-    // Circle program
-    const circleVS = compileShader(gl, CIRCLE_INSTANCED_VS, gl.VERTEX_SHADER);
-    const circleFS = compileShader(gl, CIRCLE_INSTANCED_FS, gl.FRAGMENT_SHADER);
-    this.circleProgram = linkProgram(gl, circleVS, circleFS);
-    gl.deleteShader(circleVS);
-    gl.deleteShader(circleFS);
-
-    // Fullscreen program
-    const fsVS = compileShader(gl, FULLSCREEN_QUAD_VS, gl.VERTEX_SHADER);
-    const fsFS = compileShader(gl, FULLSCREEN_QUAD_FS, gl.FRAGMENT_SHADER);
-    this.fullscreenProgram = linkProgram(gl, fsVS, fsFS);
-    gl.deleteShader(fsVS);
-    gl.deleteShader(fsFS);
-  }
-
-  private initGeometry() {
-    const { gl } = this;
-
-    // ===== Quad VAO =====
-    this.quadVAO = gl.createVertexArray()!;
-    gl.bindVertexArray(this.quadVAO);
-
-    const quadVBO = gl.createBuffer()!;
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      -0.5, -0.5,
-       0.5, -0.5,
-       0.5,  0.5,
-      -0.5,  0.5,
-    ]), gl.STATIC_DRAW);
-
-    const posLoc = gl.getAttribLocation(this.quadProgram, 'position');
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 8, 0);
-
-    // ===== Circle VAO =====
-    this.circleVAO = gl.createVertexArray()!;
-    gl.bindVertexArray(this.circleVAO);
-
-    const circleVBO = gl.createBuffer()!;
-    gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      -1, -1,
-       1, -1,
-       1,  1,
-      -1,  1,
-    ]), gl.STATIC_DRAW);
-
-    const circlePosLoc = gl.getAttribLocation(this.circleProgram, 'position');
-    gl.enableVertexAttribArray(circlePosLoc);
-    gl.vertexAttribPointer(circlePosLoc, 2, gl.FLOAT, false, 8, 0);
-
-    // ===== Fullscreen Quad VAO =====
-    this.fullscreenVAO = gl.createVertexArray()!;
-    gl.bindVertexArray(this.fullscreenVAO);
-
+    // ---- fullscreen quad ----
+    this.fsProg = linkProgram(gl, VS_FS, FS_FS);
+    this.fsVAO  = gl.createVertexArray()!;
+    gl.bindVertexArray(this.fsVAO);
     const fsVBO = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, fsVBO);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      -1, -1,
-       1, -1,
-       1,  1,
-      -1,  1,
-    ]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aFP = gl.getAttribLocation(this.fsProg, 'a_pos');
+    gl.enableVertexAttribArray(aFP);
+    gl.vertexAttribPointer(aFP, 2, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
+    this.u_fsColor = gl.getUniformLocation(this.fsProg, 'u_color')!;
 
-    const fsPosLoc = gl.getAttribLocation(this.fullscreenProgram, 'position');
-    gl.enableVertexAttribArray(fsPosLoc);
-    gl.vertexAttribPointer(fsPosLoc, 2, gl.FLOAT, false, 8, 0);
+    // orthographic projection: world(-180..180, -320..320) → clip
+    this.proj = this.makeOrtho(-180, 180, -320, 320);
 
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.viewport(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  }
+
+  private makeOrtho(l: number, r: number, b: number, t: number): Float32Array {
+    // column-major
+    return new Float32Array([
+      2/(r-l),        0,              0,  0,
+      0,              2/(t-b),        0,  0,
+      0,              0,             -1,  0,
+      -(r+l)/(r-l),  -(t+b)/(t-b),   0,  1,
+    ]);
+  }
+
+  clear(r = 0.06, g = 0.06, b = 0.10) {
+    const gl = this.gl;
+    gl.clearColor(r, g, b, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  }
+
+  /**
+   * インスタンスを一括描画
+   * @param buf     INST_F floats per instance
+   * @param count   instance count
+   * @param shake   screen shake offset [sx, sy]
+   */
+  drawInstances(buf: Float32Array, count: number, shake: [number, number] = [0, 0]) {
+    if (count <= 0) return;
+    const gl = this.gl;
+    gl.useProgram(this.prog);
+    gl.uniformMatrix4fv(this.u_proj, false, this.proj);
+    gl.uniform2fv(this.u_shake, shake);
+    gl.bindVertexArray(this.vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instVBO);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, buf, 0, count * INST_F);
+    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count);
     gl.bindVertexArray(null);
   }
 
-  private initUniforms() {
-    const { gl } = this;
-
-    this.quadProjectionLoc = gl.getUniformLocation(this.quadProgram, 'u_projection')!;
-    this.circleProjectionLoc = gl.getUniformLocation(this.circleProgram, 'u_projection')!;
-    this.fullscreenColorLoc = gl.getUniformLocation(this.fullscreenProgram, 'u_color')!;
-  }
-
-  clear() {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-  }
-
-  setShakeOffset(x: number, y: number) {
-    this.shakeOffset[0] = x;
-    this.shakeOffset[1] = y;
-  }
-
-  getShakeOffset(): [number, number] {
-    return [this.shakeOffset[0], this.shakeOffset[1]];
-  }
-
-  // Draw instanced quads
-  drawQuads(
-    positions: Float32Array, sizes: Float32Array, colors: Float32Array, rotations: Float32Array, count: number
-  ) {
-    const { gl } = this;
-
-    gl.useProgram(this.quadProgram);
-    gl.bindVertexArray(this.quadVAO);
-
-    // Position attribute
-    const posBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions.slice(0, count * 2), gl.DYNAMIC_DRAW);
-    const posLoc = gl.getAttribLocation(this.quadProgram, 'i_position');
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(posLoc, 1);
-
-    // Size attribute
-    const sizeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, sizeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, sizes.slice(0, count * 2), gl.DYNAMIC_DRAW);
-    const sizeLoc = gl.getAttribLocation(this.quadProgram, 'i_size');
-    gl.enableVertexAttribArray(sizeLoc);
-    gl.vertexAttribPointer(sizeLoc, 2, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(sizeLoc, 1);
-
-    // Color attribute
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors.slice(0, count * 4), gl.DYNAMIC_DRAW);
-    const colorLoc = gl.getAttribLocation(this.quadProgram, 'i_color');
-    gl.enableVertexAttribArray(colorLoc);
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(colorLoc, 1);
-
-    // Rotation attribute
-    const rotBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, rotBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, rotations.slice(0, count), gl.DYNAMIC_DRAW);
-    const rotLoc = gl.getAttribLocation(this.quadProgram, 'i_rotation');
-    gl.enableVertexAttribArray(rotLoc);
-    gl.vertexAttribPointer(rotLoc, 1, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(rotLoc, 1);
-
-    gl.uniformMatrix4fv(this.quadProjectionLoc, false, this.projectionMatrix);
-    gl.uniform2fv(gl.getUniformLocation(this.quadProgram, 'u_shake_offset'), this.shakeOffset);
-
-    gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, count);
-
-    // Cleanup
-    gl.deleteBuffer(posBuffer);
-    gl.deleteBuffer(sizeBuffer);
-    gl.deleteBuffer(colorBuffer);
-    gl.deleteBuffer(rotBuffer);
+  drawFlash(r: number, g: number, b: number, a: number) {
+    if (a <= 0.001) return;
+    const gl = this.gl;
+    gl.useProgram(this.fsProg);
+    gl.uniform4f(this.u_fsColor, r, g, b, a);
+    gl.bindVertexArray(this.fsVAO);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);
   }
+}
 
-  // Draw instanced circles
-  drawCircles(
-    positions: Float32Array, radii: Float32Array, colors: Float32Array, count: number
-  ) {
-    const { gl } = this;
-
-    gl.useProgram(this.circleProgram);
-    gl.bindVertexArray(this.circleVAO);
-
-    // Position attribute
-    const posBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions.slice(0, count * 2), gl.DYNAMIC_DRAW);
-    const posLoc = gl.getAttribLocation(this.circleProgram, 'i_position');
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(posLoc, 1);
-
-    // Radius attribute
-    const radiusBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, radiusBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, radii.slice(0, count), gl.DYNAMIC_DRAW);
-    const radiusLoc = gl.getAttribLocation(this.circleProgram, 'i_radius');
-    gl.enableVertexAttribArray(radiusLoc);
-    gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(radiusLoc, 1);
-
-    // Color attribute
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors.slice(0, count * 4), gl.DYNAMIC_DRAW);
-    const colorLoc = gl.getAttribLocation(this.circleProgram, 'i_color');
-    gl.enableVertexAttribArray(colorLoc);
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribDivisor(colorLoc, 1);
-
-    gl.uniformMatrix4fv(this.circleProjectionLoc, false, this.projectionMatrix);
-    gl.uniform2fv(gl.getUniformLocation(this.circleProgram, 'u_shake_offset'), this.shakeOffset);
-
-    gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, count);
-
-    // Cleanup
-    gl.deleteBuffer(posBuffer);
-    gl.deleteBuffer(radiusBuffer);
-    gl.deleteBuffer(colorBuffer);
-    gl.bindVertexArray(null);
-  }
-
-  // Draw fullscreen overlay
-  drawFullscreenOverlay(r: number, g: number, b: number, a: number) {
-    const { gl } = this;
-
-    gl.useProgram(this.fullscreenProgram);
-    gl.bindVertexArray(this.fullscreenVAO);
-
-    gl.uniformMatrix4fv(gl.getUniformLocation(this.fullscreenProgram, 'u_projection'), false, new Float32Array([
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
-    ]));
-    gl.uniform4f(this.fullscreenColorLoc, r, g, b, a);
-
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-  }
+/** インスタンスバッファへ1インスタンス書き込む */
+export function writeInst(
+  buf: Float32Array, idx: number,
+  px: number, py: number,
+  sw: number, sh: number,
+  r: number, g: number, b: number, a: number,
+  rot = 0, circle = 0
+) {
+  const o = idx * INST_F;
+  buf[o]   = px; buf[o+1] = py;
+  buf[o+2] = sw; buf[o+3] = sh;
+  buf[o+4] = r;  buf[o+5] = g; buf[o+6] = b; buf[o+7] = a;
+  buf[o+8] = rot; buf[o+9] = circle;
 }
