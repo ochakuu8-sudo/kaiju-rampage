@@ -53,8 +53,6 @@ export class Game {
   private flippers: [Flipper, Flipper];
 
   private score     = 0;
-  private combo     = 1;
-  private comboTimer= 0;
   private ballsLeft = C.INITIAL_BALLS;
   private stage     = 1;
   private state: GameState = 'playing';
@@ -106,8 +104,7 @@ export class Game {
 
   private restart() {
     this.score      = 0;
-    this.combo      = 1;
-    this.comboTimer = 0;
+
     this.ballsLeft  = C.INITIAL_BALLS;
     this.stage      = 1;
     this.state      = 'playing';
@@ -117,7 +114,6 @@ export class Game {
     this.ui.setScore(0);
     this.ui.setBalls(this.ballsLeft);
     this.ui.setStage(1);
-    this.ui.hideCombo();
     this.loadStage(1);
   }
 
@@ -182,15 +178,6 @@ export class Game {
     this.vehicles.update(dt);
     this.humans.update(dt, this.ball.x, this.ball.y);
     this.particles.update(dt);
-
-    if (this.comboTimer > 0) {
-      this.comboTimer -= dt;
-      if (this.comboTimer <= 0) {
-        this.combo = 1;
-        this.ui.hideCombo();
-        this.sound.resetComboStep();
-      }
-    }
 
     if (this.buildings.allDestroyed()) {
       this.onStageClear();
@@ -365,21 +352,11 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(8, 12));
         this.particles.spawnScorePop(hx, hy);
       }
-      const gained = crushed.length * C.HUMAN_CRUSH_SCORE * this.combo;
-      this.score += gained;
+      this.score += crushed.length * C.HUMAN_CRUSH_SCORE;
       this.ui.setScore(this.score);
 
-      this.combo = Math.min(this.combo + crushed.length, C.COMBO_MAX);
-      this.comboTimer = C.COMBO_TIMEOUT;
-      this.ui.setCombo(this.combo);
-      this.juice.showCombo(this.combo);
-
-      this.sound.humanCrush(this.combo);
+      this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
-
-      if (this.combo >= C.COMBO_MAX) {
-        this.juice.flash(1, 0.8, 0, 0.4);
-      }
     }
 
     if (b.y < C.FALLOFF_Y) {
@@ -440,10 +417,6 @@ export class Game {
     this.ui.setBalls(this.ballsLeft);
     this.sound.ballLost();
     this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
-    this.combo = 1;
-    this.comboTimer = 0;
-    this.ui.hideCombo();
-    this.sound.resetComboStep();
 
     if (this.ballsLeft <= 0) {
       this.onGameOver();
