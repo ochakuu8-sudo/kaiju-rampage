@@ -62,7 +62,7 @@ export class Ball {
     this.x = C.BALL_START_X;
     this.y = C.BALL_START_Y;
     this.vx = 0;
-    this.vy = 0;
+    this.vy = 13;  // 自動発射：上向き初速
     this.trailPositions = [];
   }
 }
@@ -83,16 +83,19 @@ export class Flipper {
   }
 
   update(dt: number) {
-    const targetAngle = this.isActive ? C.FLIPPER_ACTIVE_ANGLE : C.FLIPPER_REST_ANGLE;
     const rotationPerFrame = C.FLIPPER_ROTATION_SPEED * dt * 60;
 
     if (this.side === 'left') {
+      // Left flipper: REST = +30°, ACTIVE = -30° (inverted from right)
+      const targetAngle = this.isActive ? -C.FLIPPER_ACTIVE_ANGLE : C.FLIPPER_REST_ANGLE;
       if (this.angle > targetAngle) {
         this.angle = Math.max(targetAngle, this.angle - rotationPerFrame);
       } else if (this.angle < targetAngle) {
         this.angle = Math.min(targetAngle, this.angle + rotationPerFrame);
       }
     } else {
+      // Right flipper: REST = -30°, ACTIVE = +30°
+      const targetAngle = this.isActive ? C.FLIPPER_ACTIVE_ANGLE : C.FLIPPER_REST_ANGLE;
       if (this.angle < targetAngle) {
         this.angle = Math.min(targetAngle, this.angle + rotationPerFrame);
       } else if (this.angle > targetAngle) {
@@ -115,18 +118,14 @@ export class Flipper {
   launchBall(ball: Ball) {
     const angleRad = (this.angle * Math.PI) / 180;
 
-    // Launch direction is 90 degrees to flipper (upward)
+    // Launch direction is 90 degrees perpendicular to flipper angle
     const launchAngleRad = angleRad + Math.PI / 2;
-    if (this.side === 'left') {
-      // Left flipper angle sign is inverted
-      const launchVel = C.FLIPPER_POWER;
-      ball.vx = Math.cos(launchAngleRad) * launchVel;
-      ball.vy = Math.sin(launchAngleRad) * launchVel;
-    } else {
-      const launchVel = C.FLIPPER_POWER;
-      ball.vx = Math.cos(launchAngleRad) * launchVel;
-      ball.vy = Math.sin(launchAngleRad) * launchVel;
-    }
+
+    // Use full power when active, weak passive bounce when inactive
+    const launchVel = this.isActive ? C.FLIPPER_POWER : C.FLIPPER_POWER * 0.5;
+
+    ball.vx = Math.cos(launchAngleRad) * launchVel;
+    ball.vy = Math.sin(launchAngleRad) * launchVel;
   }
 
   getColor(): [number, number, number, number] {

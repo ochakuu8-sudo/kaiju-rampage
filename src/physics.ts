@@ -82,6 +82,39 @@ export function circleOBBCollision(circle: Circle, obb: OBB): boolean {
   return cdx * cdx + cdy * cdy < circle.radius * circle.radius;
 }
 
+// Get collision normal from circle to OBB (in world space)
+export function circleOBBNormal(circle: Circle, obb: OBB): [number, number] {
+  // Transform circle to OBB local space
+  const cos = Math.cos(-obb.rotation);
+  const sin = Math.sin(-obb.rotation);
+
+  const dx = circle.x - obb.x;
+  const dy = circle.y - obb.y;
+
+  const localX = dx * cos - dy * sin;
+  const localY = dx * sin + dy * cos;
+
+  // Find closest point in local space
+  const closestX = Math.max(-obb.width / 2, Math.min(localX, obb.width / 2));
+  const closestY = Math.max(-obb.height / 2, Math.min(localY, obb.height / 2));
+
+  // Collision vector in local space
+  let normalLocalX = localX - closestX;
+  let normalLocalY = localY - closestY;
+  const len = Math.sqrt(normalLocalX * normalLocalX + normalLocalY * normalLocalY);
+
+  if (len < 0.001) return [0, 1]; // Default to up
+
+  normalLocalX /= len;
+  normalLocalY /= len;
+
+  // Transform back to world space
+  const worldNormalX = normalLocalX * cos + normalLocalY * sin;
+  const worldNormalY = -normalLocalX * sin + normalLocalY * cos;
+
+  return [worldNormalX, worldNormalY];
+}
+
 // Wall collision - reflect velocity
 export function reflectVelocity(vx: number, vy: number, normalX: number, normalY: number, damping: number = 1): [number, number] {
   const dot = vx * normalX + vy * normalY;

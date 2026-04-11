@@ -168,26 +168,30 @@ export class Game {
       }
     }
 
-    // Ball vs Flippers
+    // Ball vs Flippers (always detect collision, passive bounce when inactive, active launch when active)
     const flipperOBB_L = this.flipperLeft.getOBB();
     const flipperOBB_R = this.flipperRight.getOBB();
 
     if (circleOBBCollision(
       { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
       flipperOBB_L
-    ) && this.flipperLeft.isActive) {
+    )) {
       this.flipperLeft.launchBall(this.ball);
       this.sound.playSound('flipper');
-      this.juice.triggerFlash(0.05);
+      if (this.flipperLeft.isActive) {
+        this.juice.triggerFlash(0.05);
+      }
     }
 
     if (circleOBBCollision(
       { x: this.ball.x, y: this.ball.y, radius: this.ball.radius },
       flipperOBB_R
-    ) && this.flipperRight.isActive) {
+    )) {
       this.flipperRight.launchBall(this.ball);
       this.sound.playSound('flipper');
-      this.juice.triggerFlash(0.05);
+      if (this.flipperRight.isActive) {
+        this.juice.triggerFlash(0.05);
+      }
     }
 
     // Ball lost
