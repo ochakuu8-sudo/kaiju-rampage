@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.gh-pages/
 .env
 *.log
 .DS_Store
