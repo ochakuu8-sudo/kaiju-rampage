@@ -5,7 +5,10 @@ if (!canvas) {
   throw new Error('Canvas element not found');
 }
 
+console.log('Canvas found:', canvas.width, 'x', canvas.height);
+
 const game = new Game(canvas);
+console.log('Game initialized successfully');
 
 let lastTime = performance.now();
 
@@ -19,11 +22,17 @@ function gameLoop(currentTime: number) {
 
   game.render();
 
-  // Handle game over
-  if (game.gameOver) {
-    document.addEventListener('click', () => {
-      game.handleGameOver();
-    }, { once: true });
+  // Handle game over restart
+  if (game.gameOver && !game.gameRunning) {
+    const overlay = document.getElementById('game-over-overlay') as any;
+    if (overlay && !overlay._restartHandler) {
+      overlay._restartHandler = true;
+      overlay.addEventListener('click', () => {
+        game.handleGameOver();
+        overlay.classList.remove('show');
+        overlay._restartHandler = false;
+      }, { once: true });
+    }
   }
 
   requestAnimationFrame(gameLoop);

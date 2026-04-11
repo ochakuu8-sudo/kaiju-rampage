@@ -355,27 +355,40 @@ export class Game {
   }
 
   private renderUI() {
-    const canvas = this.renderer.canvas;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    // Update score display
+    const scoreDisplay = document.getElementById('score-display');
+    if (scoreDisplay) {
+      scoreDisplay.textContent = `Score: ${this.ui.score}`;
+    }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    this.ui.render(ctx, canvas.width, canvas.height);
+    // Update balls display
+    const ballsDisplay = document.getElementById('balls-display');
+    if (ballsDisplay) {
+      ballsDisplay.textContent = `Balls: ${this.ui.ballsRemaining}`;
+    }
 
+    // Update combo display
+    const comboDisplay = document.getElementById('combo-display');
+    if (comboDisplay) {
+      if (this.ui.combo > 0) {
+        comboDisplay.textContent = `×${this.ui.combo}!`;
+        comboDisplay.style.display = 'block';
+        const scale = this.ui.comboPopupScale;
+        comboDisplay.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        comboDisplay.style.color = this.ui.combo >= 5 ? '#ff6600' : '#ffff00';
+      } else {
+        comboDisplay.style.display = 'none';
+      }
+    }
+
+    // Update game over screen
     if (this.gameOver) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
-
-      ctx.font = '24px Arial';
-      ctx.fillText(`Final Score: ${this.ui.score}`, canvas.width / 2, canvas.height / 2 + 40);
-
-      ctx.font = '16px Arial';
-      ctx.fillText('Tap to restart', canvas.width / 2, canvas.height / 2 + 100);
+      const overlay = document.getElementById('game-over-overlay');
+      const finalScore = document.getElementById('final-score');
+      if (overlay && finalScore) {
+        finalScore.textContent = `Final Score: ${this.ui.score}`;
+        overlay.classList.add('show');
+      }
     }
   }
 

@@ -318,36 +318,40 @@ export class Renderer {
     gl.useProgram(this.quadProgram);
     gl.bindVertexArray(this.quadVAO);
 
+    // Position attribute
     const posBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, positions.slice(0, count * 2), gl.DYNAMIC_DRAW);
     const posLoc = gl.getAttribLocation(this.quadProgram, 'i_position');
     gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(posLoc, 1);
 
+    // Size attribute
     const sizeBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, sizeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, sizes, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, sizes.slice(0, count * 2), gl.DYNAMIC_DRAW);
     const sizeLoc = gl.getAttribLocation(this.quadProgram, 'i_size');
     gl.enableVertexAttribArray(sizeLoc);
-    gl.vertexAttribPointer(sizeLoc, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribPointer(sizeLoc, 2, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(sizeLoc, 1);
 
+    // Color attribute
     const colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, colors.slice(0, count * 4), gl.DYNAMIC_DRAW);
     const colorLoc = gl.getAttribLocation(this.quadProgram, 'i_color');
     gl.enableVertexAttribArray(colorLoc);
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(colorLoc, 1);
 
+    // Rotation attribute
     const rotBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, rotBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, rotations, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, rotations.slice(0, count), gl.DYNAMIC_DRAW);
     const rotLoc = gl.getAttribLocation(this.quadProgram, 'i_rotation');
     gl.enableVertexAttribArray(rotLoc);
-    gl.vertexAttribPointer(rotLoc, 1, gl.FLOAT, false, 4, 0);
+    gl.vertexAttribPointer(rotLoc, 1, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(rotLoc, 1);
 
     gl.uniformMatrix4fv(this.quadProjectionLoc, false, this.projectionMatrix);
@@ -355,10 +359,12 @@ export class Renderer {
 
     gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, count);
 
+    // Cleanup
     gl.deleteBuffer(posBuffer);
     gl.deleteBuffer(sizeBuffer);
     gl.deleteBuffer(colorBuffer);
     gl.deleteBuffer(rotBuffer);
+    gl.bindVertexArray(null);
   }
 
   // Draw instanced circles
@@ -370,28 +376,31 @@ export class Renderer {
     gl.useProgram(this.circleProgram);
     gl.bindVertexArray(this.circleVAO);
 
+    // Position attribute
     const posBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, positions.slice(0, count * 2), gl.DYNAMIC_DRAW);
     const posLoc = gl.getAttribLocation(this.circleProgram, 'i_position');
     gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(posLoc, 1);
 
+    // Radius attribute
     const radiusBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, radiusBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, radii, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, radii.slice(0, count), gl.DYNAMIC_DRAW);
     const radiusLoc = gl.getAttribLocation(this.circleProgram, 'i_radius');
     gl.enableVertexAttribArray(radiusLoc);
-    gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, 4, 0);
+    gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(radiusLoc, 1);
 
+    // Color attribute
     const colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, colors.slice(0, count * 4), gl.DYNAMIC_DRAW);
     const colorLoc = gl.getAttribLocation(this.circleProgram, 'i_color');
     gl.enableVertexAttribArray(colorLoc);
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(colorLoc, 1);
 
     gl.uniformMatrix4fv(this.circleProjectionLoc, false, this.projectionMatrix);
@@ -399,9 +408,11 @@ export class Renderer {
 
     gl.drawArraysInstanced(gl.TRIANGLE_FAN, 0, 4, count);
 
+    // Cleanup
     gl.deleteBuffer(posBuffer);
     gl.deleteBuffer(radiusBuffer);
     gl.deleteBuffer(colorBuffer);
+    gl.bindVertexArray(null);
   }
 
   // Draw fullscreen overlay
