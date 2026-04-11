@@ -59,8 +59,8 @@ export class Game {
   private stateTimer= 0;
 
   // Background gradient colors (set from stage config)
-  private bgTopR = 0.45; private bgTopG = 0.68; private bgTopB = 0.95;
-  private bgBottomR = 0.82; private bgBottomG = 0.90; private bgBottomB = 0.96;
+  private bgTopR = 0.52; private bgTopG = 0.74; private bgTopB = 0.96;
+  private bgBottomR = 0.10; private bgBottomG = 0.10; private bgBottomB = 0.14;
 
   // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
   private readonly SLOPE_L = { cx: -132.5, cy: -155, hw: 73, hh: 6, angle: -0.856 };
@@ -500,6 +500,22 @@ export class Game {
     // Gutter walls
     writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
     writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
+
+    // === Ground fills between road tiers (drawn first = behind everything) ===
+    {
+      const htLow = C.HILLTOP_STREET_Y   - C.HILLTOP_STREET_H/2   - C.SIDEWALK_H; // 231
+      const upLow = C.UPPER_STREET_Y     - C.UPPER_STREET_H/2     - C.SIDEWALK_H; // 164
+      const maLow = C.MAIN_STREET_Y      - C.MAIN_STREET_H/2      - C.SIDEWALK_H; // 84
+      const loLow = C.LOWER_STREET_Y     - C.LOWER_STREET_H/2     - C.SIDEWALK_H; // 3
+      const rvLow = C.RIVERSIDE_STREET_Y - C.RIVERSIDE_STREET_H/2 - C.SIDEWALK_H; // -80
+      const gf = (y1: number, y2: number, r: number, g: number, b: number) =>
+        writeInst(buf, n++, 0, (y1+y2)/2, W, y1-y2, r, g, b, 1);
+      gf(htLow, C.UPPER_BASE,     0.30, 0.28, 0.26); // hilltop↔upper block
+      gf(upLow, C.MAIN_BASE,      0.27, 0.25, 0.23); // upper↔main block
+      gf(maLow, C.LOWER_BASE,     0.25, 0.23, 0.21); // main↔lower block
+      gf(loLow, C.RIVERSIDE_BASE, 0.22, 0.20, 0.18); // lower↔riverside block
+      gf(rvLow, C.WORLD_MIN_Y,    0.12, 0.11, 0.14); // underground
+    }
 
     // === 5 horizontal roads ===
     const [rr,rg,rb] = C.ROAD_COLOR;
