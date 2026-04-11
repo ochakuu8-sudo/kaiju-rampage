@@ -19,14 +19,14 @@ import * as C from './constants';
 import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
 import { SoundEngine } from './sound';
-import { Ball, Flipper, BuildingManager, FurnitureManager, BumperManager, VehicleManager } from './entities';
+import { Ball, Flipper, BuildingManager, FurnitureManager, VehicleManager } from './entities';
 import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
 import { getStage } from './stages';
 import {
-  resolveCircleOBB, resolveBumper,
+  resolveCircleOBB,
   clampSpeed, rand, randInt
 } from './physics';
 import type { BuildingData } from './entities';
@@ -47,7 +47,6 @@ export class Game {
   private ui:        UIManager;
   private buildings: BuildingManager;
   private furniture: FurnitureManager;
-  private bumpers:   BumperManager;
   private vehicles:  VehicleManager;
 
   private ball:     Ball;
@@ -79,7 +78,6 @@ export class Game {
     this.ui        = new UIManager();
     this.buildings = new BuildingManager();
     this.furniture = new FurnitureManager();
-    this.bumpers   = new BumperManager();
     this.vehicles  = new VehicleManager();
     this.ball      = new Ball();
     this.flippers  = [new Flipper(true), new Flipper(false)];
@@ -98,7 +96,6 @@ export class Game {
     const cfg = getStage(level);
     this.buildings.load(cfg.buildings);
     this.furniture.load(cfg.furniture);
-    this.bumpers.load(cfg.bumpers);
     this.vehicles.load(cfg.vehicles);
     this.bgTopR = cfg.bgTopR; this.bgTopG = cfg.bgTopG; this.bgTopB = cfg.bgTopB;
     this.bgBottomR = cfg.bgBottomR; this.bgBottomG = cfg.bgBottomG; this.bgBottomB = cfg.bgBottomB;
@@ -182,7 +179,6 @@ export class Game {
 
     this.buildings.update(dt);
     this.furniture.update(dt);
-    this.bumpers.update(dt);
     this.vehicles.update(dt);
     this.humans.update(dt, this.ball.x, this.ball.y);
     this.particles.update(dt);
@@ -265,14 +261,6 @@ export class Game {
         }
       }
 
-      // Bumper collision
-      const bumpRes = this.bumpers.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
-      if (bumpRes) {
-        b.x = bumpRes.newBx; b.y = bumpRes.newBy;
-        b.vx = bumpRes.newVx; b.vy = bumpRes.newVy;
-        [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
-      }
-
     } // end substep
 
     if (flipperSoundNeeded) {
@@ -296,14 +284,6 @@ export class Game {
         this.juice.ballHitFlash();
         this.particles.spawnSpark(b.x, b.y, 4);
       }
-    }
-
-    // ===== バンパースコア =====
-    if (this.bumpers.bumpers.some(bp => bp.flashTimer > 0)) {
-      this.score += C.BUMPER_SCORE;
-      this.ui.setScore(this.score);
-      this.particles.spawnSpark(b.x, b.y, 3);
-      this.juice.ballHitFlash();
     }
 
     // ===== 噴水バンパー =====
@@ -338,7 +318,6 @@ export class Game {
       // Type-specific particles
       if (furnitureHit.type === 'hydrant' && destroyed) {
         this.particles.spawnWater(b.x, b.y, 12);
-        this.bumpers.addTemporaryBumper(furnitureHit.x, furnitureHit.y, 5.0);
       } else if (furnitureHit.type === 'flower_bed' && destroyed) {
         this.particles.spawnFlower(b.x, b.y, 10);
       } else if (furnitureHit.type === 'sign_board' && destroyed) {
@@ -514,7 +493,6 @@ export class Game {
     // ------ バッチ2: エンティティ (人間→バンパー→フリッパー→ボール→パーティクル) ------
     n = 0;
     n += this.humans.fillInstances(SHARED_BUF, n);
-    n += this.bumpers.fillInstances(SHARED_BUF, n);
     n += this.fillFlippers(SHARED_BUF, n);
     n += this.fillBall(SHARED_BUF, n);
     n += this.particles.fillInstances(SHARED_BUF, n);
