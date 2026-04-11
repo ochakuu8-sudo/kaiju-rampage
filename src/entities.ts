@@ -100,25 +100,22 @@ export class Flipper {
 
   /** ボールにフリッパー速度を付与 */
   applyImpulse(vx: number, vy: number): [number, number] {
-    // 上昇中の場合のみ強く打ち出し
-    const isRising = this.isLeft
-      ? this.angularVel > 10
-      : this.angularVel < -10;
+    // pressed かつ上向きに振っている間だけ強打ち出し
+    const isRising = this.pressed && (
+      this.isLeft ? this.angularVel > 0.5 : this.angularVel < -0.5
+    );
+    // 静止フリッパーは反射速度をそのまま返す（resolveCircleOBBが処理済み）
+    if (!isRising) return [vx, vy];
 
-    const power = isRising
-      ? C.FLIPPER_POWER * (1 + Math.abs(this.angularVel) * 0.015)
-      : C.FLIPPER_POWER * 0.6;
-
-    // フリッパー角から打ち出し方向を計算
-    const a = this.angle + (this.isLeft ? -Math.PI * 0.1 : Math.PI * 0.1);
-    const nx = -Math.sin(a);
-    const ny =  Math.cos(a) * (this.isLeft ? 1 : -1) + 1;
-
-    const len = Math.sqrt(nx * nx + ny * ny) || 1;
-    const nvx = (nx / len) * power;
-    const nvy = Math.abs(ny / len) * power; // 常に上向き成分を保証
-
-    return [nvx, nvy];
+    // フリッパー面の法線（表面に対して上向き垂直）
+    const s = Math.sin(this.angle);
+    const c = Math.cos(this.angle);
+    let nx = -s;   // 法線 x
+    let ny =  c;   // 法線 y（上方向）
+    if (ny < 0.3) ny = 0.3; // 必ず上向き成分を確保
+    const len = Math.sqrt(nx * nx + ny * ny);
+    const power = C.FLIPPER_POWER * (1.0 + Math.abs(this.angularVel) * 0.01);
+    return [(nx / len) * power, (ny / len) * power];
   }
 }
 

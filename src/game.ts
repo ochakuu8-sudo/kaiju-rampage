@@ -57,8 +57,9 @@ export class Game {
   private state: GameState = 'playing';
   private stateTimer= 0;
 
-  // ボールをランチャーに戻すクールダウン
+  // ランチャー制御
   private ballLaunchReady = false;
+  private launchTimer = 0;   // 0になったら自動発射
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
@@ -92,7 +93,8 @@ export class Game {
     this.particles.reset();
     this.ball.reset();
     this.ballLaunchReady = false;
-    this.juice.slowMo(0); // スロー解除
+    this.launchTimer = 1.2;   // 1.2秒後に自動発射
+    this.juice.slowMo(0);
   }
 
   private restart() {
@@ -140,6 +142,7 @@ export class Game {
       if (this.stateTimer <= 0) {
         this.ball.reset();
         this.ballLaunchReady = false;
+        this.launchTimer = 1.0;
         this.state = 'playing';
       }
       return;
@@ -201,6 +204,23 @@ export class Game {
     const b = this.ball;
     if (!b.active) return;
 
+    // ===== ランチャー保持 =====
+    if (!this.ballLaunchReady) {
+      // ランチャー位置に固定
+      b.x = C.BALL_START_X;
+      b.y = C.BALL_START_Y;
+      b.vx = 0; b.vy = 0;
+      this.launchTimer -= dt;
+      // 右フリッパーを押すか、タイマー切れで発射
+      if (this.launchTimer <= 0 || this.input.rightPressed) {
+        this.ballLaunchReady = true;
+        b.vx = -0.8;   // わずかに左へ → プレイフィールド中央寄りに落下
+        b.vy = 14;     // 上向きに打ち出し → ストリートエリアへ到達
+      }
+      b.recordTrail();
+      return;
+    }
+
     // 重力
     b.vy -= C.GRAVITY * dt * 60;
 
@@ -229,6 +249,22 @@ export class Game {
       b.y = C.WORLD_MAX_Y - 40 - C.BALL_RADIUS;
       b.vy = -Math.abs(b.vy) * C.WALL_DAMPING;
       this.sound.wallHit();
+    }
+
+    // ===== ガター誘導壁（フリッパー横でボールをフリッパー範囲に誘導）=====
+    // フリッパーエリア (y: -170 〜 -50) で左右に絞り込む
+    if (b.y < -50 && b.y > -180) {
+      const gutterX = 130; // この外側はガター
+      if (b.x - C.BALL_RADIUS < -gutterX) {
+        b.x = -gutterX + C.BALL_RADIUS;
+        if (b.vx < 0) b.vx = Math.abs(b.vx) * 0.65;
+        this.sound.wallHit();
+      }
+      if (b.x + C.BALL_RADIUS > gutterX) {
+        b.x = gutterX - C.BALL_RADIUS;
+        if (b.vx > 0) b.vx = -Math.abs(b.vx) * 0.65;
+        this.sound.wallHit();
+      }
     }
 
     // ===== フリッパー衝突 =====
@@ -442,20 +478,33 @@ export class Game {
 
   private fillWalls(buf: Float32Array, start: number): number {
     let n = start;
+    const WC = 0.18, WA = 1.0; // wall color, alpha
+
     // 左壁
-    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0,    4, C.WORLD_MAX_Y * 2, 0.15, 0.15, 0.2, 1);
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, WA);
     // 右壁
-    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0,    4, C.WORLD_MAX_Y * 2, 0.15, 0.15, 0.2, 1);
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, WA);
     // 上壁
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, C.WORLD_MAX_X * 2, 4, 0.15, 0.15, 0.2, 1);
-    // UI区切り線（上部）
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.6);
-    // 左フリッパー横斜め壁
-    writeInst(buf, n++, C.WORLD_MIN_X + 30, -160, 60, 6, 0.3, 0.3, 0.4, 1, -0.6);
-    // 右フリッパー横斜め壁
-    writeInst(buf, n++, C.WORLD_MAX_X - 30, -160, 60, 6, 0.3, 0.3, 0.4, 1,  0.6);
-    // 中間仕切り（ストリートと中間エリア境界）
-    writeInst(buf, n++, 0, C.STREET_Y_MIN - 4, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.4);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, C.WORLD_MAX_X * 2, 4, WC, WC, WC + 0.05, WA);
+    // UI区切り線
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.5);
+    // ストリートエリア下境界
+    writeInst(buf, n++, 0, C.STREET_Y_MIN - 3, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.35);
+
+    // ===== ガター誘導壁（視覚）=====
+    // 左ガター内壁 (x=-130, y=-50〜-175)
+    writeInst(buf, n++, -130, -112, 4, 130, 0.4, 0.4, 0.55, 1);
+    // 右ガター内壁 (x=+130, y=-50〜-175)
+    writeInst(buf, n++,  130, -112, 4, 130, 0.4, 0.4, 0.55, 1);
+    // 左ガター内壁 上部角（斜め）
+    writeInst(buf, n++, -147, -50, 36, 5, 0.4, 0.4, 0.55, 1, -0.5);
+    // 右ガター内壁 上部角（斜め）
+    writeInst(buf, n++,  147, -50, 36, 5, 0.4, 0.4, 0.55, 1,  0.5);
+
+    // ===== ランチャーレーン =====
+    // 右チャンネル仕切り（ランチャー→プレイフィールド）
+    writeInst(buf, n++, 155, -230, 4, 160, 0.3, 0.3, 0.45, 0.7);
+
     return n - start;
   }
 
