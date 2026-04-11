@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
-  base: '/kaiju-rampage/',
   root: '.',
   build: {
     outDir: 'dist',
