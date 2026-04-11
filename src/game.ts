@@ -18,7 +18,7 @@ import * as C from './constants';
 import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
 import { SoundEngine } from './sound';
-import { Ball, Flipper, BuildingManager, BumperManager } from './entities';
+import { Ball, Flipper, BuildingManager } from './entities';
 import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
@@ -28,7 +28,7 @@ import {
   resolveCircleOBB,
   clampSpeed, rand, randInt
 } from './physics';
-import type { BuildingData, BumperData } from './entities';
+import type { BuildingData } from './entities';
 
 // 静的インスタンスバッファ（再利用でGCゼロ）
 const SHARED_BUF = new Float32Array(3200 * INST_F);
@@ -44,7 +44,6 @@ export class Game {
   private juice:    JuiceManager;
   private ui:       UIManager;
   private buildings:BuildingManager;
-  private bumpers:  BumperManager;
 
   private ball:     Ball;
   private flippers: [Flipper, Flipper];
@@ -72,7 +71,6 @@ export class Game {
     this.juice     = new JuiceManager();
     this.ui        = new UIManager();
     this.buildings = new BuildingManager();
-    this.bumpers   = new BumperManager();
     this.ball      = new Ball();
     this.flippers  = [new Flipper(true), new Flipper(false)];
 
@@ -90,7 +88,6 @@ export class Game {
   private loadStage(level: number) {
     const cfg = getStage(level);
     this.buildings.load(cfg.buildings);
-    this.bumpers.load(cfg.bumpers);
     this.humans.reset();
     this.particles.reset();
     this.ball.reset();
@@ -171,9 +168,8 @@ export class Game {
     // ボール物理
     if (dt > 0) this.updateBall(dt);
 
-    // 建物・バンパー更新
+    // 建物更新
     this.buildings.update(dt);
-    this.bumpers.update(dt);
 
     // 人間更新
     this.humans.update(dt, this.ball.x, this.ball.y);
@@ -209,7 +205,6 @@ export class Game {
     let wallSoundNeeded    = false;
     let flipperSoundNeeded = false;
     let bldResult: { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
-    let bmpResult: { bump: BumperData;  newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
 
     for (let s = 0; s < SUB; s++) {
       // 重力・移動
@@ -269,15 +264,6 @@ export class Game {
         }
       }
 
-      // ----- バンパー（初回ヒットのみ位置解決）-----
-      if (!bmpResult) {
-        const h = this.bumpers.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
-        if (h) {
-          bmpResult = h;
-          b.x = h.newBx; b.y = h.newBy;
-          b.vx = h.newVx; b.vy = h.newVy;
-        }
-      }
     } // end substep
 
     // ===== サウンド（1フレームに1回）=====
@@ -302,16 +288,6 @@ export class Game {
         this.juice.ballHitFlash();
         this.particles.spawnSpark(b.x, b.y, 4);
       }
-    }
-
-    // ===== バンパースコア =====
-    if (bmpResult) {
-      this.score += C.BUMPER_SCORE;
-      this.ui.setScore(this.score);
-      this.sound.bumper();
-      this.juice.shake(C.SHAKE_HIT_AMP * 0.7, C.SHAKE_HIT_DUR * 0.7);
-      this.juice.ballHitFlash();
-      this.particles.spawnSpark(b.x, b.y, 5);
     }
 
     // ===== 人間潰し =====
@@ -438,11 +414,6 @@ export class Game {
     // ------ 4. 人間 ------
     instCount = 0;
     instCount += this.humans.fillInstances(SHARED_BUF, 0);
-    this.renderer.drawInstances(SHARED_BUF, instCount, shake);
-
-    // ------ 5. バンパー ------
-    instCount = 0;
-    instCount += this.bumpers.fillInstances(SHARED_BUF, 0);
     this.renderer.drawInstances(SHARED_BUF, instCount, shake);
 
     // ------ 6. フリッパー ------
