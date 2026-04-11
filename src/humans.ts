@@ -33,8 +33,13 @@ export class HumanManager {
   }
 
   spawn(x: number, y: number, count: number) {
-    for (let i = 0; i < count && this.nextIndex < C.MAX_HUMANS; i++) {
-      const idx = this.nextIndex++;
+    let spawned = 0;
+
+    // First, try to find and reuse inactive slots
+    for (let i = 0; i < C.MAX_HUMANS && spawned < count; i++) {
+      if (this.states[i] !== HUMAN_STATE.INACTIVE) continue;
+
+      const idx = i;
       const angle = (Math.random() * Math.PI * 2);
       const speed = C.HUMAN_PANIC_SPEED * (0.8 + Math.random() * 0.4);
 
@@ -59,7 +64,14 @@ export class HumanManager {
       this.timers[idx] = 0;
       this.directionTimers[idx] = C.HUMAN_DIRECTION_CHANGE_INTERVAL * (0.5 + Math.random());
 
-      this.count = Math.min(this.nextIndex, C.MAX_HUMANS);
+      // Update count to track highest active index
+      this.count = Math.max(this.count, idx + 1);
+      spawned++;
+    }
+
+    // Update nextIndex to track the furthest allocated position (for reference)
+    if (this.count > this.nextIndex) {
+      this.nextIndex = this.count;
     }
   }
 
