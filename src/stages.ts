@@ -218,7 +218,7 @@ const stage1Config: StageConfig = {
   ],
 
   bgTopR: 0.52, bgTopG: 0.74, bgTopB: 0.96,
-  bgBottomR: 0.10, bgBottomG: 0.10, bgBottomB: 0.14,
+  bgBottomR: 0.38, bgBottomG: 0.36, bgBottomB: 0.33,
 };
 
 function scaleStage(base: StageConfig, level: number): StageConfig {
