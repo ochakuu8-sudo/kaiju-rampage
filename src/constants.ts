@@ -10,8 +10,8 @@ export const WORLD_MAX_Y = 290;
 export const STREET_Y_MIN = 40;
 export const STREET_Y_MAX = 250;
 export const FLIPPER_PIVOT_X = 85;   // フリッパーピボットX（両側、符号は左右で反転）
-export const FLIPPER_PIVOT_Y = -165; // フリッパーピボットY（坂との接合点）
-export const FALLOFF_Y = -275;       // これ以下でボールロスト
+export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との接合点）
+export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
 export const BALL_RADIUS = 9;
@@ -20,7 +20,7 @@ export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
 export const BALL_START_X = -150;
-export const BALL_START_Y = -88;
+export const BALL_START_Y = -133;
 export const TRAIL_LEN = 12;
 export const INITIAL_BALLS = 3;
 

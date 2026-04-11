@@ -63,8 +63,8 @@ export class Game {
   private bgBottomR = 0.82; private bgBottomG = 0.90; private bgBottomB = 0.96;
 
   // ===== 坂OBB（静的壁）: フリッパーピボット点に接続 =====
-  private readonly SLOPE_L = { cx: -132.5, cy: -131.5, hw: 58, hh: 6, angle: -0.611 };
-  private readonly SLOPE_R = { cx:  132.5, cy: -131.5, hw: 58, hh: 6, angle:  0.611 };
+  private readonly SLOPE_L = { cx: -132.5, cy: -176.5, hw: 58, hh: 6, angle: -0.611 };
+  private readonly SLOPE_R = { cx:  132.5, cy: -176.5, hw: 58, hh: 6, angle:  0.611 };
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
