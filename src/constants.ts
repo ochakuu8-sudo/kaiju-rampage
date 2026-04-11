@@ -9,16 +9,17 @@ export const WORLD_MAX_Y = 320;
 // ===== ゾーン Y境界 =====
 export const STREET_Y_MIN = 60;
 export const STREET_Y_MAX = 260;
-export const FLIPPER_Y = -120;
-export const FALLOFF_Y = -310;
+export const FLIPPER_Y = -200;   // フリッパー中心Y（画面下部）
+export const FALLOFF_Y = -290;   // これ以下でボールロスト
 
 // ===== ボール =====
 export const BALL_RADIUS = 9;
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
-export const BALL_START_X = 140;
-export const BALL_START_Y = -200;
+// ランチャーなし: ボールはプレイフィールド中央上部から自然落下
+export const BALL_START_X = 0;
+export const BALL_START_Y = 80;
 export const TRAIL_LEN = 12;
 export const INITIAL_BALLS = 3;
 

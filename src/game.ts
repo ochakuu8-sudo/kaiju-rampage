@@ -57,9 +57,11 @@ export class Game {
   private state: GameState = 'playing';
   private stateTimer= 0;
 
-  // ランチャー制御
-  private ballLaunchReady = false;
-  private launchTimer = 0;   // 0になったら自動発射
+  // ===== 坂OBB（静的壁）: フリッパー外端に接続 =====
+  // FLIPPER_Y=-200, 左フリッパー外端(rest): (-84.6, -180)
+  // 坂: (-180, -80) → (-85, -180)  center=(-132.5, -130) angle≈-0.813rad hw≈69
+  private readonly SLOPE_L = { cx: -132.5, cy: -130, hw: 69, hh: 6, angle: -0.813 };
+  private readonly SLOPE_R = { cx:  132.5, cy: -130, hw: 69, hh: 6, angle:  0.813 };
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
@@ -92,8 +94,6 @@ export class Game {
     this.humans.reset();
     this.particles.reset();
     this.ball.reset();
-    this.ballLaunchReady = false;
-    this.launchTimer = 1.2;   // 1.2秒後に自動発射
     this.juice.slowMo(0);
   }
 
@@ -141,8 +141,6 @@ export class Game {
       this.particles.update(rawDt);
       if (this.stateTimer <= 0) {
         this.ball.reset();
-        this.ballLaunchReady = false;
-        this.launchTimer = 1.0;
         this.state = 'playing';
       }
       return;
@@ -204,23 +202,6 @@ export class Game {
     const b = this.ball;
     if (!b.active) return;
 
-    // ===== ランチャー保持 =====
-    if (!this.ballLaunchReady) {
-      // ランチャー位置に固定
-      b.x = C.BALL_START_X;
-      b.y = C.BALL_START_Y;
-      b.vx = 0; b.vy = 0;
-      this.launchTimer -= dt;
-      // 右フリッパーを押すか、タイマー切れで発射
-      if (this.launchTimer <= 0 || this.input.rightPressed) {
-        this.ballLaunchReady = true;
-        b.vx = -0.8;   // わずかに左へ → プレイフィールド中央寄りに落下
-        b.vy = 14;     // 上向きに打ち出し → ストリートエリアへ到達
-      }
-      b.recordTrail();
-      return;
-    }
-
     // 重力
     b.vy -= C.GRAVITY * dt * 60;
 
@@ -251,19 +232,13 @@ export class Game {
       this.sound.wallHit();
     }
 
-    // ===== ガター誘導壁（フリッパー横でボールをフリッパー範囲に誘導）=====
-    // フリッパーエリア (y: -170 〜 -50) で左右に絞り込む
-    if (b.y < -50 && b.y > -180) {
-      const gutterX = 130; // この外側はガター
-      if (b.x - C.BALL_RADIUS < -gutterX) {
-        b.x = -gutterX + C.BALL_RADIUS;
-        if (b.vx < 0) b.vx = Math.abs(b.vx) * 0.65;
+    // ===== 坂（静的OBB壁）衝突 =====
+    for (const slope of [this.SLOPE_L, this.SLOPE_R]) {
+      const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, slope);
+      if (res) {
+        [b.x, b.y, b.vx, b.vy] = res;
         this.sound.wallHit();
-      }
-      if (b.x + C.BALL_RADIUS > gutterX) {
-        b.x = gutterX - C.BALL_RADIUS;
-        if (b.vx > 0) b.vx = -Math.abs(b.vx) * 0.65;
-        this.sound.wallHit();
+        break;
       }
     }
 
@@ -478,32 +453,32 @@ export class Game {
 
   private fillWalls(buf: Float32Array, start: number): number {
     let n = start;
-    const WC = 0.18, WA = 1.0; // wall color, alpha
+    const WC = 0.18;
 
     // 左壁
-    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, WA);
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
     // 右壁
-    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC + 0.05, WA);
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
     // 上壁
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, C.WORLD_MAX_X * 2, 4, WC, WC, WC + 0.05, WA);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, C.WORLD_MAX_X * 2, 4, WC, WC, WC+0.05, 1);
     // UI区切り線
     writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.5);
     // ストリートエリア下境界
     writeInst(buf, n++, 0, C.STREET_Y_MIN - 3, C.WORLD_MAX_X * 2, 2, 0.1, 0.1, 0.2, 0.35);
 
-    // ===== ガター誘導壁（視覚）=====
-    // 左ガター内壁 (x=-130, y=-50〜-175)
-    writeInst(buf, n++, -130, -112, 4, 130, 0.4, 0.4, 0.55, 1);
-    // 右ガター内壁 (x=+130, y=-50〜-175)
-    writeInst(buf, n++,  130, -112, 4, 130, 0.4, 0.4, 0.55, 1);
-    // 左ガター内壁 上部角（斜め）
-    writeInst(buf, n++, -147, -50, 36, 5, 0.4, 0.4, 0.55, 1, -0.5);
-    // 右ガター内壁 上部角（斜め）
-    writeInst(buf, n++,  147, -50, 36, 5, 0.4, 0.4, 0.55, 1,  0.5);
+    // ===== 左坂: (-180,-80) → (-85,-180)  フリッパー外端に接続 =====
+    const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;
+    writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.5, 0.5, 0.65, 1, la);
 
-    // ===== ランチャーレーン =====
-    // 右チャンネル仕切り（ランチャー→プレイフィールド）
-    writeInst(buf, n++, 155, -230, 4, 160, 0.3, 0.3, 0.45, 0.7);
+    // ===== 右坂: (+180,-80) → (+85,-180) =====
+    const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
+    writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.5, 0.5, 0.65, 1, ra);
+
+    // フリッパー下の縦仕切り（坂の内側を塞いで隙間をなくす）
+    // 左: x=-85 から FLIPPER_Y まで
+    writeInst(buf, n++, -85, C.FLIPPER_Y + 10, 6, 40, 0.4, 0.4, 0.55, 1);
+    // 右: x=+85 から FLIPPER_Y まで
+    writeInst(buf, n++,  85, C.FLIPPER_Y + 10, 6, 40, 0.4, 0.4, 0.55, 1);
 
     return n - start;
   }
