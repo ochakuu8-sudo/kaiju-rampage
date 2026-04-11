@@ -24,8 +24,8 @@ export class Ball {
   reset() {
     this.x = C.BALL_START_X;
     this.y = C.BALL_START_Y;
-    this.vx = 1.5;   // 若干右寄りで自然落下
-    this.vy = 0;
+    this.vx = 2;    // 右方向（坂を滑り降りてフリッパーへ）
+    this.vy = -1;
     this.active = true;
     for (let i = 0; i < C.TRAIL_LEN; i++) {
       this.trail[i * 2]     = C.BALL_START_X;

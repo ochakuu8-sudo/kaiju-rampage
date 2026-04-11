@@ -18,9 +18,9 @@ export const BALL_RADIUS = 9;
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
-// ランチャーなし: ボールはプレイフィールド中央から自然落下
-export const BALL_START_X = 0;
-export const BALL_START_Y = 0;
+// ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
+export const BALL_START_X = -150;
+export const BALL_START_Y = -55;
 export const TRAIL_LEN = 12;
 export const INITIAL_BALLS = 3;
 
