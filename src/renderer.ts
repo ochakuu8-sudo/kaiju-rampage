@@ -52,8 +52,9 @@ void main() {
     if (d > 1.0) discard;
     float glow = 1.0 - smoothstep(0.6, 1.0, d);
     fragColor = vec4(v_color.rgb + glow * 0.4, v_color.a);
-  } else if (v_size.y >= 35.0) {
+  } else if (v_size.y >= 35.0 && v_size.y < v_size.x * 5.0) {
     // 高層ビル (apartment/office/tower/skyscraper): 窓グリッド描画
+    // v_size.y < v_size.x * 5.0 で縦路地(幅20,高さ186)を除外
     vec2 uv  = v_uv + vec2(0.5);          // 0..1
     vec2 px  = uv * v_size;               // ビル内ピクセル座標
     float sw = v_size.x;
@@ -82,7 +83,7 @@ void main() {
         fragColor = v_color;
       }
     }
-  } else if (v_size.y >= 22.0) {
+  } else if (v_size.y >= 22.0 && v_size.y < v_size.x * 5.0) {
     // 店舗 (shop h=25): ショーウィンドウ + 看板帯
     vec2 uv  = v_uv + vec2(0.5);
     vec2 px  = uv * v_size;
