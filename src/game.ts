@@ -11,7 +11,7 @@ import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
-import { getStage, getWaveQuota, getRebuildCooldown, getRebuiltSize, findEmptySpot, BLOCKS } from './stages';
+import { getStage, getRebuildCooldown, getRebuiltSize, findEmptySpot, BLOCKS } from './stages';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
 
@@ -39,12 +39,10 @@ export class Game {
   private ball:      Ball;
   private flippers:  [Flipper, Flipper];
 
-  // ウェーブシステム
+  // サバイバルシステム
   private wave         = 1;
-  private waveTimer    = C.WAVE_TIME;
-  private waveScore    = 0;
-  private quota        = 0;
-  private totalScore   = 0;
+  private lifeTimer    = C.WAVE_TIME;   // ライフタイマー (0でゲームオーバー)
+  private waveElapsed  = 0;             // ウェーブ内経過秒 (WAVE_DURATIONでwave++)
   private totalDestroys= 0;
   private totalHumans  = 0;
   private rebuildQueue: RebuildEntry[] = [];
@@ -82,19 +80,16 @@ export class Game {
 
   private initWave1() {
     this.wave          = 1;
-    this.waveTimer     = C.WAVE_TIME;
-    this.waveScore     = 0;
-    this.quota         = getWaveQuota(1);
-    this.totalScore    = 0;
+    this.lifeTimer     = C.WAVE_TIME;
+    this.waveElapsed   = 0;
     this.totalDestroys = 0;
     this.totalHumans   = 0;
     this.rebuildQueue  = [];
     this.state         = 'playing';
     this.stateTimer    = 0;
     this.ui.setWaveNum(1);
-    this.ui.setWaveTimer(C.WAVE_TIME);
-    this.ui.setWaveScore(0, this.quota);
-    this.ui.setTotalScore(0);
+    this.ui.setTimer(C.WAVE_TIME);
+    this.ui.setLifeGauge(C.WAVE_TIME, C.WAVE_TIME);
   }
 
   private loadCity() {
@@ -158,12 +153,22 @@ export class Game {
     this.humans.update(dt, this.ball.x, this.ball.y);
     this.particles.update(dt);
 
-    // ウェーブタイマー
-    this.waveTimer -= rawDt;
-    this.ui.setWaveTimer(Math.max(0, this.waveTimer));
-    if (this.waveTimer <= 0) {
+    // ライフタイマー減少
+    this.lifeTimer -= rawDt;
+    this.ui.setTimer(Math.max(0, this.lifeTimer));
+    this.ui.setLifeGauge(Math.max(0, this.lifeTimer), C.WAVE_TIME);
+    if (this.lifeTimer <= 0) {
       this.onGameOver();
       return;
+    }
+
+    // ウェーブ自動進行 (WAVE_DURATION秒ごと)
+    this.waveElapsed += rawDt;
+    if (this.waveElapsed >= C.WAVE_DURATION) {
+      this.waveElapsed -= C.WAVE_DURATION;
+      this.wave++;
+      this.ui.setWaveNum(this.wave);
+      this.juice.flash(0.5, 0.8, 1.0, 0.3);
     }
 
     // 再建キュー処理
@@ -177,17 +182,6 @@ export class Game {
     }
   }
 
-  private startNextWave() {
-    this.wave++;
-    this.waveTimer  = C.WAVE_TIME;
-    this.waveScore  = 0;
-    this.quota      = getWaveQuota(this.wave);
-    this.ui.setWaveNum(this.wave);
-    this.ui.setWaveTimer(this.waveTimer);
-    this.ui.setWaveScore(0, this.quota);
-    // 街・ボール・人間はそのまま継続
-  }
-
   private tryRebuild(entry: RebuildEntry) {
     const newSize = getRebuiltSize(entry.generation, entry.blockIdx);
     const w = C.BUILDING_DEFS[newSize].w;
@@ -195,23 +189,6 @@ export class Game {
     if (centerX !== null) {
       const baseY = BLOCKS[entry.blockIdx]?.baseY ?? C.MAIN_BASE;
       this.buildings.addBuilding(centerX, baseY, newSize, entry.blockIdx, entry.generation);
-    }
-  }
-
-  private _getBlockBaseY(blockIdx: number): number {
-    // BLOCKS は stages.ts で定義、rowIdx = blockIdx / 3
-    const rowIdx = Math.floor(blockIdx / 3);
-    const rowBases = [C.HILLTOP_BASE, C.BLK_A_NEAR, C.MAIN_BASE, C.LOWER_BASE, C.RIVERSIDE_BASE];
-    return rowBases[rowIdx] ?? C.MAIN_BASE;
-  }
-
-  private addScore(pts: number) {
-    this.waveScore  += pts;
-    this.totalScore += pts;
-    this.ui.setTotalScore(this.totalScore);
-    this.ui.setWaveScore(this.waveScore, this.quota);
-    if (this.waveScore >= this.quota && this.state === 'playing') {
-      this.onWaveClear();
     }
   }
 
@@ -260,7 +237,6 @@ export class Game {
       if (destroyed) {
         this.onBuildingDestroyed(bld);
       } else {
-        this.addScore(10);
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
         this.juice.ballHitFlash();
@@ -276,13 +252,11 @@ export class Game {
       const dot = b.vx*nx + b.vy*ny;
       if (dot < 0) { b.vx -= 2*dot*nx; b.vy -= 2*dot*ny; const spd = Math.sqrt(b.vx*b.vx+b.vy*b.vy); if (spd < C.BUMPER_FORCE) { b.vx = (b.vx/spd)*C.BUMPER_FORCE; b.vy = (b.vy/spd)*C.BUMPER_FORCE; } }
       this.particles.spawnWater(b.x, b.y, 6);
-      this.addScore(50);
     }
 
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, C.BALL_RADIUS);
     if (furnitureHit) {
       const destroyed = this.furniture.damage(furnitureHit);
-      this.addScore(furnitureHit.score * (destroyed ? 2 : 1));
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
       else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
       else if (furnitureHit.type === 'sign_board' && destroyed) this.particles.spawnConfetti(b.x, b.y, 8);
@@ -299,7 +273,6 @@ export class Game {
       b.vx = -b.vx * C.WALL_DAMPING; b.vy = Math.abs(b.vy) * C.WALL_DAMPING + 2;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
       const destroyed = this.vehicles.damage(vehicleHit);
-      this.addScore(vehicleHit.score * (destroyed ? 1 : 0) + 30);
       if (destroyed) { this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55); this.particles.spawnSpark(b.x, b.y, 6); this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR); }
       else { this.particles.spawnSpark(b.x, b.y, 3); this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5); }
       this.juice.ballHitFlash();
@@ -310,10 +283,10 @@ export class Game {
       for (const idx of crushed) {
         const [hx, hy] = this.humans.getPos(idx);
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
-        this.particles.spawnScorePop(hx, hy);
       }
       this.totalHumans += crushed.length;
-      this.addScore(crushed.length * C.HUMAN_CRUSH_SCORE);
+      // 人間を潰すとライフタイマー回復
+      this.lifeTimer = Math.min(C.WAVE_TIME, this.lifeTimer + crushed.length * C.TIME_PER_HUMAN);
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
@@ -326,7 +299,6 @@ export class Game {
     const cx = bld.x + bld.w / 2;
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
-    this.addScore(bld.score);
     this.sound.buildingDestroy();
 
     const isLarge = bld.maxHp >= 3;
@@ -352,26 +324,19 @@ export class Game {
 
   private onBallLost() {
     this.ball.active = false;
-    this.waveTimer = Math.max(0, this.waveTimer - C.BALL_LOST_PENALTY);
-    this.ui.setWaveTimer(this.waveTimer);
+    this.lifeTimer = Math.max(0, this.lifeTimer - C.BALL_LOST_PENALTY);
     this.sound.ballLost();
     this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
-    if (this.waveTimer <= 0) { this.onGameOver(); return; }
+    if (this.lifeTimer <= 0) { this.onGameOver(); return; }
     this.state = 'ball_lost';
     this.stateTimer = 1.0;
-  }
-
-  private onWaveClear() {
-    // 演出なしで即時次ウェーブへ — フラッシュのみ
-    this.juice.flash(0, 1, 0, 0.4);
-    this.startNextWave();
   }
 
   private onGameOver() {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.wave, this.totalScore, this.totalDestroys, this.totalHumans);
+      this.ui.showGameOver(this.wave, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 

@@ -29,35 +29,27 @@
       font-family: 'Arial Black', Arial, sans-serif;
       color: #fff;
     }
-    /* スコア: 左上 */
-    #score { position: absolute; top: 8px; left: 10px; font-size: 16px; text-shadow: 0 1px 4px #000; }
-    /* ベスト: 中央上 */
-    #hi    { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #aaa; }
-    /* ウェーブ番号: 右上 */
-    #wave-num { position: absolute; top: 8px; right: 10px; font-size: 14px; color: #8cf; text-shadow: 0 1px 4px #000; }
-    /* タイマー: ウェーブ番号の下 */
-    #timer { position: absolute; top: 28px; right: 10px; font-size: 22px; font-weight: 900; text-shadow: 0 1px 6px #000; }
+    /* ウェーブ番号: 左上 */
+    #wave-num { position: absolute; top: 8px; left: 10px; font-size: 14px; color: #8cf; text-shadow: 0 1px 4px #000; }
+    /* タイマー: ウェーブ番号の右 */
+    #timer { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 900; text-shadow: 0 1px 6px #000; }
     #timer.danger { color: #f44; text-shadow: 0 0 12px #f00; }
-    /* ノルマバー */
-    #quota-wrap {
-      position: absolute; top: 56px; left: 8px; right: 8px;
-      height: 8px;
+    /* ライフタイマーバー */
+    #life-wrap {
+      position: absolute; top: 36px; left: 8px; right: 8px;
+      height: 10px;
       background: rgba(0,0,0,0.4);
-      border-radius: 4px;
+      border-radius: 5px;
       overflow: hidden;
     }
-    #quota-fill {
+    #life-fill {
       height: 100%;
-      width: 0%;
+      width: 100%;
       background: linear-gradient(90deg, #f80, #ff0);
-      border-radius: 4px;
-      transition: width 0.15s;
+      border-radius: 5px;
+      transition: width 0.1s;
     }
-    #quota-fill.done { background: linear-gradient(90deg, #0f0, #8f0); }
-    #quota-text {
-      position: absolute; top: 66px; right: 10px;
-      font-size: 10px; color: #ccc;
-    }
+    #life-fill.low { background: linear-gradient(90deg, #f00, #f44); }
 
     /* ゲームオーバー */
     #gameover {
@@ -69,7 +61,6 @@
     #gameover.show { display: flex; }
     #gameover h1  { font-size: 52px; color: #f44; text-shadow: 0 0 20px #f00; margin-bottom: 6px; }
     #final-wave   { font-size: 18px; color: #8cf; }
-    #final-score  { font-size: 24px; }
     #final-best   { font-size: 14px; color: #aaa; }
     #final-stats  { font-size: 13px; color: #fc8; margin-top: 4px; }
     #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
@@ -81,18 +72,14 @@
 <div id="wrap">
   <canvas id="gameCanvas" width="360" height="580"></canvas>
   <div id="overlay">
-    <div id="score">SCORE: 0</div>
-    <div id="hi">BEST: 0</div>
     <div id="wave-num">WAVE 1</div>
     <div id="timer">30</div>
-    <div id="quota-wrap"><div id="quota-fill"></div></div>
-    <div id="quota-text">0 / 2000</div>
+    <div id="life-wrap"><div id="life-fill"></div></div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
     <div id="final-wave">WAVE 1</div>
-    <div id="final-score">Score: 0</div>
-    <div id="final-best">Best: 0</div>
+    <div id="final-best">Best: 0 humans</div>
     <div id="final-stats">Destroys: 0 | Humans: 0</div>
     <div id="go-tap">タップで再スタート</div>
   </div>

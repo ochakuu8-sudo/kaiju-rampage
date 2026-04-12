@@ -22,8 +22,10 @@ export const BALL_START_Y = -100;
 export const TRAIL_LEN = 12;
 
 // ===== ウェーブシステム =====
-export const WAVE_TIME           = 30;   // 秒/ウェーブ
-export const BALL_LOST_PENALTY   = 5;    // ボールロスト時のタイマーペナルティ(秒)
+export const WAVE_TIME           = 30;   // ライフタイマー初期値(秒)
+export const BALL_LOST_PENALTY   = 5;    // ボールロスト時のペナルティ(秒)
+export const TIME_PER_HUMAN      = 2;    // 人間1人潰すごとに回復する秒数
+export const WAVE_DURATION       = 60;   // 何秒ごとにwave++するか
 export const RUBBLE_DURATION     = 5;    // 瓦礫が残る時間(秒)
 export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーション時間(秒)
 export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
