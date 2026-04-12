@@ -51,11 +51,24 @@ const COLS = [
 ] as const;
 
 const ROWS: { baseY: number; pool: C.BuildingSize[] }[] = [
-  { baseY: C.HILLTOP_BASE,    pool: ['house','house','shop','temple','house','shop'] },
-  { baseY: C.BLK_A_NEAR,     pool: ['house','apartment','house','house','apartment'] },
-  { baseY: C.MAIN_BASE,      pool: ['shop','convenience','restaurant','office','shop','office'] },
-  { baseY: C.LOWER_BASE,     pool: ['apartment','hospital','parking','office','apartment'] },
-  { baseY: C.RIVERSIDE_BASE, pool: ['house','shop','convenience','restaurant','house'] },
+  // ===== 上ゾーン: 大型・高耐久・人口密集 =====
+  { baseY: C.HILLTOP_BASE, pool: [
+    'skyscraper','skyscraper','tower','tower','office','school',
+  ]},
+  { baseY: C.BLK_A_NEAR, pool: [
+    'tower','skyscraper','hospital','school','office','tower',
+  ]},
+  // ===== 中ゾーン: 中型・中耐久 =====
+  { baseY: C.MAIN_BASE, pool: [
+    'apartment','office','shop','restaurant','apartment','temple',
+  ]},
+  { baseY: C.LOWER_BASE, pool: [
+    'convenience','shop','restaurant','parking','apartment','shop',
+  ]},
+  // ===== 下ゾーン: 小型・低耐久・住宅 =====
+  { baseY: C.RIVERSIDE_BASE, pool: [
+    'house','house','house','shop','convenience','house',
+  ]},
 ];
 
 export const BLOCKS: Block[] = ROWS.flatMap((row, ri) =>
