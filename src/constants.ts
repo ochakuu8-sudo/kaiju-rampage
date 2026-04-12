@@ -119,10 +119,20 @@ export const HUMAN_Y_MIN = RIVERSIDE_STREET_Y - 8;  // -78
 export const HUMAN_Y_MAX = HILLTOP_STREET_Y   + 8;  // 248
 
 // 道路・歩道の色
-export const ROAD_COLOR:      readonly [number,number,number,number] = [0.35, 0.35, 0.38, 1];
-export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.72, 0.68, 0.60, 1];
-export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.90, 0.90, 0.60, 1];
-export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.30, 0.30, 0.32, 1];
+export const ROAD_COLOR:      readonly [number,number,number,number] = [0.40, 0.40, 0.42, 1];
+export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.60, 0.58, 0.52, 1];
+export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.85, 0.85, 0.45, 1];
+export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.38, 0.38, 0.35, 1];
+
+// ===== SFCシムシティ風ゾーン色 =====
+export const ZONE_RESIDENTIAL: readonly [number,number,number,number] = [0.35, 0.65, 0.28, 1];
+export const ZONE_COMMERCIAL:  readonly [number,number,number,number] = [0.55, 0.55, 0.48, 1];
+export const ZONE_RIVERSIDE:   readonly [number,number,number,number] = [0.30, 0.55, 0.32, 1];
+export const ZONE_SLOPE:       readonly [number,number,number,number] = [0.28, 0.50, 0.28, 1];
+export const PLANTING_COLOR:   readonly [number,number,number,number] = [0.30, 0.58, 0.25, 1];
+export const RIVER_COLOR:      readonly [number,number,number,number] = [0.18, 0.42, 0.72, 1];
+export const RIVER_LIGHT:      readonly [number,number,number,number] = [0.35, 0.60, 0.85, 0.6];
+export const RIVER_BANK:       readonly [number,number,number,number] = [0.35, 0.50, 0.30, 1];
 
 // ===== 街灯 =====
 export const STREETLIGHT_POLE_W = 1.5;

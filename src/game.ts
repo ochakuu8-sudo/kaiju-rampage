@@ -447,11 +447,8 @@ export class Game {
   private render() {
     const shake = this.juice.getShake();
 
-    // ------ 1. 背景グラデーション ------
-    this.renderer.drawBackground(
-      this.bgTopR, this.bgTopG, this.bgTopB,
-      this.bgBottomR, this.bgBottomG, this.bgBottomB
-    );
+    // ------ 1. 背景（芝生単色 - fillWallsで全面塗るので単色クリアのみ） ------
+    this.renderer.clear(0.35, 0.65, 0.28);
 
     // ------ バッチ1: シーン背景 (道路→ビル→家具→車両→電球) ------
     // 同一シェーダーのインスタンスをまとめて1ドローコールで描画
@@ -482,50 +479,70 @@ export class Game {
     let n = start;
     const W = 360;
     const WC = 0.18;
+    const [zrR,zrG,zrB] = C.ZONE_RESIDENTIAL;
+    const [zcR,zcG,zcB] = C.ZONE_COMMERCIAL;
+    const [zvR,zvG,zvB] = C.ZONE_RIVERSIDE;
+    const [zsR,zsG,zsB] = C.ZONE_SLOPE;
+    const [plR,plG,plB] = C.PLANTING_COLOR;
 
-    // Side walls
-    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
-    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
-    // Top wall
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
-    // UI divider
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
+    // === ① ゾーン別地面（最背面） ===
+    const htLow = C.HILLTOP_STREET_Y   - C.HILLTOP_STREET_H/2   - C.SIDEWALK_H;
+    const upLow = C.UPPER_STREET_Y     - C.UPPER_STREET_H/2     - C.SIDEWALK_H;
+    const maLow = C.MAIN_STREET_Y      - C.MAIN_STREET_H/2      - C.SIDEWALK_H;
+    const loLow = C.LOWER_STREET_Y     - C.LOWER_STREET_H/2     - C.SIDEWALK_H;
+    const rvLow = C.RIVERSIDE_STREET_Y - C.RIVERSIDE_STREET_H/2 - C.SIDEWALK_H;
+    const gf = (y1: number, y2: number, r: number, g: number, b: number) =>
+      writeInst(buf, n++, 0, (y1+y2)/2, W, y1-y2, r, g, b, 1);
+    // 丘の上〜hilltop道路上端
+    writeInst(buf, n++, 0, (C.WORLD_MAX_Y + C.HILLTOP_BASE)/2, W, C.WORLD_MAX_Y - C.HILLTOP_BASE, zrR, zrG, zrB, 1);
+    gf(htLow,  C.UPPER_BASE,    zrR, zrG, zrB); // 住宅ゾーン
+    gf(upLow,  C.MAIN_BASE,     zcR, zcG, zcB); // 商業ゾーン
+    gf(maLow,  C.LOWER_BASE,    zcR, zcG, zcB);
+    gf(loLow,  C.RIVERSIDE_BASE,zvR, zvG, zvB); // 川沿いゾーン
+    gf(rvLow,  C.FLIPPER_PIVOT_Y, zsR, zsG, zsB); // 坂エリア
+    // 川
+    const [rvR2,rvG2,rvB2] = C.RIVER_COLOR;
+    const [rlR,rlG,rlB,rlA] = C.RIVER_LIGHT;
+    const [rbR,rbG,rbB] = C.RIVER_BANK;
+    writeInst(buf, n++, 0, (C.FLIPPER_PIVOT_Y + C.WORLD_MIN_Y)/2, W,
+      C.FLIPPER_PIVOT_Y - C.WORLD_MIN_Y, rvR2, rvG2, rvB2, 1);
+    // 川岸
+    writeInst(buf, n++, 0, C.FLIPPER_PIVOT_Y + 5, W, 10, rbR, rbG, rbB, 1);
+    // 波紋
+    writeInst(buf, n++,  10, C.FLIPPER_PIVOT_Y - 30, 300, 2, rlR, rlG, rlB, rlA);
+    writeInst(buf, n++, -20, C.FLIPPER_PIVOT_Y - 50, 250, 2, rlR, rlG, rlB, rlA * 0.8);
+    writeInst(buf, n++,  30, C.FLIPPER_PIVOT_Y - 70, 200, 2, rlR, rlG, rlB, rlA * 0.6);
 
-    // Slopes
+    // === ② 坂（緑の斜面 + ガードレール） ===
     const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;
-    writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.5, 0.5, 0.65, 1, la);
+    writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.38, 0.58, 0.30, 1, la);
+    writeInst(buf, n++, lcx, lcy - lhh - 0.5, lhw*2, 2, 0.85, 0.85, 0.85, 0.5, la);
     const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
-    writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.5, 0.5, 0.65, 1, ra);
+    writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.38, 0.58, 0.30, 1, ra);
+    writeInst(buf, n++, rcx, rcy - rhh - 0.5, rhw*2, 2, 0.85, 0.85, 0.85, 0.5, ra);
 
-    // Gutter walls
+    // ガター壁
     writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
     writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
 
-    // === Ground fills between road tiers (drawn first = behind everything) ===
-    {
-      const htLow = C.HILLTOP_STREET_Y   - C.HILLTOP_STREET_H/2   - C.SIDEWALK_H; // 231
-      const upLow = C.UPPER_STREET_Y     - C.UPPER_STREET_H/2     - C.SIDEWALK_H; // 164
-      const maLow = C.MAIN_STREET_Y      - C.MAIN_STREET_H/2      - C.SIDEWALK_H; // 84
-      const loLow = C.LOWER_STREET_Y     - C.LOWER_STREET_H/2     - C.SIDEWALK_H; // 3
-      const rvLow = C.RIVERSIDE_STREET_Y - C.RIVERSIDE_STREET_H/2 - C.SIDEWALK_H; // -80
-      const gf = (y1: number, y2: number, r: number, g: number, b: number) =>
-        writeInst(buf, n++, 0, (y1+y2)/2, W, y1-y2, r, g, b, 1);
-      gf(htLow, C.UPPER_BASE,     0.52, 0.50, 0.47); // hilltop↔upper: warm concrete
-      gf(upLow, C.MAIN_BASE,      0.47, 0.45, 0.43); // upper↔main: asphalt
-      gf(maLow, C.LOWER_BASE,     0.43, 0.41, 0.39); // main↔lower: dark asphalt
-      gf(loLow, C.RIVERSIDE_BASE, 0.40, 0.38, 0.36); // lower↔riverside: pavement
-      gf(rvLow, C.WORLD_MIN_Y,    0.38, 0.36, 0.33); // below riverside: earth/gravel
-    }
-
-    // === 5 horizontal roads ===
+    // === ③ 5本道路（植栽帯 → 歩道 → 道路） ===
     const [rr,rg,rb] = C.ROAD_COLOR;
     const [sr,sg,sb] = C.SIDEWALK_COLOR;
     const [lr2,lg2,lb2] = C.ROAD_LINE_COLOR;
+    const [ar,ag,ab] = C.ALLEY_COLOR;
 
     const drawRoad = (cy: number, h: number, doubleCenter = false) => {
-      writeInst(buf, n++, 0, cy + h/2 + C.SIDEWALK_H/2, W, C.SIDEWALK_H, sr, sg, sb, 1); // upper sidewalk
-      writeInst(buf, n++, 0, cy,                          W, h,            rr, rg, rb, 1); // road
-      writeInst(buf, n++, 0, cy - h/2 - C.SIDEWALK_H/2, W, C.SIDEWALK_H, sr, sg, sb, 1); // lower sidewalk
+      const swTop = cy + h/2 + C.SIDEWALK_H/2;
+      const swBot = cy - h/2 - C.SIDEWALK_H/2;
+      // 植栽帯（歩道の外側）
+      writeInst(buf, n++, 0, swTop + C.SIDEWALK_H/2 + 1.5, W, 3, plR, plG, plB, 1);
+      writeInst(buf, n++, 0, swBot - C.SIDEWALK_H/2 - 1.5, W, 3, plR, plG, plB, 1);
+      // 歩道
+      writeInst(buf, n++, 0, swTop, W, C.SIDEWALK_H, sr, sg, sb, 1);
+      writeInst(buf, n++, 0, swBot, W, C.SIDEWALK_H, sr, sg, sb, 1);
+      // 道路本体
+      writeInst(buf, n++, 0, cy, W, h, rr, rg, rb, 1);
+      // 中央線
       if (doubleCenter) {
         writeInst(buf, n++, 0, cy + 2, W, 1.5, lr2, lg2, lb2, 1);
         writeInst(buf, n++, 0, cy - 2, W, 1.5, lr2, lg2, lb2, 1);
@@ -533,15 +550,13 @@ export class Game {
         writeInst(buf, n++, 0, cy, W, 1.5, lr2, lg2, lb2, 1);
       }
     };
+    drawRoad(C.HILLTOP_STREET_Y,   C.HILLTOP_STREET_H);
+    drawRoad(C.UPPER_STREET_Y,     C.UPPER_STREET_H);
+    drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H,  true);
+    drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H);
+    drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H);
 
-    drawRoad(C.HILLTOP_STREET_Y,   C.HILLTOP_STREET_H,   false);
-    drawRoad(C.UPPER_STREET_Y,     C.UPPER_STREET_H,     false);
-    drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H,      true);  // double center line
-    drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H,     false);
-    drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H, false);
-
-    // === 2 vertical alleys ===
-    const [ar,ag,ab] = C.ALLEY_COLOR;
+    // === ④ 縦路地 ===
     const ay  = (C.ALLEY_Y_MIN + C.ALLEY_Y_MAX) / 2;
     const ah  = C.ALLEY_Y_MAX - C.ALLEY_Y_MIN;
     for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
@@ -550,7 +565,7 @@ export class Game {
       writeInst(buf, n++, ax + C.ALLEY_WIDTH/2, ay, 1.5, ah, sr, sg, sb, 0.6);
     }
 
-    // === Crosswalks at alley × road intersections ===
+    // === ⑤ 横断歩道 ===
     const cwW = C.ALLEY_WIDTH - 2;
     const stripeH = 2.5, stripeGap = 4;
     const roads = [
@@ -563,17 +578,16 @@ export class Game {
     for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
       for (const road of roads) {
         for (let sy = road.cy - road.h/2 + 1; sy < road.cy + road.h/2; sy += stripeGap) {
-          writeInst(buf, n++, ax, sy, cwW, stripeH, 0.95, 0.95, 0.95, 0.7);
+          writeInst(buf, n++, ax, sy, cwW, stripeH, 0.90, 0.90, 0.90, 0.8);
         }
       }
     }
 
-    // === Streetlight poles ===
-    const [pr,pg,pb] = C.STREETLIGHT_POLE_COLOR;
-    for (const { x, base } of C.STREETLIGHTS) {
-      const pcy = base + C.STREETLIGHT_POLE_H / 2;
-      writeInst(buf, n++, x, pcy, C.STREETLIGHT_POLE_W, C.STREETLIGHT_POLE_H, pr, pg, pb, 1);
-    }
+    // === ⑥ 外壁 ===
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
 
     return n - start;
   }
@@ -594,9 +608,9 @@ export class Game {
     let n = start;
     for (const fl of this.flippers) {
       const isFlash = this.juice.isBallFlashing();
-      const gr = isFlash ? 1 : 0.7, gg = isFlash ? 1 : 0.7, gb = isFlash ? 1 : 0.8;
+      const gr = isFlash ? 1 : 0.60, gg = isFlash ? 1 : 0.60, gb = isFlash ? 1 : 0.70;
       writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
-      writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 1, 0.6, 0.2, 1, 0, 1);
+      writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
     return n - start;
   }
@@ -612,14 +626,14 @@ export class Game {
       const idx = (b.trailHead - 1 - t + C.TRAIL_LEN) % C.TRAIL_LEN;
       const tx = b.trail[idx * 2];
       const ty = b.trail[idx * 2 + 1];
-      const alpha = (1 - age) * 0.4;
+      const alpha = (1 - age) * 0.45;
       const sz = C.BALL_RADIUS * 2 * (1 - age * 0.6);
-      writeInst(buf, n++, tx, ty, sz, sz, 1, 0.5 - age * 0.3, 0.1, alpha, 0, 1);
+      writeInst(buf, n++, tx, ty, sz, sz, 0.95, 0.40 - age * 0.2, 0.08, alpha, 0, 1);
     }
 
-    const r = isFl ? 1 : 1;
+    const r = isFl ? 1 : 0.95;
     const g = isFl ? 1 : 0.55;
-    const bv = isFl ? 1 : 0.1;
+    const bv = isFl ? 1 : 0.10;
     const d = C.BALL_RADIUS * 2;
     writeInst(buf, n++, b.x, b.y, d, d, r, g, bv, 1, 0, 1);
 
