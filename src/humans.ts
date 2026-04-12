@@ -12,8 +12,9 @@ const ST_RUNNING  = 1;
 const ST_CRUSHED  = 2;
 
 // 移動モード
-const MODE_HORIZ = 0; // 横道路に沿って
-const MODE_VERT  = 1; // 縦路地に沿って
+const MODE_HORIZ = 0; // 横道路エリアにロック（エリア内は自由移動）
+const MODE_VERT  = 1; // 縦路地エリアにロック（エリア内は自由移動）
+const MODE_FREE  = 2; // 自由逃走（道路エリア外を走り回る）
 
 // 道路 Y 中心と許容幅 (4道路)
 const H_ROADS = [
@@ -140,8 +141,9 @@ export class HumanManager {
         this.px[i] = Math.max(C.WORLD_MIN_X + 4, Math.min(C.WORLD_MAX_X - 4, this.px[i]));
         this.py[i] = Math.max(C.HUMAN_Y_MIN, Math.min(C.HUMAN_Y_MAX, this.py[i]));
         if (this.blastTimer[i] <= 0) {
-          // blast終了後: 最近傍の横道路または縦路地に即スナップ
-          this._snapToNearestRoadOrAlley(i);
+          // blast終了後: 自由移動開始。道路エリアに入ったら出られなくなる
+          this.mode[i] = MODE_FREE;
+          this._pickNewDirection(i);
           this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
         }
         continue;
@@ -169,7 +171,30 @@ export class HumanManager {
       const px = this.px[i];
       const py = this.py[i];
 
-      if (cm === MODE_HORIZ) {
+      if (cm === MODE_FREE) {
+        // 自由逃走: 道路/路地エリアに触れたら即ロック（以降出られない）
+        for (const r of H_ROADS) {
+          if (Math.abs(this.py[i] - r.y) <= r.tol) {
+            this.mode[i] = MODE_HORIZ;
+            this._pickNewDirection(i);
+            this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+            break;
+          }
+        }
+        if (this.mode[i] === MODE_FREE) {
+          for (const a of V_ALLEYS) {
+            if (Math.abs(this.px[i] - a.x) <= a.tol) {
+              this.mode[i] = MODE_VERT;
+              this._pickNewDirection(i);
+              this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+              break;
+            }
+          }
+        }
+        // 全体Y境界クランプ
+        this.py[i] = Math.max(C.HUMAN_Y_MIN + C.HUMAN_H, Math.min(C.HUMAN_Y_MAX - C.HUMAN_H, this.py[i]));
+
+      } else if (cm === MODE_HORIZ) {
         // 道路エリア: Y方向の境界で速度反発（エリア外に出られない）
         const road = this._findRoad(py);
         if (road) {
