@@ -768,7 +768,7 @@ export interface VehicleItem {
 
 interface VehicleDef {
   type: 'car' | 'bus' | 'truck' | 'ambulance';
-  lane: 'hilltop' | 'upper' | 'main' | 'lower' | 'riverside';
+  lane: 'hilltop' | 'main' | 'lower' | 'riverside';
   direction: 1 | -1;
   speed: number;
   interval: number;
@@ -842,14 +842,12 @@ export class VehicleManager {
   private spawnVehicle(def: VehicleDef) {
     const laneY =
       def.lane === 'hilltop'   ? C.HILLTOP_STREET_Y   :
-      def.lane === 'upper'     ? C.UPPER_STREET_Y     :
       def.lane === 'main'      ? C.MAIN_STREET_Y      :
       def.lane === 'lower'     ? C.LOWER_STREET_Y     :
       def.lane === 'riverside' ? C.RIVERSIDE_STREET_Y : C.MAIN_STREET_Y;
 
     const laneH =
       def.lane === 'hilltop'   ? C.HILLTOP_STREET_H   :
-      def.lane === 'upper'     ? C.UPPER_STREET_H     :
       def.lane === 'main'      ? C.MAIN_STREET_H      :
       def.lane === 'lower'     ? C.LOWER_STREET_H     :
       def.lane === 'riverside' ? C.RIVERSIDE_STREET_H : C.MAIN_STREET_H;

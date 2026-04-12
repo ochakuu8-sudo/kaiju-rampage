@@ -1,12 +1,12 @@
 /**
  * stages.ts — ステージ定義データ
- * 5本横道路 + 2本縦路地 (丘〜川沿い)
+ * 4本横道路 + 2本縦路地 (丘〜川沿い)
  *
- * Tier 1: Hilltop   (HILLTOP_BASE=249)   Y=240
- * Tier 2: Upper     (UPPER_BASE=186)     Y=175
- * Tier 3: Main      (MAIN_BASE=116)      Y=100
- * Tier 4: Lower     (LOWER_BASE=27)      Y=15
- * Tier 5: Riverside (RIVERSIDE_BASE=-60) Y=-70
+ * Tier 1: Hilltop   (HILLTOP_BASE=200)    Y=240
+ * Tier 1b: BLK_A_NEAR (BLK_A_NEAR=162)   block A 手前列
+ * Tier 3: Main      (MAIN_BASE=90)        Y=133
+ * Tier 4: Lower     (LOWER_BASE=42)       Y=26
+ * Tier 5: Riverside (RIVERSIDE_BASE=−45)  Y=-80
  *
  * Alley exclusion zones:
  *   Alley 1: X=-59..−41  (center −50, w=18)
@@ -14,7 +14,7 @@
  * Buildings must NOT have their footprint overlap these zones.
  */
 
-import { BuildingSize, HILLTOP_BASE, UPPER_BASE, MAIN_BASE, LOWER_BASE, RIVERSIDE_BASE } from './constants';
+import { BuildingSize, HILLTOP_BASE, BLK_A_NEAR, MAIN_BASE, LOWER_BASE, RIVERSIDE_BASE } from './constants';
 import type { FurnitureType } from './entities';
 
 export interface BuildingDef { x: number; y: number; size: BuildingSize; }
@@ -22,7 +22,7 @@ export interface BumperDef   { x: number; y: number; }
 export interface FurnitureDef { type: FurnitureType; x: number; y: number; hp?: number; score?: number; }
 export interface VehicleDef {
   type: 'car' | 'bus' | 'truck' | 'ambulance';
-  lane: 'hilltop' | 'upper' | 'main' | 'lower' | 'riverside';
+  lane: 'hilltop' | 'main' | 'lower' | 'riverside';
   direction: 1 | -1;
   speed: number;
   interval: number;
@@ -44,7 +44,7 @@ const stage1Config: StageConfig = {
   level: 1,
 
   buildings: [
-    // ── Tier 1: Hilltop (HILLTOP_BASE=249) ─────────────────────────────
+    // ── Tier 1: Hilltop 奥列 (HILLTOP_BASE=200) ────────────────────────
     // left of alley1 (right edge ≤ −59)
     b(-168, HILLTOP_BASE, 'house'),   // [−176,−160]
     b(-151, HILLTOP_BASE, 'house'),   // [−159,−143]
@@ -66,25 +66,25 @@ const stage1Config: StageConfig = {
     b( 151, HILLTOP_BASE, 'house'),   // [143, 159]
     b( 168, HILLTOP_BASE, 'house'),   // [160, 176]
 
-    // ── Tier 2: Upper / Residential (UPPER_BASE=186) ─────────────────
-    b(-168, UPPER_BASE, 'house'),
-    b(-151, UPPER_BASE, 'house'),
-    b(-135, UPPER_BASE, 'apartment'), // [−147,−123]
-    b(-110, UPPER_BASE, 'house'),
-    b( -92, UPPER_BASE, 'house'),
-    b( -74, UPPER_BASE, 'house'),     // [−82, −66]
+    // ── Tier 1b: Hilltop 手前列 / Residential (BLK_A_NEAR=162) ─────────
+    b(-168, BLK_A_NEAR, 'house'),
+    b(-151, BLK_A_NEAR, 'house'),
+    b(-135, BLK_A_NEAR, 'apartment'), // [−147,−123]
+    b(-110, BLK_A_NEAR, 'house'),
+    b( -92, BLK_A_NEAR, 'house'),
+    b( -74, BLK_A_NEAR, 'house'),     // [−82, −66]
     // mid
-    b( -29, UPPER_BASE, 'house'),     // [−37, −21]
-    b(  10, UPPER_BASE, 'school'),    // [−10,  30] w=40
-    b(  52, UPPER_BASE, 'apartment'), // [ 40,  64]
+    b( -29, BLK_A_NEAR, 'house'),     // [−37, −21]
+    b(  10, BLK_A_NEAR, 'school'),    // [−10,  30] w=40
+    b(  52, BLK_A_NEAR, 'apartment'), // [ 40,  64]
     // right
-    b(  97, UPPER_BASE, 'house'),
-    b( 116, UPPER_BASE, 'apartment'), // [104, 128]
-    b( 140, UPPER_BASE, 'house'),
-    b( 156, UPPER_BASE, 'house'),
-    b( 172, UPPER_BASE, 'house'),
+    b(  97, BLK_A_NEAR, 'house'),
+    b( 116, BLK_A_NEAR, 'apartment'), // [104, 128]
+    b( 140, BLK_A_NEAR, 'house'),
+    b( 156, BLK_A_NEAR, 'house'),
+    b( 172, BLK_A_NEAR, 'house'),
 
-    // ── Tier 3: Main commercial (MAIN_BASE=116) ───────────────────────
+    // ── Tier 3: Main commercial (MAIN_BASE=90) ───────────────────────────
     b(-162, MAIN_BASE, 'restaurant'), // [−172,−152]
     b(-141, MAIN_BASE, 'shop'),       // [−152,−130]
     b(-119, MAIN_BASE, 'shop'),       // [−130,−108]
@@ -100,7 +100,7 @@ const stage1Config: StageConfig = {
     b( 128, MAIN_BASE, 'office'),     // [113, 143]
     b( 158, MAIN_BASE, 'tower'),      // [140.5,175.5]
 
-    // ── Tier 4: Lower / Station (LOWER_BASE=27) ───────────────────────
+    // ── Tier 4: Lower / Station (LOWER_BASE=42) ───────────────────────────
     b(-160, LOWER_BASE, 'convenience'),// [−172,−148]
     b(-131, LOWER_BASE, 'parking'),    // [−149,−113]
     b(-101, LOWER_BASE, 'shop'),       // [−112, −90]
@@ -114,7 +114,7 @@ const stage1Config: StageConfig = {
     b( 136, LOWER_BASE, 'shop'),       // [125, 147]
     b( 157, LOWER_BASE, 'apartment'),  // [145, 169]
 
-    // ── Tier 5: Riverside (RIVERSIDE_BASE=−60) ────────────────────────
+    // ── Tier 5: Riverside (RIVERSIDE_BASE=−45) ────────────────────────────
     b(-163, RIVERSIDE_BASE, 'house'),
     b(-146, RIVERSIDE_BASE, 'house'),
     b(-126, RIVERSIDE_BASE, 'restaurant'),// [−136,−116]
@@ -149,62 +149,45 @@ const stage1Config: StageConfig = {
     f('flower_bed',    143, 247), f('bench',  162, 247),
     f('power_pole',    175, 247),
 
-    // ── Upper / Residential sidewalk Y≈184 ───────────────────────────
-    f('power_pole',   -175, 184), f('mailbox',  -162, 184),
-    f('tree',         -145, 184), f('tree',    -128, 184),
-    f('bicycle',      -105, 184), f('bicycle',  -97, 184),
-    f('mailbox',       -85, 184),
-    f('tree',          -65, 184),
-    f('bench',         -40, 184),
-    f('flower_bed',    -18, 184), f('flower_bed', 5, 184),
-    f('bicycle',        40, 184), f('bicycle',   50, 184),
-    f('tree',           65, 184),
-    f('power_pole',     92, 184),
-    f('tree',          108, 184), f('mailbox',  127, 184),
-    f('tree',          145, 184), f('tree',    162, 184),
-    f('power_pole',    175, 184),
+    // ── Main commercial sidewalk Y≈146 ───────────────────────────────
+    f('sign_board',   -155, 146), f('parasol',  -147, 146),
+    f('sign_board',   -132, 146), f('garbage',  -126, 146),
+    f('vending',      -112, 146), f('sign_board',-104, 146),
+    f('garbage',       -85, 146),
+    f('traffic_light', -60, 146),
+    f('sign_board',    -40, 146), f('parasol',   -24, 146),
+    f('vending',       -14, 146),
+    f('fountain',        5, 146),
+    f('vending',        16, 146), f('parasol',   30, 146),
+    f('sign_board',     45, 146), f('garbage',   57, 146),
+    f('traffic_light',  71, 146),
+    f('vending',        95, 146), f('sign_board',108, 146),
+    f('garbage',       122, 146), f('parasol',   140, 146),
+    f('sign_board',    153, 146),
 
-    // ── Main commercial sidewalk Y≈114 ───────────────────────────────
-    f('sign_board',   -155, 114), f('parasol',  -147, 114),
-    f('sign_board',   -132, 114), f('garbage',  -126, 114),
-    f('vending',      -112, 114), f('sign_board',-104, 114),
-    f('garbage',       -85, 114),
-    f('traffic_light', -60, 114),
-    f('sign_board',    -40, 114), f('parasol',   -24, 114),
-    f('vending',       -14, 114),
-    f('fountain',        5, 114),
-    f('vending',        16, 114), f('parasol',   30, 114),
-    f('sign_board',     45, 114), f('garbage',   57, 114),
-    f('traffic_light',  71, 114),
-    f('vending',        95, 114), f('sign_board',108, 114),
-    f('garbage',       122, 114), f('parasol',   140, 114),
-    f('sign_board',    153, 114),
+    // ── Lower / Station sidewalk Y≈38 ────────────────────────────────
+    f('vending',      -172,  38), f('bench',    -152,  38),
+    f('sign_board',   -125,  38),
+    f('hydrant',      -112,  38), f('garbage',   -95,  38),
+    f('traffic_light', -60,  38), f('hydrant',   -45,  38),
+    f('bench',         -18,  38), f('vending',     2,  38),
+    f('garbage',        22,  38),
+    f('traffic_light',  71,  38), f('hydrant',    85,  38),
+    f('sign_board',     98,  38), f('bench',     122,  38),
+    f('vending',       142,  38), f('garbage',   157,  38),
 
-    // ── Lower / Station sidewalk Y≈25 ────────────────────────────────
-    f('vending',      -172,  25), f('bench',    -152,  25),
-    f('sign_board',   -125,  25),
-    f('hydrant',      -112,  25), f('garbage',   -95,  25),
-    f('traffic_light', -60,  25), f('hydrant',   -45,  25),
-    f('bench',         -18,  25), f('vending',     2,  25),
-    f('garbage',        22,  25),
-    f('traffic_light',  71,  25), f('hydrant',    85,  25),
-    f('sign_board',     98,  25), f('bench',     122,  25),
-    f('vending',       142,  25), f('garbage',   157,  25),
-
-    // ── Riverside sidewalk Y≈−62 ─────────────────────────────────────
-    f('tree',         -155, -62), f('bench',    -132, -62),
-    f('tree',         -113, -62),
-    f('tree',          -75, -62),
-    f('bench',         -40, -62), f('bench',      0, -62),
-    f('tree',           40, -62), f('bench',     60, -62),
-    f('tree',           90, -62), f('tree',     112, -62),
-    f('bench',         132, -62), f('tree',     155, -62),
+    // ── Riverside sidewalk Y≈−72 ─────────────────────────────────────
+    f('tree',         -155, -72), f('bench',    -132, -72),
+    f('tree',         -113, -72),
+    f('tree',          -75, -72),
+    f('bench',         -40, -72), f('bench',      0, -72),
+    f('tree',           40, -72), f('bench',     60, -72),
+    f('tree',           90, -72), f('tree',     112, -72),
+    f('bench',         132, -72), f('tree',     155, -72),
   ],
 
   vehicles: [
     { type:'car',   lane:'hilltop',   direction:-1, speed:30, interval:14.0 },
-    { type:'car',   lane:'upper',     direction: 1, speed:40, interval: 7.0 },
-    { type:'car',   lane:'upper',     direction:-1, speed:35, interval: 9.0 },
     { type:'car',   lane:'main',      direction: 1, speed:60, interval: 3.0 },
     { type:'car',   lane:'main',      direction:-1, speed:55, interval: 3.5 },
     { type:'bus',   lane:'main',      direction: 1, speed:40, interval: 7.5 },

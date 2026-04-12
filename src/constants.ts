@@ -87,35 +87,38 @@ export const SHAKE_LARGE_DUR   = 0.20;
 export const HITSTOP_SMALL = 3;  // frames
 export const HITSTOP_LARGE = 5;
 
-// ===== 街レイアウト: 5本の横道路 =====
+// ===== 街レイアウト: 4本の横道路（均等間隔）=====
 export const HILLTOP_STREET_Y   = 240;  export const HILLTOP_STREET_H   = 10;
-export const UPPER_STREET_Y     = 175;  export const UPPER_STREET_H     = 14;
-export const MAIN_STREET_Y      = 100;  export const MAIN_STREET_H      = 24;
-export const LOWER_STREET_Y     = 15;   export const LOWER_STREET_H     = 16;
-export const RIVERSIDE_STREET_Y = -70;  export const RIVERSIDE_STREET_H = 12;
+// UPPER 削除 — 間隔を均等に再配置
+export const MAIN_STREET_Y      = 133;  export const MAIN_STREET_H      = 18;
+export const LOWER_STREET_Y     = 26;   export const LOWER_STREET_H     = 16;
+export const RIVERSIDE_STREET_Y = -80;  export const RIVERSIDE_STREET_H = 12;
 
 export const SIDEWALK_H = 4;
 
-// ベースライン (ビル接地点 = 道路上端 + 歩道)
-export const HILLTOP_BASE   = HILLTOP_STREET_Y   + HILLTOP_STREET_H   / 2 + SIDEWALK_H; // 249
-export const UPPER_BASE     = UPPER_STREET_Y     + UPPER_STREET_H     / 2 + SIDEWALK_H; // 186
-export const MAIN_BASE      = MAIN_STREET_Y      + MAIN_STREET_H      / 2 + SIDEWALK_H; // 116
-export const LOWER_BASE     = LOWER_STREET_Y     + LOWER_STREET_H     / 2 + SIDEWALK_H; // 27
-export const RIVERSIDE_BASE = RIVERSIDE_STREET_Y + RIVERSIDE_STREET_H / 2 + SIDEWALK_H; // -60
+// 建物配置グリッド: 道路間ブロックの内側に配置（道路沿い×）
+// ブロックA: MAIN上端(142)〜HILLTOP下端(235)
+export const HILLTOP_BASE = 200;   // ブロックA 奥列 (was 249)
+export const BLK_A_NEAR   = 162;   // ブロックA 手前列 (replaces UPPER_BASE)
+// ブロックB: LOWER上端(34)〜MAIN下端(124)
+export const MAIN_BASE    = 90;    // ブロックB 奥列 (was 116)
+export const LOWER_BASE   = 42;    // ブロックB 手前列 (was 27)
+// ブロックC: RIVERSIDE上端(-74)〜LOWER下端(18)
+export const RIVERSIDE_BASE = -45; // ブロックC (was -60)
 
 // 路地 (非対称)
 export const ALLEY_1_X   = -50;
 export const ALLEY_2_X   =  80;
 export const ALLEY_WIDTH  = 18;
-export const ALLEY_Y_MIN  = -55;  // 川沿いまで
+export const ALLEY_Y_MIN  = -85;  // 川沿いまで
 export const ALLEY_Y_MAX  = 244;  // 丘まで
 
 // 街の範囲
-export const STREET_Y_MIN = -78;  // RIVERSIDE - 8
+export const STREET_Y_MIN = -88;  // RIVERSIDE - 8
 export const STREET_Y_MAX = 250;
 
 // 人間の行動範囲
-export const HUMAN_Y_MIN = RIVERSIDE_STREET_Y - 8;  // -78
+export const HUMAN_Y_MIN = RIVERSIDE_STREET_Y - 8;  // -88
 export const HUMAN_Y_MAX = HILLTOP_STREET_Y   + 8;  // 248
 
 // 道路・歩道の色
@@ -142,14 +145,15 @@ export const STREETLIGHT_BULB_R = 2.5;
 export const STREETLIGHT_BULB_COLOR: readonly [number,number,number,number] = [1.0, 0.9, 0.5, 0.0];
 
 export const STREETLIGHTS: ReadonlyArray<{ x: number; base: number }> = [
-  // メイン道路沿い
-  { x: -160, base: MAIN_BASE }, { x: -80, base: MAIN_BASE },
-  { x:    0, base: MAIN_BASE }, { x:  80, base: MAIN_BASE },
-  { x:  160, base: MAIN_BASE },
-  // 住宅街沿い
-  { x: -140, base: UPPER_BASE }, { x:  50, base: UPPER_BASE }, { x: 150, base: UPPER_BASE },
-  // 下の通り沿い
-  { x: -120, base: LOWER_BASE }, { x:  60, base: LOWER_BASE },
+  // MAIN道路沿い (sidewalk top ≈ 146)
+  { x: -160, base: MAIN_STREET_Y + MAIN_STREET_H/2 + SIDEWALK_H },
+  { x:  -80, base: MAIN_STREET_Y + MAIN_STREET_H/2 + SIDEWALK_H },
+  { x:    0, base: MAIN_STREET_Y + MAIN_STREET_H/2 + SIDEWALK_H },
+  { x:   80, base: MAIN_STREET_Y + MAIN_STREET_H/2 + SIDEWALK_H },
+  { x:  160, base: MAIN_STREET_Y + MAIN_STREET_H/2 + SIDEWALK_H },
+  // LOWER道路沿い (sidewalk top ≈ 38)
+  { x: -120, base: LOWER_STREET_Y + LOWER_STREET_H/2 + SIDEWALK_H },
+  { x:   60, base: LOWER_STREET_Y + LOWER_STREET_H/2 + SIDEWALK_H },
 ];
 
 // ===== 街路樹・調度品 =====

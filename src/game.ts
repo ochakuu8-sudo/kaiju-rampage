@@ -485,21 +485,26 @@ export class Game {
     const [zsR,zsG,zsB] = C.ZONE_SLOPE;
     const [plR,plG,plB] = C.PLANTING_COLOR;
 
-    // === ① ゾーン別地面（最背面） ===
+    // === ① ゾーン別地面（最背面, 4道路）===
     const htLow = C.HILLTOP_STREET_Y   - C.HILLTOP_STREET_H/2   - C.SIDEWALK_H;
-    const upLow = C.UPPER_STREET_Y     - C.UPPER_STREET_H/2     - C.SIDEWALK_H;
     const maLow = C.MAIN_STREET_Y      - C.MAIN_STREET_H/2      - C.SIDEWALK_H;
     const loLow = C.LOWER_STREET_Y     - C.LOWER_STREET_H/2     - C.SIDEWALK_H;
     const rvLow = C.RIVERSIDE_STREET_Y - C.RIVERSIDE_STREET_H/2 - C.SIDEWALK_H;
     const gf = (y1: number, y2: number, r: number, g: number, b: number) =>
       writeInst(buf, n++, 0, (y1+y2)/2, W, y1-y2, r, g, b, 1);
-    // 丘の上〜hilltop道路上端
-    writeInst(buf, n++, 0, (C.WORLD_MAX_Y + C.HILLTOP_BASE)/2, W, C.WORLD_MAX_Y - C.HILLTOP_BASE, zrR, zrG, zrB, 1);
-    gf(htLow,  C.UPPER_BASE,    zrR, zrG, zrB); // 住宅ゾーン
-    gf(upLow,  C.MAIN_BASE,     zcR, zcG, zcB); // 商業ゾーン
-    gf(maLow,  C.LOWER_BASE,    zcR, zcG, zcB);
-    gf(loLow,  C.RIVERSIDE_BASE,zvR, zvG, zvB); // 川沿いゾーン
-    gf(rvLow,  C.FLIPPER_PIVOT_Y, zsR, zsG, zsB); // 坂エリア
+    // 丘上部〜HILLTOP道路
+    writeInst(buf, n++, 0, (C.WORLD_MAX_Y + htLow)/2, W, C.WORLD_MAX_Y - htLow, zrR, zrG, zrB, 1);
+    // ブロックA (HILLTOP〜MAIN): 住宅ゾーン
+    const maTop = C.MAIN_STREET_Y + C.MAIN_STREET_H/2 + C.SIDEWALK_H;
+    gf(htLow,  maTop, zrR, zrG, zrB);
+    // ブロックB (MAIN〜LOWER): 商業ゾーン
+    const loTop = C.LOWER_STREET_Y + C.LOWER_STREET_H/2 + C.SIDEWALK_H;
+    gf(maLow,  loTop, zcR, zcG, zcB);
+    // ブロックC (LOWER〜RIVERSIDE): 川沿いゾーン
+    const rvTop = C.RIVERSIDE_STREET_Y + C.RIVERSIDE_STREET_H/2 + C.SIDEWALK_H;
+    gf(loLow,  rvTop, zvR, zvG, zvB);
+    // 坂エリア
+    gf(rvLow,  C.FLIPPER_PIVOT_Y, zsR, zsG, zsB);
     // 川
     const [rvR2,rvG2,rvB2] = C.RIVER_COLOR;
     const [rlR,rlG,rlB,rlA] = C.RIVER_LIGHT;
@@ -551,7 +556,6 @@ export class Game {
       }
     };
     drawRoad(C.HILLTOP_STREET_Y,   C.HILLTOP_STREET_H);
-    drawRoad(C.UPPER_STREET_Y,     C.UPPER_STREET_H);
     drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H,  true);
     drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H);
     drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H);
@@ -570,7 +574,6 @@ export class Game {
     const stripeH = 2.5, stripeGap = 4;
     const roads = [
       { cy: C.HILLTOP_STREET_Y,   h: C.HILLTOP_STREET_H },
-      { cy: C.UPPER_STREET_Y,     h: C.UPPER_STREET_H },
       { cy: C.MAIN_STREET_Y,      h: C.MAIN_STREET_H },
       { cy: C.LOWER_STREET_Y,     h: C.LOWER_STREET_H },
       { cy: C.RIVERSIDE_STREET_Y, h: C.RIVERSIDE_STREET_H },

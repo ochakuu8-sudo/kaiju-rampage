@@ -16,10 +16,9 @@ const MODE_HORIZ = 0; // 横道路に沿って
 const MODE_VERT  = 1; // 縦路地に沿って
 const MODE_FREE  = 2; // 自由（ブロック内パニック逃走）
 
-// 道路 Y 中心と許容幅
+// 道路 Y 中心と許容幅 (4道路)
 const H_ROADS = [
   { y: C.HILLTOP_STREET_Y,   tol: C.HILLTOP_STREET_H   / 2 + 2 },
-  { y: C.UPPER_STREET_Y,     tol: C.UPPER_STREET_H     / 2 + 2 },
   { y: C.MAIN_STREET_Y,      tol: C.MAIN_STREET_H      / 2 + 2 },
   { y: C.LOWER_STREET_Y,     tol: C.LOWER_STREET_H     / 2 + 2 },
   { y: C.RIVERSIDE_STREET_Y, tol: C.RIVERSIDE_STREET_H / 2 + 2 },
