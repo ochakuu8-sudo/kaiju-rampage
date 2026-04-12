@@ -48,17 +48,23 @@ export class SoundEngine {
 
   flipper() {
     this.schedule((ctx, dst) => {
-      const g = ctx.createGain();
-      g.connect(dst);
+      const t = ctx.currentTime;
+      const dur = 0.055;
+      // triangle波で丸みのある「コン」
       const o = ctx.createOscillator();
-      o.type = 'square';
-      o.frequency.setValueAtTime(this.rp(600, 0.08), ctx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.05);
-      g.gain.setValueAtTime(0.5, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-      o.connect(g);
-      o.start(); o.stop(ctx.currentTime + 0.05);
-      return 0.05;
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(this.rp(160, 0.06), t);
+      o.frequency.exponentialRampToValueAtTime(70, t + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.22, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      // 薄いローパスで篭らせる
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 900;
+      o.connect(lp); lp.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + dur);
+      return dur;
     });
   }
 
@@ -130,33 +136,59 @@ export class SoundEngine {
     });
   }
 
-  humanCrush(comboMult = 1) {
-    // 人間潰しは最優先 → activeCountを一時的に無視して鳴らす
+  humanCrush(_comboMult = 1) {
+    // 最優先再生（activeCount上限を無視）
     const ctx = this.getCtx();
     if (!ctx || !this.master) return;
-    const dur = 0.06;
-    const g = ctx.createGain();
-    g.connect(this.master);
-    // 湿った低音パルス
-    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const flt = ctx.createBiquadFilter();
-    flt.type = 'lowpass';
-    const baseFreq = this.rp(250 + this.comboStep * 30, 0.08);
-    flt.frequency.value = Math.min(baseFreq, 1200);
-    g.gain.setValueAtTime(0.5, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-    src.connect(flt); flt.connect(g);
-    src.start(); src.stop(ctx.currentTime + dur);
-    this.comboStep = Math.min(this.comboStep + 1, 10);
+    const t   = ctx.currentTime;
+    const pit = this.rp(1.0, 0.12); // ピッチ揺らし
+
+    // === Layer 1: 低音ボディ (sine 90→45Hz) ===
+    const dur1 = 0.09;
+    const o1 = ctx.createOscillator();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(90 * pit, t);
+    o1.frequency.exponentialRampToValueAtTime(42 * pit, t + dur1);
+    const g1 = ctx.createGain();
+    g1.gain.setValueAtTime(0.55, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + dur1);
+    o1.connect(g1); g1.connect(this.master);
+    o1.start(t); o1.stop(t + dur1);
+
+    // === Layer 2: 中域スクイッシュノイズ (bandpass ~600Hz) ===
+    const dur2 = 0.06;
+    const nBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur2), ctx.sampleRate);
+    const nData = nBuf.getChannelData(0);
+    for (let i = 0; i < nData.length; i++) nData[i] = Math.random() * 2 - 1;
+    const nSrc = ctx.createBufferSource();
+    nSrc.buffer = nBuf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 600 * pit;
+    bp.Q.value = 3.5;
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0.35, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + dur2);
+    nSrc.connect(bp); bp.connect(g2); g2.connect(this.master);
+    nSrc.start(t); nSrc.stop(t + dur2);
+
+    // === Layer 3: 高音ポップ (sine 1800→900Hz, 超短い) ===
+    const dur3 = 0.025;
+    const o3 = ctx.createOscillator();
+    o3.type = 'sine';
+    o3.frequency.setValueAtTime(1800 * pit, t);
+    o3.frequency.exponentialRampToValueAtTime(900 * pit, t + dur3);
+    const g3 = ctx.createGain();
+    g3.gain.setValueAtTime(0.18, t);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + dur3);
+    o3.connect(g3); g3.connect(this.master);
+    o3.start(t); o3.stop(t + dur3);
+
     this.activeCount++;
-    setTimeout(() => { this.activeCount = Math.max(0, this.activeCount - 1); }, dur * 1000 + 50);
+    setTimeout(() => { this.activeCount = Math.max(0, this.activeCount - 1); }, dur1 * 1000 + 50);
   }
 
-  resetComboStep() { this.comboStep = 0; }
+  resetComboStep() { /* 廃止 */ }
 
   bumper() {
     this.schedule((ctx, dst) => {
