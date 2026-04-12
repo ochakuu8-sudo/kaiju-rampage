@@ -84,8 +84,9 @@ export const SHAKE_LARGE_AMP   = 10;
 export const SHAKE_LARGE_DUR   = 0.20;
 
 // ===== ジュース: ヒットストップ =====
-export const HITSTOP_SMALL = 3;  // frames
-export const HITSTOP_LARGE = 5;
+export const HITSTOP_SMALL  = 1;  // frames（建物小）
+export const HITSTOP_LARGE  = 2;  // frames（建物大）
+export const HITSTOP_HUMAN  = 1;  // frames（人間潰し）
 
 // ===== 街レイアウト: 4本の横道路（均等間隔）=====
 export const HILLTOP_STREET_Y   = 240;  export const HILLTOP_STREET_H   = 10;

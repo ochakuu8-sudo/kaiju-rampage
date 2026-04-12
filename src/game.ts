@@ -356,6 +356,7 @@ export class Game {
       this.ui.setScore(this.score);
 
       this.sound.humanCrush(1);
+      this.juice.hitstop(C.HITSTOP_HUMAN);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
 
