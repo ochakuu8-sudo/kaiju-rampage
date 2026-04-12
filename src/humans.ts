@@ -149,22 +149,20 @@ export class HumanManager {
         this.px[i] = Math.max(C.WORLD_MIN_X + 4, Math.min(C.WORLD_MAX_X - 4, this.px[i]));
         this.py[i] = Math.max(C.HUMAN_Y_MIN, Math.min(C.HUMAN_Y_MAX, this.py[i]));
         if (this.blastTimer[i] <= 0) {
-          // 最寄り道路にスナップして道路上を逃走
-          this._snapToNearestRoad(i);
+          // blast終了後はFREEで逃走。道路に入ったら出られなくなる
+          this.mode[i] = MODE_FREE;
+          this._pickNewDirection(i);
           this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
         }
         continue;
       }
 
-      const px = this.px[i];
-      const py = this.py[i];
-
-      // ボール接近 → 速度ブーストのみ（道路から離れない）
-      const dbx = px - ballX;
-      const dby = py - ballY;
+      // ボール接近 → 速度ブーストのみ（モード変更なし）
+      const dbx = this.px[i] - ballX;
+      const dby = this.py[i] - ballY;
       const dist2 = dbx * dbx + dby * dby;
-      const fearR  = C.HUMAN_FEAR_RADIUS * C.HUMAN_FEAR_RADIUS;
-      const boost  = dist2 < fearR ? C.HUMAN_FEAR_BOOST : 1.0;
+      const fearR = C.HUMAN_FEAR_RADIUS * C.HUMAN_FEAR_RADIUS;
+      const boost = dist2 < fearR ? C.HUMAN_FEAR_BOOST : 1.0;
 
       // 方向転換タイマー
       this.timer[i] -= dt;
@@ -177,40 +175,66 @@ export class HumanManager {
       this.px[i] += this.vx[i] * boost * dt;
       this.py[i] += this.vy[i] * boost * dt;
 
-      const currentMode = this.mode[i];
-      if (currentMode === MODE_HORIZ) {
-        // 道路Y座標に完全固定（道路から出られない）
-        this.py[i] = this._nearestRoadY(py);
-        this.vy[i] = 0;
-      } else if (currentMode === MODE_VERT) {
-        // 路地X座標に完全固定（路地から出られない）
-        this.px[i] = this._nearestAlleyX(px);
-        this.vx[i] = 0;
-      }
+      const cm = this.mode[i];
+      const px = this.px[i];
+      const py = this.py[i];
 
-      // 交差点: 路地に入ったらVERTモードに切り替え可
-      if (currentMode === MODE_HORIZ && onVertAlley(this.px[i])) {
-        if (Math.random() < 0.008) {
-          this.mode[i] = MODE_VERT;
-          this.vy[i]   = (Math.random() > 0.5 ? 1 : -1) * this.speed[i];
-          this.vx[i]   = 0;
+      if (cm === MODE_FREE) {
+        // 道路エリアに入ったら HORIZ へ（以降出られない）
+        for (const r of H_ROADS) {
+          if (Math.abs(py - r.y) <= r.tol) {
+            this.mode[i] = MODE_HORIZ;
+            this._pickNewDirection(i);
+            this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+            break;
+          }
         }
-      }
-      // 路地から横道路に出られる
-      if (currentMode === MODE_VERT && onHorizRoad(this.py[i])) {
-        if (Math.random() < 0.008) {
-          this._snapToNearestRoad(i);
-          this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+        // 路地エリアに入ったら VERT へ
+        if (this.mode[i] === MODE_FREE) {
+          for (const a of V_ALLEYS) {
+            if (Math.abs(px - a.x) <= a.tol) {
+              this.mode[i] = MODE_VERT;
+              this._pickNewDirection(i);
+              this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+              break;
+            }
+          }
         }
-      }
+        // 全体Y境界クランプ
+        this.py[i] = Math.max(C.HUMAN_Y_MIN + C.HUMAN_H, Math.min(C.HUMAN_Y_MAX - C.HUMAN_H, this.py[i]));
 
-      // 路地の上下端では最寄り道路へ
-      if (currentMode === MODE_VERT) {
-        const yMin = C.HUMAN_Y_MIN + C.HUMAN_H;
-        const yMax = C.HUMAN_Y_MAX - C.HUMAN_H;
-        if (this.py[i] <= yMin || this.py[i] >= yMax) {
-          this._snapToNearestRoad(i);
+      } else if (cm === MODE_HORIZ) {
+        // 道路エリア内でランダム移動（Y範囲をクランプ）
+        const road = this._findRoad(py);
+        if (road) {
+          this.py[i] = Math.max(road.y - road.tol, Math.min(road.y + road.tol, this.py[i]));
         }
+        // 路地エリアに入ったら VERT に切り替え可（確率的）
+        for (const a of V_ALLEYS) {
+          if (Math.abs(px - a.x) <= a.tol && Math.random() < 0.008) {
+            this.mode[i] = MODE_VERT;
+            this._pickNewDirection(i);
+            this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+            break;
+          }
+        }
+
+      } else if (cm === MODE_VERT) {
+        // 路地エリア内でランダム移動（X範囲をクランプ）
+        const alley = this._findAlley(px);
+        if (alley) {
+          this.px[i] = Math.max(alley.x - alley.tol, Math.min(alley.x + alley.tol, this.px[i]));
+        }
+        // 横道路エリアに入ったら HORIZ に切り替え可
+        for (const r of H_ROADS) {
+          if (Math.abs(py - r.y) <= r.tol && Math.random() < 0.008) {
+            this.mode[i] = MODE_HORIZ;
+            this._pickNewDirection(i);
+            this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+            break;
+          }
+        }
+        this.py[i] = Math.max(C.HUMAN_Y_MIN + C.HUMAN_H, Math.min(C.HUMAN_Y_MAX - C.HUMAN_H, this.py[i]));
       }
 
       // X方向: 画面端で逃走完了 → INACTIVE
@@ -226,28 +250,29 @@ export class HumanManager {
     this.activeCount = this._countActive();
   }
 
-  private _nearestRoadY(py: number): number {
-    let best = H_ROADS[0].y;
-    let bestDist = Infinity;
+  private _findRoad(py: number): { y: number; tol: number } | null {
     for (const r of H_ROADS) {
-      const d = Math.abs(py - r.y);
-      if (d < bestDist) { bestDist = d; best = r.y; }
+      if (Math.abs(py - r.y) <= r.tol + 4) return r;
     }
-    return best;
+    return null;
   }
 
-  private _nearestAlleyX(px: number): number {
-    let best = V_ALLEYS[0].x;
-    let bestDist = Infinity;
+  private _findAlley(px: number): { x: number; tol: number } | null {
     for (const a of V_ALLEYS) {
-      const d = Math.abs(px - a.x);
-      if (d < bestDist) { bestDist = d; best = a.x; }
+      if (Math.abs(px - a.x) <= a.tol + 4) return a;
     }
-    return best;
+    return null;
   }
 
   private _snapToNearestRoad(i: number) {
-    this.py[i]   = this._nearestRoadY(this.py[i]);
+    // Find the nearest road and snap to its center Y
+    let bestY = H_ROADS[0].y;
+    let bestDist = Math.abs(this.py[i] - H_ROADS[0].y);
+    for (const r of H_ROADS) {
+      const d = Math.abs(this.py[i] - r.y);
+      if (d < bestDist) { bestDist = d; bestY = r.y; }
+    }
+    this.py[i]   = bestY;
     this.vy[i]   = 0;
     this.mode[i] = MODE_HORIZ;
     this.vx[i]   = (Math.random() > 0.5 ? 1 : -1) * this.speed[i];
