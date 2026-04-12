@@ -185,8 +185,7 @@ export class Game {
     this.ui.setWaveNum(this.wave);
     this.ui.setWaveTimer(this.waveTimer);
     this.ui.setWaveScore(0, this.quota);
-    this.state = 'playing';
-    this.ball.reset();
+    // 街・ボール・人間はそのまま継続
   }
 
   private tryRebuild(entry: RebuildEntry) {
