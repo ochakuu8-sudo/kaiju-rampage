@@ -309,7 +309,7 @@ export class Game {
     if (crushed.length > 0) {
       for (const idx of crushed) {
         const [hx, hy] = this.humans.getPos(idx);
-        this.particles.spawnBlood(hx, hy, randInt(8, 12));
+        this.particles.spawnBlood(hx, hy, randInt(18, 28));
         this.particles.spawnScorePop(hx, hy);
       }
       this.totalHumans += crushed.length;

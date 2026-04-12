@@ -89,18 +89,57 @@ export class ParticleManager {
     }
   }
 
-  /** 血しぶき */
+  /** 血しぶき — 4レイヤー構成でジューシーに */
   spawnBlood(x: number, y: number, count: number) {
+    // Layer 1: 大粒の飛沫 (重力あり、広角放射)
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const spd   = rand(30, 120);
-      const dark  = rand(0.4, 0.9);
+      const spd   = rand(80, 300);
       this.emit(
         x + rand(-3, 3), y + rand(-3, 3),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
-        dark, 0, 0,
-        rand(2, 5), rand(0.3, 0.6),
+        rand(0.7, 1.0), 0, rand(0, 0.04),
+        rand(3, 8), rand(0.35, 0.75),
         true, true
+      );
+    }
+    // Layer 2: 細かいミスト (重力なし、超高速で広域拡散)
+    const mist = Math.ceil(count * 0.9);
+    for (let i = 0; i < mist; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(220, 500);
+      this.emit(
+        x + rand(-5, 5), y + rand(-5, 5),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        rand(0.8, 1.0), 0, 0,
+        rand(1, 3), rand(0.08, 0.25),
+        false, true
+      );
+    }
+    // Layer 3: 大きな血だまりブロブ (ゆっくり落下して広がる)
+    const blobs = Math.ceil(count * 0.4);
+    for (let i = 0; i < blobs; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(15, 60);
+      this.emit(
+        x + rand(-6, 6), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        rand(0.45, 0.75), 0, 0,
+        rand(7, 15), rand(0.5, 1.1),
+        true, true
+      );
+    }
+    // Layer 4: ストリーク (回転する四角で飛沫の軌跡を表現)
+    const streaks = Math.ceil(count * 0.5);
+    for (let i = 0; i < streaks; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(120, 350);
+      this.emit(
+        x + rand(-4, 4), y + rand(-4, 4),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        rand(0.8, 1.0), rand(0, 0.05), 0,
+        rand(2, 5), rand(0.15, 0.45),
+        true, false, rand(-10, 10)
       );
     }
   }
