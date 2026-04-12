@@ -568,12 +568,6 @@ export class Game {
       }
     }
 
-    // === River / fall zone visualization ===
-    // Water (blue-tinted rect near FALLOFF_Y)
-    writeInst(buf, n++, 0, C.FALLOFF_Y + 10, W, 30, 0.25, 0.50, 0.80, 0.55);
-    writeInst(buf, n++, 0, C.FALLOFF_Y + 10, W,  2, 0.60, 0.80, 0.95, 0.4); // wave line 1
-    writeInst(buf, n++, 0, C.FALLOFF_Y + 18, W,  2, 0.60, 0.80, 0.95, 0.3); // wave line 2
-
     // === Streetlight poles ===
     const [pr,pg,pb] = C.STREETLIGHT_POLE_COLOR;
     for (const { x, base } of C.STREETLIGHTS) {
