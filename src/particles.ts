@@ -104,7 +104,7 @@ export class ParticleManager {
       this.emit(
         x + rand(-3, 3), y + rand(-3, 3),
         vx, vy,
-        1.0, rand(0, 0.05), 0,
+        rand(0.78, 0.92), 0, rand(0.08, 0.18),
         w, rand(0.25, 0.55),
         true, false,
         0, h, angle + Math.PI * 0.5    // 速度方向に回転
@@ -122,7 +122,7 @@ export class ParticleManager {
       this.emit(
         x + rand(-5, 5), y + rand(-5, 5),
         vx, vy,
-        1.0, rand(0, 0.03), 0,
+        rand(0.80, 0.95), 0, rand(0.06, 0.15),
         w, rand(0.08, 0.22),
         false, false,
         0, h, angle + Math.PI * 0.5
@@ -136,7 +136,7 @@ export class ParticleManager {
       this.emit(
         x + rand(-6, 6), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
-        1.0, rand(0, 0.04), 0,
+        rand(0.75, 0.90), 0, rand(0.05, 0.14),
         rand(2, 5), rand(0.4, 0.8),
         true, true
       );
