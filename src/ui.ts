@@ -14,9 +14,6 @@ export class UIManager {
   private elFinalScore= document.getElementById('final-score')!;
   private elFinalBest = document.getElementById('final-best')!;
   private elFinalStats= document.getElementById('final-stats')!;
-  private elWaveClear = document.getElementById('waveclear')!;
-  private elWaveClearSub = document.getElementById('waveclear-sub')!;
-
   private _hi = 0;
 
   constructor() {
@@ -52,15 +49,6 @@ export class UIManager {
     const done = current >= quota;
     this.elQuotaFill.classList.toggle('done', done);
     this.elQuotaText.textContent = `${current.toLocaleString()} / ${quota.toLocaleString()}`;
-  }
-
-  showWaveClear(wave: number) {
-    this.elWaveClearSub.textContent = `WAVE ${wave} COMPLETE!`;
-    this.elWaveClear.classList.add('show');
-  }
-
-  hideWaveClear() {
-    this.elWaveClear.classList.remove('show');
   }
 
   showGameOver(wave: number, score: number, destroys: number, humans: number) {

@@ -17,7 +17,7 @@ import type { BuildingData } from './entities';
 
 const SHARED_BUF = new Float32Array(8000 * INST_F);
 
-type GameState = 'playing' | 'ball_lost' | 'wave_clear' | 'game_over';
+type GameState = 'playing' | 'ball_lost' | 'game_over';
 
 interface RebuildEntry {
   blockIdx: number;
@@ -111,7 +111,6 @@ export class Game {
 
   private restart() {
     this.ui.hideGameOver();
-    this.ui.hideWaveClear();
     this.initWave1();
     this.loadCity();
   }
@@ -139,16 +138,6 @@ export class Game {
       if (this.stateTimer <= 0) {
         this.ball.reset();
         this.state = 'playing';
-      }
-      return;
-    }
-
-    if (this.state === 'wave_clear') {
-      this.stateTimer -= rawDt;
-      this.particles.update(rawDt);
-      this.humans.update(rawDt, this.ball.x, this.ball.y);
-      if (this.stateTimer <= 0) {
-        this.startNextWave();
       }
       return;
     }
@@ -196,7 +185,6 @@ export class Game {
     this.ui.setWaveNum(this.wave);
     this.ui.setWaveTimer(this.waveTimer);
     this.ui.setWaveScore(0, this.quota);
-    this.ui.hideWaveClear();
     this.state = 'playing';
     this.ball.reset();
   }
@@ -375,11 +363,9 @@ export class Game {
   }
 
   private onWaveClear() {
-    this.state = 'wave_clear';
-    this.stateTimer = 3.0;
-    this.sound.stageClear();
+    // 演出なしで即時次ウェーブへ — フラッシュのみ
     this.juice.flash(0, 1, 0, 0.4);
-    this.ui.showWaveClear(this.wave);
+    this.startNextWave();
   }
 
   private onGameOver() {

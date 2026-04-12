@@ -75,16 +75,6 @@
     #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
-    /* ウェーブクリア */
-    #waveclear {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.55);
-      display: none; flex-direction: column; justify-content: center; align-items: center;
-      gap: 12px; pointer-events: none; z-index: 9;
-    }
-    #waveclear.show { display: flex; }
-    #waveclear h2  { font-size: 44px; color: #0f0; text-shadow: 0 0 20px #0f0; }
-    #waveclear-sub { font-size: 18px; color: #ff0; }
   </style>
 </head>
 <body>
@@ -105,10 +95,6 @@
     <div id="final-best">Best: 0</div>
     <div id="final-stats">Destroys: 0 | Humans: 0</div>
     <div id="go-tap">タップで再スタート</div>
-  </div>
-  <div id="waveclear">
-    <h2>WAVE CLEAR!</h2>
-    <div id="waveclear-sub"></div>
   </div>
 </div>
 <script type="module" src="/src/main.ts"></script>
