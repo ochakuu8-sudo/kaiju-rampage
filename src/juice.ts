@@ -19,6 +19,9 @@ export class JuiceManager {
   // ===== ボールフラッシュ =====
   ballFlashTimer = 0;
 
+  // ===== ヒットストップ =====
+  private hitstopFrames = 0;
+
   // ===== コンボ表示 =====
   comboDisplay = 0;
   comboDisplayTimer = 0;
@@ -50,8 +53,15 @@ export class JuiceManager {
     this.comboDisplayScale = 1.0 + combo * 0.05;
   }
 
-  /** rawDt をそのまま返す（スローモーション・ヒットストップは廃止） */
+  hitstop(frames: number) {
+    if (frames > this.hitstopFrames) this.hitstopFrames = frames;
+  }
+
   getGameDt(rawDt: number): number {
+    if (this.hitstopFrames > 0) {
+      this.hitstopFrames--;
+      return 0;
+    }
     return rawDt;
   }
 

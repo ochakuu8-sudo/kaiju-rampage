@@ -376,9 +376,11 @@ export class Game {
 
     const isLarge = bld.maxHp >= 3;
     if (isLarge) {
+      this.juice.hitstop(C.HITSTOP_LARGE);
       this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR, 1.5);
       this.juice.flash(1, 1, 1, 0.35);
     } else {
+      this.juice.hitstop(C.HITSTOP_SMALL);
       this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
     }
 
