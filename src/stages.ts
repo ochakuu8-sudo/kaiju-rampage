@@ -1,8 +1,9 @@
 /**
  * stages.ts — ウェーブ・都市レイアウト定義
  *
- * 15ブロック (5行×3列) でランダムに建物を配置。
- * ウェーブをまたいで街が維持され、破壊された建物が再建される。
+ * 18ブロック (6行×3列) でランダムに建物を配置。
+ * 上段1列(ビル) / 中段2列(店) / 下段3列(家)
+ * 各行の建物は隣接行と重ならないよう baseY を設計済み。
  */
 
 import * as C from './constants';
@@ -51,23 +52,31 @@ const COLS = [
 ] as const;
 
 const ROWS: { baseY: number; pool: C.BuildingSize[] }[] = [
-  // ===== 上ゾーン: 大型・高耐久・人口密集 =====
-  { baseY: C.HILLTOP_BASE, pool: [
-    'skyscraper','skyscraper','tower','tower','office','school',
+  // ===== 上段: ビル1列 (baseY=162) =====
+  { baseY: C.ZONE_TOP_Y0, pool: [
+    'skyscraper','tower','office','hospital','school','skyscraper',
   ]},
-  { baseY: C.BLK_A_NEAR, pool: [
-    'tower','skyscraper','hospital','school','office','tower',
+  // ===== 中段: 店2列 =====
+  // 奥列 baseY=86, 最大top≈116 (<MAIN下端120) — max h=34
+  { baseY: C.ZONE_MID_Y0, pool: [
+    'apartment','shop','restaurant','temple','parking','shop',
   ]},
-  // ===== 中ゾーン: 中型・中耐久 =====
-  { baseY: C.MAIN_BASE, pool: [
-    'apartment','office','shop','restaurant','apartment','temple',
+  // 手前列 baseY=52, 最大top≈82 (<奥列86) — max h=30 (apartment除外)
+  { baseY: C.ZONE_MID_Y1, pool: [
+    'shop','restaurant','convenience','temple','shop','restaurant',
   ]},
-  { baseY: C.LOWER_BASE, pool: [
-    'convenience','shop','restaurant','parking','apartment','shop',
+  // ===== 下段: 家3列 (max h=22, 各列top<上の列base) =====
+  // 奥列 baseY=-12, top≤10 (<LOWER下端14)
+  { baseY: C.ZONE_BOT_Y0, pool: [
+    'house','convenience','house','house','convenience','house',
   ]},
-  // ===== 下ゾーン: 小型・低耐久・住宅 =====
-  { baseY: C.RIVERSIDE_BASE, pool: [
-    'house','house','house','shop','convenience','house',
+  // 中列 baseY=-36, top≤-14 (<奥列-12)
+  { baseY: C.ZONE_BOT_Y1, pool: [
+    'house','house','convenience','house','house','house',
+  ]},
+  // 手前列 baseY=-60, top≤-40 (<中列-36)
+  { baseY: C.ZONE_BOT_Y2, pool: [
+    'house','house','house','house','house','house',
   ]},
 ];
 

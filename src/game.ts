@@ -187,7 +187,7 @@ export class Game {
     const w = C.BUILDING_DEFS[newSize].w;
     const centerX = findEmptySpot(this.buildings.buildings, entry.blockIdx, w);
     if (centerX !== null) {
-      const baseY = BLOCKS[entry.blockIdx]?.baseY ?? C.MAIN_BASE;
+      const baseY = BLOCKS[entry.blockIdx]?.baseY ?? C.REBUILD_FALLBACK_Y;
       this.buildings.addBuilding(centerX, baseY, newSize, entry.blockIdx, entry.generation);
     }
   }

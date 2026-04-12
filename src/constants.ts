@@ -104,15 +104,18 @@ export const RIVERSIDE_STREET_Y = -80;  export const RIVERSIDE_STREET_H = 12;
 
 export const SIDEWALK_H = 4;
 
-// 建物配置グリッド: 道路間ブロックの内側に配置（道路沿い×）
-// ブロックA: MAIN上端(142)〜HILLTOP下端(235)
-export const HILLTOP_BASE = 200;   // ブロックA 奥列 (was 249)
-export const BLK_A_NEAR   = 162;   // ブロックA 手前列 (replaces UPPER_BASE)
-// ブロックB: LOWER上端(34)〜MAIN下端(124)
-export const MAIN_BASE    = 90;    // ブロックB 奥列 (was 116)
-export const LOWER_BASE   = 42;    // ブロックB 手前列 (was 27)
-// ブロックC: RIVERSIDE上端(-74)〜LOWER下端(18)
-export const RIVERSIDE_BASE = -45; // ブロックC (was -60)
+// 建物配置グリッド: 上段1列・中段2列・下段3列
+// ===== 上段: ビル1列 =====
+export const ZONE_TOP_Y0    = 162;   // ビル列 baseY（下端）
+// ===== 中段: 店2列 =====
+export const ZONE_MID_Y0    = 86;    // 店・奥列 baseY  (top≈116, <MAIN下端120)
+export const ZONE_MID_Y1    = 52;    // 店・手前列 baseY (top≈82,  <奥列86)
+// ===== 下段: 家3列 =====
+export const ZONE_BOT_Y0    = -12;   // 家・奥列 baseY  (top≈10,  <LOWER下端14)
+export const ZONE_BOT_Y1    = -36;   // 家・中列 baseY  (top≈-14, <奥列-12)
+export const ZONE_BOT_Y2    = -60;   // 家・手前列 baseY (top≈-40, <中列-36)
+// tryRebuild フォールバック
+export const REBUILD_FALLBACK_Y = ZONE_MID_Y0;
 
 // 路地 (非対称)
 export const ALLEY_1_X   = -50;
