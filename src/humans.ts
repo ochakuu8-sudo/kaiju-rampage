@@ -38,16 +38,29 @@ function onVertAlley(px: number): boolean {
   return V_ALLEYS.some(a => Math.abs(px - a.x) <= a.tol);
 }
 
+// 人間の服の色パレット（鮮やかで視認しやすい色）
+const HUMAN_PALETTE: ReadonlyArray<[number,number,number]> = [
+  [1.00, 0.20, 0.20], // 赤
+  [0.20, 0.50, 1.00], // 青
+  [1.00, 0.85, 0.10], // 黄
+  [0.20, 0.85, 0.30], // 緑
+  [1.00, 0.50, 0.10], // オレンジ
+  [0.80, 0.20, 0.95], // 紫
+  [0.10, 0.90, 0.90], // シアン
+  [1.00, 0.40, 0.70], // ピンク
+];
+
 export class HumanManager {
-  px:     Float32Array = new Float32Array(C.MAX_HUMANS);
-  py:     Float32Array = new Float32Array(C.MAX_HUMANS);
-  vx:     Float32Array = new Float32Array(C.MAX_HUMANS);
-  vy:     Float32Array = new Float32Array(C.MAX_HUMANS);
-  state:  Uint8Array   = new Uint8Array(C.MAX_HUMANS);
-  timer:  Float32Array = new Float32Array(C.MAX_HUMANS);
-  speed:  Float32Array = new Float32Array(C.MAX_HUMANS);
-  scaleX: Float32Array = new Float32Array(C.MAX_HUMANS);
-  mode:   Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
+  px:       Float32Array = new Float32Array(C.MAX_HUMANS);
+  py:       Float32Array = new Float32Array(C.MAX_HUMANS);
+  vx:       Float32Array = new Float32Array(C.MAX_HUMANS);
+  vy:       Float32Array = new Float32Array(C.MAX_HUMANS);
+  state:    Uint8Array   = new Uint8Array(C.MAX_HUMANS);
+  timer:    Float32Array = new Float32Array(C.MAX_HUMANS);
+  speed:    Float32Array = new Float32Array(C.MAX_HUMANS);
+  scaleX:   Float32Array = new Float32Array(C.MAX_HUMANS);
+  mode:     Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
+  colorIdx: Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_PALETTE index
 
   activeCount = 0;
 
@@ -83,8 +96,9 @@ export class HumanManager {
       this.mode[i]  = MODE_HORIZ; // 最初は横道路を逃げる
       this.vx[i]    = (Math.random() > 0.5 ? 1 : -1) * spd;
       this.vy[i]    = rand(-5, 5);
-      this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
-      this.scaleX[i]= 1;
+      this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+      this.scaleX[i]   = 1;
+      this.colorIdx[i] = Math.floor(Math.random() * HUMAN_PALETTE.length);
       spawned++;
     }
     this.activeCount = this._countActive();
@@ -217,7 +231,8 @@ export class HumanManager {
       if (this.state[i] !== ST_RUNNING) continue;
       const sx = C.HUMAN_W * this.scaleX[i];
       const sy = C.HUMAN_H * (2 - this.scaleX[i]);
-      writeInst(buf, n++, this.px[i], this.py[i], sx, sy, 0.9, 0.75, 0.6, 1, 0, 0);
+      const [cr, cg, cb] = HUMAN_PALETTE[this.colorIdx[i]];
+      writeInst(buf, n++, this.px[i], this.py[i], sx, sy, cr, cg, cb, 1, 0, 0);
     }
     return n - startIdx;
   }
