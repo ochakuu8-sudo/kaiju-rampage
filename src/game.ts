@@ -410,7 +410,7 @@ export class Game {
     }
 
     const n = randInt(bld.humanMin, bld.humanMax);
-    this.humans.spawn(cx, cy, n);
+    this.humans.spawnBlast(cx, cy, n);
   }
 
   private onBallLost() {

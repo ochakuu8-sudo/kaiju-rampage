@@ -59,8 +59,9 @@ export class HumanManager {
   timer:    Float32Array = new Float32Array(C.MAX_HUMANS);
   speed:    Float32Array = new Float32Array(C.MAX_HUMANS);
   scaleX:   Float32Array = new Float32Array(C.MAX_HUMANS);
-  mode:     Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
-  colorIdx: Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_PALETTE index
+  mode:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
+  colorIdx:   Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_PALETTE index
+  blastTimer: Float32Array = new Float32Array(C.MAX_HUMANS); // 吹き飛ばしフェーズ残り時間
 
   activeCount = 0;
 
@@ -104,9 +105,52 @@ export class HumanManager {
     this.activeCount = this._countActive();
   }
 
+  /** 建物破壊時: 中心から円状に吹き飛ばしてから逃走 */
+  spawnBlast(cx: number, cy: number, n: number) {
+    let spawned = 0;
+    for (let i = 0; i < C.MAX_HUMANS && spawned < n; i++) {
+      if (this.state[i] !== ST_INACTIVE) continue;
+      this.state[i]      = ST_RUNNING;
+      this.px[i]         = cx + rand(-8, 8);
+      this.py[i]         = cy + rand(-8, 8);
+      const angle        = Math.random() * Math.PI * 2;
+      const spd          = rand(180, 380);
+      this.vx[i]         = Math.cos(angle) * spd;
+      this.vy[i]         = Math.sin(angle) * spd;
+      this.speed[i]      = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
+      this.mode[i]       = MODE_FREE;
+      this.blastTimer[i] = rand(0.30, 0.50);
+      this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+      this.scaleX[i]     = 1;
+      this.colorIdx[i]   = Math.floor(Math.random() * HUMAN_PALETTE.length);
+      spawned++;
+    }
+    this.activeCount = this._countActive();
+  }
+
   update(dt: number, ballX: number, ballY: number) {
     for (let i = 0; i < C.MAX_HUMANS; i++) {
       if (this.state[i] !== ST_RUNNING) continue;
+
+      // 吹き飛ばしフェーズ: 放射状に飛散して減速
+      if (this.blastTimer[i] > 0) {
+        this.blastTimer[i] -= dt;
+        const damp = Math.max(0, 1 - 4.5 * dt);
+        this.vx[i] *= damp;
+        this.vy[i] *= damp;
+        this.px[i] += this.vx[i] * dt;
+        this.py[i] += this.vy[i] * dt;
+        // 画面端クランプ
+        this.px[i] = Math.max(C.WORLD_MIN_X + 4, Math.min(C.WORLD_MAX_X - 4, this.px[i]));
+        this.py[i] = Math.max(C.HUMAN_Y_MIN, Math.min(C.HUMAN_Y_MAX, this.py[i]));
+        if (this.blastTimer[i] <= 0) {
+          // 通常逃走へ移行
+          this.mode[i] = MODE_FREE;
+          this._pickNewDirection(i);
+          this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+        }
+        continue;
+      }
 
       const px = this.px[i];
       const py = this.py[i];
