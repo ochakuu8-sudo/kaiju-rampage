@@ -117,18 +117,10 @@ export function getRebuildCooldown(wave: number): number {
   return Math.max(3, C.REBUILD_BASE_COOLDOWN - (wave - 1) * 1.5);
 }
 
-/** 世代ごとに建物サイズをアップグレード */
-const SIZE_TIERS: C.BuildingSize[] = [
-  'house', 'shop', 'apartment', 'office', 'tower', 'skyscraper'
-];
-export function getRebuiltSize(generation: number, blockIdx: number): C.BuildingSize {
+/** 再建時の建物サイズ: 世代に関わらずブロックのプールからランダム選択 */
+export function getRebuiltSize(_generation: number, blockIdx: number): C.BuildingSize {
   const block = BLOCKS[blockIdx];
-  const baseSize = block.pool[Math.floor(Math.random() * block.pool.length)];
-  if (generation <= 0) return baseSize;
-  const baseTier = SIZE_TIERS.indexOf(baseSize);
-  if (baseTier < 0) return baseSize;
-  const newTier = Math.min(baseTier + Math.floor((generation + 1) / 2), SIZE_TIERS.length - 1);
-  return SIZE_TIERS[newTier];
+  return block.pool[Math.floor(Math.random() * block.pool.length)];
 }
 
 /** ブロック内の空きスポットを探してセンターXを返す */
