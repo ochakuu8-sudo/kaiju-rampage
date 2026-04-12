@@ -231,8 +231,12 @@ export class HumanManager {
       if (this.state[i] !== ST_RUNNING) continue;
       const sx = C.HUMAN_W * this.scaleX[i];
       const sy = C.HUMAN_H * (2 - this.scaleX[i]);
+      const px = this.px[i], py = this.py[i];
       const [cr, cg, cb] = HUMAN_PALETTE[this.colorIdx[i]];
-      writeInst(buf, n++, this.px[i], this.py[i], sx, sy, cr, cg, cb, 1, 0, 0);
+      // 胴体（シャツ色・矩形）
+      writeInst(buf, n++, px, py - sy * 0.15, sx, sy * 0.6, cr, cg, cb, 1, 0, 0);
+      // 頭（肌色・円）
+      writeInst(buf, n++, px, py + sy * 0.30, sx, sx, 0.95, 0.75, 0.55, 1, 0, 1);
     }
     return n - startIdx;
   }
