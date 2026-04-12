@@ -29,37 +29,62 @@
       font-family: 'Arial Black', Arial, sans-serif;
       color: #fff;
     }
-    #score { position: absolute; top: 8px; left: 10px; font-size: 18px; text-shadow: 0 1px 4px #000; }
-    #hi    { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 13px; color: #aaa; }
-    #balls { position: absolute; top: 8px; right: 10px; font-size: 18px; text-shadow: 0 1px 4px #000; }
-    #stage { position: absolute; top: 30px; right: 10px; font-size: 12px; color: #88f; }
-    #combo {
-      position: absolute; top: 42%; left: 50%; transform: translate(-50%,-50%);
-      font-size: 56px; font-weight: 900;
-      color: #ff0; text-shadow: 0 0 24px #f80, 0 2px 6px #000;
-      display: none; pointer-events: none; white-space: nowrap;
+    /* スコア: 左上 */
+    #score { position: absolute; top: 8px; left: 10px; font-size: 16px; text-shadow: 0 1px 4px #000; }
+    /* ベスト: 中央上 */
+    #hi    { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #aaa; }
+    /* ウェーブ番号: 右上 */
+    #wave-num { position: absolute; top: 8px; right: 10px; font-size: 14px; color: #8cf; text-shadow: 0 1px 4px #000; }
+    /* タイマー: ウェーブ番号の下 */
+    #timer { position: absolute; top: 28px; right: 10px; font-size: 22px; font-weight: 900; text-shadow: 0 1px 6px #000; }
+    #timer.danger { color: #f44; text-shadow: 0 0 12px #f00; }
+    /* ノルマバー */
+    #quota-wrap {
+      position: absolute; top: 56px; left: 8px; right: 8px;
+      height: 8px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 4px;
+      overflow: hidden;
     }
+    #quota-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f80, #ff0);
+      border-radius: 4px;
+      transition: width 0.15s;
+    }
+    #quota-fill.done { background: linear-gradient(90deg, #0f0, #8f0); }
+    #quota-text {
+      position: absolute; top: 66px; right: 10px;
+      font-size: 10px; color: #ccc;
+    }
+
+    /* ゲームオーバー */
     #gameover {
       position: absolute; inset: 0;
-      background: rgba(0,0,0,0.82);
+      background: rgba(0,0,0,0.85);
       display: none; flex-direction: column; justify-content: center; align-items: center;
-      gap: 18px; pointer-events: auto; z-index: 10;
+      gap: 10px; pointer-events: auto; z-index: 10;
     }
     #gameover.show { display: flex; }
-    #gameover h1  { font-size: 52px; color: #f44; text-shadow: 0 0 20px #f00; }
-    #final-score  { font-size: 22px; }
-    #final-best   { font-size: 15px; color: #aaa; }
-    #go-tap       { font-size: 17px; color: #8f8; margin-top: 12px; animation: blink 1s infinite; }
+    #gameover h1  { font-size: 52px; color: #f44; text-shadow: 0 0 20px #f00; margin-bottom: 6px; }
+    #final-wave   { font-size: 18px; color: #8cf; }
+    #final-score  { font-size: 24px; }
+    #final-best   { font-size: 14px; color: #aaa; }
+    #final-stats  { font-size: 13px; color: #fc8; margin-top: 4px; }
+    #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
-    #stageclear {
+
+    /* ウェーブクリア */
+    #waveclear {
       position: absolute; inset: 0;
       background: rgba(0,0,0,0.55);
       display: none; flex-direction: column; justify-content: center; align-items: center;
       gap: 12px; pointer-events: none; z-index: 9;
     }
-    #stageclear.show { display: flex; }
-    #stageclear h2  { font-size: 44px; color: #0f0; text-shadow: 0 0 20px #0f0; }
-    #clear-bonus    { font-size: 20px; color: #ff0; }
+    #waveclear.show { display: flex; }
+    #waveclear h2  { font-size: 44px; color: #0f0; text-shadow: 0 0 20px #0f0; }
+    #waveclear-sub { font-size: 18px; color: #ff0; }
   </style>
 </head>
 <body>
@@ -68,19 +93,22 @@
   <div id="overlay">
     <div id="score">SCORE: 0</div>
     <div id="hi">BEST: 0</div>
-    <div id="balls">●●●</div>
-    <div id="stage">STAGE 1</div>
-    <div id="combo"></div>
+    <div id="wave-num">WAVE 1</div>
+    <div id="timer">30</div>
+    <div id="quota-wrap"><div id="quota-fill"></div></div>
+    <div id="quota-text">0 / 2000</div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
+    <div id="final-wave">WAVE 1</div>
     <div id="final-score">Score: 0</div>
     <div id="final-best">Best: 0</div>
+    <div id="final-stats">Destroys: 0 | Humans: 0</div>
     <div id="go-tap">タップで再スタート</div>
   </div>
-  <div id="stageclear">
-    <h2>STAGE CLEAR!</h2>
-    <div id="clear-bonus"></div>
+  <div id="waveclear">
+    <h2>WAVE CLEAR!</h2>
+    <div id="waveclear-sub"></div>
   </div>
 </div>
 <script type="module" src="/src/main.ts"></script>

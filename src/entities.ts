@@ -176,12 +176,17 @@ export interface BuildingData {
   flashTimer: number;
   baseColor: readonly [number,number,number];
   size: C.BuildingSize;
+  // ウェーブシステム拡張
+  rubbleTimer: number;  // > 0 かつ active=false: 瓦礫を描画
+  spawnTimer: number;   // > 0: スポーンアニメーション進行中
+  blockIdx: number;     // 所属ブロックID (0〜14)
+  generation: number;   // 再建回数
 }
 
 export class BuildingManager {
   buildings: BuildingData[] = [];
 
-  load(defs: Array<{ x: number; y: number; size: C.BuildingSize }>) {
+  load(defs: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx?: number }>) {
     this.buildings = [];
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
@@ -212,6 +217,10 @@ export class BuildingManager {
         active: true,
         destroyTimer: 0,
         flashTimer: 0,
+        rubbleTimer: 0,
+        spawnTimer: 0,
+        blockIdx: d.blockIdx ?? 0,
+        generation: 0,
         baseColor,
         size: d.size,
       });
@@ -222,13 +231,60 @@ export class BuildingManager {
     return this.buildings.every(b => !b.active);
   }
 
+  /** 新しい建物を追加（再建時）。非アクティブスロットを再利用 */
+  addBuilding(centerX: number, baseY: number, size: C.BuildingSize, blockIdx: number, generation: number) {
+    const def = C.BUILDING_DEFS[size];
+    let palette: ReadonlyArray<readonly [number,number,number]>;
+    if (BUILDING_TYPE_COLORS[size]) {
+      palette = [BUILDING_TYPE_COLORS[size]!];
+    } else if (size === 'house' || size === 'apartment') {
+      palette = FACADE_RESIDENTIAL;
+    } else if (size === 'shop' || size === 'convenience' || size === 'restaurant') {
+      palette = FACADE_COMMERCIAL;
+    } else {
+      palette = FACADE_OFFICE;
+    }
+    const pi = Math.abs(Math.floor(centerX * 7 + baseY * 13)) % palette.length;
+    const baseColor = palette[pi];
+
+    const newBld: BuildingData = {
+      x: centerX - def.w / 2,
+      y: baseY,
+      w: def.w, h: def.h,
+      buildingH: def.h,
+      maxHp: def.hp, hp: def.hp,
+      score: def.score,
+      humanMin: def.humanMin,
+      humanMax: def.humanMax,
+      active: true,
+      destroyTimer: 0,
+      flashTimer: 0,
+      rubbleTimer: 0,
+      spawnTimer: C.SPAWN_ANIM_DURATION,
+      blockIdx,
+      generation,
+      baseColor,
+      size,
+    };
+
+    // 非アクティブ & 瓦礫なしのスロットを再利用
+    const freeIdx = this.buildings.findIndex(b => !b.active && b.rubbleTimer <= 0);
+    if (freeIdx >= 0) {
+      this.buildings[freeIdx] = newBld;
+    } else {
+      this.buildings.push(newBld);
+    }
+  }
+
   update(dt: number) {
     for (const b of this.buildings) {
       if (b.flashTimer > 0) b.flashTimer -= dt;
+      if (b.spawnTimer > 0) b.spawnTimer = Math.max(0, b.spawnTimer - dt);
       if (b.destroyTimer > 0) {
         b.destroyTimer -= dt;
         if (b.destroyTimer <= 0) b.active = false;
       }
+      if (b.rubbleTimer > 0) b.rubbleTimer = Math.max(0, b.rubbleTimer - dt);
     }
   }
 
@@ -250,12 +306,13 @@ export class BuildingManager {
     return null;
   }
 
-  /** 建物にダメージを与え、破壊されたら destroyTimer セット */
+  /** 建物にダメージを与え、破壊されたら destroyTimer & rubbleTimer セット */
   damage(b: BuildingData): boolean {
     b.hp--;
     b.flashTimer = 0.08;
     if (b.hp <= 0) {
       b.destroyTimer = 0.2;
+      b.rubbleTimer = C.RUBBLE_DURATION + 0.2; // 崩壊アニメ後も瓦礫として残る
       return true; // 破壊
     }
     return false;
@@ -265,8 +322,27 @@ export class BuildingManager {
   fillInstances(buf: Float32Array, startIdx: number): number {
     let n = startIdx;
     for (const b of this.buildings) {
+      // 瓦礫フェーズ: 非アクティブだが rubbleTimer > 0
+      if (!b.active && b.rubbleTimer > 0) {
+        const cx = b.x + b.w / 2;
+        const fade = Math.min(1, b.rubbleTimer);
+        // 平たい瓦礫山
+        writeInst(buf, n++, cx, b.y + 3, b.w, 6,
+          b.baseColor[0] * 0.45, b.baseColor[1] * 0.40, b.baseColor[2] * 0.35, fade);
+        writeInst(buf, n++, cx - b.w * 0.18, b.y + 6.5, b.w * 0.35, 4,
+          b.baseColor[0] * 0.52, b.baseColor[1] * 0.48, b.baseColor[2] * 0.40, fade * 0.75);
+        writeInst(buf, n++, cx + b.w * 0.22, b.y + 6, b.w * 0.28, 3,
+          0.38, 0.34, 0.28, fade * 0.6);
+        continue;
+      }
       if (!b.active) continue;
-      const scale = b.destroyTimer > 0 ? Math.max(0, b.destroyTimer / 0.2) : 1;
+
+      // スポーンアニメ (0→1) or 崩壊アニメ (1→0)
+      const scale = b.destroyTimer > 0
+        ? Math.max(0, b.destroyTimer / 0.2)
+        : b.spawnTimer > 0
+          ? 1 - (b.spawnTimer / C.SPAWN_ANIM_DURATION)
+          : 1;
       const bW = b.w * scale;
       const bH = b.h * scale;
       const cx = b.x + b.w / 2;

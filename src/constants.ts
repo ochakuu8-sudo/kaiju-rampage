@@ -20,7 +20,13 @@ export const WALL_DAMPING = 0.78;
 export const BALL_START_X = -150;
 export const BALL_START_Y = -100;
 export const TRAIL_LEN = 12;
-export const INITIAL_BALLS = 3;
+
+// ===== ウェーブシステム =====
+export const WAVE_TIME           = 30;   // 秒/ウェーブ
+export const BALL_LOST_PENALTY   = 5;    // ボールロスト時のタイマーペナルティ(秒)
+export const RUBBLE_DURATION     = 5;    // 瓦礫が残る時間(秒)
+export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーション時間(秒)
+export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 
 // ===== フリッパー =====
 export const FLIPPER_W = 80;
