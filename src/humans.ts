@@ -170,14 +170,15 @@ export class HumanManager {
       const py = this.py[i];
 
       if (cm === MODE_HORIZ) {
-        // 道路エリア内でランダム移動（Y範囲をクランプ）
+        // 道路エリア: Y方向の境界で速度反発（エリア外に出られない）
         const road = this._findRoad(py);
         if (road) {
-          this.py[i] = Math.max(road.y - road.tol, Math.min(road.y + road.tol, this.py[i]));
+          if (this.py[i] < road.y - road.tol) { this.py[i] = road.y - road.tol; this.vy[i] =  Math.abs(this.vy[i]); }
+          if (this.py[i] > road.y + road.tol) { this.py[i] = road.y + road.tol; this.vy[i] = -Math.abs(this.vy[i]); }
         }
-        // 路地エリアに入ったら VERT に切り替え可（確率的）
+        // 路地交差点で確率的に VERT へ乗り換え
         for (const a of V_ALLEYS) {
-          if (Math.abs(px - a.x) <= a.tol && Math.random() < 0.008) {
+          if (Math.abs(this.px[i] - a.x) <= a.tol && Math.random() < 0.008) {
             this.mode[i] = MODE_VERT;
             this._pickNewDirection(i);
             this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
@@ -186,14 +187,15 @@ export class HumanManager {
         }
 
       } else if (cm === MODE_VERT) {
-        // 路地エリア内でランダム移動（X範囲をクランプ）
+        // 路地エリア: X方向の境界で速度反発
         const alley = this._findAlley(px);
         if (alley) {
-          this.px[i] = Math.max(alley.x - alley.tol, Math.min(alley.x + alley.tol, this.px[i]));
+          if (this.px[i] < alley.x - alley.tol) { this.px[i] = alley.x - alley.tol; this.vx[i] =  Math.abs(this.vx[i]); }
+          if (this.px[i] > alley.x + alley.tol) { this.px[i] = alley.x + alley.tol; this.vx[i] = -Math.abs(this.vx[i]); }
         }
-        // 横道路エリアに入ったら HORIZ に切り替え可
+        // 道路交差点で確率的に HORIZ へ乗り換え
         for (const r of H_ROADS) {
-          if (Math.abs(py - r.y) <= r.tol && Math.random() < 0.008) {
+          if (Math.abs(this.py[i] - r.y) <= r.tol && Math.random() < 0.008) {
             this.mode[i] = MODE_HORIZ;
             this._pickNewDirection(i);
             this.timer[i] = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
@@ -245,25 +247,21 @@ export class HumanManager {
       const d = Math.abs(px - a.x);
       if (d < bestDist) { bestDist = d; bestType = 'vert'; bestX = a.x; }
     }
+    const angle = Math.random() * Math.PI * 2;
     if (bestType === 'horiz') {
-      this.py[i] = bestY; this.vy[i] = 0; this.mode[i] = MODE_HORIZ;
-      this.vx[i] = (Math.random() > 0.5 ? 1 : -1) * this.speed[i];
+      this.py[i] = bestY; this.mode[i] = MODE_HORIZ;
     } else {
-      this.px[i] = bestX; this.vx[i] = 0; this.mode[i] = MODE_VERT;
-      this.vy[i] = (Math.random() > 0.5 ? 1 : -1) * this.speed[i];
+      this.px[i] = bestX; this.mode[i] = MODE_VERT;
     }
+    this.vx[i] = Math.cos(angle) * this.speed[i];
+    this.vy[i] = Math.sin(angle) * this.speed[i];
   }
 
   private _pickNewDirection(i: number) {
     const spd = this.speed[i];
-    const m = this.mode[i];
-    if (m === MODE_HORIZ) {
-      this.vx[i] = (Math.random() > 0.5 ? 1 : -1) * spd;
-      this.vy[i] = 0;
-    } else if (m === MODE_VERT) {
-      this.vy[i] = (Math.random() > 0.5 ? 1 : -1) * spd;
-      this.vx[i] = 0;
-    }
+    const angle = Math.random() * Math.PI * 2;
+    this.vx[i] = Math.cos(angle) * spd;
+    this.vy[i] = Math.sin(angle) * spd;
   }
 
   checkCrush(ballX: number, ballY: number, ballR: number): number[] {
