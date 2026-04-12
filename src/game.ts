@@ -503,20 +503,8 @@ export class Game {
     // ブロックC (LOWER〜RIVERSIDE): 川沿いゾーン
     const rvTop = C.RIVERSIDE_STREET_Y + C.RIVERSIDE_STREET_H/2 + C.SIDEWALK_H;
     gf(loLow,  rvTop, zvR, zvG, zvB);
-    // 坂エリア
-    gf(rvLow,  C.FLIPPER_PIVOT_Y, zsR, zsG, zsB);
-    // 川
-    const [rvR2,rvG2,rvB2] = C.RIVER_COLOR;
-    const [rlR,rlG,rlB,rlA] = C.RIVER_LIGHT;
-    const [rbR,rbG,rbB] = C.RIVER_BANK;
-    writeInst(buf, n++, 0, (C.FLIPPER_PIVOT_Y + C.WORLD_MIN_Y)/2, W,
-      C.FLIPPER_PIVOT_Y - C.WORLD_MIN_Y, rvR2, rvG2, rvB2, 1);
-    // 川岸
-    writeInst(buf, n++, 0, C.FLIPPER_PIVOT_Y + 5, W, 10, rbR, rbG, rbB, 1);
-    // 波紋
-    writeInst(buf, n++,  10, C.FLIPPER_PIVOT_Y - 30, 300, 2, rlR, rlG, rlB, rlA);
-    writeInst(buf, n++, -20, C.FLIPPER_PIVOT_Y - 50, 250, 2, rlR, rlG, rlB, rlA * 0.8);
-    writeInst(buf, n++,  30, C.FLIPPER_PIVOT_Y - 70, 200, 2, rlR, rlG, rlB, rlA * 0.6);
+    // 坂〜画面下端エリア（川を削除、坂ゾーンで統一）
+    gf(rvLow,  C.WORLD_MIN_Y, zsR, zsG, zsB);
 
     // === ② 坂（緑の斜面 + ガードレール） ===
     const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;

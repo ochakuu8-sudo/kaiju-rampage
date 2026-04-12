@@ -110,7 +110,7 @@ export const RIVERSIDE_BASE = -45; // ブロックC (was -60)
 export const ALLEY_1_X   = -50;
 export const ALLEY_2_X   =  80;
 export const ALLEY_WIDTH  = 18;
-export const ALLEY_Y_MIN  = -85;  // 川沿いまで
+export const ALLEY_Y_MIN  = -290; // 画面下端まで
 export const ALLEY_Y_MAX  = 244;  // 丘まで
 
 // 街の範囲
