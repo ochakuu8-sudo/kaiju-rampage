@@ -136,37 +136,36 @@ export class Flipper {
 
 // ===== BUILDING =====
 
-// SFCシムシティ風屋根色パレット（俯瞰ビュー）
-const ROOF_RESIDENTIAL: ReadonlyArray<readonly [number,number,number]> = [
-  [0.75, 0.45, 0.30], // テラコッタ
-  [0.55, 0.55, 0.65], // グレー
-  [0.40, 0.55, 0.35], // 緑屋根
-  [0.65, 0.55, 0.40], // 茶
+// 横ビュー ファサード色パレット
+const FACADE_RESIDENTIAL: ReadonlyArray<readonly [number,number,number]> = [
+  [0.72, 0.42, 0.30], // テラコッタ煉瓦
+  [0.80, 0.75, 0.62], // クリーム石
+  [0.58, 0.65, 0.72], // ブルーグレー板張り
+  [0.65, 0.52, 0.38], // 茶色木材
 ];
-const ROOF_COMMERCIAL: ReadonlyArray<readonly [number,number,number]> = [
-  [0.85, 0.85, 0.80], // 白っぽい
-  [0.70, 0.75, 0.85], // 水色系
-  [0.80, 0.70, 0.60], // ベージュ
+const FACADE_COMMERCIAL: ReadonlyArray<readonly [number,number,number]> = [
+  [0.80, 0.76, 0.68], // 砂岩
+  [0.62, 0.68, 0.60], // グリーングレー
+  [0.70, 0.65, 0.75], // ラベンダー石
 ];
-const ROOF_OFFICE: ReadonlyArray<readonly [number,number,number]> = [
-  [0.50, 0.55, 0.65], // スチールブルー
-  [0.55, 0.55, 0.58], // コンクリートグレー
-  [0.45, 0.55, 0.60], // ガラスブルー
+const FACADE_OFFICE: ReadonlyArray<readonly [number,number,number]> = [
+  [0.60, 0.68, 0.80], // スチールブルー
+  [0.68, 0.68, 0.65], // コンクリート
+  [0.52, 0.65, 0.75], // ガラスブルー
 ];
 const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,number,number]>> = {
-  school:   [0.75, 0.70, 0.55],
-  hospital: [0.90, 0.90, 0.92],
-  temple:   [0.60, 0.35, 0.25],
-  parking:  [0.50, 0.50, 0.52],
+  school:   [0.85, 0.82, 0.60], // 薄黄色
+  hospital: [0.90, 0.90, 0.92], // 白
+  temple:   [0.52, 0.30, 0.20], // 暗い赤茶
+  parking:  [0.68, 0.68, 0.65], // コンクリート
 };
-const BUILDING_PALETTES = ROOF_RESIDENTIAL; // load()で使用
 
 export interface BuildingData {
   x: number;    // 左端
-  y: number;    // 下端
+  y: number;    // 下端（接地点）
   w: number;    // 横幅（当たり判定 & 描画）
-  h: number;    // 奥行き = w*0.7（当たり判定 & 描画）
-  buildingH: number; // 元の建物高さ（影の長さ計算用）
+  h: number;    // 高さ（当たり判定 & 描画）
+  buildingH: number; // 建物高さ（= h、互換用）
   maxHp: number;
   hp: number;
   score: number;
@@ -186,25 +185,25 @@ export class BuildingManager {
     this.buildings = [];
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
-      // 屋根色: 種類別パレットからハッシュで選択
+      // ファサード色: 種類別パレットからハッシュで選択
       let palette: ReadonlyArray<readonly [number,number,number]>;
       if (BUILDING_TYPE_COLORS[d.size]) {
         palette = [BUILDING_TYPE_COLORS[d.size]!];
       } else if (d.size === 'house' || d.size === 'apartment') {
-        palette = ROOF_RESIDENTIAL;
+        palette = FACADE_RESIDENTIAL;
       } else if (d.size === 'shop' || d.size === 'convenience' || d.size === 'restaurant') {
-        palette = ROOF_COMMERCIAL;
+        palette = FACADE_COMMERCIAL;
       } else {
-        palette = ROOF_OFFICE;
+        palette = FACADE_OFFICE;
       }
       const pi = Math.abs(Math.floor(d.x * 7 + d.y * 13)) % palette.length;
       const baseColor = palette[pi];
       const buildW = def.w;
-      const buildD = Math.round(def.w * 0.7); // 俯瞰奥行き = 横幅の70%
+      const buildH = def.h; // 横ビュー: 本来の建物高さ
       this.buildings.push({
         x: d.x - buildW / 2,
         y: d.y,
-        w: buildW, h: buildD,
+        w: buildW, h: buildH,
         buildingH: def.h,
         maxHp: def.hp, hp: def.hp,
         score: def.score,
@@ -262,98 +261,169 @@ export class BuildingManager {
     return false;
   }
 
-  /** 俯瞰ビュー: 影→縁→屋根→種類別ディテール */
+  /** 横ビュー: 影→ファサード→種類別ディテール */
   fillInstances(buf: Float32Array, startIdx: number): number {
     let n = startIdx;
     for (const b of this.buildings) {
       if (!b.active) continue;
       const scale = b.destroyTimer > 0 ? Math.max(0, b.destroyTimer / 0.2) : 1;
       const bW = b.w * scale;
-      const bD = b.h * scale;
+      const bH = b.h * scale;
       const cx = b.x + b.w / 2;
-      const cy = b.y + b.h / 2;
+      const cy = b.y + bH / 2;   // ファサード中心
+      const top = b.y + bH;       // 屋上
+      const bot = b.y;            // 接地点
 
-      // 屋根色（ダメージ → 暗く・赤シフト）
+      // ダメージ色計算
       let cr: number, cg: number, cb: number;
       if (b.flashTimer > 0) {
         cr = cg = cb = 1.0;
       } else {
         const dmg = 1 - b.hp / b.maxHp;
-        const dk = 1 - dmg * 0.4;
-        cr = Math.min(1, b.baseColor[0] * dk + dmg * 0.15);
+        const dk = 1 - dmg * 0.35;
+        cr = Math.min(1, b.baseColor[0] * dk + dmg * 0.10);
         cg = b.baseColor[1] * dk;
         cb = b.baseColor[2] * dk;
       }
 
-      // 影（高さに比例して長くなる）
-      const sOff = 1 + Math.floor(b.buildingH / 25);
-      writeInst(buf, n++, cx + sOff, cy - sOff, bW, bD, 0, 0, 0, 0.22);
+      // 影（右下オフセット）
+      writeInst(buf, n++, cx + 3, cy - 3, bW, bH, 0, 0, 0, 0.18);
+      // ファサード本体（GLSLが窓グリッドを担当）
+      writeInst(buf, n++, cx, cy, bW, bH, cr, cg, cb, 1);
 
-      // 縁取り（少し暗め）
-      writeInst(buf, n++, cx, cy, bW + 2, bD + 2,
-        Math.max(0, cr - 0.12), Math.max(0, cg - 0.12), Math.max(0, cb - 0.12), 1);
-
-      // 屋根本体
-      writeInst(buf, n++, cx, cy, bW, bD, cr, cg, cb, 1);
-
-      // 種類別ディテール
+      // 種類別ファサードディテール
       switch (b.size) {
-        case 'house':
-          // 棟線
-          writeInst(buf, n++, cx, cy, bW * 0.6, 1,
-            cr * 0.70, cg * 0.70, cb * 0.70, 1);
-          break;
-        case 'shop': {
-          const sc = (Math.floor(cx) % 2 === 0)
-            ? [0.85, 0.25, 0.20] : [0.20, 0.45, 0.80];
-          writeInst(buf, n++, cx, cy + bD * 0.35, bW * 0.8, 3,
-            sc[0], sc[1], sc[2], 0.9);
+        case 'house': {
+          // 屋根帯（暗め）
+          writeInst(buf, n++, cx, top - 4, bW + 2, 8,
+            cr * 0.50, cg * 0.46, cb * 0.40, 1);
+          // 左右の窓
+          writeInst(buf, n++, cx - bW * 0.20, bot + bH * 0.52, 4, 5,
+            0.78, 0.90, 0.96, 0.90);
+          writeInst(buf, n++, cx + bW * 0.20, bot + bH * 0.52, 4, 5,
+            0.78, 0.90, 0.96, 0.90);
+          // ドア
+          writeInst(buf, n++, cx, bot + 5, bW * 0.22, 9,
+            cr * 0.42, cg * 0.34, cb * 0.25, 1);
           break;
         }
-        case 'convenience':
-          writeInst(buf, n++, cx, cy + bD * 0.4, bW, 2, 0.2, 0.6, 0.3, 1);
-          writeInst(buf, n++, cx, cy + bD * 0.4 - 2, bW, 2, 0.9, 0.5, 0.2, 1);
-          writeInst(buf, n++, cx, cy + bD * 0.4 - 4, bW, 2, 0.9, 0.9, 0.9, 1);
+        case 'shop': {
+          // 看板帯（建物ごとに色変え）
+          const si = Math.abs(Math.floor(b.x * 3 + b.y)) % 3;
+          const [sgR, sgG, sgB] = si === 0 ? [0.92, 0.20, 0.18] :
+                                   si === 1 ? [0.18, 0.48, 0.90] : [0.20, 0.72, 0.28];
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, sgR, sgG, sgB, 1);
+          // ショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.72, bH * 0.38,
+            0.72, 0.88, 0.96, 0.85);
+          // 庇
+          writeInst(buf, n++, cx, bot + bH * 0.38, bW + 4, 4,
+            sgR * 0.68, sgG * 0.68, sgB * 0.68, 0.90);
+          // ドア
+          writeInst(buf, n++, cx, bot + 5, bW * 0.18, 9, 0.32, 0.24, 0.18, 1);
           break;
-        case 'restaurant':
-          writeInst(buf, n++, cx, cy, 4, 4,
-            0.55, 0.55, 0.58, 1);
+        }
+        case 'apartment': {
+          // 各階バルコニー帯
+          const flH = bH / 4;
+          for (let i = 1; i <= 3; i++) {
+            writeInst(buf, n++, cx, bot + flH * i, bW + 3, 2.5,
+              Math.max(0, cr - 0.15), Math.max(0, cg - 0.15), Math.max(0, cb - 0.12), 1);
+          }
+          // エントランス
+          writeInst(buf, n++, cx, bot + 6, bW * 0.20, 11, 0.60, 0.82, 0.92, 0.85);
           break;
-        case 'apartment':
-          writeInst(buf, n++, cx, cy + bD * 0.35, bW * 0.9, 2,
-            0.70, 0.70, 0.65, 0.9);
+        }
+        case 'office': {
+          // ロビーガラス
+          writeInst(buf, n++, cx, bot + 7, bW * 0.48, 13, 0.60, 0.80, 0.92, 0.82);
+          // 基礎帯
+          writeInst(buf, n++, cx, bot + 1.5, bW, 3, cr * 0.68, cg * 0.68, cb * 0.68, 1);
           break;
-        case 'office':
-          writeInst(buf, n++, cx - bW * 0.2, cy, 3, 3, 0.60, 0.62, 0.65, 1);
-          writeInst(buf, n++, cx + bW * 0.2, cy, 3, 3, 0.60, 0.62, 0.65, 1);
+        }
+        case 'tower': {
+          // エントランス
+          writeInst(buf, n++, cx, bot + 8, bW * 0.52, 15, 0.55, 0.75, 0.90, 0.80);
+          // 基礎帯
+          writeInst(buf, n++, cx, bot + 2, bW + 3, 4, cr * 0.65, cg * 0.65, cb * 0.65, 1);
+          // 上部セットバック（少し色違い）
+          writeInst(buf, n++, cx, top - bH * 0.10, bW * 0.75, bH * 0.18,
+            Math.min(1, cr * 0.90), Math.min(1, cg * 0.95), Math.min(1, cb * 1.08), 0.92);
           break;
-        case 'tower':
-          writeInst(buf, n++, cx, cy, bW * 0.4, 1, 0.90, 0.90, 0.85, 1);
-          writeInst(buf, n++, cx, cy, 1, bD * 0.4, 0.90, 0.90, 0.85, 1);
+        }
+        case 'skyscraper': {
+          // アンテナ
+          writeInst(buf, n++, cx, top + 9, 3, 17, cr * 0.68, cg * 0.68, cb * 0.68, 1);
+          // ロビー
+          writeInst(buf, n++, cx, bot + 9, bW * 0.52, 17, 0.50, 0.72, 0.90, 0.82);
+          // 基礎帯
+          writeInst(buf, n++, cx, bot + 2, bW + 3, 4, cr * 0.58, cg * 0.58, cb * 0.58, 1);
           break;
-        case 'skyscraper':
-          writeInst(buf, n++, cx, cy, 4, 4, 0.80, 0.20, 0.20, 1, 0, 1);
-          writeInst(buf, n++, cx, cy, bW - 4, bD - 4,
-            Math.max(0, cr - 0.18), Math.max(0, cg - 0.18), Math.max(0, cb - 0.18), 0.4);
+        }
+        case 'convenience': {
+          // グリーン帯（上部）
+          writeInst(buf, n++, cx, top - 4, bW, 8, 0.10, 0.55, 0.28, 1);
+          // ホワイト帯
+          writeInst(buf, n++, cx, top - 9.5, bW, 4, 0.95, 0.95, 0.95, 1);
+          // ショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.70, bH * 0.36,
+            0.70, 0.88, 0.96, 0.85);
+          // ドア
+          writeInst(buf, n++, cx, bot + 5, bW * 0.18, 9, 0.28, 0.22, 0.20, 1);
           break;
-        case 'school':
-          writeInst(buf, n++, cx, cy, bW * 0.6, bD * 0.5, 0.70, 0.55, 0.40, 1);
-          writeInst(buf, n++, cx, cy, bW * 0.5, 1, 0.90, 0.90, 0.90, 1);
+        }
+        case 'restaurant': {
+          // 看板帯（暖色）
+          writeInst(buf, n++, cx, top - 3.5, bW + 1, 7, 0.82, 0.28, 0.18, 1);
+          // 庇
+          writeInst(buf, n++, cx, bot + bH * 0.52, bW + 4, 4, 0.58, 0.18, 0.12, 0.85);
+          // 窓
+          writeInst(buf, n++, cx, bot + bH * 0.36, bW * 0.58, bH * 0.28,
+            0.78, 0.90, 0.82, 0.82);
+          // ドア
+          writeInst(buf, n++, cx, bot + 5, bW * 0.20, 9, 0.28, 0.18, 0.14, 1);
           break;
-        case 'hospital':
-          writeInst(buf, n++, cx, cy, 3, bD * 0.5, 0.85, 0.15, 0.15, 1);
-          writeInst(buf, n++, cx, cy, bW * 0.35, 3, 0.85, 0.15, 0.15, 1);
-          writeInst(buf, n++, cx, cy, 10, 10, 0.85, 0.85, 0.80, 0.3, 0, 1);
+        }
+        case 'school': {
+          // 上部バンド
+          writeInst(buf, n++, cx, top - 3, bW, 5, cr * 0.82, cg * 0.78, cb * 0.55, 1);
+          // 玄関ガラス
+          writeInst(buf, n++, cx, bot + 6, bW * 0.24, bH * 0.25, 0.62, 0.82, 0.94, 0.82);
           break;
-        case 'temple':
-          writeInst(buf, n++, cx, cy, 4, 4, 0.85, 0.75, 0.25, 1, 0, 1);
+        }
+        case 'hospital': {
+          // 赤十字マーク（中〜上部）
+          writeInst(buf, n++, cx, bot + bH * 0.68, 4, bH * 0.32, 0.85, 0.12, 0.12, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.68, bW * 0.28, 4, 0.85, 0.12, 0.12, 1);
+          // 玄関ガラス
+          writeInst(buf, n++, cx, bot + 7, bW * 0.35, 13, 0.68, 0.88, 0.96, 0.82);
           break;
-        case 'parking':
-          for (let i = -1; i <= 1; i++) {
-            writeInst(buf, n++, cx + i * bW * 0.28, cy, bW * 0.2, 1,
-              0.80, 0.80, 0.80, 0.8);
+        }
+        case 'temple': {
+          // 庇（屋根のオーバーハング）
+          writeInst(buf, n++, cx, top - 5, bW + 8, 10,
+            cr * 0.50, cg * 0.45, cb * 0.35, 1);
+          // 宝珠（飾り）
+          writeInst(buf, n++, cx, top + 2, 5, 5, cr * 0.85, cg * 0.75, cb * 0.28, 1, 0, 1);
+          // 山門
+          writeInst(buf, n++, cx, bot + 6, bW * 0.30, 11,
+            cr * 0.38, cg * 0.28, cb * 0.20, 1);
+          break;
+        }
+        case 'parking': {
+          // 各階スラブ
+          const flH = bH / 3;
+          for (let i = 1; i <= 2; i++) {
+            writeInst(buf, n++, cx, bot + flH * i, bW + 2, 2.5,
+              cr * 0.78, cg * 0.78, cb * 0.75, 1);
+          }
+          // 両端柱＋中央柱
+          for (const xOff of [-bW * 0.38, 0, bW * 0.38]) {
+            writeInst(buf, n++, cx + xOff, cy, 3.5, bH,
+              cr * 0.72, cg * 0.72, cb * 0.70, 1);
           }
           break;
+        }
       }
     }
     return n - startIdx;
