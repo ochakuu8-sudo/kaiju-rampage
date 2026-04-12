@@ -105,21 +105,27 @@ export class HumanManager {
     this.activeCount = this._countActive();
   }
 
-  /** 建物破壊時: 中心から円状に吹き飛ばしてから逃走 */
+  /** 建物破壊時: 中心から円状に吹き飛ばしてから逃走
+   *  人数が多いほど散布円が大きくなる (radius ∝ √n) */
   spawnBlast(cx: number, cy: number, n: number) {
+    // 散布半径: √n × 6  (5人≈13px, 50人≈42px, 300人≈104px)
+    const blastR = Math.sqrt(n) * 6;
     let spawned = 0;
     for (let i = 0; i < C.MAX_HUMANS && spawned < n; i++) {
       if (this.state[i] !== ST_INACTIVE) continue;
       this.state[i]      = ST_RUNNING;
-      this.px[i]         = cx + rand(-8, 8);
-      this.py[i]         = cy + rand(-8, 8);
+      // 初期位置: 中心から blastR 半径の円内にランダム配置
+      const initAngle    = Math.random() * Math.PI * 2;
+      const initR        = Math.random() * blastR;
+      this.px[i]         = cx + Math.cos(initAngle) * initR;
+      this.py[i]         = cy + Math.sin(initAngle) * initR;
       const angle        = Math.random() * Math.PI * 2;
       const spd          = rand(180, 380);
       this.vx[i]         = Math.cos(angle) * spd;
       this.vy[i]         = Math.sin(angle) * spd;
       this.speed[i]      = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
       this.mode[i]       = MODE_FREE;
-      this.blastTimer[i] = rand(0.30, 0.50);
+      this.blastTimer[i] = rand(0.30, 0.55);
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
       this.colorIdx[i]   = Math.floor(Math.random() * HUMAN_PALETTE.length);

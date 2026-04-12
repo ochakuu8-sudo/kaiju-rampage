@@ -43,22 +43,25 @@ export type BuildingSize = 'house' | 'shop' | 'apartment' | 'office' | 'tower' |
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
 }> = {
-  house:       { w: 16, h: 20, hp: 1, score: 100,  humanMin: 8,  humanMax: 15 },
-  shop:        { w: 22, h: 25, hp: 1, score: 150,  humanMin: 10, humanMax: 18 },
-  apartment:   { w: 24, h: 40, hp: 2, score: 300,  humanMin: 15, humanMax: 25 },
-  office:      { w: 30, h: 55, hp: 2, score: 400,  humanMin: 18, humanMax: 30 },
-  tower:       { w: 35, h: 70, hp: 3, score: 600,  humanMin: 25, humanMax: 40 },
-  skyscraper:  { w: 28, h: 90, hp: 4, score: 1000, humanMin: 30, humanMax: 50 },
-  convenience: { w: 24, h: 22, hp: 1, score: 120,  humanMin: 8,  humanMax: 15 },
-  restaurant:  { w: 20, h: 28, hp: 1, score: 130,  humanMin: 10, humanMax: 20 },
-  school:      { w: 40, h: 45, hp: 3, score: 550,  humanMin: 30, humanMax: 55 },
-  hospital:    { w: 35, h: 50, hp: 3, score: 500,  humanMin: 20, humanMax: 35 },
-  temple:      { w: 30, h: 30, hp: 2, score: 350,  humanMin: 10, humanMax: 20 },
-  parking:     { w: 36, h: 35, hp: 2, score: 300,  humanMin: 6,  humanMax: 12 },
+  // ===== 下段: 家 (~5人) =====
+  house:       { w: 16, h: 20, hp: 1, score: 100,  humanMin: 3,   humanMax: 7   },
+  convenience: { w: 24, h: 22, hp: 1, score: 120,  humanMin: 3,   humanMax: 7   },
+  // ===== 中段: 店 (~50人) =====
+  shop:        { w: 22, h: 25, hp: 1, score: 150,  humanMin: 40,  humanMax: 60  },
+  restaurant:  { w: 20, h: 28, hp: 1, score: 130,  humanMin: 40,  humanMax: 60  },
+  apartment:   { w: 24, h: 40, hp: 2, score: 300,  humanMin: 40,  humanMax: 65  },
+  temple:      { w: 30, h: 30, hp: 2, score: 350,  humanMin: 35,  humanMax: 55  },
+  parking:     { w: 36, h: 35, hp: 2, score: 300,  humanMin: 30,  humanMax: 50  },
+  // ===== 上段: ビル (~300人) =====
+  office:      { w: 30, h: 55, hp: 2, score: 400,  humanMin: 220, humanMax: 300 },
+  tower:       { w: 35, h: 70, hp: 3, score: 600,  humanMin: 240, humanMax: 320 },
+  skyscraper:  { w: 28, h: 90, hp: 4, score: 1000, humanMin: 260, humanMax: 350 },
+  hospital:    { w: 35, h: 50, hp: 3, score: 500,  humanMin: 200, humanMax: 280 },
+  school:      { w: 40, h: 45, hp: 3, score: 550,  humanMin: 260, humanMax: 350 },
 };
 
 // ===== 人間 =====
-export const MAX_HUMANS = 2000;
+export const MAX_HUMANS = 5000;
 export const HUMAN_W = 3;
 export const HUMAN_H = 6;
 export const HUMAN_BASE_SPEED = 65; // px/s
