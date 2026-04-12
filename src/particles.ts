@@ -24,6 +24,7 @@ export class ParticleManager {
   b:    Float32Array = new Float32Array(C.MAX_PARTICLES);
   gravity: Uint8Array = new Uint8Array(C.MAX_PARTICLES); // 重力あり？
   circle:  Uint8Array = new Uint8Array(C.MAX_PARTICLES); // 円形？
+  noFade:  Uint8Array = new Uint8Array(C.MAX_PARTICLES); // alpha固定、サイズで消える
   rot:  Float32Array = new Float32Array(C.MAX_PARTICLES);
   rotV: Float32Array = new Float32Array(C.MAX_PARTICLES);
   state: Uint8Array = new Uint8Array(C.MAX_PARTICLES);
@@ -55,7 +56,7 @@ export class ParticleManager {
     r: number, g: number, b: number,
     size: number, life: number,
     useGravity: boolean, isCircle: boolean,
-    rotV = 0, sizeH = 0, fixedRot?: number
+    rotV = 0, sizeH = 0, fixedRot?: number, noFade = false
   ) {
     const i = this.alloc();
     this.state[i] = ST_ALIVE;
@@ -72,6 +73,7 @@ export class ParticleManager {
     this.maxLife[i] = life;
     this.gravity[i] = useGravity ? 1 : 0;
     this.circle[i]  = isCircle ? 1 : 0;
+    this.noFade[i]  = noFade ? 1 : 0;
     this.rot[i]     = fixedRot !== undefined ? fixedRot : Math.random() * Math.PI * 2;
     this.rotV[i]    = rotV;
   }
@@ -99,15 +101,15 @@ export class ParticleManager {
       const spd   = rand(80, 300);
       const vx    = Math.cos(angle) * spd;
       const vy    = Math.sin(angle) * spd;
-      const w     = rand(2, 5);          // 細い幅
-      const h     = rand(8, 20);         // 長い長さ
+      const w     = rand(2, 5);
+      const h     = rand(8, 20);
       this.emit(
         x + rand(-3, 3), y + rand(-3, 3),
         vx, vy,
-        rand(0.78, 0.92), 0, rand(0.08, 0.18),
+        1.0, 0, 0,
         w, rand(0.25, 0.55),
         true, false,
-        0, h, angle + Math.PI * 0.5    // 速度方向に回転
+        0, h, angle + Math.PI * 0.5, true
       );
     }
     // 小粒のストリーク（速度方向に短い楕円、重力なし）
@@ -122,10 +124,10 @@ export class ParticleManager {
       this.emit(
         x + rand(-5, 5), y + rand(-5, 5),
         vx, vy,
-        rand(0.80, 0.95), 0, rand(0.06, 0.15),
+        1.0, 0, 0,
         w, rand(0.08, 0.22),
         false, false,
-        0, h, angle + Math.PI * 0.5
+        0, h, angle + Math.PI * 0.5, true
       );
     }
     // 小さい丸い血だまり（ゆっくり落ちる円）
@@ -136,9 +138,10 @@ export class ParticleManager {
       this.emit(
         x + rand(-6, 6), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
-        rand(0.75, 0.90), 0, rand(0.05, 0.14),
+        1.0, 0, 0,
         rand(2, 5), rand(0.4, 0.8),
-        true, true
+        true, true,
+        0, 0, undefined, true
       );
     }
   }
@@ -315,9 +318,19 @@ export class ParticleManager {
     for (let i = 0; i < C.MAX_PARTICLES; i++) {
       if (this.state[i] === ST_DEAD) continue;
       const t = this.life[i] / this.maxLife[i]; // 1→0
-      const alpha = t;
-      const sz = this.size[i] * (0.5 + 0.5 * t);
-      const szH = this.sizeH[i] > 0 ? this.sizeH[i] * (0.5 + 0.5 * t) : sz;
+      let alpha: number;
+      let sz: number;
+      let szH: number;
+      if (this.noFade[i]) {
+        // alpha固定・サイズが縮んで消える
+        alpha = 1.0;
+        sz  = this.size[i]  * t;
+        szH = this.sizeH[i] > 0 ? this.sizeH[i] * t : sz;
+      } else {
+        alpha = t;
+        sz  = this.size[i]  * (0.5 + 0.5 * t);
+        szH = this.sizeH[i] > 0 ? this.sizeH[i] * (0.5 + 0.5 * t) : sz;
+      }
       writeInst(buf, n++,
         this.px[i], this.py[i],
         sz, szH,
