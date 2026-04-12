@@ -26,28 +26,18 @@ export class InputManager {
 
   private _onTouchStart(e: TouchEvent) {
     e.preventDefault();
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const mid  = rect.left + rect.width / 2;
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      const t = e.changedTouches[i];
-      if (t.clientX < mid) this.leftPressed  = true;
-      else                  this.rightPressed = true;
+    if (e.touches.length > 0) {
+      this.leftPressed  = true;
+      this.rightPressed = true;
     }
   }
 
   private _onTouchEnd(e: TouchEvent) {
     e.preventDefault();
-    // 全タッチを確認してリリース
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const mid  = rect.left + rect.width / 2;
-    let hasLeft = false, hasRight = false;
-    for (let i = 0; i < e.touches.length; i++) {
-      const t = e.touches[i];
-      if (t.clientX < mid) hasLeft  = true;
-      else                  hasRight = true;
+    if (e.touches.length === 0) {
+      this.leftPressed  = false;
+      this.rightPressed = false;
     }
-    this.leftPressed  = hasLeft;
-    this.rightPressed = hasRight;
   }
 
   onRestart(cb: () => void) {

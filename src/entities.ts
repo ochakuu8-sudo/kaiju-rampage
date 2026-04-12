@@ -592,8 +592,6 @@ export class FurnitureManager {
   checkBallHit(bx: number, by: number, br: number): FurnitureItem | null {
     for (const item of this.items) {
       if (!item.active) continue;
-      // Skip trees (non-destructible, but collideable)
-      if (item.type === 'tree') continue;
       const hw = FURNITURE_HW[item.type];
       const hh = FURNITURE_HH[item.type];
       // Circle vs AABB
