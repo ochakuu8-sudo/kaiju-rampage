@@ -10,6 +10,16 @@ import * as C from './constants';
 import type { FurnitureType, VehicleType } from './entities';
 import type { BuildingData } from './entities';
 import { getScene, SCENES_BY_TIER, type Scene } from './scenes';
+import {
+  buildBlock,
+  horizontalRoadWorld,
+  verticalRoadWorld,
+  getIntersections,
+  type GridBlock,
+  type RoadPattern,
+  type Intersection,
+} from './grid';
+import { INITIAL_CITY_PATTERN, CHUNK_PATTERNS } from './patterns';
 
 export interface BuildingDef {
   x: number;      // 建物中心X
@@ -242,18 +252,146 @@ const INITIAL_CITY_RECIPES: string[][][] = [
   ],
 ];
 
-/** 全 18 ブロックへシーンを配置し、建物と家具を返す */
-export function placeCity(): ScenePlacement {
+// ===== Grid-based scene placement =====
+
+/**
+ * GridBlock の各 cell にシーンを配置する。
+ * merged cell は master cell の scene が span 分の cell 幅にまたがる。
+ * blockIdx は全セル共通で cityBlockIdx を使う (初期都市の場合) or chunkId (チャンクの場合)。
+ */
+export function placeGridBlock(
+  block: GridBlock,
+  pattern: RoadPattern,
+  blockIdx: number
+): ScenePlacement {
   const out: ScenePlacement = { buildings: [], furniture: [] };
-  for (let ri = 0; ri < INITIAL_CITY_RECIPES.length; ri++) {
-    for (let ci = 0; ci < INITIAL_CITY_RECIPES[ri].length; ci++) {
-      const block = BLOCKS[ri * 3 + ci];
-      const p = placeRecipe(INITIAL_CITY_RECIPES[ri][ci], block, 2);
-      out.buildings.push(...p.buildings);
-      out.furniture.push(...p.furniture);
+  const merges = pattern.merges ?? [];
+
+  for (let r = 0; r < block.rows; r++) {
+    for (let c = 0; c < block.cols; c++) {
+      const cell = block.cells[r][c];
+      if (cell.type !== 'scene') continue;
+
+      // merged 情報を確認
+      const mergeInfo = merges.find(m => m.row === r && m.col === c);
+      const spanCols = mergeInfo ? mergeInfo.spanCols : 1;
+
+      // 配置範囲: master cell の左端 → master + spanCols の右端
+      const leftCellX = block.originX + c * block.cellW;
+      const totalW = spanCols * block.cellW;
+
+      // 道路・歩道の呑み代を左右で差し引く (内部縦道路に隣接する場合)
+      // 簡単のため、cell 境界から 8px ずつ内側にシーンを置く
+      const margin = 6;
+      const availW = totalW - margin * 2;
+
+      const scene = getScene(cell.sceneId);
+      if (scene.width > availW + 2) {
+        // サイズ超過: 中央に配置して強制的に
+        const leftX = leftCellX + (totalW - scene.width) / 2;
+        const baseY = block.originY + r * block.cellH + 12;
+        const p = placeScene(scene, leftX, baseY, blockIdx);
+        out.buildings.push(...p.buildings);
+        out.furniture.push(...p.furniture);
+      } else {
+        // 余裕あり: 中央配置
+        const leftX = leftCellX + (totalW - scene.width) / 2;
+        const baseY = block.originY + r * block.cellH + 12;
+        const p = placeScene(scene, leftX, baseY, blockIdx);
+        out.buildings.push(...p.buildings);
+        out.furniture.push(...p.furniture);
+      }
     }
   }
   return out;
+}
+
+/** RoadPattern の道路を resolved world coords に変換 */
+function resolveHorizontalRoads(block: GridBlock): ResolvedHorizontalRoad[] {
+  return block.horizontalRoads.map(seg => {
+    const w = horizontalRoadWorld(block, seg);
+    return {
+      cy: w.cy,
+      h: seg.thickness ?? (seg.cls === 'avenue' ? 18 : 14),
+      xMin: w.xMin,
+      xMax: w.xMax,
+      cls: seg.cls,
+    };
+  });
+}
+function resolveVerticalRoads(block: GridBlock): ResolvedVerticalRoad[] {
+  return block.verticalRoads.map(seg => {
+    const w = verticalRoadWorld(block, seg);
+    return {
+      cx: w.cx,
+      w: seg.thickness ?? 14,
+      yMin: w.yMin,
+      yMax: w.yMax,
+      cls: seg.cls,
+    };
+  });
+}
+
+/** 全 cell へシーンを配置し、建物と家具を返す (grid ベース) */
+export function placeCity(): ScenePlacement {
+  // 初期都市 grid:
+  //   既存の固定道路 Y (RIVER=-80, LOWER=26, MAIN=133, HILLTOP=240) に合わせて
+  //   cellH = 107 で近似 (107 × 3 = 321 ≈ 240 - (-80) = 320)
+  //   rows: 3, cols: 4
+  //   originX = -180 (世界左壁), originY = -80 (RIVER 中心)
+  const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 107);
+  return placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
+}
+
+/** 初期都市の resolved roads と交差点 (描画用、fillWalls で使う) */
+export function getInitialCityRoadData(): {
+  horizontalRoads: ResolvedHorizontalRoad[];
+  verticalRoads: ResolvedVerticalRoad[];
+  intersections: Intersection[];
+} {
+  const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 100);
+  // 初期都市の水平道路は固定位置 (RIVER/LOWER/MAIN/HILLTOP) に合わせるため、
+  // pattern の gridLine index (0..3) を実際の Y 座標にマッピング
+  // gridLine 0 = RIVER (描画しない)、1 = LOWER、2 = MAIN、3 = HILLTOP
+  const lineYs = [
+    C.RIVERSIDE_STREET_Y,
+    C.LOWER_STREET_Y,
+    C.MAIN_STREET_Y,
+    C.HILLTOP_STREET_Y,
+  ];
+  const lineHs = [
+    C.RIVERSIDE_STREET_H,
+    C.LOWER_STREET_H,
+    C.MAIN_STREET_H,
+    C.HILLTOP_STREET_H,
+  ];
+  const horizontalRoads: ResolvedHorizontalRoad[] = block.horizontalRoads.map(seg => ({
+    cy: lineYs[seg.gridLine],
+    h: seg.thickness ?? (seg.cls === 'avenue' ? lineHs[seg.gridLine] : lineHs[seg.gridLine]),
+    xMin: -180 + seg.startCell * C.CELL_W,
+    xMax: -180 + seg.endCell * C.CELL_W,
+    cls: seg.cls,
+  }));
+  // 垂直道路: gridLine 0..4 → X = -180, -90, 0, 90, 180
+  // startCell/endCell は row index で、実際の Y 座標は lineYs 配列から取得
+  const verticalRoads: ResolvedVerticalRoad[] = block.verticalRoads.map(seg => ({
+    cx: -180 + seg.gridLine * C.CELL_W,
+    w: seg.thickness ?? 14,
+    // startCell=0 は RIVER 線から、endCell=3 は HILLTOP 線まで
+    yMin: lineYs[seg.startCell],
+    yMax: lineYs[seg.endCell],
+    cls: seg.cls,
+  }));
+  // 交差点は水平 * 垂直の全組み合わせから生成
+  const intersections: Intersection[] = [];
+  for (const h of horizontalRoads) {
+    for (const v of verticalRoads) {
+      if (v.cx >= h.xMin && v.cx <= h.xMax && h.cy >= v.yMin && h.cy <= v.yMax) {
+        intersections.push({ x: v.cx, y: h.cy, hThickness: h.h, vThickness: v.w });
+      }
+    }
+  }
+  return { horizontalRoads, verticalRoads, intersections };
 }
 
 // ===== チャンク生成 =====
@@ -261,6 +399,23 @@ export function placeCity(): ScenePlacement {
 export interface ChunkRoad {
   y: number;    // 道路中心Y
   h: number;    // 道路高さ
+}
+
+/** 水平道路セグメント (部分幅対応) */
+export interface ResolvedHorizontalRoad {
+  cy: number;
+  h: number;
+  xMin: number;
+  xMax: number;
+  cls: 'avenue' | 'street';
+}
+/** 垂直道路セグメント (部分高さ対応) */
+export interface ResolvedVerticalRoad {
+  cx: number;
+  w: number;
+  yMin: number;
+  yMax: number;
+  cls: 'avenue' | 'street';
 }
 
 export interface ChunkSpecialArea {
@@ -272,7 +427,14 @@ export interface ChunkSpecialArea {
 export interface ChunkData {
   chunkId: number;
   baseY: number;            // チャンク下端Y（ワールド座標）
-  roads: ChunkRoad[];       // 2本の横道路
+  /** 互換: 全幅水平道路のみ (vehicle lane 用) */
+  roads: ChunkRoad[];
+  /** 全水平道路 (部分幅含む) — 描画用 */
+  horizontalRoads: ResolvedHorizontalRoad[];
+  /** 全垂直道路 (部分高さ含む) — 描画用 */
+  verticalRoads: ResolvedVerticalRoad[];
+  /** 交差点リスト — 描画用 */
+  intersections: Intersection[];
   buildings: BuildingDef[];
   furniture: FurnitureDef[];
   specialAreas: ChunkSpecialArea[];
@@ -473,104 +635,108 @@ const CHUNK_ARCHETYPES: ChunkArchetype[] = [
   },
 ];
 
-const ARCHETYPE_POOL = new WeightedPool<ChunkArchetype>(
-  CHUNK_ARCHETYPES.map(a => [a, a.weight] as const)
-);
-let lastArchetypeId: string | null = null;
+// ===== Grid-based chunk generation =====
 
-function pickArchetype(): ChunkArchetype {
-  // 直前と同じは避ける
+const PATTERN_POOL = new WeightedPool<RoadPattern>(
+  CHUNK_PATTERNS.map(p => [p, p.weight] as const)
+);
+let lastPatternId: string | null = null;
+
+function pickPattern(): RoadPattern {
   for (let tries = 0; tries < 6; tries++) {
-    const a = ARCHETYPE_POOL.pick();
-    if (a.id !== lastArchetypeId) {
-      lastArchetypeId = a.id;
-      return a;
+    const p = PATTERN_POOL.pick();
+    if (p.id !== lastPatternId) {
+      lastPatternId = p.id;
+      return p;
     }
   }
-  const a = ARCHETYPE_POOL.pick();
-  lastArchetypeId = a.id;
-  return a;
+  const p = PATTERN_POOL.pick();
+  lastPatternId = p.id;
+  return p;
 }
 
-/** チャンク行用の仮 Block を作ってシーンを配置する */
-function placeChunkRow(
-  cellRecipes: (string[] | null)[],
-  baseY: number,
-  chunkId: number
-): ScenePlacement {
-  const out: ScenePlacement = { buildings: [], furniture: [] };
-  for (let ci = 0; ci < COLS.length; ci++) {
-    const ids = cellRecipes[ci];
-    if (!ids || ids.length === 0) continue;
-    const fakeBlock: Block = {
-      id: chunkId,
-      xMin: COLS[ci].xMin,
-      xMax: COLS[ci].xMax,
-      baseY,
-      pool: [],
-    };
-    const p = placeRecipe(ids, fakeBlock, 2);
-    out.buildings.push(...p.buildings);
-    out.furniture.push(...p.furniture);
-  }
-  return out;
-}
-
-/** 1 チャンク（200px）分のコンテンツを生成する */
+/** 1 チャンク分のコンテンツを grid pattern から生成する */
 export function generateChunk(chunkId: number): ChunkData {
-  const baseY    = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
-  const roadAH   = 14, roadBH = 14;
-  const roadAY   = baseY + 35;
-  const roadBY   = baseY + 135;
-
-  const swH      = C.SIDEWALK_H;
-  const aSwTop   = roadAY + roadAH / 2 + swH; // baseY + 46
-  const bSwTop   = roadBY + roadBH / 2 + swH; // baseY + 146
+  const baseY = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
+  const pattern = pickPattern();
 
   const buildings: BuildingDef[] = [];
   const furniture: FurnitureDef[] = [];
   const specialAreas: ChunkSpecialArea[] = [];
+  const horizontalRoads: ResolvedHorizontalRoad[] = [];
+  const verticalRoads: ResolvedVerticalRoad[] = [];
 
-  const arch = pickArchetype();
-
-  // ─── 中段: road A と road B の間 ──────────────────────────────
-  const mid1Base = aSwTop + 12;  // baseY + 58
-  const mid2Base = aSwTop + 40;  // baseY + 86
-  const midCenterY = baseY + 88;
-  const midH = 72;
-
-  if (arch.specialArea === 'park') {
-    specialAreas.push({ type: 'park', y: midCenterY, h: midH });
-    furniture.push(...generateParkFurniture(midCenterY, chunkId));
-  } else if (arch.specialArea === 'parking_lot') {
-    specialAreas.push({ type: 'parking_lot', y: midCenterY, h: midH });
-    furniture.push(...generateParkingLotFurniture(midCenterY, chunkId));
+  // park_break は特殊エリア化
+  if (pattern.id === 'park_break') {
+    const centerY = baseY + C.CHUNK_HEIGHT / 2;
+    specialAreas.push({ type: 'park', y: centerY, h: C.CHUNK_HEIGHT - 20 });
+    furniture.push(...generateParkFurniture(centerY, chunkId));
   } else {
-    const p1 = placeChunkRow(arch.mid1, mid1Base, chunkId);
-    buildings.push(...p1.buildings);
-    furniture.push(...p1.furniture);
-    const p2 = placeChunkRow(arch.mid2, mid2Base, chunkId);
-    buildings.push(...p2.buildings);
-    furniture.push(...p2.furniture);
+    // grid block を生成してシーン配置
+    const block = buildBlock(pattern, -180, baseY, C.CELL_W, C.CELL_H);
+    const p = placeGridBlock(block, pattern, chunkId);
+    buildings.push(...p.buildings);
+    furniture.push(...p.furniture);
+
+    // 水平道路を resolve
+    for (const seg of pattern.horizontalRoads) {
+      const cy = baseY + seg.gridLine * C.CELL_H;
+      const xMin = -180 + seg.startCell * C.CELL_W;
+      const xMax = -180 + seg.endCell * C.CELL_W;
+      horizontalRoads.push({
+        cy,
+        h: seg.thickness ?? (seg.cls === 'avenue' ? 18 : 14),
+        xMin, xMax,
+        cls: seg.cls,
+      });
+    }
+    // 垂直道路を resolve
+    for (const seg of pattern.verticalRoads) {
+      const cx = -180 + seg.gridLine * C.CELL_W;
+      const yMin = baseY + seg.startCell * C.CELL_H;
+      const yMax = baseY + seg.endCell * C.CELL_H;
+      verticalRoads.push({
+        cx,
+        w: seg.thickness ?? 14,
+        yMin, yMax,
+        cls: seg.cls,
+      });
+    }
   }
 
-  // ─── 上段: road B 上 ─────────────────────────────────────────
-  const topBase = bSwTop + 16; // baseY + 162
-  const pTop = placeChunkRow(arch.top, topBase, chunkId);
-  buildings.push(...pTop.buildings);
-  furniture.push(...pTop.furniture);
+  // 交差点を自動生成
+  const intersections: Intersection[] = [];
+  for (const h of horizontalRoads) {
+    for (const v of verticalRoads) {
+      if (v.cx >= h.xMin && v.cx <= h.xMax && h.cy >= v.yMin && h.cy <= v.yMax) {
+        intersections.push({
+          x: v.cx, y: h.cy,
+          hThickness: h.h, vThickness: v.w,
+        });
+      }
+    }
+  }
 
-  // ─── 歩道家具 (ゾーン感覚で選ぶ) ──────────────────────────────
-  // アーキタイプ id から歩道ゾーンを決める
-  const zoneType =
-    arch.id === 'suburban_quiet' || arch.id === 'industrial_suburb' ? 0 :
-    arch.id === 'office_district' ? 2 : 1;
-  furniture.push(...generateSidewalkFurniture(roadAY, zoneType, chunkId));
-  furniture.push(...generateSidewalkFurniture(roadBY, zoneType, chunkId));
+  // 互換: vehicle lane 用に全幅水平道路だけ roads に
+  const roads: ChunkRoad[] = horizontalRoads
+    .filter(r => r.xMin <= -179 && r.xMax >= 179)
+    .map(r => ({ y: r.cy, h: r.h }));
+
+  // 歩道家具: 水平道路のみ対象 (全幅のみ)
+  for (const r of horizontalRoads) {
+    if (r.xMin <= -179 && r.xMax >= 179) {
+      const zoneType = pattern.id === 'office_district' ? 2 :
+                       pattern.id === 'suburban_calm' ? 0 : 1;
+      furniture.push(...generateSidewalkFurniture(r.cy, zoneType, chunkId));
+    }
+  }
 
   return {
     chunkId, baseY,
-    roads: [{ y: roadAY, h: roadAH }, { y: roadBY, h: roadBH }],
+    roads,
+    horizontalRoads,
+    verticalRoads,
+    intersections,
     buildings,
     furniture,
     specialAreas,
