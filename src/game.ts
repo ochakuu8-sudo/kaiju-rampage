@@ -91,15 +91,16 @@ export class Game {
 
   private initWave1() {
     this.wave          = 1;
-    this.lifeTimer     = C.WAVE_TIME;
+    this.lifeTimer     = C.INITIAL_TIME;
     this.waveElapsed   = 0;
     this.totalDestroys = 0;
     this.totalHumans   = 0;
     this.state         = 'playing';
     this.stateTimer    = 0;
-    this.ui.setWaveNum(1);
-    this.ui.setTimer(C.WAVE_TIME);
-    this.ui.setLifeGauge(C.WAVE_TIME, C.WAVE_TIME);
+    this.ui.setDistance(0);
+    this.ui.setZone(0);
+    this.ui.setTimer(C.INITIAL_TIME);
+    this.ui.setLifeGauge(C.INITIAL_TIME, C.INITIAL_TIME);
   }
 
   private loadCity() {
@@ -178,20 +179,15 @@ export class Game {
     // ライフタイマー減少
     this.lifeTimer -= rawDt;
     this.ui.setTimer(Math.max(0, this.lifeTimer));
-    this.ui.setLifeGauge(Math.max(0, this.lifeTimer), C.WAVE_TIME);
+    this.ui.setLifeGauge(Math.max(0, this.lifeTimer), C.INITIAL_TIME);
     if (this.lifeTimer <= 0) {
       this.onGameOver();
       return;
     }
 
-    // ウェーブ自動進行 (WAVE_DURATION秒ごと)
-    this.waveElapsed += rawDt;
-    if (this.waveElapsed >= C.WAVE_DURATION) {
-      this.waveElapsed -= C.WAVE_DURATION;
-      this.wave++;
-      this.ui.setWaveNum(this.wave);
-      this.juice.flash(0.5, 0.8, 1.0, 0.3);
-    }
+    // 距離・ゾーン表示を更新
+    this.ui.setDistance(this.camera.distanceMeters);
+    this.ui.setZone(this.nextChunkId);
 
   }
 
@@ -289,8 +285,8 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
-      // 人間を潰すとライフタイマー回復
-      this.lifeTimer = Math.min(C.WAVE_TIME, this.lifeTimer + crushed.length * C.TIME_PER_HUMAN);
+      // 人間を潰すとカメラ加速（タイマー回復は建物破壊のみ）
+      for (let k = 0; k < crushed.length; k++) this.camera.addSpeedBonus();
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
@@ -304,6 +300,8 @@ export class Game {
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
     this.sound.buildingDestroy();
+    // 建物破壊でタイマー加算（スコアに応じて多め）
+    this.lifeTimer = Math.min(C.INITIAL_TIME, this.lifeTimer + C.TIME_BUILDING * bld.maxHp);
 
     const isLarge = bld.maxHp >= 3;
     const sc = bld.maxHp; // 1=小 2=中 3-4=大
@@ -379,7 +377,7 @@ export class Game {
 
   private onBallLost() {
     this.ball.active = false;
-    this.lifeTimer = Math.max(0, this.lifeTimer - C.BALL_LOST_PENALTY);
+    this.lifeTimer = Math.max(0, this.lifeTimer + C.TIME_BALL_LOST);
     this.sound.ballLost();
     this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
     if (this.lifeTimer <= 0) { this.onGameOver(); return; }
@@ -391,7 +389,7 @@ export class Game {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.wave, this.totalDestroys, this.totalHumans);
+      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 

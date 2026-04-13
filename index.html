@@ -29,9 +29,11 @@
       font-family: 'Arial Black', Arial, sans-serif;
       color: #fff;
     }
-    /* ウェーブ番号: 左上 */
-    #wave-num { position: absolute; top: 8px; left: 10px; font-size: 14px; color: #8cf; text-shadow: 0 1px 4px #000; }
-    /* タイマー: ウェーブ番号の右 */
+    /* 距離: 左上 */
+    #distance-display { position: absolute; top: 8px; left: 10px; font-size: 13px; color: #8cf; text-shadow: 0 1px 4px #000; }
+    /* ゾーン名: 距離の右 */
+    #zone-display { position: absolute; top: 8px; left: 10px; margin-top: 22px; font-size: 11px; color: #adf; text-shadow: 0 1px 4px #000; }
+    /* タイマー: 中央上 */
     #timer { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 900; text-shadow: 0 1px 6px #000; }
     #timer.danger { color: #f44; text-shadow: 0 0 12px #f00; }
     /* ライフタイマーバー */
@@ -72,14 +74,15 @@
 <div id="wrap">
   <canvas id="gameCanvas" width="360" height="580"></canvas>
   <div id="overlay">
-    <div id="wave-num">WAVE 1</div>
-    <div id="timer">30</div>
+    <div id="distance-display">0 m</div>
+    <div id="zone-display">住宅街</div>
+    <div id="timer">45</div>
     <div id="life-wrap"><div id="life-fill"></div></div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
-    <div id="final-wave">WAVE 1</div>
-    <div id="final-best">Best: 0 humans</div>
+    <div id="final-wave">0 m</div>
+    <div id="final-best">Best: 0 m</div>
     <div id="final-stats">Destroys: 0 | Humans: 0</div>
     <div id="go-tap">タップで再スタート</div>
   </div>

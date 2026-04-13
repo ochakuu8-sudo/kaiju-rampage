@@ -1,23 +1,34 @@
 /**
- * ui.ts — DOM UI 更新（サバイバルモード）
+ * ui.ts — DOM UI 更新（自動スクロールモード）
  */
 
+const ZONE_NAMES: Record<number, string> = {
+  0: '住宅街',
+  1: '商業区',
+  2: 'オフィス街',
+};
+
 export class UIManager {
-  private elWaveNum   = document.getElementById('wave-num')!;
+  private elDistance  = document.getElementById('distance-display')!;
+  private elZone      = document.getElementById('zone-display')!;
   private elTimer     = document.getElementById('timer')!;
   private elLifeFill  = document.getElementById('life-fill')!;
   private elGameover  = document.getElementById('gameover')!;
-  private elFinalWave = document.getElementById('final-wave')!;
+  private elFinalDist = document.getElementById('final-wave')!;
   private elFinalBest = document.getElementById('final-best')!;
   private elFinalStats= document.getElementById('final-stats')!;
-  private _bestHumans = 0;
+  private _bestDist   = 0;
 
   constructor() {
-    this._bestHumans = parseInt(localStorage.getItem('kaiju_best_humans') || '0', 10);
+    this._bestDist = parseInt(localStorage.getItem('kaiju_best_dist') || '0', 10);
   }
 
-  setWaveNum(wave: number) {
-    this.elWaveNum.textContent = `WAVE ${wave}`;
+  setDistance(meters: number) {
+    this.elDistance.textContent = `${meters.toLocaleString()} m`;
+  }
+
+  setZone(chunkId: number) {
+    this.elZone.textContent = ZONE_NAMES[chunkId % 3] ?? '';
   }
 
   setTimer(t: number) {
@@ -32,13 +43,13 @@ export class UIManager {
     this.elLifeFill.classList.toggle('low', pct <= 30);
   }
 
-  showGameOver(wave: number, destroys: number, humans: number) {
-    if (humans > this._bestHumans) {
-      this._bestHumans = humans;
-      localStorage.setItem('kaiju_best_humans', String(humans));
+  showGameOver(distanceMeters: number, destroys: number, humans: number) {
+    if (distanceMeters > this._bestDist) {
+      this._bestDist = distanceMeters;
+      localStorage.setItem('kaiju_best_dist', String(distanceMeters));
     }
-    this.elFinalWave.textContent  = `WAVE ${wave}`;
-    this.elFinalBest.textContent  = `Best: ${this._bestHumans.toLocaleString()} humans`;
+    this.elFinalDist.textContent  = `${distanceMeters.toLocaleString()} m`;
+    this.elFinalBest.textContent  = `Best: ${this._bestDist.toLocaleString()} m`;
     this.elFinalStats.textContent = `Destroys: ${destroys} | Humans: ${humans.toLocaleString()}`;
     this.elGameover.classList.add('show');
   }
