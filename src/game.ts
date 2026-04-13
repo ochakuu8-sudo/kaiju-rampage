@@ -405,6 +405,7 @@ export class Game {
     let n = 0;
     n += this.fillWalls(SHARED_BUF, n);
     n += this.fillChunkRoads(SHARED_BUF, n);
+    n += this.fillAlleys(SHARED_BUF, n);      // 路地は背景の上に重ねる
     n += this.buildings.fillInstances(SHARED_BUF, n);
     n += this.furniture.fillInstances(SHARED_BUF, n);
     n += this.vehicles.fillInstances(SHARED_BUF, n);
@@ -461,7 +462,6 @@ export class Game {
     const [rr,rg,rb] = C.ROAD_COLOR;
     const [sr,sg,sb] = C.SIDEWALK_COLOR;
     const [lr2,lg2,lb2] = C.ROAD_LINE_COLOR;
-    const [ar,ag,ab] = C.ALLEY_COLOR;
 
     const drawRoad = (cy: number, h: number, doubleCenter = false) => {
       const swTop = cy + h/2 + C.SIDEWALK_H/2;
@@ -482,32 +482,6 @@ export class Game {
     drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H, true);
     drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H);
     drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H);
-
-    // 縦路地: カメラ上端まで無限延長
-    const alleyTop = this.camera.top + 100;
-    const ay = (C.ALLEY_Y_MIN + alleyTop) / 2;
-    const ah = alleyTop - C.ALLEY_Y_MIN;
-    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
-      writeInst(buf, n++, ax, ay, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
-      writeInst(buf, n++, ax - C.ALLEY_WIDTH/2, ay, 1.5, ah, sr, sg, sb, 0.6);
-      writeInst(buf, n++, ax + C.ALLEY_WIDTH/2, ay, 1.5, ah, sr, sg, sb, 0.6);
-    }
-
-    const cwW = C.ALLEY_WIDTH - 2;
-    const stripeH = 2.5, stripeGap = 4;
-    const roads = [
-      { cy: C.HILLTOP_STREET_Y, h: C.HILLTOP_STREET_H },
-      { cy: C.MAIN_STREET_Y,    h: C.MAIN_STREET_H },
-      { cy: C.LOWER_STREET_Y,   h: C.LOWER_STREET_H },
-      { cy: C.RIVERSIDE_STREET_Y, h: C.RIVERSIDE_STREET_H },
-    ];
-    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
-      for (const road of roads) {
-        for (let sy = road.cy - road.h/2 + 1; sy < road.cy + road.h/2; sy += stripeGap) {
-          writeInst(buf, n++, ax, sy, cwW, stripeH, 0.90, 0.90, 0.90, 0.8);
-        }
-      }
-    }
 
     // 側壁・上部ガイド: カメラ追従（スクリーン固定）
     const cy = this.camera.y;
@@ -553,6 +527,56 @@ export class Game {
         writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
       }
     }
+    return n - start;
+  }
+
+  /**
+   * 縦路地を全背景の上に描画し、全横道路との交差点ストライプを生成する。
+   * chunk背景の後に呼ぶことで路地が埋もれない。
+   */
+  private fillAlleys(buf: Float32Array, start: number): number {
+    let n = start;
+    const [ar, ag, ab] = C.ALLEY_COLOR;
+    const [sr, sg, sb] = C.SIDEWALK_COLOR;
+    const cwW = C.ALLEY_WIDTH - 2;
+    const stripeH = 2.5, stripeGap = 4;
+
+    // 縦路地本体: 画面下端からカメラ上端+余裕まで連続描画
+    const alleyTop = this.camera.top + 120;
+    const alleyMid = (C.ALLEY_Y_MIN + alleyTop) / 2;
+    const alleyH   = alleyTop - C.ALLEY_Y_MIN;
+    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+      writeInst(buf, n++, ax, alleyMid, C.ALLEY_WIDTH,     alleyH, ar, ag, ab, 1);
+      writeInst(buf, n++, ax - C.ALLEY_WIDTH / 2, alleyMid, 1.5, alleyH, sr, sg, sb, 0.6);
+      writeInst(buf, n++, ax + C.ALLEY_WIDTH / 2, alleyMid, 1.5, alleyH, sr, sg, sb, 0.6);
+    }
+
+    // 初期都市の交差点: 4本の横道路
+    const initialRoads = [
+      { cy: C.HILLTOP_STREET_Y,   h: C.HILLTOP_STREET_H },
+      { cy: C.MAIN_STREET_Y,      h: C.MAIN_STREET_H },
+      { cy: C.LOWER_STREET_Y,     h: C.LOWER_STREET_H },
+      { cy: C.RIVERSIDE_STREET_Y, h: C.RIVERSIDE_STREET_H },
+    ];
+    for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+      for (const road of initialRoads) {
+        for (let sy = road.cy - road.h / 2 + 1; sy < road.cy + road.h / 2; sy += stripeGap) {
+          writeInst(buf, n++, ax, sy, cwW, stripeH, 0.90, 0.90, 0.90, 0.8);
+        }
+      }
+    }
+
+    // チャンク道路との交差点
+    for (const chunk of this.loadedChunks.values()) {
+      for (const road of chunk.roads) {
+        for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+          for (let sy = road.y - road.h / 2 + 1; sy < road.y + road.h / 2; sy += stripeGap) {
+            writeInst(buf, n++, ax, sy, cwW, stripeH, 0.90, 0.90, 0.90, 0.8);
+          }
+        }
+      }
+    }
+
     return n - start;
   }
 
