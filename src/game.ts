@@ -286,7 +286,6 @@ export class Game {
     this.particles.spawnDebris(cx, cy,  18 + sc * 12, dr, dg, db);
     this.particles.spawnSpark (cx, cy,  16 + sc * 10);
     this.particles.spawnFire  (cx, cy,  10 + sc * 7);
-    this.particles.spawnDust  (cx, bld.y, bld.w, 6 + sc * 4);
 
     // ── 大型ビル: 頂部からも追加演出 ─────────────────────
     if (isLarge) {

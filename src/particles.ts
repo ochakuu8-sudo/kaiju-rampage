@@ -161,20 +161,6 @@ export class ParticleManager {
     }
   }
 
-  /** 煙 */
-  spawnSmoke(x: number, y: number, count: number) {
-    for (let i = 0; i < count; i++) {
-      const v = rand(0.25, 0.55);
-      this.emit(
-        x + rand(-20, 20), y + rand(-12, 12),
-        rand(-28, 28), rand(35, 100),
-        v, v, v,
-        rand(18, 38), rand(1.0, 2.6),
-        false, true
-      );
-    }
-  }
-
   /** 爆発炎 (上昇する火の粒) */
   spawnFire(x: number, y: number, count: number) {
     const FIRE_COLS: Array<[number,number,number]> = [
@@ -192,22 +178,6 @@ export class ParticleManager {
         Math.cos(angle) * spd + rand(-50, 50), Math.sin(angle) * spd,
         c[0], c[1], c[2],
         rand(6, 18), rand(0.4, 1.1),
-        false, true
-      );
-    }
-  }
-
-  /** 粉塵 (建物底部から水平拡散) */
-  spawnDust(x: number, y: number, width: number, count: number) {
-    for (let i = 0; i < count; i++) {
-      const dir = Math.random() > 0.5 ? 1 : -1;
-      const spd = rand(40, 120);
-      const v   = rand(0.48, 0.68);
-      this.emit(
-        x + rand(-width * 0.5, width * 0.5), y + rand(-4, 6),
-        dir * spd + rand(-20, 20), rand(8, 35),
-        v, v * rand(0.85, 1), v * rand(0.72, 0.92),
-        rand(12, 28), rand(0.8, 1.8),
         false, true
       );
     }
