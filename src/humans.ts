@@ -216,9 +216,6 @@ export class HumanManager {
             }
           }
         }
-        // 全体Y境界クランプ (カメラ相対)
-        this.py[i] = Math.max(camBottom + C.HUMAN_H, Math.min(camTop + 100, this.py[i]));
-
       } else if (cm === MODE_HORIZ) {
         // 道路エリア: Y方向の境界で速度反発（エリア外に出られない）
         const road = this._findRoad(py);
@@ -252,7 +249,6 @@ export class HumanManager {
             break;
           }
         }
-        this.py[i] = Math.max(camBottom + C.HUMAN_H, Math.min(camTop + 100, this.py[i]));
       }
 
       // X方向: 画面端で逃走完了 → INACTIVE
