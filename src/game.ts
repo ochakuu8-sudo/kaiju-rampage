@@ -12,7 +12,8 @@ import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
 import { Camera } from './camera';
-import { getStage } from './stages';
+import { getStage, generateChunk } from './stages';
+import type { ChunkData } from './stages';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
 
@@ -44,6 +45,10 @@ export class Game {
 
   private state: GameState = 'playing';
   private stateTimer = 0;
+
+  // チャンク管理
+  private loadedChunks: Map<number, ChunkData> = new Map();
+  private nextChunkId = 0;
 
   private bgTopR = 0.52; private bgTopG = 0.74; private bgTopB = 0.96;
   private bgBottomR = 0.38; private bgBottomG = 0.36; private bgBottomB = 0.33;
@@ -105,8 +110,11 @@ export class Game {
     this.bgTopR = cfg.bgTopR; this.bgTopG = cfg.bgTopG; this.bgTopB = cfg.bgTopB;
     this.bgBottomR = cfg.bgBottomR; this.bgBottomG = cfg.bgBottomG; this.bgBottomB = cfg.bgBottomB;
     this.humans.reset();
+    this.humans.resetRoads();
     this.particles.reset();
     this.camera.reset();
+    this.loadedChunks.clear();
+    this.nextChunkId = 0;
     this.ball.resetWithCamera(this.camera.y);
   }
 
@@ -165,6 +173,7 @@ export class Game {
     this.vehicles.update(dt);
     this.humans.update(dt, this.ball.x, this.ball.y);
     this.particles.update(dt);
+    this.updateChunks();
 
     // ライフタイマー減少
     this.lifeTimer -= rawDt;
@@ -330,6 +339,44 @@ export class Game {
     this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax));
   }
 
+  // ===== チャンク管理 =====
+
+  private updateChunks() {
+    const spawnAhead  = C.CHUNK_SPAWN_AHEAD;
+    const despawnBehind = C.CHUNK_DESPAWN_BEHIND;
+    const spawnThreshold = this.camera.top + spawnAhead;
+    const despawnThreshold = this.camera.bottom - despawnBehind;
+
+    // 上方向に新チャンクを先読みスポーン
+    while (true) {
+      const nextTop = C.WORLD_MAX_Y + (this.nextChunkId + 1) * C.CHUNK_HEIGHT;
+      if (nextTop > spawnThreshold) break;
+      this._spawnChunk(this.nextChunkId);
+      this.nextChunkId++;
+    }
+
+    // カメラ下端より遠く離れたチャンクをデスポーン
+    for (const [id, chunk] of this.loadedChunks) {
+      if (chunk.baseY + C.CHUNK_HEIGHT < despawnThreshold) {
+        this._despawnChunk(id);
+      }
+    }
+  }
+
+  private _spawnChunk(chunkId: number) {
+    if (this.loadedChunks.has(chunkId)) return;
+    const chunk = generateChunk(chunkId);
+    this.buildings.loadChunk(chunk.buildings);
+    this.humans.addRoad(chunk.roadY, chunk.roadH / 2 + 2);
+    this.loadedChunks.set(chunkId, chunk);
+  }
+
+  private _despawnChunk(chunkId: number) {
+    this.buildings.unloadChunk(chunkId);
+    this.humans.removeRoadsBelow(this.camera.bottom - C.CHUNK_DESPAWN_BEHIND);
+    this.loadedChunks.delete(chunkId);
+  }
+
   private onBallLost() {
     this.ball.active = false;
     this.lifeTimer = Math.max(0, this.lifeTimer - C.BALL_LOST_PENALTY);
@@ -355,6 +402,7 @@ export class Game {
 
     let n = 0;
     n += this.fillWalls(SHARED_BUF, n);
+    n += this.fillChunkRoads(SHARED_BUF, n);
     n += this.buildings.fillInstances(SHARED_BUF, n);
     n += this.furniture.fillInstances(SHARED_BUF, n);
     n += this.vehicles.fillInstances(SHARED_BUF, n);
@@ -461,6 +509,30 @@ export class Game {
     writeInst(buf, n++, C.WORLD_MAX_X - 2, cy, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
     writeInst(buf, n++, 0, cy + C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
     writeInst(buf, n++, 0, cy + C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
+    return n - start;
+  }
+
+  /** チャンク由来の道路を描画 */
+  private fillChunkRoads(buf: Float32Array, start: number): number {
+    let n = start;
+    const W = 360;
+    const [rr, rg, rb] = C.ROAD_COLOR;
+    const [sr, sg, sb] = C.SIDEWALK_COLOR;
+    const [lr, lg, lb] = C.ROAD_LINE_COLOR;
+    const [plR, plG, plB] = C.PLANTING_COLOR;
+    const swH = C.SIDEWALK_H;
+
+    for (const chunk of this.loadedChunks.values()) {
+      const { roadY, roadH } = chunk;
+      const swTop = roadY + roadH / 2 + swH / 2;
+      const swBot = roadY - roadH / 2 - swH / 2;
+      writeInst(buf, n++, 0, swTop + swH / 2 + 1.5, W, 3, plR, plG, plB, 1);
+      writeInst(buf, n++, 0, swBot - swH / 2 - 1.5, W, 3, plR, plG, plB, 1);
+      writeInst(buf, n++, 0, swTop, W, swH, sr, sg, sb, 1);
+      writeInst(buf, n++, 0, swBot, W, swH, sr, sg, sb, 1);
+      writeInst(buf, n++, 0, roadY, W, roadH, rr, rg, rb, 1);
+      writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
+    }
     return n - start;
   }
 

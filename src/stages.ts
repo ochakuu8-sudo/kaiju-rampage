@@ -114,6 +114,59 @@ export function packCity(): BuildingDef[] {
   return BLOCKS.flatMap(packBlock);
 }
 
+// ===== チャンク生成 =====
+
+export interface ChunkData {
+  chunkId: number;
+  baseY: number;         // チャンク下端Y（ワールド座標）
+  roadY: number;         // 横道路のY中心
+  roadH: number;         // 横道路の高さ
+  buildings: BuildingDef[];
+}
+
+// ゾーンシーケンス: 3種類を繰り返す
+const ZONE_POOLS: Record<number, C.BuildingSize[]> = {
+  0: ['house', 'convenience', 'house', 'shop', 'restaurant', 'house'],     // 住宅
+  1: ['shop', 'apartment', 'restaurant', 'parking', 'temple', 'shop'],     // 商業
+  2: ['office', 'tower', 'skyscraper', 'hospital', 'school', 'office'],    // オフィス
+};
+
+const ZONE_ROW_HEIGHTS: Record<number, number[]> = {
+  0: [30, 50],   // 住宅: 家は小さいので2行
+  1: [40, 65],   // 商業: 中程度 2行
+  2: [60],       // オフィス: 高いので1行のみ
+};
+
+/** 1チャンク分の建物を生成する */
+export function generateChunk(chunkId: number): ChunkData {
+  const baseY  = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT; // 初期画面上端から積み上げ
+  const roadH  = 14;
+  const roadY  = baseY + 40; // 道路: チャンク下から40px上
+  const zoneType = chunkId % 3;
+  const pool     = ZONE_POOLS[zoneType];
+  const rowOffsets = ZONE_ROW_HEIGHTS[zoneType]; // 道路上端からの建物baseYオフセット
+
+  const buildings: BuildingDef[] = [];
+  const roadTop = roadY + roadH / 2 + 4; // 道路上端 + マージン
+
+  for (const rowOff of rowOffsets) {
+    const bBaseY = roadTop + rowOff;
+    // 3列に建物をパッキング
+    for (const col of COLS) {
+      let x = col.xMin + 4;
+      while (x < col.xMax - 4) {
+        const size = pool[Math.floor(Math.random() * pool.length)];
+        const w = C.BUILDING_DEFS[size].w;
+        if (x + w > col.xMax - 4) break;
+        buildings.push({ x: x + w / 2, y: bBaseY, size, blockIdx: chunkId });
+        x += w + 2 + Math.floor(Math.random() * 3);
+      }
+    }
+  }
+
+  return { chunkId, baseY, roadY, roadH, buildings };
+}
+
 // ===== ウェーブ進行 =====
 
 /** ウェーブのノルマスコア */

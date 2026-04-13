@@ -237,6 +237,48 @@ export class BuildingManager {
     }
   }
 
+  /** チャンクの建物を追加ロード (chunkId = blockIdx として使用) */
+  loadChunk(defs: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx?: number }>) {
+    for (const d of defs) {
+      const def = C.BUILDING_DEFS[d.size];
+      let palette: ReadonlyArray<readonly [number,number,number]>;
+      if (BUILDING_TYPE_COLORS[d.size]) {
+        palette = [BUILDING_TYPE_COLORS[d.size]!];
+      } else if (d.size === 'house' || d.size === 'apartment') {
+        palette = FACADE_RESIDENTIAL;
+      } else if (d.size === 'shop' || d.size === 'convenience' || d.size === 'restaurant') {
+        palette = FACADE_COMMERCIAL;
+      } else {
+        palette = FACADE_OFFICE;
+      }
+      const pi = Math.abs(Math.floor(d.x * 7 + d.y * 13)) % palette.length;
+      this.buildings.push({
+        x: d.x - def.w / 2,
+        y: d.y,
+        w: def.w, h: def.h,
+        buildingH: def.h,
+        maxHp: def.hp, hp: def.hp,
+        score: def.score,
+        humanMin: def.humanMin,
+        humanMax: def.humanMax,
+        active: true,
+        destroyTimer: 0,
+        flashTimer: 0,
+        rubbleTimer: 0,
+        spawnTimer: 0,
+        blockIdx: d.blockIdx ?? -1,
+        generation: 0,
+        baseColor: palette[pi],
+        size: d.size,
+      });
+    }
+  }
+
+  /** チャンクの建物を一括削除 */
+  unloadChunk(chunkId: number) {
+    this.buildings = this.buildings.filter(b => b.blockIdx !== chunkId);
+  }
+
   allDestroyed(): boolean {
     return this.buildings.every(b => !b.active);
   }
