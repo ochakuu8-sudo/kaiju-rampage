@@ -34,6 +34,16 @@ export class Ball {
     this.trailHead = 0;
   }
 
+  /** カメラY位置を考慮したリセット */
+  resetWithCamera(cameraY: number) {
+    this.reset();
+    this.y = cameraY + C.BALL_START_Y;
+    for (let i = 0; i < C.TRAIL_LEN; i++) {
+      this.trail[i * 2]     = C.BALL_START_X;
+      this.trail[i * 2 + 1] = this.y;
+    }
+  }
+
   /** トレイルに現在位置を記録 */
   recordTrail() {
     this.trail[this.trailHead * 2]     = this.x;

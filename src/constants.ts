@@ -141,6 +141,23 @@ export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.60, 0.
 export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.85, 0.85, 0.45, 1];
 export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.38, 0.38, 0.35, 1];
 
+// ===== 自動スクロール =====
+export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s
+export const HUMAN_SPEED_BONUS   = 1;    // 人間を潰すごとのカメラ加速量 px/s
+export const SPEED_DECAY_RATE    = 0.02; // 速度ボーナスの減衰率 (per frame at 60fps)
+
+// ===== チャンク生成 =====
+export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)
+export const CHUNK_SPAWN_AHEAD    = 600; // カメラ上端から先読みする距離
+export const CHUNK_DESPAWN_BEHIND = 400; // カメラ下端から削除する距離
+
+// ===== タイマー (新ルール) =====
+export const INITIAL_TIME    = 45;  // 初期タイマー (秒)
+export const TIME_BUILDING   = 1.5; // 建物破壊でもらえる秒数
+export const TIME_BUMPER     = 0.5; // バンパーヒットでもらえる秒数
+export const TIME_BALL_LOST  = -5;  // ボールロスト時のペナルティ (秒)
+export const BALL_UPWARD_BIAS = 3;  // ランチャー上方バイアス
+
 // ===== SFCシムシティ風ゾーン色 =====
 export const ZONE_RESIDENTIAL: readonly [number,number,number,number] = [0.35, 0.65, 0.28, 1];
 export const ZONE_COMMERCIAL:  readonly [number,number,number,number] = [0.55, 0.55, 0.48, 1];

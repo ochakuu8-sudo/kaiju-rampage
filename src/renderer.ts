@@ -264,6 +264,11 @@ export class Renderer {
     ]);
   }
 
+  /** カメラY座標に合わせて投影行列を更新する（毎フレーム呼ぶ） */
+  updateProjection(cameraY: number) {
+    this.proj = this.makeOrtho(-180, 180, cameraY + WORLD_MIN_Y, cameraY + WORLD_MAX_Y);
+  }
+
   clear(r = 0.06, g = 0.06, b = 0.10) {
     const gl = this.gl;
     gl.clearColor(r, g, b, 1);

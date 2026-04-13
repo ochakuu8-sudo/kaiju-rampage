@@ -11,6 +11,7 @@ import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
+import { Camera } from './camera';
 import { getStage } from './stages';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
@@ -27,6 +28,7 @@ export class Game {
   private particles: ParticleManager;
   private juice:     JuiceManager;
   private ui:        UIManager;
+  private camera:    Camera;
   private buildings: BuildingManager;
   private furniture: FurnitureManager;
   private vehicles:  VehicleManager;
@@ -46,8 +48,18 @@ export class Game {
   private bgTopR = 0.52; private bgTopG = 0.74; private bgTopB = 0.96;
   private bgBottomR = 0.38; private bgBottomG = 0.36; private bgBottomB = 0.33;
 
-  private readonly SLOPE_L = { cx: -132.5, cy: -155, hw: 73, hh: 6, angle: -0.856 };
-  private readonly SLOPE_R = { cx:  132.5, cy: -155, hw: 73, hh: 6, angle:  0.856 };
+  // 坂のカメラ相対オフセット (スクリーン固定)
+  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -155, hw: 73, hh: 6, angle: -0.856 };
+  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -155, hw: 73, hh: 6, angle:  0.856 };
+
+  private getSlopeL() {
+    const b = this.SLOPE_L_BASE;
+    return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
+  }
+  private getSlopeR() {
+    const b = this.SLOPE_R_BASE;
+    return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
+  }
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer  = new Renderer(canvas);
@@ -57,6 +69,7 @@ export class Game {
     this.particles = new ParticleManager();
     this.juice     = new JuiceManager();
     this.ui        = new UIManager();
+    this.camera    = new Camera();
     this.buildings = new BuildingManager();
     this.furniture = new FurnitureManager();
     this.vehicles  = new VehicleManager();
@@ -93,7 +106,8 @@ export class Game {
     this.bgBottomR = cfg.bgBottomR; this.bgBottomG = cfg.bgBottomG; this.bgBottomB = cfg.bgBottomB;
     this.humans.reset();
     this.particles.reset();
-    this.ball.reset();
+    this.camera.reset();
+    this.ball.resetWithCamera(this.camera.y);
   }
 
   private restart() {
@@ -123,7 +137,7 @@ export class Game {
       this.stateTimer -= rawDt;
       this.particles.update(rawDt);
       if (this.stateTimer <= 0) {
-        this.ball.reset();
+        this.ball.resetWithCamera(this.camera.y);
         this.state = 'playing';
       }
       return;
@@ -132,8 +146,15 @@ export class Game {
     // === playing ===
     const dt = this.juice.getGameDt(rawDt);
 
+    // カメラ更新（スクロール）
+    this.camera.update(dt);
+
     this.flippers[0].setPressed(this.input.leftPressed);
     this.flippers[1].setPressed(this.input.rightPressed);
+    // フリッパーをカメラに追従させる
+    for (const fl of this.flippers) {
+      fl.pivotY = C.FLIPPER_PIVOT_Y + this.camera.y;
+    }
     this.flippers[0].update(dt);
     this.flippers[1].update(dt);
 
@@ -178,10 +199,11 @@ export class Game {
       b.x  += b.vx * dts * 60;
       b.y  += b.vy * dts * 60;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+      const camTop = this.camera.y + C.WORLD_MAX_Y;
       if (b.x - C.BALL_RADIUS < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + C.BALL_RADIUS; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + C.BALL_RADIUS > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - C.BALL_RADIUS; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      if (b.y + C.BALL_RADIUS > C.WORLD_MAX_Y - 40) { b.y = C.WORLD_MAX_Y - 40 - C.BALL_RADIUS; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      for (const slope of [this.SLOPE_L, this.SLOPE_R]) {
+      if (b.y + C.BALL_RADIUS > camTop - 40) { b.y = camTop - 40 - C.BALL_RADIUS; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
+      for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
         const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, slope);
         if (res) { [b.x, b.y, b.vx, b.vy] = res; wallSoundNeeded = true; break; }
       }
@@ -264,7 +286,7 @@ export class Game {
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
 
-    if (b.y < C.FALLOFF_Y) this.onBallLost();
+    if (b.y < this.camera.y + C.FALLOFF_Y) this.onBallLost();
     b.recordTrail();
   }
 
@@ -328,6 +350,7 @@ export class Game {
 
   private render() {
     const shake = this.juice.getShake();
+    this.renderer.updateProjection(this.camera.y);
     this.renderer.clear(0.35, 0.65, 0.28);
 
     let n = 0;
@@ -373,15 +396,15 @@ export class Game {
     gf(loLow, rvTop, zvR, zvG, zvB);
     gf(rvLow, C.WORLD_MIN_Y, zsR, zsG, zsB);
 
-    const { cx: lcx, cy: lcy, hw: lhw, hh: lhh, angle: la } = this.SLOPE_L;
-    writeInst(buf, n++, lcx, lcy, lhw*2, lhh*2, 0.38, 0.58, 0.30, 1, la);
-    writeInst(buf, n++, lcx, lcy - lhh - 0.5, lhw*2, 2, 0.85, 0.85, 0.85, 0.5, la);
-    const { cx: rcx, cy: rcy, hw: rhw, hh: rhh, angle: ra } = this.SLOPE_R;
-    writeInst(buf, n++, rcx, rcy, rhw*2, rhh*2, 0.38, 0.58, 0.30, 1, ra);
-    writeInst(buf, n++, rcx, rcy - rhh - 0.5, rhw*2, 2, 0.85, 0.85, 0.85, 0.5, ra);
+    const sL = this.getSlopeL(), sR = this.getSlopeR();
+    writeInst(buf, n++, sL.cx, sL.cy, sL.hw*2, sL.hh*2, 0.38, 0.58, 0.30, 1, sL.angle);
+    writeInst(buf, n++, sL.cx, sL.cy - sL.hh - 0.5, sL.hw*2, 2, 0.85, 0.85, 0.85, 0.5, sL.angle);
+    writeInst(buf, n++, sR.cx, sR.cy, sR.hw*2, sR.hh*2, 0.38, 0.58, 0.30, 1, sR.angle);
+    writeInst(buf, n++, sR.cx, sR.cy - sR.hh - 0.5, sR.hw*2, 2, 0.85, 0.85, 0.85, 0.5, sR.angle);
 
-    writeInst(buf, n++, -C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
-    writeInst(buf, n++,  C.FLIPPER_PIVOT_X, C.FLIPPER_PIVOT_Y - 20, 6, 40, 0.4, 0.4, 0.55, 1);
+    const pivY = this.camera.y + C.FLIPPER_PIVOT_Y;
+    writeInst(buf, n++, -C.FLIPPER_PIVOT_X, pivY - 20, 6, 40, 0.4, 0.4, 0.55, 1);
+    writeInst(buf, n++,  C.FLIPPER_PIVOT_X, pivY - 20, 6, 40, 0.4, 0.4, 0.55, 1);
 
     const [rr,rg,rb] = C.ROAD_COLOR;
     const [sr,sg,sb] = C.SIDEWALK_COLOR;
@@ -432,10 +455,12 @@ export class Game {
       }
     }
 
-    writeInst(buf, n++, C.WORLD_MIN_X + 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
-    writeInst(buf, n++, C.WORLD_MAX_X - 2, 0, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
-    writeInst(buf, n++, 0, C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
+    // 側壁・上部ガイド: カメラ追従（スクリーン固定）
+    const cy = this.camera.y;
+    writeInst(buf, n++, C.WORLD_MIN_X + 2, cy, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, C.WORLD_MAX_X - 2, cy, 4, C.WORLD_MAX_Y * 2, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, 0, cy + C.WORLD_MAX_Y - 42, W, 4, WC, WC, WC+0.05, 1);
+    writeInst(buf, n++, 0, cy + C.WORLD_MAX_Y - 82, W, 2, 0.1, 0.1, 0.2, 0.5);
     return n - start;
   }
 
