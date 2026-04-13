@@ -49,13 +49,8 @@ export const INITIAL_CITY_PATTERN: RoadPattern = {
     { gridLine: 3, startCell: 1, endCell: 3, cls: 'street' },
   ],
   cells: [
-    // ROW 0 (下段 - 住宅街、RIVER と LOWER の間): 2 scenes/cell で密に
-    [
-      ['house_trio_garden', 'konbini_corner'],
-      ['ramen_izakaya', 'florist_bakery'],
-      ['house_konbini', 'cafe_bookstore'],
-      ['house_garage', 'garden_shed'],
-    ],
+    // ROW 0 (下段 - 住宅街、RIVER と LOWER の間): 1 cell = 1 街区
+    [ 'house_trio_garden', 'ramen_izakaya', 'house_konbini', 'house_garage' ],
     // ROW 1 (中段 - 商業+宗教、LOWER と MAIN の間)
     [ 'shop_parasol_row', 'shrine_complex', 'temple_garden', 'clinic_daycare' ],
     // ROW 2 (上段 - ランドマーク、MAIN と HILLTOP の間): 駅 / 百貨店 (2-cell) / 病院
