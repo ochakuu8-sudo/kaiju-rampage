@@ -145,7 +145,7 @@ export function placeScene(
 ): ScenePlacement {
   const buildings: BuildingDef[] = scene.buildings.map(b => ({
     x: leftX + b.dx,
-    y: baseY,
+    y: baseY + (b.dy ?? 0),
     size: b.size,
     blockIdx,
   }));
