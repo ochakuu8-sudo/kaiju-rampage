@@ -172,7 +172,7 @@ export class Game {
     this.buildings.update(dt);
     this.furniture.update(dt);
     this.vehicles.update(dt);
-    this.humans.update(dt, this.ball.x, this.ball.y);
+    this.humans.update(dt, this.ball.x, this.ball.y, this.camera.y);
     this.particles.update(dt);
     this.updateChunks();
 

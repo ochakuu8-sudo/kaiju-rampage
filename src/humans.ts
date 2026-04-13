@@ -141,9 +141,19 @@ export class HumanManager {
     this.activeCount = this._countActive();
   }
 
-  update(dt: number, ballX: number, ballY: number) {
+  update(dt: number, ballX: number, ballY: number, cameraY: number) {
+    // カメラ相対の行動範囲 (無限スクロール対応)
+    const camBottom = cameraY + C.WORLD_MIN_Y;
+    const camTop    = cameraY + C.WORLD_MAX_Y;
+
     for (let i = 0; i < C.MAX_HUMANS; i++) {
       if (this.state[i] !== ST_RUNNING) continue;
+
+      // カメラ下端を大きく下回った人間は画面外なので非活性化
+      if (this.py[i] < camBottom - 60) {
+        this.state[i] = ST_INACTIVE;
+        continue;
+      }
 
       // 吹き飛ばしフェーズ: 放射状に飛散して減速
       if (this.blastTimer[i] > 0) {
@@ -153,8 +163,8 @@ export class HumanManager {
         this.vy[i] *= damp;
         this.px[i] += this.vx[i] * dt;
         this.py[i] += this.vy[i] * dt;
+        // X のみ世界端でクランプ（Y はビル位置に依存するため固定しない）
         this.px[i] = Math.max(C.WORLD_MIN_X + 4, Math.min(C.WORLD_MAX_X - 4, this.px[i]));
-        this.py[i] = Math.max(C.HUMAN_Y_MIN, Math.min(C.HUMAN_Y_MAX, this.py[i]));
         if (this.blastTimer[i] <= 0) {
           // blast終了後: 自由移動開始。道路エリアに入ったら出られなくなる
           this.mode[i] = MODE_FREE;
@@ -206,8 +216,8 @@ export class HumanManager {
             }
           }
         }
-        // 全体Y境界クランプ
-        this.py[i] = Math.max(C.HUMAN_Y_MIN + C.HUMAN_H, Math.min(C.HUMAN_Y_MAX - C.HUMAN_H, this.py[i]));
+        // 全体Y境界クランプ (カメラ相対)
+        this.py[i] = Math.max(camBottom + C.HUMAN_H, Math.min(camTop + 100, this.py[i]));
 
       } else if (cm === MODE_HORIZ) {
         // 道路エリア: Y方向の境界で速度反発（エリア外に出られない）
@@ -242,7 +252,7 @@ export class HumanManager {
             break;
           }
         }
-        this.py[i] = Math.max(C.HUMAN_Y_MIN + C.HUMAN_H, Math.min(C.HUMAN_Y_MAX - C.HUMAN_H, this.py[i]));
+        this.py[i] = Math.max(camBottom + C.HUMAN_H, Math.min(camTop + 100, this.py[i]));
       }
 
       // X方向: 画面端で逃走完了 → INACTIVE
