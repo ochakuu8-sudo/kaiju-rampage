@@ -29,25 +29,32 @@ export class ParticleManager {
   rotV: Float32Array = new Float32Array(C.MAX_PARTICLES);
   state: Uint8Array = new Uint8Array(C.MAX_PARTICLES);
 
-  private head = 0; // 次のスロット検索開始位置
+  // アクティブリスト + フリースタック
+  private activeIndices: Uint16Array = new Uint16Array(C.MAX_PARTICLES);
+  private activeLen = 0;
+  private freeStack: Uint16Array = (() => {
+    const a = new Uint16Array(C.MAX_PARTICLES);
+    for (let i = 0; i < C.MAX_PARTICLES; i++) a[i] = C.MAX_PARTICLES - 1 - i;
+    return a;
+  })();
+  private freeLen = C.MAX_PARTICLES;
 
   reset() {
     this.state.fill(ST_DEAD);
+    this.activeLen = 0;
+    this.freeLen = C.MAX_PARTICLES;
+    for (let i = 0; i < C.MAX_PARTICLES; i++) this.freeStack[i] = C.MAX_PARTICLES - 1 - i;
   }
 
   private alloc(): number {
-    // 循環探索でデッドスロットを再利用
-    for (let tries = 0; tries < C.MAX_PARTICLES; tries++) {
-      const i = (this.head + tries) % C.MAX_PARTICLES;
-      if (this.state[i] === ST_DEAD) {
-        this.head = (i + 1) % C.MAX_PARTICLES;
-        return i;
-      }
+    if (this.freeLen > 0) {
+      return this.freeStack[--this.freeLen];
     }
-    // 満杯の場合は強制上書き
-    const i = this.head;
-    this.head = (this.head + 1) % C.MAX_PARTICLES;
-    return i;
+    // 満杯: activeIndices の先頭を強制解放
+    const evict = this.activeIndices[0];
+    this.activeIndices[0] = this.activeIndices[--this.activeLen];
+    this.state[evict] = ST_DEAD;
+    return evict;
   }
 
   private emit(
@@ -60,6 +67,7 @@ export class ParticleManager {
   ) {
     const i = this.alloc();
     this.state[i] = ST_ALIVE;
+    this.activeIndices[this.activeLen++] = i;
     this.px[i]    = x;
     this.py[i]    = y;
     this.vx[i]    = vx;
@@ -334,24 +342,32 @@ export class ParticleManager {
   }
 
   update(dt: number) {
-    for (let i = 0; i < C.MAX_PARTICLES; i++) {
-      if (this.state[i] === ST_DEAD) continue;
+    for (let k = 0; k < this.activeLen; k++) {
+      const i = this.activeIndices[k];
       this.life[i] -= dt;
-      if (this.life[i] <= 0) { this.state[i] = ST_DEAD; continue; }
-      if (this.gravity[i]) this.vy[i] -= 180 * dt; // 重力
+      if (this.life[i] <= 0) {
+        this.state[i] = ST_DEAD;
+        this.freeStack[this.freeLen++] = i;
+        this.activeIndices[k] = this.activeIndices[--this.activeLen];
+        k--;
+        continue;
+      }
+      if (this.gravity[i]) this.vy[i] -= 180 * dt;
       this.px[i] += this.vx[i] * dt;
       this.py[i] += this.vy[i] * dt;
       this.rot[i] += this.rotV[i] * dt;
-      // 減速
       this.vx[i] *= 1 - dt * 1.5;
       this.vy[i] *= 1 - dt * 0.8;
     }
   }
 
-  fillInstances(buf: Float32Array, startIdx: number): number {
+  fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
-    for (let i = 0; i < C.MAX_PARTICLES; i++) {
-      if (this.state[i] === ST_DEAD) continue;
+    const camBot = cameraY + C.WORLD_MIN_Y - 50;
+    const camTop = cameraY + C.WORLD_MAX_Y + 50;
+    for (let k = 0; k < this.activeLen; k++) {
+      const i = this.activeIndices[k];
+      if (this.py[i] < camBot || this.py[i] > camTop) continue;
       const t = this.life[i] / this.maxLife[i]; // 1→0
       let alpha: number;
       let sz: number;

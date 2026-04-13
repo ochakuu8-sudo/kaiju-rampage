@@ -56,6 +56,8 @@ export class HumanManager {
   blastTimer: Float32Array = new Float32Array(C.MAX_HUMANS); // 吹き飛ばしフェーズ残り時間
 
   activeCount = 0;
+  activeIndices: Uint16Array = new Uint16Array(C.MAX_HUMANS);
+  activeLen = 0;
 
   // 動的道路リスト (チャンクシステムで更新)
   private hRoads: Array<{ y: number; tol: number }> = [...INITIAL_H_ROADS];
@@ -74,6 +76,7 @@ export class HumanManager {
 
   reset() {
     this.state.fill(ST_INACTIVE);
+    this.activeLen = 0;
     this.activeCount = 0;
   }
 
@@ -83,12 +86,10 @@ export class HumanManager {
     for (let i = 0; i < C.MAX_HUMANS && spawned < n; i++) {
       if (this.state[i] !== ST_INACTIVE) continue;
       this.state[i] = ST_RUNNING;
+      this.activeIndices[this.activeLen++] = i;
 
-      // スポーン位置: 建物崩壊地点付近 → 近くの道路にスナップ
       let spawnX = cx + rand(-15, 15);
       let spawnY = cy + rand(-5, 5);
-
-      // 最寄り道路にスナップして道路上から逃げる
       let bestDist = Infinity;
       let bestY = spawnY;
       for (const r of this.hRoads) {
@@ -101,7 +102,7 @@ export class HumanManager {
       this.py[i]    = spawnY;
       const spd     = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
       this.speed[i] = spd;
-      this.mode[i]  = MODE_HORIZ; // 最初は横道路を逃げる
+      this.mode[i]  = MODE_HORIZ;
       this.vx[i]    = (Math.random() > 0.5 ? 1 : -1) * spd;
       this.vy[i]    = rand(-5, 5);
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
@@ -109,19 +110,18 @@ export class HumanManager {
       this.colorIdx[i] = Math.floor(Math.random() * HUMAN_PALETTE.length);
       spawned++;
     }
-    this.activeCount = this._countActive();
+    this.activeCount = this.activeLen;
   }
 
   /** 建物破壊時: 中心から円状に吹き飛ばしてから逃走
    *  人数が多いほど散布円が大きくなる (radius ∝ √n) */
   spawnBlast(cx: number, cy: number, n: number) {
-    // 散布半径: √n × 6  (5人≈13px, 50人≈42px, 300人≈104px)
     const blastR = Math.sqrt(n) * 6;
     let spawned = 0;
     for (let i = 0; i < C.MAX_HUMANS && spawned < n; i++) {
       if (this.state[i] !== ST_INACTIVE) continue;
       this.state[i]      = ST_RUNNING;
-      // 初期位置: 中心から blastR 半径の円内にランダム配置
+      this.activeIndices[this.activeLen++] = i;
       const initAngle    = Math.random() * Math.PI * 2;
       const initR        = Math.random() * blastR;
       this.px[i]         = cx + Math.cos(initAngle) * initR;
@@ -131,14 +131,14 @@ export class HumanManager {
       this.vx[i]         = Math.cos(angle) * spd;
       this.vy[i]         = Math.sin(angle) * spd;
       this.speed[i]      = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
-      this.mode[i]       = MODE_HORIZ; // blast中はプレースホルダー。終了後にスナップ
+      this.mode[i]       = MODE_HORIZ;
       this.blastTimer[i] = rand(0.30, 0.55);
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
       this.colorIdx[i]   = Math.floor(Math.random() * HUMAN_PALETTE.length);
       spawned++;
     }
-    this.activeCount = this._countActive();
+    this.activeCount = this.activeLen;
   }
 
   update(dt: number, ballX: number, ballY: number, cameraY: number) {
@@ -146,12 +146,14 @@ export class HumanManager {
     const camBottom = cameraY + C.WORLD_MIN_Y;
     const camTop    = cameraY + C.WORLD_MAX_Y;
 
-    for (let i = 0; i < C.MAX_HUMANS; i++) {
-      if (this.state[i] !== ST_RUNNING) continue;
+    for (let k = 0; k < this.activeLen; k++) {
+      const i = this.activeIndices[k];
 
-      // カメラ下端を大きく下回った人間は画面外なので非活性化
+      // カメラ下端を大きく下回った人間は非活性化
       if (this.py[i] < camBottom - 60) {
         this.state[i] = ST_INACTIVE;
+        this.activeIndices[k] = this.activeIndices[--this.activeLen];
+        k--;
         continue;
       }
 
@@ -254,6 +256,9 @@ export class HumanManager {
       // X方向: 画面端で逃走完了 → INACTIVE
       if (this.px[i] < C.WORLD_MIN_X + 5 || this.px[i] > C.WORLD_MAX_X - 5) {
         this.state[i] = ST_INACTIVE;
+        this.activeIndices[k] = this.activeIndices[--this.activeLen];
+        k--;
+        continue;
       }
 
       // 潰れアニメ回復
@@ -261,7 +266,7 @@ export class HumanManager {
         this.scaleX[i] = Math.min(1, this.scaleX[i] + dt * 12);
       }
     }
-    this.activeCount = this._countActive();
+    this.activeCount = this.activeLen;
   }
 
   private _findRoad(py: number): { y: number; tol: number } | null {
@@ -312,8 +317,8 @@ export class HumanManager {
 
   checkCrush(ballX: number, ballY: number, ballR: number): number[] {
     const crushed: number[] = [];
-    for (let i = 0; i < C.MAX_HUMANS; i++) {
-      if (this.state[i] !== ST_RUNNING) continue;
+    for (let k = 0; k < this.activeLen; k++) {
+      const i = this.activeIndices[k];
       const hx = this.px[i] - C.HUMAN_W / 2;
       const hy = this.py[i] - C.HUMAN_H / 2;
       const nearX = Math.max(hx, Math.min(ballX, hx + C.HUMAN_W));
@@ -323,6 +328,8 @@ export class HumanManager {
         this.state[i]  = ST_INACTIVE;
         this.scaleX[i] = 0.15;
         crushed.push(i);
+        this.activeIndices[k] = this.activeIndices[--this.activeLen];
+        k--;
       }
     }
     return crushed;
@@ -332,27 +339,25 @@ export class HumanManager {
     return [this.px[i], this.py[i]];
   }
 
-  fillInstances(buf: Float32Array, startIdx: number): number {
+  fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
-    for (let i = 0; i < C.MAX_HUMANS; i++) {
-      if (this.state[i] !== ST_RUNNING) continue;
+    const camBot = cameraY + C.WORLD_MIN_Y - 50;
+    const camTop = cameraY + C.WORLD_MAX_Y + 50;
+    for (let k = 0; k < this.activeLen; k++) {
+      const i = this.activeIndices[k];
+      const py = this.py[i];
+      if (py < camBot || py > camTop) continue;
       const sx = C.HUMAN_W * this.scaleX[i];
       const sy = C.HUMAN_H * (2 - this.scaleX[i]);
-      const px = this.px[i], py = this.py[i];
+      const px = this.px[i];
       const [cr, cg, cb] = HUMAN_PALETTE[this.colorIdx[i]];
-      // 胴体（シャツ色・矩形）
       writeInst(buf, n++, px, py - sy * 0.15, sx, sy * 0.6, cr, cg, cb, 1, 0, 0);
-      // 頭（肌色・円）
       writeInst(buf, n++, px, py + sy * 0.30, sx, sx, 0.95, 0.75, 0.55, 1, 0, 1);
     }
     return n - startIdx;
   }
 
   private _countActive(): number {
-    let c = 0;
-    for (let i = 0; i < C.MAX_HUMANS; i++) {
-      if (this.state[i] === ST_RUNNING) c++;
-    }
-    return c;
+    return this.activeLen;
   }
 }

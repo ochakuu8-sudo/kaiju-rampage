@@ -186,6 +186,7 @@ export interface BuildingData {
   flashTimer: number;
   baseColor: readonly [number,number,number];
   size: C.BuildingSize;
+  chunkKey: number;  // -1=初期都市, >=0=チャンクID
   // ウェーブシステム拡張
   rubbleTimer: number;  // > 0 かつ active=false: 瓦礫を描画
   spawnTimer: number;   // > 0: スポーンアニメーション進行中
@@ -195,9 +196,12 @@ export interface BuildingData {
 
 export class BuildingManager {
   buildings: BuildingData[] = [];
+  private chunkMap: Map<number, BuildingData[]> = new Map();
 
   load(defs: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx?: number }>) {
     this.buildings = [];
+    this.chunkMap.clear();
+    this.chunkMap.set(-1, []);
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
       // ファサード色: 種類別パレットからハッシュで選択
@@ -233,12 +237,17 @@ export class BuildingManager {
         generation: 0,
         baseColor,
         size: d.size,
+        chunkKey: -1,
       });
+      this.chunkMap.get(-1)!.push(this.buildings[this.buildings.length - 1]);
     }
   }
 
-  /** チャンクの建物を追加ロード (chunkId = blockIdx として使用) */
+  /** チャンクの建物を追加ロード (blockIdx = chunkId) */
   loadChunk(defs: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx?: number }>) {
+    const chunkId = defs.length > 0 ? (defs[0].blockIdx ?? -1) : -1;
+    if (!this.chunkMap.has(chunkId)) this.chunkMap.set(chunkId, []);
+    const bucket = this.chunkMap.get(chunkId)!;
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
       let palette: ReadonlyArray<readonly [number,number,number]>;
@@ -252,7 +261,7 @@ export class BuildingManager {
         palette = FACADE_OFFICE;
       }
       const pi = Math.abs(Math.floor(d.x * 7 + d.y * 13)) % palette.length;
-      this.buildings.push({
+      const b: BuildingData = {
         x: d.x - def.w / 2,
         y: d.y,
         w: def.w, h: def.h,
@@ -270,13 +279,17 @@ export class BuildingManager {
         generation: 0,
         baseColor: palette[pi],
         size: d.size,
-      });
+        chunkKey: chunkId,
+      };
+      this.buildings.push(b);
+      bucket.push(b);
     }
   }
 
   /** チャンクの建物を一括削除 */
   unloadChunk(chunkId: number) {
     this.buildings = this.buildings.filter(b => b.blockIdx !== chunkId);
+    this.chunkMap.delete(chunkId);
   }
 
   allDestroyed(): boolean {
@@ -317,6 +330,7 @@ export class BuildingManager {
       generation,
       baseColor,
       size,
+      chunkKey: -1,  // 再建は常に初期都市バケット
     };
 
     // 非アクティブ & 瓦礫なしのスロットを再利用
@@ -326,6 +340,9 @@ export class BuildingManager {
     } else {
       this.buildings.push(newBld);
     }
+    // chunkMap に追加
+    if (!this.chunkMap.has(-1)) this.chunkMap.set(-1, []);
+    this.chunkMap.get(-1)!.push(newBld);
   }
 
   update(dt: number) {
@@ -348,11 +365,23 @@ export class BuildingManager {
     bx: number, by: number, br: number,
     vx: number, vy: number
   ): { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null {
-    for (const b of this.buildings) {
-      if (!b.active || b.destroyTimer > 0) continue;
-      const res = resolveCircleAABB(bx, by, br, vx, vy, b.x, b.y, b.w, b.h);
-      if (res) {
-        return { bld: b, newBx: res[0], newBy: res[1], newVx: res[2], newVy: res[3] };
+    // ボールが初期都市内かチャンク内かでバケットを絞る
+    const keysToCheck: number[] = [];
+    if (by < C.WORLD_MAX_Y) {
+      keysToCheck.push(-1);
+    } else {
+      const ballChunk = Math.floor((by - C.WORLD_MAX_Y) / C.CHUNK_HEIGHT);
+      keysToCheck.push(ballChunk - 1, ballChunk, ballChunk + 1);
+    }
+    for (const key of keysToCheck) {
+      const list = this.chunkMap.get(key);
+      if (!list) continue;
+      for (const b of list) {
+        if (!b.active || b.destroyTimer > 0) continue;
+        const res = resolveCircleAABB(bx, by, br, vx, vy, b.x, b.y, b.w, b.h);
+        if (res) {
+          return { bld: b, newBx: res[0], newBy: res[1], newVx: res[2], newVy: res[3] };
+        }
       }
     }
     return null;
@@ -371,9 +400,12 @@ export class BuildingManager {
   }
 
   /** 横ビュー: 影→ファサード→種類別ディテール */
-  fillInstances(buf: Float32Array, startIdx: number): number {
+  fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
+    const camBot = cameraY + C.WORLD_MIN_Y - 100;
+    const camTop = cameraY + C.WORLD_MAX_Y + 100;
     for (const b of this.buildings) {
+      if (b.y > camTop || b.y + b.h < camBot) continue;
       // 瓦礫フェーズ: 非アクティブだが rubbleTimer > 0
       if (!b.active && b.rubbleTimer > 0) {
         const cx = b.x + b.w / 2;
@@ -734,6 +766,7 @@ export class FurnitureManager {
   checkBallHit(bx: number, by: number, br: number): FurnitureItem | null {
     for (const item of this.items) {
       if (!item.active) continue;
+      if (Math.abs(item.y - by) > 30) continue;
       const hw = FURNITURE_HW[item.type];
       const hh = FURNITURE_HH[item.type];
       // Circle vs AABB
@@ -756,10 +789,13 @@ export class FurnitureManager {
     return false;
   }
 
-  fillInstances(buf: Float32Array, startIdx: number): number {
+  fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
+    const camBot = cameraY + C.WORLD_MIN_Y - 50;
+    const camTop = cameraY + C.WORLD_MAX_Y + 50;
     for (const item of this.items) {
       if (!item.active) continue;
+      if (item.y < camBot || item.y > camTop) continue;
 
       switch (item.type) {
         case 'tree': {
@@ -877,6 +913,7 @@ export class FurnitureManager {
   checkFountainBumper(bx: number, by: number, br: number): FurnitureItem | null {
     for (const item of this.items) {
       if (!item.active || item.type !== 'fountain' || item.hp <= 0) continue;
+      if (Math.abs(item.y - by) > 30) continue;
       const hw = FURNITURE_HW[item.type];
       const hh = FURNITURE_HH[item.type];
       const nearX = Math.max(item.x - hw, Math.min(bx, item.x + hw));
@@ -1084,10 +1121,13 @@ export class VehicleManager {
     return false;
   }
 
-  fillInstances(buf: Float32Array, startIdx: number): number {
+  fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
+    const camBot = cameraY + C.WORLD_MIN_Y - 50;
+    const camTop = cameraY + C.WORLD_MAX_Y + 50;
     for (const v of this.vehicles) {
       if (!v.active) continue;
+      if (v.y < camBot || v.y > camTop) continue;
       const isFlash = v.flashTimer > 0;
       let cr: number, cg: number, cb: number;
 

@@ -194,7 +194,8 @@ export class Game {
   private updateBall(dt: number) {
     const b = this.ball;
     if (!b.active) return;
-    const SUB = 4;
+    const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+    const SUB = speed > 15 ? 4 : speed > 8 ? 2 : 1;
     const dts = dt / SUB;
     let wallSoundNeeded = false, flipperSoundNeeded = false;
     let bldResult: { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
@@ -408,17 +409,17 @@ export class Game {
     n += this.fillWalls(SHARED_BUF, n);
     n += this.fillChunkRoads(SHARED_BUF, n);
     n += this.fillAlleys(SHARED_BUF, n);      // 路地は背景の上に重ねる
-    n += this.buildings.fillInstances(SHARED_BUF, n);
-    n += this.furniture.fillInstances(SHARED_BUF, n);
-    n += this.vehicles.fillInstances(SHARED_BUF, n);
+    n += this.buildings.fillInstances(SHARED_BUF, n, this.camera.y);
+    n += this.furniture.fillInstances(SHARED_BUF, n, this.camera.y);
+    n += this.vehicles.fillInstances(SHARED_BUF, n, this.camera.y);
     n += this.fillBulbs(SHARED_BUF, n);
     this.renderer.drawInstances(SHARED_BUF, n, shake);
 
     n = 0;
-    n += this.humans.fillInstances(SHARED_BUF, n);
+    n += this.humans.fillInstances(SHARED_BUF, n, this.camera.y);
     n += this.fillFlippers(SHARED_BUF, n);
     n += this.fillBall(SHARED_BUF, n);
-    n += this.particles.fillInstances(SHARED_BUF, n);
+    n += this.particles.fillInstances(SHARED_BUF, n, this.camera.y);
     this.renderer.drawInstances(SHARED_BUF, n, shake);
 
     this.renderer.drawFlash(this.juice.flashR, this.juice.flashG, this.juice.flashB, this.juice.flashAlpha);
