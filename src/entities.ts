@@ -646,6 +646,7 @@ export interface FurnitureItem {
   // traffic light
   lightTimer: number;
   lightState: number; // 0=red, 1=yellow, 2=green
+  chunkId: number;    // -1 = static (初期配置), ≥0 = チャンク
 }
 
 // AABB half-sizes for each furniture type
@@ -692,16 +693,29 @@ export class FurnitureManager {
     this.items = [];
     for (const d of defs) {
       this.items.push({
-        type: d.type,
-        x: d.x,
-        y: d.y,
-        hp: d.hp ?? 1,
-        active: true,
-        score: d.score ?? 50,
-        lightTimer: LIGHT_DURATIONS[0],
-        lightState: 0,
+        type: d.type, x: d.x, y: d.y,
+        hp: d.hp ?? 1, active: true, score: d.score ?? 50,
+        lightTimer: LIGHT_DURATIONS[0], lightState: 0,
+        chunkId: -1,
       });
     }
+  }
+
+  /** チャンク家具を追加ロード */
+  loadChunk(chunkId: number, defs: Array<{ type: FurnitureType; x: number; y: number }>) {
+    for (const d of defs) {
+      this.items.push({
+        type: d.type, x: d.x, y: d.y,
+        hp: 1, active: true, score: 50,
+        lightTimer: LIGHT_DURATIONS[0], lightState: 0,
+        chunkId,
+      });
+    }
+  }
+
+  /** チャンク家具を一括削除 */
+  unloadChunk(chunkId: number) {
+    this.items = this.items.filter(i => i.chunkId !== chunkId);
   }
 
   update(dt: number) {

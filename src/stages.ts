@@ -116,55 +116,164 @@ export function packCity(): BuildingDef[] {
 
 // ===== チャンク生成 =====
 
-export interface ChunkData {
-  chunkId: number;
-  baseY: number;         // チャンク下端Y（ワールド座標）
-  roadY: number;         // 横道路のY中心
-  roadH: number;         // 横道路の高さ
-  buildings: BuildingDef[];
+export interface ChunkRoad {
+  y: number;    // 道路中心Y
+  h: number;    // 道路高さ
 }
 
-// ゾーンシーケンス: 3種類を繰り返す
-const ZONE_POOLS: Record<number, C.BuildingSize[]> = {
-  0: ['house', 'convenience', 'house', 'shop', 'restaurant', 'house'],     // 住宅
-  1: ['shop', 'apartment', 'restaurant', 'parking', 'temple', 'shop'],     // 商業
-  2: ['office', 'tower', 'skyscraper', 'hospital', 'school', 'office'],    // オフィス
+export interface ChunkData {
+  chunkId: number;
+  baseY: number;            // チャンク下端Y（ワールド座標）
+  roads: ChunkRoad[];       // 2本の横道路
+  buildings: BuildingDef[];
+  furniture: FurnitureDef[];
+}
+
+// ===== ゾーン別建物プール =====
+// 各ゾーンは初期都市に合わせて3段階のプールを持つ
+interface ZoneDef {
+  bot: C.BuildingSize[];  // 下段 (max h ≤ 22)
+  mid: C.BuildingSize[];  // 中段 (max h ≤ 32)
+  top: C.BuildingSize[];  // 上段 (max h ≤ 45)
+}
+
+const ZONES: ZoneDef[] = [
+  // Zone 0: 住宅街 (初期都市の下部ゾーンに対応)
+  {
+    bot: ['house', 'convenience', 'house', 'house'],
+    mid: ['house', 'shop', 'restaurant', 'convenience', 'house'],
+    top: ['apartment', 'shop', 'temple', 'parking'],
+  },
+  // Zone 1: 商業区 (初期都市の中部ゾーンに対応)
+  {
+    bot: ['convenience', 'house', 'shop'],
+    mid: ['shop', 'restaurant', 'apartment', 'parking', 'temple'],
+    top: ['apartment', 'school', 'hospital', 'parking'],
+  },
+  // Zone 2: オフィス街 (初期都市の上部ゾーンに対応)
+  {
+    bot: ['house', 'convenience'],
+    mid: ['apartment', 'office', 'parking', 'shop'],
+    top: ['office', 'tower', 'skyscraper', 'hospital', 'school'],
+  },
+];
+
+// 歩道家具のプール (ゾーン別)
+const SIDEWALK_FURNITURE: Record<number, Array<FurnitureType>> = {
+  0: ['tree', 'tree', 'bench', 'tree', 'power_pole', 'flower_bed', 'bench', 'tree'],
+  1: ['sign_board', 'vending', 'garbage', 'bench', 'traffic_light', 'parasol', 'vending', 'sign_board'],
+  2: ['power_pole', 'vending', 'bench', 'garbage', 'sign_board', 'bench', 'vending'],
 };
 
-const ZONE_ROW_HEIGHTS: Record<number, number[]> = {
-  0: [30, 50],   // 住宅: 家は小さいので2行
-  1: [40, 65],   // 商業: 中程度 2行
-  2: [60],       // オフィス: 高いので1行のみ
-};
+/** 歩道に沿って家具を均等配置する */
+function generateSidewalkFurniture(
+  roadY: number, zoneType: number, chunkId: number
+): FurnitureDef[] {
+  const items: FurnitureDef[] = [];
+  const swY = roadY + 9; // 上側歩道センター Y
+  const pool = SIDEWALK_FURNITURE[zoneType];
+  const xMin = -168, xMax = 168;
+  const gap = 22 + Math.floor(Math.random() * 8); // 22〜30px間隔
 
-/** 1チャンク分の建物を生成する */
-export function generateChunk(chunkId: number): ChunkData {
-  const baseY  = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT; // 初期画面上端から積み上げ
-  const roadH  = 14;
-  const roadY  = baseY + 40; // 道路: チャンク下から40px上
-  const zoneType = chunkId % 3;
-  const pool     = ZONE_POOLS[zoneType];
-  const rowOffsets = ZONE_ROW_HEIGHTS[zoneType]; // 道路上端からの建物baseYオフセット
+  let x = xMin;
+  let pi = Math.floor(Math.random() * pool.length);
+  while (x < xMax) {
+    // 路地付近はスキップ
+    const nearAlley = Math.abs(x - C.ALLEY_1_X) < 14 || Math.abs(x - C.ALLEY_2_X) < 14;
+    if (!nearAlley) {
+      const type: FurnitureType = pool[pi % pool.length];
+      items.push({ type, x, y: swY });
+      pi++;
+    }
+    x += gap + Math.floor(Math.random() * 6);
+  }
+  return items;
+}
 
-  const buildings: BuildingDef[] = [];
-  const roadTop = roadY + roadH / 2 + 4; // 道路上端 + マージン
-
-  for (const rowOff of rowOffsets) {
-    const bBaseY = roadTop + rowOff;
-    // 3列に建物をパッキング
-    for (const col of COLS) {
-      let x = col.xMin + 4;
-      while (x < col.xMax - 4) {
-        const size = pool[Math.floor(Math.random() * pool.length)];
-        const w = C.BUILDING_DEFS[size].w;
-        if (x + w > col.xMax - 4) break;
-        buildings.push({ x: x + w / 2, y: bBaseY, size, blockIdx: chunkId });
-        x += w + 2 + Math.floor(Math.random() * 3);
-      }
+/** 1ブロック分の建物をパッキングする */
+function packRow(baseY: number, pool: C.BuildingSize[], maxH: number, chunkId: number): BuildingDef[] {
+  const defs: BuildingDef[] = [];
+  const margin = 4;
+  for (const col of COLS) {
+    let x = col.xMin + margin;
+    while (x < col.xMax - margin) {
+      // maxH 以下の建物のみ選ぶ
+      const candidates = pool.filter(s => C.BUILDING_DEFS[s].h <= maxH);
+      if (candidates.length === 0) break;
+      const size = candidates[Math.floor(Math.random() * candidates.length)];
+      const w = C.BUILDING_DEFS[size].w;
+      if (x + w > col.xMax - margin) break;
+      defs.push({ x: x + w / 2, y: baseY, size, blockIdx: chunkId });
+      x += w + 2 + Math.floor(Math.random() * 3);
     }
   }
+  return defs;
+}
 
-  return { chunkId, baseY, roadY, roadH, buildings };
+/** 1チャンク（200px）分のコンテンツを生成する
+ *
+ *  チャンク内レイアウト（初期都市の100px道路間隔に合わせる）:
+ *
+ *   baseY+200: [次チャンク下端]
+ *     [TOP行: 大型ビル 1列]
+ *   Road B  (baseY+135, h=14)
+ *     [MID行: 中型建物 2列]
+ *   Road A  (baseY+35,  h=14)
+ *     [BOT行: 小型建物 1列] ※スペース充分な場合のみ
+ *   baseY
+ */
+export function generateChunk(chunkId: number): ChunkData {
+  const baseY    = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
+  const roadAH   = 14, roadBH = 14;
+  const roadAY   = baseY + 35;
+  const roadBY   = baseY + 135;
+
+  // 道路の有効端 (sidewalk込み)
+  const swH      = C.SIDEWALK_H;
+  const aSwTop   = roadAY + roadAH / 2 + swH; // = baseY + 46
+  const aSwBot   = roadAY - roadAH / 2 - swH; // = baseY + 24
+  const bSwTop   = roadBY + roadBH / 2 + swH; // = baseY + 146
+  const bSwBot   = roadBY - roadBH / 2 - swH; // = baseY + 124
+
+  const zoneType  = chunkId % 3;
+  const zone      = ZONES[zoneType];
+  const buildings: BuildingDef[] = [];
+  const furniture: FurnitureDef[] = [];
+
+  // ─── 下段: roadA下 (初期都市の最下段に対応) ───────────────────
+  // Space: baseY → aSwBot (+24). 24px = house(h=20) が入る
+  if (aSwBot - baseY >= 20) {
+    buildings.push(...packRow(baseY + 4, zone.bot, 18, chunkId));
+  }
+
+  // ─── 中段: roadAとroadBの間 ────────────────────────────────────
+  // 78px スペース (aSwTop+46 → bSwBot+124) = 78px
+  // 初期都市の中段(LOWER↔MAIN)に対応: 2〜3行
+  const mid1Base = aSwTop + 12;  // = baseY + 58
+  const mid2Base = aSwTop + 40;  // = baseY + 86
+  const mid3Base = aSwTop + 64;  // = baseY + 110 (住宅のみ)
+  buildings.push(...packRow(mid1Base, zone.bot,  22, chunkId));
+  buildings.push(...packRow(mid2Base, zone.mid,  32, chunkId));
+  if (zoneType === 0) {
+    // 住宅街: 3行目も追加（初期都市下段の3行に対応）
+    buildings.push(...packRow(mid3Base, zone.bot, 20, chunkId));
+  }
+
+  // ─── 上段: roadB上 (初期都市の上段・ビル列に対応) ────────────────
+  // baseY+162 は初期都市の ZONE_TOP_Y0 と同じオフセット
+  const topBase = bSwTop + 16; // = baseY + 162
+  buildings.push(...packRow(topBase, zone.top, 90, chunkId)); // maxH=90 allows skyscrapers
+
+  // ─── 歩道家具 ─────────────────────────────────────────────────
+  furniture.push(...generateSidewalkFurniture(roadAY, zoneType, chunkId));
+  furniture.push(...generateSidewalkFurniture(roadBY, zoneType, chunkId));
+
+  return {
+    chunkId, baseY,
+    roads: [{ y: roadAY, h: roadAH }, { y: roadBY, h: roadBH }],
+    buildings,
+    furniture,
+  };
 }
 
 // ===== ウェーブ進行 =====

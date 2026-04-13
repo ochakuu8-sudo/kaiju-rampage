@@ -365,12 +365,16 @@ export class Game {
     if (this.loadedChunks.has(chunkId)) return;
     const chunk = generateChunk(chunkId);
     this.buildings.loadChunk(chunk.buildings);
-    this.humans.addRoad(chunk.roadY, chunk.roadH / 2 + 2);
+    this.furniture.loadChunk(chunkId, chunk.furniture);
+    for (const road of chunk.roads) {
+      this.humans.addRoad(road.y, road.h / 2 + 2);
+    }
     this.loadedChunks.set(chunkId, chunk);
   }
 
   private _despawnChunk(chunkId: number) {
     this.buildings.unloadChunk(chunkId);
+    this.furniture.unloadChunk(chunkId);
     this.humans.removeRoadsBelow(this.camera.bottom - C.CHUNK_DESPAWN_BEHIND);
     this.loadedChunks.delete(chunkId);
   }
@@ -532,21 +536,22 @@ export class Game {
     ];
 
     for (const chunk of this.loadedChunks.values()) {
-      const { baseY, roadY, roadH, chunkId } = chunk;
+      const { baseY, chunkId } = chunk;
       const [bgR, bgG, bgB] = zoneBg[chunkId % 3];
-      const bgH  = C.CHUNK_HEIGHT;
-      const bgCY = baseY + bgH / 2;
       // チャンク背景
-      writeInst(buf, n++, 0, bgCY, W, bgH, bgR, bgG, bgB, 1);
-      // 道路
-      const swTop = roadY + roadH / 2 + swH / 2;
-      const swBot = roadY - roadH / 2 - swH / 2;
-      writeInst(buf, n++, 0, swTop + swH / 2 + 1.5, W, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, 0, swBot - swH / 2 - 1.5, W, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, 0, swTop, W, swH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, 0, swBot, W, swH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, 0, roadY, W, roadH, rr, rg, rb, 1);
-      writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
+      writeInst(buf, n++, 0, baseY + C.CHUNK_HEIGHT / 2, W, C.CHUNK_HEIGHT, bgR, bgG, bgB, 1);
+      // 2本の道路を描画
+      for (const road of chunk.roads) {
+        const { y: roadY, h: roadH } = road;
+        const swTop = roadY + roadH / 2 + swH / 2;
+        const swBot = roadY - roadH / 2 - swH / 2;
+        writeInst(buf, n++, 0, swTop + swH / 2 + 1.5, W, 3, plR, plG, plB, 1);
+        writeInst(buf, n++, 0, swBot - swH / 2 - 1.5, W, 3, plR, plG, plB, 1);
+        writeInst(buf, n++, 0, swTop, W, swH, sw_r, sw_g, sw_b, 1);
+        writeInst(buf, n++, 0, swBot, W, swH, sw_r, sw_g, sw_b, 1);
+        writeInst(buf, n++, 0, roadY, W, roadH, rr, rg, rb, 1);
+        writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
+      }
     }
     return n - start;
   }
