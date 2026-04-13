@@ -7,7 +7,7 @@
  */
 
 import * as C from './constants';
-import type { FurnitureType } from './entities';
+import type { FurnitureType, VehicleType } from './entities';
 import type { BuildingData } from './entities';
 
 export interface BuildingDef {
@@ -19,11 +19,33 @@ export interface BuildingDef {
 export interface BumperDef   { x: number; y: number; }
 export interface FurnitureDef { type: FurnitureType; x: number; y: number; hp?: number; score?: number; }
 export interface VehicleDef {
-  type: 'car' | 'bus' | 'truck' | 'ambulance';
+  type: VehicleType;
   lane: 'hilltop' | 'main' | 'lower' | 'riverside';
   direction: 1 | -1;
   speed: number;
   interval: number;
+}
+
+// ===== ウェイト付きプール =====
+export class WeightedPool<T> {
+  private items: T[];
+  private weights: number[];
+  private total: number;
+
+  constructor(entries: ReadonlyArray<readonly [T, number]>) {
+    this.items   = entries.map(e => e[0]);
+    this.weights = entries.map(e => e[1]);
+    this.total   = this.weights.reduce((a, b) => a + b, 0);
+  }
+
+  pick(): T {
+    let r = Math.random() * this.total;
+    for (let i = 0; i < this.items.length; i++) {
+      r -= this.weights[i];
+      if (r <= 0) return this.items[i];
+    }
+    return this.items[this.items.length - 1];
+  }
 }
 export interface StageConfig {
   level: number;
@@ -55,28 +77,34 @@ const ROWS: { baseY: number; pool: C.BuildingSize[] }[] = [
   // ===== 上段: ビル1列 (baseY=162) =====
   { baseY: C.ZONE_TOP_Y0, pool: [
     'skyscraper','tower','office','hospital','school','skyscraper',
+    'city_hall','police_station','train_station','clock_tower',
   ]},
   // ===== 中段: 店2列 =====
   // 奥列 baseY=86, 最大top≈116 (<MAIN下端120) — max h=34
   { baseY: C.ZONE_MID_Y0, pool: [
     'apartment','shop','restaurant','temple','parking','shop',
+    'supermarket','bank','library','museum','movie_theater',
   ]},
   // 手前列 baseY=52, 最大top≈82 (<奥列86) — max h=30 (apartment除外)
   { baseY: C.ZONE_MID_Y1, pool: [
     'shop','restaurant','convenience','temple','shop','restaurant',
+    'pharmacy','karaoke','pachinko','game_center','cafe','bookstore',
   ]},
   // ===== 下段: 家3列 (max h=22, 各列top<上の列base) =====
   // 奥列 baseY=-12, top≤10 (<LOWER下端14)
   { baseY: C.ZONE_BOT_Y0, pool: [
     'house','convenience','house','house','convenience','house',
+    'townhouse','daycare','clinic','bakery','florist','ramen',
   ]},
   // 中列 baseY=-36, top≤-14 (<奥列-12)
   { baseY: C.ZONE_BOT_Y1, pool: [
     'house','house','convenience','house','house','house',
+    'townhouse','shed','laundromat','izakaya',
   ]},
   // 手前列 baseY=-60, top≤-40 (<中列-36)
   { baseY: C.ZONE_BOT_Y2, pool: [
     'house','house','house','house','house','house',
+    'townhouse','garage','gas_station',
   ]},
 ];
 
@@ -134,35 +162,44 @@ export interface ChunkData {
 interface ZoneDef {
   bot: C.BuildingSize[];  // 下段 (max h ≤ 22)
   mid: C.BuildingSize[];  // 中段 (max h ≤ 32)
-  top: C.BuildingSize[];  // 上段 (max h ≤ 45)
+  top: C.BuildingSize[];  // 上段 (max h ≤ 90)
 }
 
 const ZONES: ZoneDef[] = [
-  // Zone 0: 住宅街 (初期都市の下部ゾーンに対応)
+  // Zone 0: 住宅街
   {
-    bot: ['house', 'convenience', 'house', 'house'],
-    mid: ['house', 'shop', 'restaurant', 'convenience', 'house'],
-    top: ['apartment', 'shop', 'temple', 'parking'],
+    bot: ['house', 'house', 'townhouse', 'convenience', 'shed', 'garage', 'house'],
+    mid: ['house', 'townhouse', 'shop', 'restaurant', 'convenience', 'daycare', 'clinic', 'cafe', 'bakery', 'florist', 'ramen'],
+    top: ['apartment', 'apartment_tall', 'shop', 'temple', 'shrine', 'parking', 'mansion', 'library'],
   },
-  // Zone 1: 商業区 (初期都市の中部ゾーンに対応)
+  // Zone 1: 商業区
   {
-    bot: ['convenience', 'house', 'shop'],
-    mid: ['shop', 'restaurant', 'apartment', 'parking', 'temple'],
-    top: ['apartment', 'school', 'hospital', 'parking'],
+    bot: ['convenience', 'house', 'shop', 'bakery', 'florist', 'laundromat'],
+    mid: ['shop', 'restaurant', 'apartment', 'parking', 'temple', 'cafe', 'pharmacy', 'bookstore',
+          'karaoke', 'izakaya', 'game_center', 'ramen', 'pachinko'],
+    top: ['apartment', 'apartment_tall', 'school', 'hospital', 'parking', 'supermarket',
+          'bank', 'post_office', 'movie_theater', 'museum', 'fire_station', 'police_station'],
   },
-  // Zone 2: オフィス街 (初期都市の上部ゾーンに対応)
+  // Zone 2: オフィス街・ランドマーク
   {
-    bot: ['house', 'convenience'],
-    mid: ['apartment', 'office', 'parking', 'shop'],
-    top: ['office', 'tower', 'skyscraper', 'hospital', 'school'],
+    bot: ['house', 'convenience', 'gas_station', 'shed'],
+    mid: ['apartment', 'office', 'parking', 'shop', 'bank', 'pharmacy', 'post_office'],
+    top: ['office', 'tower', 'skyscraper', 'hospital', 'school', 'apartment_tall',
+          'city_hall', 'train_station', 'clock_tower', 'radio_tower',
+          'ferris_wheel', 'stadium', 'water_tower'],
   },
 ];
 
 // 歩道家具のプール (ゾーン別)
 const SIDEWALK_FURNITURE: Record<number, Array<FurnitureType>> = {
-  0: ['tree', 'tree', 'bench', 'tree', 'power_pole', 'flower_bed', 'bench', 'tree'],
-  1: ['sign_board', 'vending', 'garbage', 'bench', 'traffic_light', 'parasol', 'vending', 'sign_board'],
-  2: ['power_pole', 'vending', 'bench', 'garbage', 'sign_board', 'bench', 'vending'],
+  0: ['tree', 'tree', 'bench', 'tree', 'power_pole', 'flower_bed', 'bench',
+      'bush', 'sakura_tree', 'planter', 'street_lamp', 'bicycle_rack'],
+  1: ['sign_board', 'vending', 'garbage', 'bench', 'traffic_light', 'parasol',
+      'vending', 'sign_board', 'atm', 'post_box', 'newspaper_stand', 'bus_stop',
+      'street_lamp', 'bollard', 'dumpster', 'recycling_bin'],
+  2: ['power_pole', 'vending', 'bench', 'garbage', 'sign_board', 'bench', 'vending',
+      'street_lamp', 'electric_box', 'fire_extinguisher', 'flag_pole', 'statue',
+      'pine_tree', 'palm_tree', 'bamboo_cluster', 'hedge'],
 };
 
 /** 歩道に沿って家具を均等配置する */
@@ -374,17 +411,24 @@ const FURNITURE: FurnitureDef[] = [
 ];
 
 const VEHICLES: VehicleDef[] = [
-  { type:'car',       lane:'hilltop',   direction:-1, speed:30,  interval:14.0 },
-  { type:'car',       lane:'main',      direction: 1, speed:60,  interval: 3.0 },
-  { type:'car',       lane:'main',      direction:-1, speed:55,  interval: 3.5 },
-  { type:'bus',       lane:'main',      direction: 1, speed:40,  interval: 7.5 },
-  { type:'truck',     lane:'main',      direction:-1, speed:35,  interval:12.0 },
-  { type:'ambulance', lane:'main',      direction: 1, speed:70,  interval:20.0 },
-  { type:'car',       lane:'lower',     direction: 1, speed:45,  interval: 4.5 },
-  { type:'car',       lane:'lower',     direction:-1, speed:42,  interval: 5.0 },
-  { type:'truck',     lane:'lower',     direction: 1, speed:30,  interval:10.0 },
-  { type:'car',       lane:'riverside', direction:-1, speed:35,  interval: 8.0 },
-  { type:'car',       lane:'riverside', direction: 1, speed:38,  interval:11.0 },
+  { type:'car',        lane:'hilltop',   direction:-1, speed:30,  interval:14.0 },
+  { type:'motorcycle', lane:'hilltop',   direction: 1, speed:55,  interval:18.0 },
+  { type:'car',        lane:'main',      direction: 1, speed:60,  interval: 3.0 },
+  { type:'car',        lane:'main',      direction:-1, speed:55,  interval: 3.5 },
+  { type:'bus',        lane:'main',      direction: 1, speed:40,  interval: 7.5 },
+  { type:'truck',      lane:'main',      direction:-1, speed:35,  interval:12.0 },
+  { type:'ambulance',  lane:'main',      direction: 1, speed:70,  interval:20.0 },
+  { type:'taxi',       lane:'main',      direction:-1, speed:58,  interval: 5.0 },
+  { type:'van',        lane:'main',      direction: 1, speed:42,  interval: 9.0 },
+  { type:'car',        lane:'lower',     direction: 1, speed:45,  interval: 4.5 },
+  { type:'car',        lane:'lower',     direction:-1, speed:42,  interval: 5.0 },
+  { type:'truck',      lane:'lower',     direction: 1, speed:30,  interval:10.0 },
+  { type:'taxi',       lane:'lower',     direction:-1, speed:50,  interval: 6.5 },
+  { type:'motorcycle', lane:'lower',     direction: 1, speed:75,  interval: 7.0 },
+  { type:'delivery',   lane:'lower',     direction:-1, speed:38,  interval:11.0 },
+  { type:'car',        lane:'riverside', direction:-1, speed:35,  interval: 8.0 },
+  { type:'car',        lane:'riverside', direction: 1, speed:38,  interval:11.0 },
+  { type:'van',        lane:'riverside', direction:-1, speed:32,  interval:13.0 },
 ];
 
 // ===== ステージ設定 =====

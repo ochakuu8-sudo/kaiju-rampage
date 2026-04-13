@@ -17,7 +17,7 @@ import type { ChunkData } from './stages';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
 
-const SHARED_BUF = new Float32Array(16000 * INST_F);
+const SHARED_BUF = new Float32Array(20000 * INST_F);
 
 type GameState = 'playing' | 'ball_lost' | 'game_over';
 

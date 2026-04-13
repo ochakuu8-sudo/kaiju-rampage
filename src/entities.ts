@@ -164,11 +164,58 @@ const FACADE_OFFICE: ReadonlyArray<readonly [number,number,number]> = [
   [0.52, 0.65, 0.75], // ガラスブルー
 ];
 const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,number,number]>> = {
-  school:   [0.85, 0.82, 0.60], // 薄黄色
-  hospital: [0.90, 0.90, 0.92], // 白
-  temple:   [0.52, 0.30, 0.20], // 暗い赤茶
-  parking:  [0.68, 0.68, 0.65], // コンクリート
+  // オリジナル
+  school:         [0.85, 0.82, 0.60],
+  hospital:       [0.90, 0.90, 0.92],
+  temple:         [0.52, 0.30, 0.20],
+  parking:        [0.68, 0.68, 0.65],
+  // 1-A 住宅系
+  mansion:        [0.92, 0.88, 0.78],
+  greenhouse:     [0.75, 0.90, 0.84],
+  daycare:        [0.92, 0.80, 0.42],
+  clinic:         [0.88, 0.92, 0.95],
+  shrine:         [0.60, 0.25, 0.20],
+  // 1-B 商業系
+  cafe:           [0.78, 0.58, 0.38],
+  bakery:         [0.90, 0.78, 0.52],
+  supermarket:    [0.62, 0.88, 0.52],
+  karaoke:        [0.82, 0.28, 0.75],
+  pachinko:       [0.88, 0.72, 0.08],
+  game_center:    [0.25, 0.52, 0.88],
+  pharmacy:       [0.88, 0.95, 0.90],
+  // 1-C 公共系
+  bank:           [0.82, 0.76, 0.62],
+  post_office:    [0.92, 0.68, 0.25],
+  library:        [0.62, 0.56, 0.48],
+  museum:         [0.80, 0.74, 0.64],
+  city_hall:      [0.85, 0.82, 0.72],
+  fire_station:   [0.80, 0.22, 0.18],
+  police_station: [0.32, 0.42, 0.70],
+  train_station:  [0.72, 0.68, 0.60],
+  movie_theater:  [0.70, 0.22, 0.55],
+  gas_station:    [0.90, 0.88, 0.20],
+  // 1-D ランドマーク
+  clock_tower:    [0.78, 0.72, 0.58],
+  radio_tower:    [0.62, 0.64, 0.68],
+  ferris_wheel:   [0.52, 0.72, 0.90],
+  stadium:        [0.64, 0.60, 0.56],
+  water_tower:    [0.68, 0.60, 0.50],
 };
+
+// 建物種別からファサードパレットを選択するヘルパー
+function getBuildingPalette(size: C.BuildingSize): ReadonlyArray<readonly [number,number,number]> {
+  if (BUILDING_TYPE_COLORS[size]) return [BUILDING_TYPE_COLORS[size]!];
+  const residential: C.BuildingSize[] = [
+    'house', 'apartment', 'apartment_tall', 'townhouse', 'mansion', 'shed', 'garage',
+  ];
+  const commercial: C.BuildingSize[] = [
+    'shop', 'convenience', 'restaurant', 'cafe', 'bakery', 'bookstore',
+    'florist', 'ramen', 'izakaya', 'laundromat',
+  ];
+  if (residential.includes(size)) return FACADE_RESIDENTIAL;
+  if (commercial.includes(size)) return FACADE_COMMERCIAL;
+  return FACADE_OFFICE;
+}
 
 export interface BuildingData {
   x: number;    // 左端
@@ -204,17 +251,7 @@ export class BuildingManager {
     this.chunkMap.set(-1, []);
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
-      // ファサード色: 種類別パレットからハッシュで選択
-      let palette: ReadonlyArray<readonly [number,number,number]>;
-      if (BUILDING_TYPE_COLORS[d.size]) {
-        palette = [BUILDING_TYPE_COLORS[d.size]!];
-      } else if (d.size === 'house' || d.size === 'apartment') {
-        palette = FACADE_RESIDENTIAL;
-      } else if (d.size === 'shop' || d.size === 'convenience' || d.size === 'restaurant') {
-        palette = FACADE_COMMERCIAL;
-      } else {
-        palette = FACADE_OFFICE;
-      }
+      const palette = getBuildingPalette(d.size);
       const pi = Math.abs(Math.floor(d.x * 7 + d.y * 13)) % palette.length;
       const baseColor = palette[pi];
       const buildW = def.w;
@@ -250,16 +287,7 @@ export class BuildingManager {
     const bucket = this.chunkMap.get(chunkId)!;
     for (const d of defs) {
       const def = C.BUILDING_DEFS[d.size];
-      let palette: ReadonlyArray<readonly [number,number,number]>;
-      if (BUILDING_TYPE_COLORS[d.size]) {
-        palette = [BUILDING_TYPE_COLORS[d.size]!];
-      } else if (d.size === 'house' || d.size === 'apartment') {
-        palette = FACADE_RESIDENTIAL;
-      } else if (d.size === 'shop' || d.size === 'convenience' || d.size === 'restaurant') {
-        palette = FACADE_COMMERCIAL;
-      } else {
-        palette = FACADE_OFFICE;
-      }
+      const palette = getBuildingPalette(d.size);
       const pi = Math.abs(Math.floor(d.x * 7 + d.y * 13)) % palette.length;
       const b: BuildingData = {
         x: d.x - def.w / 2,
@@ -299,16 +327,7 @@ export class BuildingManager {
   /** 新しい建物を追加（再建時）。非アクティブスロットを再利用 */
   addBuilding(centerX: number, baseY: number, size: C.BuildingSize, blockIdx: number, generation: number) {
     const def = C.BUILDING_DEFS[size];
-    let palette: ReadonlyArray<readonly [number,number,number]>;
-    if (BUILDING_TYPE_COLORS[size]) {
-      palette = [BUILDING_TYPE_COLORS[size]!];
-    } else if (size === 'house' || size === 'apartment') {
-      palette = FACADE_RESIDENTIAL;
-    } else if (size === 'shop' || size === 'convenience' || size === 'restaurant') {
-      palette = FACADE_COMMERCIAL;
-    } else {
-      palette = FACADE_OFFICE;
-    }
+    const palette = getBuildingPalette(size);
     const pi = Math.abs(Math.floor(centerX * 7 + baseY * 13)) % palette.length;
     const baseColor = palette[pi];
 
@@ -584,6 +603,335 @@ export class BuildingManager {
           }
           break;
         }
+        // ── 1-A 住宅系 ────────────────────────────────────────────
+        case 'townhouse': {
+          // 屋根帯（急勾配）
+          writeInst(buf, n++, cx, top - 5, bW + 2, 9, cr * 0.45, cg * 0.40, cb * 0.35, 1);
+          // 窓×2
+          writeInst(buf, n++, cx - bW * 0.22, bot + bH * 0.52, 4, 5, 0.78, 0.90, 0.96, 0.88);
+          writeInst(buf, n++, cx + bW * 0.22, bot + bH * 0.52, 4, 5, 0.78, 0.90, 0.96, 0.88);
+          // ドア
+          writeInst(buf, n++, cx, bot + 5, bW * 0.20, 9, cr * 0.40, cg * 0.32, cb * 0.24, 1);
+          break;
+        }
+        case 'mansion': {
+          // 中央ポルティコ（列柱）
+          writeInst(buf, n++, cx, bot + bH * 0.55, bW * 0.42, bH * 0.52, 0.95, 0.95, 0.92, 0.85);
+          // 屋根コーニス
+          writeInst(buf, n++, cx, top - 3, bW + 6, 6, cr * 0.72, cg * 0.68, cb * 0.58, 1);
+          // 左右対称窓
+          for (const xOff of [-bW * 0.33, bW * 0.33]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.55, 5, 7, 0.68, 0.88, 0.96, 0.85);
+          }
+          break;
+        }
+        case 'garage': {
+          // 大型シャッタードア
+          writeInst(buf, n++, cx, bot + bH * 0.50, bW * 0.72, bH * 0.72, 0.50, 0.52, 0.55, 0.9);
+          writeInst(buf, n++, cx, bot + bH * 0.52, bW * 0.70, 1.5, cr * 0.60, cg * 0.60, cb * 0.60, 1);
+          break;
+        }
+        case 'shed': {
+          // 屋根のみ（小屋）
+          writeInst(buf, n++, cx, top - 4, bW + 3, 7, cr * 0.48, cg * 0.42, cb * 0.36, 1);
+          break;
+        }
+        case 'greenhouse': {
+          // ガラス面（明るい全体）
+          writeInst(buf, n++, cx, cy, bW - 2, bH - 2, 0.72, 0.95, 0.88, 0.70);
+          // フレーム（縦×2）
+          writeInst(buf, n++, cx - bW * 0.25, cy, 1.5, bH, cr * 0.55, cg * 0.62, cb * 0.58, 0.9);
+          writeInst(buf, n++, cx + bW * 0.25, cy, 1.5, bH, cr * 0.55, cg * 0.62, cb * 0.58, 0.9);
+          break;
+        }
+        case 'daycare': {
+          // カラフルストライプ帯
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.95, 0.35, 0.35, 1);
+          writeInst(buf, n++, cx, top - 8, bW, 3, 0.95, 0.90, 0.20, 1);
+          // 玄関（丸みある）
+          writeInst(buf, n++, cx, bot + 6, bW * 0.28, 11, 0.55, 0.88, 0.96, 0.85);
+          break;
+        }
+        case 'clinic': {
+          // グリーン十字
+          writeInst(buf, n++, cx, top - bH * 0.22, 4, bH * 0.26, 0.15, 0.72, 0.35, 1);
+          writeInst(buf, n++, cx, top - bH * 0.22, bW * 0.26, 4, 0.15, 0.72, 0.35, 1);
+          // 玄関ガラス
+          writeInst(buf, n++, cx, bot + 6, bW * 0.34, 11, 0.65, 0.88, 0.96, 0.82);
+          break;
+        }
+        case 'shrine': {
+          // 大きな庇（鳥居風）
+          writeInst(buf, n++, cx, top - 4, bW + 10, 8, cr * 0.48, cg * 0.40, cb * 0.28, 1);
+          writeInst(buf, n++, cx, top - 10, bW * 0.85, 3, cr * 0.42, cg * 0.35, cb * 0.22, 1);
+          // 鈴（丸）
+          writeInst(buf, n++, cx, top - 14, 4, 5, cr * 0.75, cg * 0.65, cb * 0.22, 1, 0, 1);
+          // 柱×2
+          writeInst(buf, n++, cx - bW * 0.32, bot + bH * 0.45, 3, bH * 0.50, cr * 0.55, cg * 0.28, cb * 0.20, 1);
+          writeInst(buf, n++, cx + bW * 0.32, bot + bH * 0.45, 3, bH * 0.50, cr * 0.55, cg * 0.28, cb * 0.20, 1);
+          break;
+        }
+        case 'apartment_tall': {
+          // 各階バルコニー帯（5階相当）
+          const atFlH = bH / 5;
+          for (let i = 1; i <= 4; i++) {
+            writeInst(buf, n++, cx, bot + atFlH * i, bW + 3, 2.5,
+              Math.max(0, cr - 0.15), Math.max(0, cg - 0.15), Math.max(0, cb - 0.12), 1);
+          }
+          writeInst(buf, n++, cx, bot + 7, bW * 0.22, 13, 0.58, 0.82, 0.92, 0.85);
+          break;
+        }
+        // ── 1-B 商業系 ────────────────────────────────────────────
+        case 'cafe': {
+          // 暖色テント
+          writeInst(buf, n++, cx, bot + bH * 0.52, bW + 5, 4, 0.72, 0.38, 0.18, 0.90);
+          // 看板帯
+          writeInst(buf, n++, cx, top - 3, bW, 6, cr * 1.15, cg * 0.85, cb * 0.55, 1);
+          // 窓
+          writeInst(buf, n++, cx, bot + bH * 0.35, bW * 0.68, bH * 0.32, 0.78, 0.90, 0.82, 0.80);
+          break;
+        }
+        case 'bakery': {
+          // 看板（暖色）
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.90, 0.70, 0.30, 1);
+          // 丸窓（フランス扉風）
+          writeInst(buf, n++, cx, bot + bH * 0.52, bW * 0.50, bH * 0.50, 0.80, 0.90, 0.96, 0.80);
+          break;
+        }
+        case 'bookstore': {
+          // 看板帯（茶）
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.52, 0.38, 0.22, 1);
+          // ショーウィンドウ（本棚イメージ）
+          writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.72, bH * 0.38, 0.75, 0.88, 0.96, 0.80);
+          writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.70, 2, 0.52, 0.38, 0.22, 0.6);
+          break;
+        }
+        case 'pharmacy': {
+          // グリーン十字（薬局）
+          writeInst(buf, n++, cx, top - bH * 0.20, 5, bH * 0.25, 0.10, 0.72, 0.30, 1);
+          writeInst(buf, n++, cx, top - bH * 0.20, bW * 0.28, 5, 0.10, 0.72, 0.30, 1);
+          // ショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.38, bW * 0.68, bH * 0.34, 0.72, 0.92, 0.96, 0.80);
+          break;
+        }
+        case 'supermarket': {
+          // 看板帯（緑）
+          writeInst(buf, n++, cx, top - 4, bW, 8, 0.18, 0.60, 0.28, 1);
+          writeInst(buf, n++, cx, top - 9, bW, 3, 0.95, 0.95, 0.95, 0.9);
+          // 大きなショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.82, bH * 0.40, 0.70, 0.90, 0.96, 0.82);
+          // 入り口
+          writeInst(buf, n++, cx, bot + 6, bW * 0.14, 11, 0.28, 0.22, 0.20, 1);
+          break;
+        }
+        case 'karaoke': {
+          // ネオン帯×2
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.92, 0.22, 0.80, 1);
+          writeInst(buf, n++, cx, top - 9, bW, 3, 0.35, 0.22, 0.80, 0.9);
+          // ドア
+          writeInst(buf, n++, cx, bot + 6, bW * 0.18, 11, 0.28, 0.22, 0.18, 1);
+          break;
+        }
+        case 'pachinko': {
+          // フラッシュ帯（派手）
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.95, 0.75, 0.05, 1);
+          writeInst(buf, n++, cx, top - 8, bW, 3, 0.25, 0.25, 0.80, 0.9);
+          // ショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.45, bW * 0.80, bH * 0.42, 0.75, 0.88, 0.96, 0.75);
+          break;
+        }
+        case 'laundromat': {
+          // 丸窓×2 (洗濯機のポートホール)
+          writeInst(buf, n++, cx - bW * 0.22, bot + bH * 0.45, 7, 7, 0.62, 0.85, 0.96, 0.85, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.22, bot + bH * 0.45, 7, 7, 0.62, 0.85, 0.96, 0.85, 0, 1);
+          // 看板帯
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.25, 0.55, 0.85, 1);
+          break;
+        }
+        case 'florist': {
+          // 花飾り帯（カラフル）
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.90, 0.42, 0.62, 1);
+          writeInst(buf, n++, cx - bW * 0.25, top - 3, 5, 5, 0.95, 0.90, 0.20, 0.9, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.25, top - 3, 5, 5, 0.25, 0.80, 0.42, 0.9, 0, 1);
+          // ショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.38, bW * 0.70, bH * 0.34, 0.78, 0.95, 0.80, 0.80);
+          break;
+        }
+        case 'ramen': {
+          // 看板帯（赤橙）
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.88, 0.28, 0.12, 1);
+          // のれん（庇下の帯）
+          writeInst(buf, n++, cx, bot + bH * 0.65, bW * 0.60, 4, 0.68, 0.18, 0.10, 0.85);
+          // 窓
+          writeInst(buf, n++, cx, bot + bH * 0.35, bW * 0.55, bH * 0.26, 0.80, 0.88, 0.82, 0.78);
+          break;
+        }
+        case 'izakaya': {
+          // 提灯色帯（暖色）
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.82, 0.48, 0.12, 1);
+          // 縦看板イメージ
+          writeInst(buf, n++, cx - bW * 0.35, cy, 3, bH * 0.55, 0.75, 0.28, 0.12, 1);
+          // のれん
+          writeInst(buf, n++, cx, bot + bH * 0.62, bW * 0.55, 4, 0.62, 0.30, 0.12, 0.85);
+          break;
+        }
+        case 'game_center': {
+          // ネオンブルー看板
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.18, 0.48, 0.90, 1);
+          writeInst(buf, n++, cx, top - 8.5, bW, 3, 0.55, 0.22, 0.88, 0.9);
+          // ショーウィンドウ
+          writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.75, bH * 0.40, 0.65, 0.85, 0.96, 0.78);
+          break;
+        }
+        // ── 1-C 公共系 ────────────────────────────────────────────
+        case 'bank': {
+          // 古典的列柱（横帯×3）
+          writeInst(buf, n++, cx, top - 4, bW + 4, 7, cr * 0.88, cg * 0.82, cb * 0.68, 1);
+          writeInst(buf, n++, cx, bot + 2, bW + 4, 4, cr * 0.82, cg * 0.76, cb * 0.62, 1);
+          writeInst(buf, n++, cx, bot + 7, bW * 0.42, bH * 0.55, 0.68, 0.88, 0.96, 0.78);
+          break;
+        }
+        case 'post_office': {
+          // オレンジ看板帯
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.92, 0.62, 0.12, 1);
+          // 郵便マーク（丸）
+          writeInst(buf, n++, cx + bW * 0.30, top - bH * 0.35, 6, 6, 0.92, 0.62, 0.12, 1, 0, 1);
+          // 玄関
+          writeInst(buf, n++, cx, bot + 6, bW * 0.30, 11, 0.68, 0.88, 0.96, 0.80);
+          break;
+        }
+        case 'library': {
+          // 格調ある上帯
+          writeInst(buf, n++, cx, top - 4, bW + 4, 8, cr * 0.78, cg * 0.72, cb * 0.62, 1);
+          // アーチ窓×2
+          writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.50, 8, bH * 0.40, 0.68, 0.88, 0.96, 0.78);
+          writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.50, 8, bH * 0.40, 0.68, 0.88, 0.96, 0.78);
+          break;
+        }
+        case 'museum': {
+          // 柱廊（前面ストライプ）
+          for (const xOff of [-bW * 0.35, -bW * 0.12, bW * 0.12, bW * 0.35]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.40, 3, bH * 0.75, cr * 0.90, cg * 0.85, cb * 0.72, 1);
+          }
+          writeInst(buf, n++, cx, top - 4, bW + 6, 8, cr * 0.85, cg * 0.80, cb * 0.68, 1);
+          break;
+        }
+        case 'city_hall': {
+          // 中央塔
+          writeInst(buf, n++, cx, cy + bH * 0.18, bW * 0.35, bH * 0.65, cr * 0.95, cg * 0.92, cb * 0.80, 1);
+          // 旗竿（上）
+          writeInst(buf, n++, cx, top + 7, 2, 14, cr * 0.62, cg * 0.62, cb * 0.62, 1);
+          writeInst(buf, n++, cx + 4, top + 12, 8, 4, 0.85, 0.15, 0.15, 1);
+          // コーニス
+          writeInst(buf, n++, cx, top - 3, bW + 6, 5, cr * 0.80, cg * 0.76, cb * 0.65, 1);
+          break;
+        }
+        case 'fire_station': {
+          // 赤いガレージ扉×2
+          writeInst(buf, n++, cx - bW * 0.22, bot + bH * 0.42, bW * 0.38, bH * 0.56, 0.68, 0.18, 0.15, 1);
+          writeInst(buf, n++, cx + bW * 0.22, bot + bH * 0.42, bW * 0.38, bH * 0.56, 0.68, 0.18, 0.15, 1);
+          // 上帯
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.80, 0.22, 0.18, 1);
+          break;
+        }
+        case 'police_station': {
+          // ダークブルー帯
+          writeInst(buf, n++, cx, top - 4, bW, 8, 0.25, 0.35, 0.68, 1);
+          // エントランス
+          writeInst(buf, n++, cx, bot + 7, bW * 0.36, 13, 0.68, 0.88, 0.96, 0.80);
+          // 基礎帯
+          writeInst(buf, n++, cx, bot + 2, bW, 3, cr * 0.65, cg * 0.65, cb * 0.65, 1);
+          break;
+        }
+        case 'train_station': {
+          // 大きなキャノピー（屋根庇）
+          writeInst(buf, n++, cx, top - 4, bW + 12, 8, cr * 0.80, cg * 0.76, cb * 0.65, 1);
+          // 改札口（大きなガラス帯）
+          writeInst(buf, n++, cx, bot + bH * 0.45, bW * 0.78, bH * 0.55, 0.65, 0.85, 0.96, 0.78);
+          // 柱×3
+          for (const xOff of [-bW * 0.35, 0, bW * 0.35]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.28, 3, bH * 0.56, cr * 0.72, cg * 0.68, cb * 0.58, 1);
+          }
+          break;
+        }
+        case 'movie_theater': {
+          // マーキー（看板帯）
+          writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.75, 0.22, 0.55, 1);
+          writeInst(buf, n++, cx, top - 8.5, bW * 0.88, 3, 0.90, 0.85, 0.15, 0.9);
+          // エントランス（大きなアーチ）
+          writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.52, bH * 0.52, 0.22, 0.18, 0.15, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.46, bH * 0.48, 0.68, 0.58, 0.48, 0.85);
+          break;
+        }
+        case 'gas_station': {
+          // 大型キャノピー（屋根）
+          writeInst(buf, n++, cx, top + 2, bW + 14, 5, cr * 0.85, cg * 0.85, cb * 0.20, 1);
+          // 給油機（縦棒×2）
+          writeInst(buf, n++, cx - bW * 0.28, bot + bH * 0.45, 4, bH * 0.60, 0.55, 0.55, 0.58, 1);
+          writeInst(buf, n++, cx + bW * 0.28, bot + bH * 0.45, 4, bH * 0.60, 0.55, 0.55, 0.58, 1);
+          break;
+        }
+        // ── 1-D ランドマーク ───────────────────────────────────────
+        case 'clock_tower': {
+          // 時計面（円）
+          writeInst(buf, n++, cx, top - bH * 0.15, bW + 2, bW + 2, cr * 0.92, cg * 0.88, cb * 0.72, 1, 0, 1);
+          // 針（水平バー）
+          writeInst(buf, n++, cx, top - bH * 0.15, bW * 0.75, 1.5, 0.15, 0.15, 0.15, 1);
+          // 塔のセットバック
+          writeInst(buf, n++, cx, bot + bH * 0.30, bW - 2, bH * 0.60, cr * 0.88, cg * 0.82, cb * 0.68, 1);
+          // ピナクル（尖頭）
+          writeInst(buf, n++, cx, top + 6, 3, 12, cr * 0.72, cg * 0.68, cb * 0.54, 1);
+          break;
+        }
+        case 'radio_tower': {
+          // 細い本体（逓減）
+          writeInst(buf, n++, cx, bot + bH * 0.40, bW - 2, bH * 0.80, cr * 0.72, cg * 0.74, cb * 0.78, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.60, bW - 4, bH * 0.40, cr * 0.65, cg * 0.67, cb * 0.70, 1);
+          // アンテナ
+          writeInst(buf, n++, cx, top + 12, 2, 22, cr * 0.55, cg * 0.55, cb * 0.58, 1);
+          // 横ビーム×3
+          for (let i = 1; i <= 3; i++) {
+            writeInst(buf, n++, cx, bot + bH * (0.25 * i), bW + 4, 1.5, cr * 0.60, cg * 0.60, cb * 0.62, 0.8);
+          }
+          break;
+        }
+        case 'ferris_wheel': {
+          // 大きな外輪（円）
+          writeInst(buf, n++, cx, top - bH * 0.25, bW * 0.85, bW * 0.85, cr * 0.58, cg * 0.78, cb * 0.95, 0.88, 0, 1);
+          // 内輪（少し小さい）
+          writeInst(buf, n++, cx, top - bH * 0.25, bW * 0.62, bW * 0.62, cr * 0.48, cg * 0.68, cb * 0.90, 0.75, 0, 1);
+          // 支柱（逆V）
+          writeInst(buf, n++, cx - bW * 0.32, bot + bH * 0.20, 3, bH * 0.55, cr * 0.52, cg * 0.58, cb * 0.62, 1);
+          writeInst(buf, n++, cx + bW * 0.32, bot + bH * 0.20, 3, bH * 0.55, cr * 0.52, cg * 0.58, cb * 0.62, 1);
+          // ゴンドラ（小丸×4）
+          const fwR = bW * 0.30;
+          const fwCy = top - bH * 0.25;
+          for (let i = 0; i < 4; i++) {
+            const ang = (i / 4) * Math.PI * 2;
+            writeInst(buf, n++, cx + Math.cos(ang) * fwR, fwCy + Math.sin(ang) * fwR * 0.8, 4, 4, 0.88, 0.88, 0.85, 1);
+          }
+          break;
+        }
+        case 'stadium': {
+          // 曲面スタンド（楕円っぽい帯）
+          writeInst(buf, n++, cx, cy, bW - 4, bH - 4, cr * 0.72, cg * 0.68, cb * 0.62, 0.9, 0, 1);
+          writeInst(buf, n++, cx, cy, bW - 10, bH - 10, 0.32, 0.55, 0.32, 0.9, 0, 1); // 芝グラウンド
+          // 屋根コーニス
+          writeInst(buf, n++, cx, top - 3, bW + 8, 6, cr * 0.80, cg * 0.76, cb * 0.70, 1);
+          // 照明塔
+          writeInst(buf, n++, cx - bW * 0.45, top + 4, 2, 8, 0.52, 0.52, 0.52, 1);
+          writeInst(buf, n++, cx + bW * 0.45, top + 4, 2, 8, 0.52, 0.52, 0.52, 1);
+          break;
+        }
+        case 'water_tower': {
+          // タンク（上部の丸い部分）
+          writeInst(buf, n++, cx, top - bH * 0.20, bW + 4, bH * 0.35, cr * 0.78, cg * 0.70, cb * 0.58, 1, 0, 1);
+          writeInst(buf, n++, cx, top - bH * 0.20, bW + 2, bH * 0.33, cr * 0.72, cg * 0.65, cb * 0.52, 1, 0, 1);
+          // 脚部（×2）
+          writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.28, 3, bH * 0.55, cr * 0.68, cg * 0.60, cb * 0.48, 1);
+          writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.28, 3, bH * 0.55, cr * 0.68, cg * 0.60, cb * 0.48, 1);
+          break;
+        }
       }
     }
     return n - startIdx;
@@ -666,7 +1014,17 @@ export class BumperManager {
 
 // ===== STREET FURNITURE =====
 
-export type FurnitureType = 'tree' | 'vending' | 'bench' | 'car' | 'traffic_light' | 'mailbox' | 'bicycle' | 'flower_bed' | 'parasol' | 'sign_board' | 'garbage' | 'power_pole' | 'hydrant' | 'fountain';
+export type FurnitureType =
+  // オリジナル
+  'tree' | 'vending' | 'bench' | 'car' | 'traffic_light' | 'mailbox' | 'bicycle' |
+  'flower_bed' | 'parasol' | 'sign_board' | 'garbage' | 'power_pole' | 'hydrant' | 'fountain' |
+  // 街路設備
+  'street_lamp' | 'bollard' | 'traffic_cone' | 'barrier' | 'guardrail' |
+  'telephone_booth' | 'electric_box' | 'newspaper_stand' | 'atm' | 'post_box' |
+  'bicycle_rack' | 'dumpster' | 'recycling_bin' | 'fire_extinguisher' | 'bus_stop' |
+  'statue' | 'flag_pole' | 'banner_pole' |
+  // 植栽
+  'bush' | 'hedge' | 'planter' | 'sakura_tree' | 'pine_tree' | 'palm_tree' | 'bamboo_cluster';
 
 export interface FurnitureItem {
   type: FurnitureType;
@@ -683,36 +1041,90 @@ export interface FurnitureItem {
 
 // AABB half-sizes for each furniture type
 const FURNITURE_HW: Record<FurnitureType, number> = {
-  tree:          C.TREE_W / 2,
-  vending:       C.VENDING_W / 2,
-  bench:         C.BENCH_W / 2,
-  car:           C.CAR_W / 2,
-  traffic_light: C.TRAFFIC_LIGHT_W / 2,
-  mailbox:       C.MAILBOX_W / 2,
-  bicycle:       5,
-  flower_bed:    6,
-  parasol:       5,
-  sign_board:    3,
-  garbage:       3,
-  power_pole:    1.5,
-  hydrant:       2,
-  fountain:      8,
+  tree:             C.TREE_W / 2,
+  vending:          C.VENDING_W / 2,
+  bench:            C.BENCH_W / 2,
+  car:              C.CAR_W / 2,
+  traffic_light:    C.TRAFFIC_LIGHT_W / 2,
+  mailbox:          C.MAILBOX_W / 2,
+  bicycle:          5,
+  flower_bed:       6,
+  parasol:          5,
+  sign_board:       3,
+  garbage:          3,
+  power_pole:       1.5,
+  hydrant:          2,
+  fountain:         8,
+  // 街路設備
+  street_lamp:      2,
+  bollard:          2,
+  traffic_cone:     2,
+  barrier:          8,
+  guardrail:        10,
+  telephone_booth:  3,
+  electric_box:     3,
+  newspaper_stand:  3,
+  atm:              3,
+  post_box:         2.5,
+  bicycle_rack:     6,
+  dumpster:         5,
+  recycling_bin:    4,
+  fire_extinguisher:2,
+  bus_stop:         4,
+  statue:           5,
+  flag_pole:        2,
+  banner_pole:      2,
+  // 植栽
+  bush:             5,
+  hedge:            8,
+  planter:          5,
+  sakura_tree:      7,
+  pine_tree:        5,
+  palm_tree:        4,
+  bamboo_cluster:   4,
 };
 const FURNITURE_HH: Record<FurnitureType, number> = {
-  tree:          C.TREE_H / 2,
-  vending:       C.VENDING_H / 2,
-  bench:         C.BENCH_H / 2,
-  car:           C.CAR_H / 2,
-  traffic_light: C.TRAFFIC_LIGHT_H / 2,
-  mailbox:       C.MAILBOX_H / 2,
-  bicycle:       3,
-  flower_bed:    2.5,
-  parasol:       5,
-  sign_board:    6,
-  garbage:       3,
-  power_pole:    9,
-  hydrant:       2.5,
-  fountain:      5,
+  tree:             C.TREE_H / 2,
+  vending:          C.VENDING_H / 2,
+  bench:            C.BENCH_H / 2,
+  car:              C.CAR_H / 2,
+  traffic_light:    C.TRAFFIC_LIGHT_H / 2,
+  mailbox:          C.MAILBOX_H / 2,
+  bicycle:          3,
+  flower_bed:       2.5,
+  parasol:          5,
+  sign_board:       6,
+  garbage:          3,
+  power_pole:       9,
+  hydrant:          2.5,
+  fountain:         5,
+  // 街路設備
+  street_lamp:      10,
+  bollard:          3,
+  traffic_cone:     3,
+  barrier:          3,
+  guardrail:        2,
+  telephone_booth:  6,
+  electric_box:     4,
+  newspaper_stand:  5,
+  atm:              5,
+  post_box:         4,
+  bicycle_rack:     3,
+  dumpster:         5,
+  recycling_bin:    4,
+  fire_extinguisher:4,
+  bus_stop:         8,
+  statue:           7,
+  flag_pole:        10,
+  banner_pole:      8,
+  // 植栽
+  bush:             4,
+  hedge:            3,
+  planter:          3,
+  sakura_tree:      7,
+  pine_tree:        8,
+  palm_tree:        9,
+  bamboo_cluster:   8,
 };
 
 // Traffic light cycle durations per state (seconds)
@@ -904,6 +1316,155 @@ export class FurnitureManager {
           }
           break;
         }
+        // ── 街路設備 ─────────────────────────────────────────────
+        case 'street_lamp': {
+          writeInst(buf, n++, item.x + 1, item.y - 1, 5, 5, 0, 0, 0, 0.15, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 3, 3, 0.28, 0.25, 0.22, 1, 0, 1);  // 頂部灯
+          writeInst(buf, n++, item.x, item.y, 1.5, 20, 0.28, 0.25, 0.22, 1);      // ポール
+          break;
+        }
+        case 'bollard': {
+          writeInst(buf, n++, item.x, item.y, 5, 5, 0.25, 0.25, 0.28, 1, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 3, 3, 0.90, 0.85, 0.10, 0.9, 0, 1);
+          break;
+        }
+        case 'traffic_cone': {
+          writeInst(buf, n++, item.x, item.y, 6, 7, 0.95, 0.42, 0.10, 1);
+          writeInst(buf, n++, item.x, item.y + 1, 6, 2, 0.95, 0.95, 0.95, 0.85);
+          break;
+        }
+        case 'barrier': {
+          writeInst(buf, n++, item.x, item.y, 17, 5, 0.85, 0.32, 0.12, 1);
+          writeInst(buf, n++, item.x, item.y, 17, 1.5, 0.95, 0.95, 0.10, 0.85);
+          break;
+        }
+        case 'guardrail': {
+          writeInst(buf, n++, item.x, item.y, 21, 3, 0.68, 0.72, 0.78, 1);
+          writeInst(buf, n++, item.x - 9, item.y, 2, 5, 0.68, 0.72, 0.78, 0.9);
+          writeInst(buf, n++, item.x + 9, item.y, 2, 5, 0.68, 0.72, 0.78, 0.9);
+          break;
+        }
+        case 'telephone_booth': {
+          writeInst(buf, n++, item.x + 1, item.y - 1, 8, 8, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 7, 7, 0.12, 0.55, 0.25, 1);
+          writeInst(buf, n++, item.x, item.y, 5, 5, 0.65, 0.90, 0.96, 0.80);
+          break;
+        }
+        case 'electric_box': {
+          writeInst(buf, n++, item.x + 1, item.y - 1, 8, 9, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 7, 8, 0.50, 0.52, 0.55, 1);
+          writeInst(buf, n++, item.x, item.y + 2, 5, 1.5, 0.32, 0.32, 0.34, 0.8);
+          break;
+        }
+        case 'newspaper_stand': {
+          writeInst(buf, n++, item.x + 1, item.y - 1, 8, 8, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 7, 7, 0.72, 0.62, 0.45, 1);
+          writeInst(buf, n++, item.x, item.y + 1, 6, 1.5, 0.25, 0.22, 0.18, 0.7);
+          break;
+        }
+        case 'atm': {
+          writeInst(buf, n++, item.x + 1, item.y - 1, 8, 12, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 7, 11, 0.18, 0.40, 0.75, 1);
+          writeInst(buf, n++, item.x, item.y + 2, 5, 3, 0.65, 0.85, 0.96, 0.80);
+          break;
+        }
+        case 'post_box': {
+          writeInst(buf, n++, item.x, item.y, 6, 9, 0.82, 0.10, 0.10, 1, 0, 1);
+          writeInst(buf, n++, item.x, item.y + 3, 4, 1.5, 0.10, 0.08, 0.08, 0.8);
+          break;
+        }
+        case 'bicycle_rack': {
+          writeInst(buf, n++, item.x, item.y, 13, 2, 0.42, 0.42, 0.45, 1);
+          writeInst(buf, n++, item.x - 5, item.y, 1.5, 6, 0.42, 0.42, 0.45, 1);
+          writeInst(buf, n++, item.x + 5, item.y, 1.5, 6, 0.42, 0.42, 0.45, 1);
+          break;
+        }
+        case 'dumpster': {
+          writeInst(buf, n++, item.x + 2, item.y - 2, 13, 11, 0, 0, 0, 0.20);
+          writeInst(buf, n++, item.x, item.y, 12, 10, 0.22, 0.42, 0.22, 1);
+          writeInst(buf, n++, item.x, item.y + 3, 10, 2, 0.18, 0.35, 0.18, 0.85);
+          break;
+        }
+        case 'recycling_bin': {
+          writeInst(buf, n++, item.x, item.y, 9, 9, 0.20, 0.62, 0.58, 1, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 6, 6, 0.15, 0.52, 0.48, 1, 0, 1);
+          break;
+        }
+        case 'fire_extinguisher': {
+          writeInst(buf, n++, item.x, item.y, 5, 9, 0.82, 0.15, 0.15, 1);
+          writeInst(buf, n++, item.x, item.y + 3, 3, 2, 0.88, 0.80, 0.20, 0.85);
+          break;
+        }
+        case 'bus_stop': {
+          writeInst(buf, n++, item.x + 1, item.y - 1, 10, 18, 0, 0, 0, 0.15);
+          writeInst(buf, n++, item.x, item.y, 9, 17, 0.25, 0.45, 0.75, 0.88);
+          writeInst(buf, n++, item.x, item.y + 5, 7, 1.5, 0.95, 0.95, 0.95, 0.90);
+          break;
+        }
+        case 'statue': {
+          writeInst(buf, n++, item.x + 2, item.y - 2, 12, 16, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y - 2, 7, 12, 0.72, 0.70, 0.68, 1);  // 像本体
+          writeInst(buf, n++, item.x, item.y + 4, 10, 5, 0.60, 0.58, 0.55, 1);  // 台座
+          break;
+        }
+        case 'flag_pole': {
+          writeInst(buf, n++, item.x, item.y, 1.5, 22, 0.52, 0.52, 0.52, 1);
+          writeInst(buf, n++, item.x + 4, item.y + 8, 9, 5, 0.90, 0.12, 0.12, 1);
+          break;
+        }
+        case 'banner_pole': {
+          writeInst(buf, n++, item.x, item.y, 1.5, 18, 0.48, 0.48, 0.48, 1);
+          writeInst(buf, n++, item.x + 4, item.y + 6, 9, 6, 0.20, 0.20, 0.80, 0.90);
+          break;
+        }
+        // ── 植栽 ────────────────────────────────────────────────
+        case 'bush': {
+          writeInst(buf, n++, item.x + 2, item.y - 2, 12, 9, 0, 0, 0, 0.14, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 11, 8, 0.22, 0.52, 0.18, 1, 0, 1);
+          writeInst(buf, n++, item.x - 2, item.y + 1, 5, 4, 0.30, 0.62, 0.22, 0.6, 0, 1);
+          break;
+        }
+        case 'hedge': {
+          writeInst(buf, n++, item.x, item.y, 17, 7, 0.20, 0.48, 0.16, 1);
+          writeInst(buf, n++, item.x - 4, item.y + 1, 4, 4, 0.28, 0.58, 0.22, 0.6, 0, 1);
+          writeInst(buf, n++, item.x + 4, item.y + 1, 4, 4, 0.28, 0.58, 0.22, 0.6, 0, 1);
+          break;
+        }
+        case 'planter': {
+          writeInst(buf, n++, item.x, item.y, 11, 6, 0.58, 0.42, 0.28, 1);
+          writeInst(buf, n++, item.x, item.y + 2, 9, 4, 0.25, 0.60, 0.22, 1, 0, 1);
+          break;
+        }
+        case 'sakura_tree': {
+          // ピンクの花冠
+          writeInst(buf, n++, item.x + 2, item.y - 2, 16, 16, 0, 0, 0, 0.14, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 15, 15, 0.95, 0.72, 0.78, 1, 0, 1);
+          writeInst(buf, n++, item.x - 2, item.y + 2, 7, 7, 1.0, 0.82, 0.88, 0.55, 0, 1);
+          writeInst(buf, n++, item.x + 3, item.y + 1, 5, 5, 0.95, 0.90, 0.95, 0.45, 0, 1);
+          break;
+        }
+        case 'pine_tree': {
+          // 三角錐形
+          writeInst(buf, n++, item.x + 2, item.y - 2, 13, 18, 0, 0, 0, 0.15, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 12, 17, 0.12, 0.40, 0.18, 1);
+          writeInst(buf, n++, item.x, item.y + 3, 7, 10, 0.18, 0.52, 0.22, 0.7);
+          break;
+        }
+        case 'palm_tree': {
+          // 幹 + 葉冠
+          writeInst(buf, n++, item.x, item.y - 2, 3, 16, 0.62, 0.48, 0.28, 1);
+          writeInst(buf, n++, item.x + 2, item.y - 1, 14, 7, 0, 0, 0, 0.14, 0, 1);
+          writeInst(buf, n++, item.x, item.y, 13, 6, 0.25, 0.62, 0.22, 1, 0, 1);
+          break;
+        }
+        case 'bamboo_cluster': {
+          // 細い竹×3
+          writeInst(buf, n++, item.x - 3, item.y, 2, 17, 0.32, 0.60, 0.25, 1);
+          writeInst(buf, n++, item.x, item.y + 1, 2, 18, 0.28, 0.58, 0.22, 1);
+          writeInst(buf, n++, item.x + 3, item.y, 2, 16, 0.35, 0.62, 0.27, 1);
+          writeInst(buf, n++, item.x, item.y, 1.5, 17, 0.40, 0.68, 0.30, 0.5);
+          break;
+        }
       }
     }
     return n - startIdx;
@@ -927,8 +1488,10 @@ export class FurnitureManager {
 
 // ===== VEHICLE =====
 
+export type VehicleType = 'car' | 'bus' | 'truck' | 'ambulance' | 'taxi' | 'motorcycle' | 'delivery' | 'van';
+
 export interface VehicleItem {
-  type: 'car' | 'bus' | 'truck' | 'ambulance';
+  type: VehicleType;
   x: number;
   y: number;
   w: number;
@@ -944,18 +1507,22 @@ export interface VehicleItem {
 }
 
 interface VehicleDef {
-  type: 'car' | 'bus' | 'truck' | 'ambulance';
+  type: VehicleType;
   lane: 'hilltop' | 'main' | 'lower' | 'riverside';
   direction: 1 | -1;
   speed: number;
   interval: number;
 }
 
-const VEHICLE_DEFS_DATA: Record<string, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
-  car:       { w: 20, h: 10, maxHp: 1, score: 120, speedMin: 50, speedMax: 70  },
-  bus:       { w: 28, h: 12, maxHp: 2, score: 200, speedMin: 35, speedMax: 50  },
-  truck:     { w: 24, h: 12, maxHp: 2, score: 180, speedMin: 30, speedMax: 45  },
-  ambulance: { w: 22, h: 10, maxHp: 1, score: 500, speedMin: 100, speedMax: 120 },
+const VEHICLE_DEFS_DATA: Record<VehicleType, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
+  car:        { w: 20, h: 10, maxHp: 1, score: 120, speedMin: 50,  speedMax: 70  },
+  bus:        { w: 28, h: 12, maxHp: 2, score: 200, speedMin: 35,  speedMax: 50  },
+  truck:      { w: 24, h: 12, maxHp: 2, score: 180, speedMin: 30,  speedMax: 45  },
+  ambulance:  { w: 22, h: 10, maxHp: 1, score: 500, speedMin: 100, speedMax: 120 },
+  taxi:       { w: 20, h: 10, maxHp: 1, score: 150, speedMin: 55,  speedMax: 75  },
+  motorcycle: { w: 12, h:  7, maxHp: 1, score: 100, speedMin: 70,  speedMax: 100 },
+  delivery:   { w: 22, h: 11, maxHp: 1, score: 140, speedMin: 40,  speedMax: 60  },
+  van:        { w: 22, h: 11, maxHp: 2, score: 160, speedMin: 35,  speedMax: 55  },
 };
 
 // Car color palette (deterministic by position)
@@ -1011,7 +1578,7 @@ export class VehicleManager {
       }
     }
     // Update dynamic (chunk) spawn timers — only spawn on visible/near lanes
-    const dynTypes = ['car', 'car', 'car', 'bus', 'truck'] as const;
+    const dynTypes: VehicleType[] = ['car', 'car', 'car', 'bus', 'truck', 'taxi', 'motorcycle', 'delivery', 'van'];
     for (const lane of this.dynLanes) {
       if (lane.laneY < camBottom - 50) continue;  // road scrolled off bottom
       lane.timerR -= dt;
@@ -1046,7 +1613,7 @@ export class VehicleManager {
   }
 
   private spawnDynVehicle(laneY: number, laneH: number, dir: 1 | -1,
-    type: 'car' | 'bus' | 'truck') {
+    type: VehicleType) {
     const info = VEHICLE_DEFS_DATA[type];
     const yOff = dir === 1 ? -laneH / 4 : laneH / 4;
     const startX = dir === 1 ? -180 - info.w / 2 : 180 + info.w / 2;
@@ -1137,8 +1704,14 @@ export class VehicleManager {
         cr = 0.95; cg = 0.80; cb = 0.10;
       } else if (v.type === 'truck') {
         cr = 0.50; cg = 0.55; cb = 0.60;
+      } else if (v.type === 'taxi') {
+        cr = 0.95; cg = 0.88; cb = 0.05;
+      } else if (v.type === 'delivery') {
+        cr = 0.92; cg = 0.92; cb = 0.92;
+      } else if (v.type === 'van') {
+        cr = 0.42; cg = 0.55; cb = 0.68;
       } else {
-        // car: deterministic color from spawn position
+        // car/motorcycle: deterministic color from spawn position
         const ci = Math.abs(Math.floor(v.y * 31 + Math.floor(v.speed * 0.1))) % CAR_COLORS.length;
         [cr, cg, cb] = CAR_COLORS[ci];
       }
@@ -1151,23 +1724,37 @@ export class VehicleManager {
       writeInst(buf, n++, v.x, v.y, v.w, v.h, cr, cg, cb, 1);
 
       if (v.type === 'truck') {
-        // トラック: キャブ（前方1/3）+ 荷台（後方2/3）
         const dir = v.speed >= 0 ? 1 : -1;
         writeInst(buf, n++, v.x + dir * v.w * 0.28, v.y, v.w * 0.45, v.h * 0.85,
           cr - 0.08, cg - 0.08, cb - 0.08, 1);
         writeInst(buf, n++, v.x + dir * v.w * 0.28, v.y, v.w * 0.30, v.h * 0.5,
           0.65, 0.85, 0.95, 0.7);
       } else if (v.type === 'bus') {
-        // バス: 窓列ストライプ
         writeInst(buf, n++, v.x, v.y, v.w * 0.80, v.h * 0.45, 0.65, 0.85, 0.95, 0.7);
         writeInst(buf, n++, v.x, v.y, v.w * 0.78, 1.5, Math.max(0, cr-0.15), 0.55, 0.08, 0.9);
       } else if (v.type === 'ambulance' && !isFlash) {
-        // 救急車: 窓 + 赤十字
         writeInst(buf, n++, v.x, v.y, v.w * 0.60, v.h * 0.50, 0.65, 0.85, 0.95, 0.7);
         writeInst(buf, n++, v.x, v.y, 2.5, v.h * 0.65, 0.90, 0.10, 0.10, 1);
         writeInst(buf, n++, v.x, v.y, v.w * 0.50, 2.5, 0.90, 0.10, 0.10, 1);
+      } else if (v.type === 'taxi') {
+        // タクシー: 黒帯 + 窓
+        writeInst(buf, n++, v.x, v.y, v.w * 0.78, 2, 0.10, 0.10, 0.10, 0.9);
+        const tdir = v.speed >= 0 ? 1 : -1;
+        writeInst(buf, n++, v.x + tdir * v.w * 0.18, v.y, v.w * 0.35, v.h * 0.55, 0.65, 0.85, 0.95, 0.75);
+      } else if (v.type === 'motorcycle') {
+        // バイク: 小さく細い
+        writeInst(buf, n++, v.x, v.y, v.w * 0.40, v.h * 0.65, 0.65, 0.85, 0.95, 0.75);
+      } else if (v.type === 'delivery') {
+        // 配送車: 荷台 + 社名帯
+        const ddir = v.speed >= 0 ? 1 : -1;
+        writeInst(buf, n++, v.x + ddir * v.w * 0.18, v.y, v.w * 0.35, v.h * 0.75,
+          cr - 0.08, cg - 0.08, cb - 0.08, 1);
+        writeInst(buf, n++, v.x, v.y, v.w * 0.60, 2, 0.92, 0.25, 0.15, 0.85);
+      } else if (v.type === 'van') {
+        // バン: 大型窓
+        writeInst(buf, n++, v.x, v.y, v.w * 0.72, v.h * 0.48, 0.65, 0.85, 0.95, 0.72);
       } else {
-        // 乗用車: フロントガラス + リアガラス
+        // 乗用車
         const dir = v.speed >= 0 ? 1 : -1;
         writeInst(buf, n++, v.x + dir * v.w * 0.20, v.y, v.w * 0.35, v.h * 0.55,
           0.65, 0.85, 0.95, 0.75);

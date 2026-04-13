@@ -341,6 +341,141 @@ export class ParticleManager {
     }
   }
 
+  /** 蒸気 — ゆっくり上昇する白/灰色の円 */
+  spawnSteam(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const spd = rand(20, 60);
+      this.emit(
+        x + rand(-8, 8), y,
+        rand(-15, 15), spd,
+        rand(0.72, 0.90), rand(0.72, 0.90), rand(0.75, 0.92),
+        rand(5, 12), rand(0.6, 1.4),
+        false, true, 0
+      );
+    }
+  }
+
+  /** 桜の花びら — ピンク/白のゆっくり舞い散る円 */
+  spawnSakuraPetals(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(15, 50);
+      const r = rand(0.90, 1.0), g = rand(0.65, 0.82), b = rand(0.75, 0.92);
+      this.emit(
+        x + rand(-20, 20), y + rand(-10, 10),
+        Math.cos(angle) * spd + rand(-10, 10), Math.sin(angle) * spd - rand(5, 20),
+        r, g, b,
+        rand(3, 6), rand(1.0, 2.5),
+        true, true, rand(-1.5, 1.5)
+      );
+    }
+  }
+
+  /** 金属破片 — 重い銀/灰色の破片 */
+  spawnMetalDebris(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(60, 200);
+      const br = rand(0.55, 0.80);
+      this.emit(
+        x + rand(-15, 15), y + rand(-10, 10),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
+        br, br * 0.98, br * 0.95,
+        rand(4, 10), rand(0.4, 1.0),
+        true, false, rand(-8, 8)
+      );
+    }
+  }
+
+  /** 紙幣 — 緑/白のひらひら舞う紙片 */
+  spawnCash(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.8, 0.8);
+      const spd = rand(40, 120);
+      const isGreen = Math.random() < 0.7;
+      const r = isGreen ? rand(0.55, 0.72) : 0.95;
+      const g = isGreen ? rand(0.72, 0.88) : 0.95;
+      const b2 = isGreen ? rand(0.42, 0.58) : 0.88;
+      this.emit(
+        x + rand(-10, 10), y,
+        Math.cos(angle) * spd + rand(-30, 30), Math.sin(angle) * spd,
+        r, g, b2,
+        rand(5, 9), rand(0.8, 1.6),
+        true, false, rand(-4, 4), rand(4, 7)
+      );
+    }
+  }
+
+  /** 本 — 茶/白の矩形が飛び散る */
+  spawnBooks(x: number, y: number, count: number) {
+    const colors: Array<[number,number,number]> = [
+      [0.55, 0.28, 0.12], [0.15, 0.28, 0.65], [0.62, 0.12, 0.15],
+      [0.88, 0.85, 0.78], [0.18, 0.48, 0.25],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = rand(50, 180);
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.emit(
+        x + rand(-12, 12), y + rand(-8, 8),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 50),
+        c[0], c[1], c[2],
+        rand(5, 9), rand(0.5, 1.0),
+        true, false, rand(-6, 6), rand(3, 7)
+      );
+    }
+  }
+
+  /** 泡 — 半透明の小さい円がゆっくり上昇 */
+  spawnBubbles(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const spd = rand(20, 60);
+      this.emit(
+        x + rand(-12, 12), y + rand(-5, 5),
+        rand(-20, 20), spd,
+        0.62, 0.88, 1.0,
+        rand(3, 7), rand(0.5, 1.2),
+        false, true
+      );
+    }
+  }
+
+  /** ポップコーン — 白/黄色の小粒が飛び散る */
+  spawnPopcorn(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-1.0, 1.0);
+      const spd = rand(60, 160);
+      const isWhite = Math.random() < 0.6;
+      const r = isWhite ? 0.95 : 0.95, g = isWhite ? 0.92 : 0.85, b = isWhite ? 0.85 : 0.35;
+      this.emit(
+        x + rand(-8, 8), y,
+        Math.cos(angle) * spd + rand(-40, 40), Math.sin(angle) * spd,
+        r, g, b,
+        rand(3, 5), rand(0.6, 1.2),
+        true, true
+      );
+    }
+  }
+
+  /** 風船 — カラフルな円がゆっくり上昇 */
+  spawnBalloons(x: number, y: number, count: number) {
+    const colors: Array<[number,number,number]> = [
+      [0.95, 0.22, 0.22], [0.22, 0.52, 0.95], [0.22, 0.88, 0.35],
+      [0.95, 0.88, 0.10], [0.88, 0.22, 0.88],
+    ];
+    for (let i = 0; i < count; i++) {
+      const spd = rand(15, 45);
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      this.emit(
+        x + rand(-15, 15), y + rand(-5, 5),
+        rand(-15, 15), spd,
+        c[0], c[1], c[2],
+        rand(6, 11), rand(1.5, 3.0),
+        false, true
+      );
+    }
+  }
+
   update(dt: number) {
     for (let k = 0; k < this.activeLen; k++) {
       const i = this.activeIndices[k];
