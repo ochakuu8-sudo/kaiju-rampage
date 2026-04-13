@@ -9,6 +9,7 @@
 import * as C from './constants';
 import type { FurnitureType, VehicleType } from './entities';
 import type { BuildingData } from './entities';
+import { getScene, SCENES_BY_TIER, type Scene } from './scenes';
 
 export interface BuildingDef {
   x: number;      // 建物中心X
@@ -118,28 +119,141 @@ export const BLOCKS: Block[] = ROWS.flatMap((row, ri) =>
   }))
 );
 
-// ===== ランダム建物配置 =====
+// ===== シーン配置ヘルパー =====
 
-/** 1ブロックを左から右へ順次パッキング */
-function packBlock(block: Block): BuildingDef[] {
-  const defs: BuildingDef[] = [];
-  const margin = 4;
-  let x = block.xMin + margin;
-
-  while (x < block.xMax - margin) {
-    const size = block.pool[Math.floor(Math.random() * block.pool.length)];
-    const w = C.BUILDING_DEFS[size].w;
-    if (x + w > block.xMax - margin) break;
-
-    defs.push({ x: x + w / 2, y: block.baseY, size, blockIdx: block.id });
-    x += w + 2 + Math.floor(Math.random() * 3); // 2〜4px ギャップ
-  }
-  return defs;
+export interface ScenePlacement {
+  buildings: BuildingDef[];
+  furniture: FurnitureDef[];
 }
 
-/** 全15ブロックに建物を配置してリストを返す */
-export function packCity(): BuildingDef[] {
-  return BLOCKS.flatMap(packBlock);
+/** 1 シーンを指定左端に配置する */
+export function placeScene(
+  scene: Scene,
+  leftX: number,
+  baseY: number,
+  blockIdx: number
+): ScenePlacement {
+  const buildings: BuildingDef[] = scene.buildings.map(b => ({
+    x: leftX + b.dx,
+    y: baseY,
+    size: b.size,
+    blockIdx,
+  }));
+  const furniture: FurnitureDef[] = scene.furniture.map(f => ({
+    type: f.type,
+    x: leftX + f.dx,
+    y: baseY + f.dy,
+  }));
+  // 駐車車両は furniture 'car' として統一 (taxi/ambulance も 'car' アイコンで表現)
+  if (scene.parkedVehicles) {
+    for (const v of scene.parkedVehicles) {
+      furniture.push({
+        type: 'car',
+        x: leftX + v.dx,
+        y: baseY + v.dy,
+      });
+    }
+  }
+  return { buildings, furniture };
+}
+
+/**
+ * レシピ (scene id の配列) を 1 ブロック内に左から右へ配置する。
+ * シーンの合計幅 + ギャップがブロック幅を超える場合は手前でクリップ。
+ * 残った余白は左右対称に中央寄せされる。
+ */
+export function placeRecipe(
+  sceneIds: string[],
+  block: Block,
+  gap: number = 3
+): ScenePlacement {
+  const scenes = sceneIds.map(id => getScene(id));
+  const innerMargin = 2;
+  const availW = (block.xMax - block.xMin) - innerMargin * 2;
+
+  // 入るシーンだけ採用
+  const fit: Scene[] = [];
+  let totalW = 0;
+  for (const s of scenes) {
+    const add = (fit.length === 0 ? 0 : gap) + s.width;
+    if (totalW + add > availW) break;
+    fit.push(s);
+    totalW += add;
+  }
+
+  // 中央寄せのオフセット
+  const startX = block.xMin + innerMargin + Math.max(0, (availW - totalW) / 2);
+
+  const out: ScenePlacement = { buildings: [], furniture: [] };
+  let cursor = startX;
+  for (let i = 0; i < fit.length; i++) {
+    const s = fit[i];
+    const p = placeScene(s, cursor, block.baseY, block.id);
+    out.buildings.push(...p.buildings);
+    out.furniture.push(...p.furniture);
+    cursor += s.width + gap;
+  }
+  return out;
+}
+
+// ===== 初期都市レシピ =====
+// [row][col] = その 1 ブロックに置くシーン ID 配列
+// 高さ制約:
+//   ROW0 (top, baseY=162): h ≤ 88
+//   ROW1 (midB, baseY=86): h ≤ 32
+//   ROW2 (mid,  baseY=52): h ≤ 30
+//   ROW3-5 (bot, baseY=-12/-36/-60): h ≤ 22
+const INITIAL_CITY_RECIPES: string[][][] = [
+  // ─── ROW 0: スカイライン (駅・百貨店・病院) ──────────────────────
+  [
+    ['train_station_plaza'],
+    ['dept_store_plaza'],
+    ['hospital_scene'],
+  ],
+  // ─── ROW 1: 奥の商業と公共施設 ────────────────────────────────
+  [
+    ['shop_parasol_row'],
+    ['shrine_complex'],
+    ['clinic_daycare'],
+  ],
+  // ─── ROW 2: 商店街メインストリート (神社に続く寺) ──────────────
+  [
+    ['shotengai_food'],
+    ['shotengai_game'],
+    ['temple_garden'],
+  ],
+  // ─── ROW 3: 住宅街の裏通り (小規模店・コンビニ) ─────────────────
+  [
+    ['house_trio_garden', 'konbini_corner'],
+    ['florist_bakery', 'ramen_izakaya'],
+    ['house_konbini'],
+  ],
+  // ─── ROW 4: 住宅街中列 (生活感のある混在) ──────────────────────
+  [
+    ['house_konbini', 'house_garage'],
+    ['garden_shed', 'house_trio_garden'],
+    ['house_garage'],
+  ],
+  // ─── ROW 5: 川辺の住宅街 (最手前) ─────────────────────────────
+  [
+    ['house_trio_garden', 'cafe_bookstore'],
+    ['house_konbini', 'laundromat_pharmacy'],
+    ['ramen_izakaya'],
+  ],
+];
+
+/** 全 18 ブロックへシーンを配置し、建物と家具を返す */
+export function placeCity(): ScenePlacement {
+  const out: ScenePlacement = { buildings: [], furniture: [] };
+  for (let ri = 0; ri < INITIAL_CITY_RECIPES.length; ri++) {
+    for (let ci = 0; ci < INITIAL_CITY_RECIPES[ri].length; ci++) {
+      const block = BLOCKS[ri * 3 + ci];
+      const p = placeRecipe(INITIAL_CITY_RECIPES[ri][ci], block, 4);
+      out.buildings.push(...p.buildings);
+      out.furniture.push(...p.furniture);
+    }
+  }
+  return out;
 }
 
 // ===== チャンク生成 =====
@@ -284,106 +398,173 @@ function generateParkingLotFurniture(centerY: number, chunkId: number): Furnitur
   return items;
 }
 
-/** 1ブロック分の建物をパッキングする */
-function packRow(baseY: number, pool: C.BuildingSize[], maxH: number, chunkId: number): BuildingDef[] {
-  const defs: BuildingDef[] = [];
-  const margin = 4;
-  for (const col of COLS) {
-    let x = col.xMin + margin;
-    while (x < col.xMax - margin) {
-      // maxH 以下の建物のみ選ぶ
-      const candidates = pool.filter(s => C.BUILDING_DEFS[s].h <= maxH);
-      if (candidates.length === 0) break;
-      const size = candidates[Math.floor(Math.random() * candidates.length)];
-      const w = C.BUILDING_DEFS[size].w;
-      if (x + w > col.xMax - margin) break;
-      defs.push({ x: x + w / 2, y: baseY, size, blockIdx: chunkId });
-      x += w + 2 + Math.floor(Math.random() * 3);
-    }
-  }
-  return defs;
+// ===== チャンクアーキタイプ =====
+// 各アーキタイプは 3 レイヤー × 3 列で構成される。
+// 各セルには 1 つ以上のシーン id が入り、左から順に placeRecipe で配置される。
+// 'PARK' / 'PARKING_LOT' の特殊値は建物のない特殊エリアを表す。
+// null は「そのセルを空ける」意味。
+
+interface ChunkArchetype {
+  id: string;
+  weight: number;
+  mid1: (string[] | null)[];  // baseY+58 に bot tier シーン
+  mid2: (string[] | null)[];  // baseY+86 に mid/midB tier シーン
+  top:  (string[] | null)[];  // baseY+162 に top tier シーン
+  specialArea?: 'park' | 'parking_lot';
 }
 
-/** 1チャンク（200px）分のコンテンツを生成する
- *
- *  チャンク内レイアウト（初期都市の100px道路間隔に合わせる）:
- *
- *   baseY+200: [次チャンク下端]
- *     [TOP行: 大型ビル 1列]
- *   Road B  (baseY+135, h=14)
- *     [MID行: 中型建物 2列]
- *   Road A  (baseY+35,  h=14)
- *     [BOT行: 小型建物 1列] ※スペース充分な場合のみ
- *   baseY
- */
+const CHUNK_ARCHETYPES: ChunkArchetype[] = [
+  // 1. 閑静な住宅街
+  {
+    id: 'suburban_quiet', weight: 3,
+    mid1: [['house_trio_garden'],       ['house_konbini'],         ['house_garage']],
+    mid2: [['townhouse_row'],           ['clinic_daycare'],        ['mansion_shop']],
+    top:  [['school_grounds'],          ['hospital_scene'],        ['city_hall']],
+  },
+  // 2. 商店街アーケード
+  {
+    id: 'shotengai_arcade', weight: 3,
+    mid1: [['ramen_izakaya', 'konbini_corner'], ['cafe_bookstore'], ['florist_bakery']],
+    mid2: [['shotengai_food'],          ['shotengai_game'],        ['cafe_bookstore_row']],
+    top:  [['dept_store_plaza'],        ['movie_library'],         ['museum_complex']],
+  },
+  // 3. 神社・寺の文化区
+  {
+    id: 'shrine_district', weight: 2,
+    mid1: [['garden_shed'],             ['house_trio_garden'],     ['konbini_corner']],
+    mid2: [['temple_garden'],           ['shrine_complex'],        ['mansion_shop']],
+    top:  [['museum_complex'],          ['ferris_wheel_zone'],     ['train_station_plaza']],
+  },
+  // 4. オフィス街
+  {
+    id: 'office_district', weight: 2,
+    mid1: [['konbini_corner'],          ['cafe_bookstore'],        ['laundromat_pharmacy']],
+    mid2: [['bank_post'],               ['shop_parasol_row'],      ['cafe_bookstore_row']],
+    top:  [['office_tower_group'],      ['clock_tower_trio'],      ['water_tower_apartment']],
+  },
+  // 5. 駅前ハブ
+  {
+    id: 'station_hub', weight: 1,
+    mid1: [['ramen_izakaya'],           ['florist_bakery', 'konbini_corner'], ['cafe_bookstore']],
+    mid2: [['shotengai_food'],          ['bank_post'],             ['shop_parasol_row']],
+    top:  [['train_station_plaza'],     ['dept_store_plaza'],      ['hospital_scene']],
+  },
+  // 6. 娯楽街
+  {
+    id: 'entertainment_zone', weight: 2,
+    mid1: [['ramen_izakaya'],           ['konbini_corner'],        ['cafe_bookstore']],
+    mid2: [['shotengai_game'],          ['shotengai_food'],        ['shrine_complex']],
+    top:  [['ferris_wheel_zone'],       ['stadium_radio'],         ['movie_library']],
+  },
+  // 7. 工業・郊外
+  {
+    id: 'industrial_suburb', weight: 1,
+    mid1: [['gas_station_corner'],      ['garden_shed', 'house_garage'], ['house_trio_garden']],
+    mid2: [['townhouse_row'],           ['mansion_shop'],          ['clinic_daycare']],
+    top:  [['water_tower_apartment'],   ['supermarket_front'],     ['stadium_radio']],
+  },
+  // 8. 公園チャンク (中段は特殊エリアに)
+  {
+    id: 'park_break', weight: 1,
+    mid1: [null, null, null],
+    mid2: [null, null, null],
+    top:  [['museum_complex'],          ['city_hall'],             ['hospital_scene']],
+    specialArea: 'park',
+  },
+];
+
+const ARCHETYPE_POOL = new WeightedPool<ChunkArchetype>(
+  CHUNK_ARCHETYPES.map(a => [a, a.weight] as const)
+);
+let lastArchetypeId: string | null = null;
+
+function pickArchetype(): ChunkArchetype {
+  // 直前と同じは避ける
+  for (let tries = 0; tries < 6; tries++) {
+    const a = ARCHETYPE_POOL.pick();
+    if (a.id !== lastArchetypeId) {
+      lastArchetypeId = a.id;
+      return a;
+    }
+  }
+  const a = ARCHETYPE_POOL.pick();
+  lastArchetypeId = a.id;
+  return a;
+}
+
+/** チャンク行用の仮 Block を作ってシーンを配置する */
+function placeChunkRow(
+  cellRecipes: (string[] | null)[],
+  baseY: number,
+  chunkId: number
+): ScenePlacement {
+  const out: ScenePlacement = { buildings: [], furniture: [] };
+  for (let ci = 0; ci < COLS.length; ci++) {
+    const ids = cellRecipes[ci];
+    if (!ids || ids.length === 0) continue;
+    const fakeBlock: Block = {
+      id: chunkId,
+      xMin: COLS[ci].xMin,
+      xMax: COLS[ci].xMax,
+      baseY,
+      pool: [],
+    };
+    const p = placeRecipe(ids, fakeBlock, 4);
+    out.buildings.push(...p.buildings);
+    out.furniture.push(...p.furniture);
+  }
+  return out;
+}
+
+/** 1 チャンク（200px）分のコンテンツを生成する */
 export function generateChunk(chunkId: number): ChunkData {
   const baseY    = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
   const roadAH   = 14, roadBH = 14;
   const roadAY   = baseY + 35;
   const roadBY   = baseY + 135;
 
-  // 道路の有効端 (sidewalk込み)
   const swH      = C.SIDEWALK_H;
-  const aSwTop   = roadAY + roadAH / 2 + swH; // = baseY + 46
-  const aSwBot   = roadAY - roadAH / 2 - swH; // = baseY + 24
-  const bSwTop   = roadBY + roadBH / 2 + swH; // = baseY + 146
-  const bSwBot   = roadBY - roadBH / 2 - swH; // = baseY + 124
+  const aSwTop   = roadAY + roadAH / 2 + swH; // baseY + 46
+  const bSwTop   = roadBY + roadBH / 2 + swH; // baseY + 146
 
-  const zoneType  = chunkId % 3;
-  const zone      = ZONES[zoneType];
   const buildings: BuildingDef[] = [];
   const furniture: FurnitureDef[] = [];
   const specialAreas: ChunkSpecialArea[] = [];
 
-  // チャンクのバリエーション (0〜5)
-  const variety = chunkId % 6;
-  // 中段エリアの中心Y
+  const arch = pickArchetype();
+
+  // ─── 中段: road A と road B の間 ──────────────────────────────
+  const mid1Base = aSwTop + 12;  // baseY + 58
+  const mid2Base = aSwTop + 40;  // baseY + 86
   const midCenterY = baseY + 88;
-  const midH = 72;  // bSwBot - aSwTop = 124-46 = 78 → 少し余裕を持って72
+  const midH = 72;
 
-  // ─── 下段: roadA下 ─────────────────────────────────────────────
-  if (aSwBot - baseY >= 20) {
-    buildings.push(...packRow(baseY + 4, zone.bot, 18, chunkId));
-  }
-
-  // ─── 中段: roadAとroadBの間 ────────────────────────────────────
-  const mid1Base = aSwTop + 12;  // = baseY + 58
-  const mid2Base = aSwTop + 40;  // = baseY + 86
-  const mid3Base = aSwTop + 64;  // = baseY + 110
-
-  if (variety === 2) {
-    // ── 公園エリア: 建物なし・木々と噴水 ──────────────────────────
+  if (arch.specialArea === 'park') {
     specialAreas.push({ type: 'park', y: midCenterY, h: midH });
     furniture.push(...generateParkFurniture(midCenterY, chunkId));
-  } else if (variety === 4) {
-    // ── 駐車場エリア: 建物なし・駐車中の車グリッド ────────────────
+  } else if (arch.specialArea === 'parking_lot') {
     specialAreas.push({ type: 'parking_lot', y: midCenterY, h: midH });
     furniture.push(...generateParkingLotFurniture(midCenterY, chunkId));
-  } else if (variety === 5 && zoneType !== 0) {
-    // ── デパートブロック: 中段にデパート1棟を配置 ─────────────────
-    // 中央にデパート (w=54) を1棟
-    buildings.push({ x: 0, y: mid2Base, size: 'department_store', blockIdx: chunkId });
-    buildings.push(...packRow(mid1Base, zone.bot, 22, chunkId));
   } else {
-    // ── 通常の建物配置 ────────────────────────────────────────────
-    buildings.push(...packRow(mid1Base, zone.bot,  22, chunkId));
-    buildings.push(...packRow(mid2Base, zone.mid,  32, chunkId));
-    if (zoneType === 0) {
-      buildings.push(...packRow(mid3Base, zone.bot, 20, chunkId));
-    }
+    const p1 = placeChunkRow(arch.mid1, mid1Base, chunkId);
+    buildings.push(...p1.buildings);
+    furniture.push(...p1.furniture);
+    const p2 = placeChunkRow(arch.mid2, mid2Base, chunkId);
+    buildings.push(...p2.buildings);
+    furniture.push(...p2.furniture);
   }
 
-  // ─── 上段: roadB上 ──────────────────────────────────────────────
-  const topBase = bSwTop + 16; // = baseY + 162
-  if (variety === 5 && zoneType !== 0) {
-    // デパートチャンク: 上段はランドマーク系優先
-    const landmarkPool: C.BuildingSize[] = ['office', 'tower', 'skyscraper', 'department_store', 'museum', 'city_hall'];
-    buildings.push(...packRow(topBase, landmarkPool, 90, chunkId));
-  } else {
-    buildings.push(...packRow(topBase, zone.top, 90, chunkId));
-  }
+  // ─── 上段: road B 上 ─────────────────────────────────────────
+  const topBase = bSwTop + 16; // baseY + 162
+  const pTop = placeChunkRow(arch.top, topBase, chunkId);
+  buildings.push(...pTop.buildings);
+  furniture.push(...pTop.furniture);
 
-  // ─── 歩道家具 ──────────────────────────────────────────────────
+  // ─── 歩道家具 (ゾーン感覚で選ぶ) ──────────────────────────────
+  // アーキタイプ id から歩道ゾーンを決める
+  const zoneType =
+    arch.id === 'suburban_quiet' || arch.id === 'industrial_suburb' ? 0 :
+    arch.id === 'office_district' ? 2 : 1;
   furniture.push(...generateSidewalkFurniture(roadAY, zoneType, chunkId));
   furniture.push(...generateSidewalkFurniture(roadBY, zoneType, chunkId));
 
@@ -517,11 +698,13 @@ const VEHICLES: VehicleDef[] = [
 // ===== ステージ設定 =====
 
 export function getStage(level: number): StageConfig {
+  const city = placeCity();
   return {
     level,
-    buildings: packCity(),   // ランダム配置
+    buildings: city.buildings,
     bumpers: [],
-    furniture: FURNITURE,
+    // 静的な歩道家具 + シーン付属家具
+    furniture: [...FURNITURE, ...city.furniture],
     vehicles: VEHICLES,
     bgTopR: 0.52, bgTopG: 0.74, bgTopB: 0.96,
     bgBottomR: 0.38, bgBottomG: 0.36, bgBottomB: 0.33,
