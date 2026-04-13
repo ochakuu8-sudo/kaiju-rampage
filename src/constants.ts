@@ -53,7 +53,9 @@ export type BuildingSize =
   'bank' | 'post_office' | 'library' | 'museum' | 'city_hall' |
   'fire_station' | 'police_station' | 'train_station' | 'movie_theater' | 'gas_station' |
   // ── 1-D ランドマーク ──
-  'clock_tower' | 'radio_tower' | 'ferris_wheel' | 'stadium' | 'water_tower';
+  'clock_tower' | 'radio_tower' | 'ferris_wheel' | 'stadium' | 'water_tower' |
+  // ── 特大施設 ──
+  'department_store';
 
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
@@ -110,7 +112,9 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   radio_tower:    { w: 10, h: 88, hp: 3, score: 800,  humanMin: 3,   humanMax: 8   },
   ferris_wheel:   { w: 44, h: 48, hp: 4, score: 900,  humanMin: 25,  humanMax: 50  },
   stadium:        { w: 60, h: 38, hp: 4, score: 1000, humanMin: 180, humanMax: 360 },
-  water_tower:    { w: 18, h: 48, hp: 2, score: 380,  humanMin: 0,   humanMax: 5   },
+  water_tower:      { w: 18, h: 48, hp: 2, score: 380,  humanMin: 0,   humanMax: 5   },
+  // ===== 特大施設 =====
+  department_store: { w: 54, h: 38, hp: 3, score: 700,  humanMin: 160, humanMax: 260 },
 };
 
 // ===== 人間 =====
@@ -212,11 +216,18 @@ export const TIME_BALL_LOST  = -5;  // ボールロスト時のペナルティ (
 export const BALL_UPWARD_BIAS = 3;  // ランチャー上方バイアス
 
 // ===== SFCシムシティ風ゾーン色 =====
-export const ZONE_RESIDENTIAL: readonly [number,number,number,number] = [0.35, 0.65, 0.28, 1];
-export const ZONE_COMMERCIAL:  readonly [number,number,number,number] = [0.55, 0.55, 0.48, 1];
+export const ZONE_RESIDENTIAL: readonly [number,number,number,number] = [0.38, 0.62, 0.28, 1];  // 明るい緑
+export const ZONE_COMMERCIAL:  readonly [number,number,number,number] = [0.62, 0.56, 0.44, 1];  // 暖かみのある茶
 export const ZONE_RIVERSIDE:   readonly [number,number,number,number] = [0.30, 0.55, 0.32, 1];
 export const ZONE_SLOPE:       readonly [number,number,number,number] = [0.28, 0.50, 0.28, 1];
 export const PLANTING_COLOR:   readonly [number,number,number,number] = [0.30, 0.58, 0.25, 1];
+// チャンクゾーン色
+export const ZONE_OFFICE_BG:   readonly [number,number,number,number] = [0.48, 0.50, 0.58, 1];  // スチールグレー
+// 特殊エリア
+export const PARK_GROUND_COLOR:     readonly [number,number,number,number] = [0.28, 0.58, 0.22, 1];
+export const PARK_PATH_COLOR:       readonly [number,number,number,number] = [0.58, 0.52, 0.38, 1];
+export const PARKING_LOT_COLOR:     readonly [number,number,number,number] = [0.30, 0.30, 0.32, 1];
+export const PARKING_LINE_COLOR:    readonly [number,number,number,number] = [0.68, 0.68, 0.68, 1];
 export const RIVER_COLOR:      readonly [number,number,number,number] = [0.18, 0.42, 0.72, 1];
 export const RIVER_LIGHT:      readonly [number,number,number,number] = [0.35, 0.60, 0.85, 0.6];
 export const RIVER_BANK:       readonly [number,number,number,number] = [0.35, 0.50, 0.30, 1];

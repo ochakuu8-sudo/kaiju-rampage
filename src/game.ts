@@ -13,7 +13,7 @@ import { JuiceManager } from './juice';
 import { UIManager } from './ui';
 import { Camera } from './camera';
 import { getStage, generateChunk } from './stages';
-import type { ChunkData } from './stages';
+import type { ChunkData, ChunkSpecialArea } from './stages';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
 
@@ -408,6 +408,7 @@ export class Game {
     let n = 0;
     n += this.fillWalls(SHARED_BUF, n);
     n += this.fillChunkRoads(SHARED_BUF, n);
+    n += this.fillSpecialAreas(SHARED_BUF, n); // 公園・駐車場は道路の上・路地の下
     n += this.fillAlleys(SHARED_BUF, n);      // 路地は背景の上に重ねる
     n += this.buildings.fillInstances(SHARED_BUF, n, this.camera.y);
     n += this.furniture.fillInstances(SHARED_BUF, n, this.camera.y);
@@ -505,11 +506,11 @@ export class Game {
     const [plR, plG, plB] = C.PLANTING_COLOR;
     const swH = C.SIDEWALK_H;
 
-    // ゾーン背景色テーブル
+    // ゾーン背景色テーブル: 住宅/商業/オフィスで明確に差別化
     const zoneBg: [number,number,number][] = [
-      [C.ZONE_RESIDENTIAL[0], C.ZONE_RESIDENTIAL[1], C.ZONE_RESIDENTIAL[2]],
-      [C.ZONE_COMMERCIAL[0],  C.ZONE_COMMERCIAL[1],  C.ZONE_COMMERCIAL[2]],
-      [0.42, 0.42, 0.48], // オフィス街: スチールグレー
+      [C.ZONE_RESIDENTIAL[0], C.ZONE_RESIDENTIAL[1], C.ZONE_RESIDENTIAL[2]], // 緑
+      [C.ZONE_COMMERCIAL[0],  C.ZONE_COMMERCIAL[1],  C.ZONE_COMMERCIAL[2]],  // 温かい茶
+      [C.ZONE_OFFICE_BG[0],   C.ZONE_OFFICE_BG[1],   C.ZONE_OFFICE_BG[2]],  // スチールグレー
     ];
 
     for (const chunk of this.loadedChunks.values()) {
@@ -528,6 +529,52 @@ export class Game {
         writeInst(buf, n++, 0, swBot, W, swH, sw_r, sw_g, sw_b, 1);
         writeInst(buf, n++, 0, roadY, W, roadH, rr, rg, rb, 1);
         writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
+      }
+    }
+    return n - start;
+  }
+
+  /** 公園・駐車場などの特殊エリア地面を描画 */
+  private fillSpecialAreas(buf: Float32Array, start: number): number {
+    let n = start;
+    const W = 360;
+    const camBot = this.camera.bottom - 60;
+    const camTop = this.camera.top + 60;
+    const [pgR, pgG, pgB] = C.PARK_GROUND_COLOR;
+    const [ppR, ppG, ppB] = C.PARK_PATH_COLOR;
+    const [plR, plG, plB] = C.PARKING_LOT_COLOR;
+    const [lnR, lnG, lnB] = C.PARKING_LINE_COLOR;
+
+    for (const chunk of this.loadedChunks.values()) {
+      for (const area of chunk.specialAreas) {
+        if (area.y + area.h / 2 < camBot || area.y - area.h / 2 > camTop) continue;
+
+        if (area.type === 'park') {
+          // 緑地ベース
+          writeInst(buf, n++, 0, area.y, W, area.h, pgR, pgG, pgB, 1);
+          // 周囲の低木帯（濃いめの緑）
+          writeInst(buf, n++, 0, area.y + area.h / 2 - 4, W, 8,  pgR * 0.82, pgG * 0.82, pgB * 0.72, 1);
+          writeInst(buf, n++, 0, area.y - area.h / 2 + 4, W, 8,  pgR * 0.82, pgG * 0.82, pgB * 0.72, 1);
+          // 遊歩道（水平）
+          writeInst(buf, n++, 0, area.y, W, 4, ppR, ppG, ppB, 0.75);
+          // 遊歩道（縦・路地位置）
+          writeInst(buf, n++, C.ALLEY_1_X, area.y, 5, area.h, ppR, ppG, ppB, 0.55);
+          writeInst(buf, n++, C.ALLEY_2_X, area.y, 5, area.h, ppR, ppG, ppB, 0.55);
+          // 中央広場（少し明るい円形）
+          writeInst(buf, n++, 0, area.y, 22, 22, pgR * 1.12, pgG * 1.08, pgB * 0.95, 0.7, 0, 1);
+        } else if (area.type === 'parking_lot') {
+          // アスファルトベース
+          writeInst(buf, n++, 0, area.y, W, area.h, plR, plG, plB, 1);
+          // 中央仕切り線
+          writeInst(buf, n++, 0, area.y, W, 2, lnR, lnG, lnB, 0.6);
+          // 縦の駐車スペース区切り線
+          for (let xi = -168; xi <= 168; xi += 26) {
+            writeInst(buf, n++, xi, area.y, 1.5, area.h * 0.88, lnR, lnG, lnB, 0.45);
+          }
+          // 駐車場入り口マーク
+          writeInst(buf, n++, C.ALLEY_1_X, area.y, C.ALLEY_WIDTH + 2, area.h, plR * 1.05, plG * 1.05, plB * 1.08, 1);
+          writeInst(buf, n++, C.ALLEY_2_X, area.y, C.ALLEY_WIDTH + 2, area.h, plR * 1.05, plG * 1.05, plB * 1.08, 1);
+        }
       }
     }
     return n - start;

@@ -199,7 +199,9 @@ const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,numb
   radio_tower:    [0.62, 0.64, 0.68],
   ferris_wheel:   [0.52, 0.72, 0.90],
   stadium:        [0.64, 0.60, 0.56],
-  water_tower:    [0.68, 0.60, 0.50],
+  water_tower:      [0.68, 0.60, 0.50],
+  // 特大施設
+  department_store: [0.92, 0.82, 0.60],
 };
 
 // 建物種別からファサードパレットを選択するヘルパー
@@ -930,6 +932,33 @@ export class BuildingManager {
           // 脚部（×2）
           writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.28, 3, bH * 0.55, cr * 0.68, cg * 0.60, cb * 0.48, 1);
           writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.28, 3, bH * 0.55, cr * 0.68, cg * 0.60, cb * 0.48, 1);
+          break;
+        }
+        // ── 特大施設 ────────────────────────────────────────────
+        case 'department_store': {
+          // 屋上看板帯（濃い色）
+          writeInst(buf, n++, cx, top - 3.5, bW + 4, 7, cr * 0.50, cg * 0.35, cb * 0.15, 1);
+          // 各フロア帯（3階）
+          const dsFlH = bH / 4;
+          for (let i = 1; i <= 3; i++) {
+            writeInst(buf, n++, cx, bot + dsFlH * i, bW + 2, 2, cr * 0.72, cg * 0.60, cb * 0.38, 0.9);
+          }
+          // 大型ショーウィンドウ（1F）
+          writeInst(buf, n++, cx, bot + dsFlH * 0.55, bW * 0.82, dsFlH * 0.75,
+            0.72, 0.90, 0.98, 0.85);
+          // 2F・3F 連続窓
+          writeInst(buf, n++, cx, bot + dsFlH * 1.55, bW * 0.80, dsFlH * 0.65,
+            0.65, 0.85, 0.95, 0.80);
+          writeInst(buf, n++, cx, bot + dsFlH * 2.55, bW * 0.80, dsFlH * 0.65,
+            0.65, 0.85, 0.95, 0.80);
+          // 中央エントランス（屋根庇付き）
+          writeInst(buf, n++, cx, bot + 6, bW * 0.18, 11, 0.28, 0.22, 0.18, 1);
+          writeInst(buf, n++, cx, bot + dsFlH * 0.85, bW * 0.26, 3, cr * 0.60, cg * 0.45, cb * 0.22, 0.9);
+          // 屋上旗竿×2
+          writeInst(buf, n++, cx - bW * 0.38, top + 5, 1.5, 10, cr * 0.65, cg * 0.55, cb * 0.35, 1);
+          writeInst(buf, n++, cx + bW * 0.38, top + 5, 1.5, 10, cr * 0.65, cg * 0.55, cb * 0.35, 1);
+          writeInst(buf, n++, cx - bW * 0.38 + 5, top + 9, 8, 4, 0.88, 0.18, 0.18, 1);
+          writeInst(buf, n++, cx + bW * 0.38 + 5, top + 9, 8, 4, 0.20, 0.38, 0.88, 1);
           break;
         }
       }

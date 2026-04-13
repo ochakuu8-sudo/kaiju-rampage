@@ -149,12 +149,19 @@ export interface ChunkRoad {
   h: number;    // 道路高さ
 }
 
+export interface ChunkSpecialArea {
+  type: 'park' | 'parking_lot';
+  y: number;   // center Y
+  h: number;   // height (full width = 360)
+}
+
 export interface ChunkData {
   chunkId: number;
   baseY: number;            // チャンク下端Y（ワールド座標）
   roads: ChunkRoad[];       // 2本の横道路
   buildings: BuildingDef[];
   furniture: FurnitureDef[];
+  specialAreas: ChunkSpecialArea[];
 }
 
 // ===== ゾーン別建物プール =====
@@ -178,7 +185,8 @@ const ZONES: ZoneDef[] = [
     mid: ['shop', 'restaurant', 'apartment', 'parking', 'temple', 'cafe', 'pharmacy', 'bookstore',
           'karaoke', 'izakaya', 'game_center', 'ramen', 'pachinko'],
     top: ['apartment', 'apartment_tall', 'school', 'hospital', 'parking', 'supermarket',
-          'bank', 'post_office', 'movie_theater', 'museum', 'fire_station', 'police_station'],
+          'bank', 'post_office', 'movie_theater', 'museum', 'fire_station', 'police_station',
+          'department_store'],
   },
   // Zone 2: オフィス街・ランドマーク
   {
@@ -223,6 +231,55 @@ function generateSidewalkFurniture(
       pi++;
     }
     x += gap + Math.floor(Math.random() * 6);
+  }
+  return items;
+}
+
+/** 公園エリアの家具を生成する */
+function generateParkFurniture(centerY: number, chunkId: number): FurnitureDef[] {
+  const items: FurnitureDef[] = [];
+  // 中央に噴水
+  items.push({ type: 'fountain', x: 0, y: centerY });
+  // 木々のグリッド（左右に散りばめ）
+  const treeTypes: FurnitureType[] = ['tree', 'sakura_tree', 'pine_tree', 'bush', 'planter'];
+  const xCols = [-158, -138, -115, -90, -68, -28, 28, 62, 88, 110, 138, 158];
+  const yRows = [-22, 0, 22];
+  for (const xOff of xCols) {
+    for (const yOff of yRows) {
+      const nearAlley = Math.abs(xOff - C.ALLEY_1_X) < 14 || Math.abs(xOff - C.ALLEY_2_X) < 14;
+      const nearFountain = Math.abs(xOff) < 24 && Math.abs(yOff) < 12;
+      if (!nearAlley && !nearFountain) {
+        const type = treeTypes[Math.floor(Math.random() * treeTypes.length)];
+        items.push({ type, x: xOff, y: centerY + yOff });
+      }
+    }
+  }
+  // ベンチ
+  for (const x of [-110, -72, 72, 110]) {
+    items.push({ type: 'bench', x, y: centerY + 12 });
+  }
+  // 花壇
+  for (const x of [-40, 40]) {
+    items.push({ type: 'flower_bed', x, y: centerY - 8 });
+  }
+  // 旗竿
+  items.push({ type: 'flag_pole', x: -155, y: centerY - 20 });
+  items.push({ type: 'flag_pole', x:  155, y: centerY - 20 });
+  return items;
+}
+
+/** 駐車場エリアの家具を生成する (駐車中の車グリッド) */
+function generateParkingLotFurniture(centerY: number, chunkId: number): FurnitureDef[] {
+  const items: FurnitureDef[] = [];
+  const rowYs = [centerY - 16, centerY, centerY + 16];
+  // 駐車スペース: X方向に24px間隔
+  for (let xi = -156; xi <= 156; xi += 26) {
+    for (const y of rowYs) {
+      const nearAlley = Math.abs(xi - C.ALLEY_1_X) < 16 || Math.abs(xi - C.ALLEY_2_X) < 16;
+      if (!nearAlley && Math.random() < 0.78) {  // 一部空きスペース
+        items.push({ type: 'car', x: xi, y });
+      }
+    }
   }
   return items;
 }
@@ -276,32 +333,57 @@ export function generateChunk(chunkId: number): ChunkData {
   const zone      = ZONES[zoneType];
   const buildings: BuildingDef[] = [];
   const furniture: FurnitureDef[] = [];
+  const specialAreas: ChunkSpecialArea[] = [];
 
-  // ─── 下段: roadA下 (初期都市の最下段に対応) ───────────────────
-  // Space: baseY → aSwBot (+24). 24px = house(h=20) が入る
+  // チャンクのバリエーション (0〜5)
+  const variety = chunkId % 6;
+  // 中段エリアの中心Y
+  const midCenterY = baseY + 88;
+  const midH = 72;  // bSwBot - aSwTop = 124-46 = 78 → 少し余裕を持って72
+
+  // ─── 下段: roadA下 ─────────────────────────────────────────────
   if (aSwBot - baseY >= 20) {
     buildings.push(...packRow(baseY + 4, zone.bot, 18, chunkId));
   }
 
   // ─── 中段: roadAとroadBの間 ────────────────────────────────────
-  // 78px スペース (aSwTop+46 → bSwBot+124) = 78px
-  // 初期都市の中段(LOWER↔MAIN)に対応: 2〜3行
   const mid1Base = aSwTop + 12;  // = baseY + 58
   const mid2Base = aSwTop + 40;  // = baseY + 86
-  const mid3Base = aSwTop + 64;  // = baseY + 110 (住宅のみ)
-  buildings.push(...packRow(mid1Base, zone.bot,  22, chunkId));
-  buildings.push(...packRow(mid2Base, zone.mid,  32, chunkId));
-  if (zoneType === 0) {
-    // 住宅街: 3行目も追加（初期都市下段の3行に対応）
-    buildings.push(...packRow(mid3Base, zone.bot, 20, chunkId));
+  const mid3Base = aSwTop + 64;  // = baseY + 110
+
+  if (variety === 2) {
+    // ── 公園エリア: 建物なし・木々と噴水 ──────────────────────────
+    specialAreas.push({ type: 'park', y: midCenterY, h: midH });
+    furniture.push(...generateParkFurniture(midCenterY, chunkId));
+  } else if (variety === 4) {
+    // ── 駐車場エリア: 建物なし・駐車中の車グリッド ────────────────
+    specialAreas.push({ type: 'parking_lot', y: midCenterY, h: midH });
+    furniture.push(...generateParkingLotFurniture(midCenterY, chunkId));
+  } else if (variety === 5 && zoneType !== 0) {
+    // ── デパートブロック: 中段にデパート1棟を配置 ─────────────────
+    // 中央にデパート (w=54) を1棟
+    buildings.push({ x: 0, y: mid2Base, size: 'department_store', blockIdx: chunkId });
+    buildings.push(...packRow(mid1Base, zone.bot, 22, chunkId));
+  } else {
+    // ── 通常の建物配置 ────────────────────────────────────────────
+    buildings.push(...packRow(mid1Base, zone.bot,  22, chunkId));
+    buildings.push(...packRow(mid2Base, zone.mid,  32, chunkId));
+    if (zoneType === 0) {
+      buildings.push(...packRow(mid3Base, zone.bot, 20, chunkId));
+    }
   }
 
-  // ─── 上段: roadB上 (初期都市の上段・ビル列に対応) ────────────────
-  // baseY+162 は初期都市の ZONE_TOP_Y0 と同じオフセット
+  // ─── 上段: roadB上 ──────────────────────────────────────────────
   const topBase = bSwTop + 16; // = baseY + 162
-  buildings.push(...packRow(topBase, zone.top, 90, chunkId)); // maxH=90 allows skyscrapers
+  if (variety === 5 && zoneType !== 0) {
+    // デパートチャンク: 上段はランドマーク系優先
+    const landmarkPool: C.BuildingSize[] = ['office', 'tower', 'skyscraper', 'department_store', 'museum', 'city_hall'];
+    buildings.push(...packRow(topBase, landmarkPool, 90, chunkId));
+  } else {
+    buildings.push(...packRow(topBase, zone.top, 90, chunkId));
+  }
 
-  // ─── 歩道家具 ─────────────────────────────────────────────────
+  // ─── 歩道家具 ──────────────────────────────────────────────────
   furniture.push(...generateSidewalkFurniture(roadAY, zoneType, chunkId));
   furniture.push(...generateSidewalkFurniture(roadBY, zoneType, chunkId));
 
@@ -310,6 +392,7 @@ export function generateChunk(chunkId: number): ChunkData {
     roads: [{ y: roadAY, h: roadAH }, { y: roadBY, h: roadBH }],
     buildings,
     furniture,
+    specialAreas,
   };
 }
 
