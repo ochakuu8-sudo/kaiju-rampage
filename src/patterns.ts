@@ -49,8 +49,13 @@ export const INITIAL_CITY_PATTERN: RoadPattern = {
     { gridLine: 3, startCell: 1, endCell: 3, cls: 'street' },
   ],
   cells: [
-    // ROW 0 (下段 - 住宅街、RIVER と LOWER の間)
-    [ 'house_trio_garden', 'ramen_izakaya', 'house_konbini', 'house_garage' ],
+    // ROW 0 (下段 - 住宅街、RIVER と LOWER の間): 2 scenes/cell で密に
+    [
+      ['house_trio_garden', 'konbini_corner'],
+      ['ramen_izakaya', 'florist_bakery'],
+      ['house_konbini', 'cafe_bookstore'],
+      ['house_garage', 'garden_shed'],
+    ],
     // ROW 1 (中段 - 商業+宗教、LOWER と MAIN の間)
     [ 'shop_parasol_row', 'shrine_complex', 'temple_garden', 'clinic_daycare' ],
     // ROW 2 (上段 - ランドマーク、MAIN と HILLTOP の間): 駅 / 百貨店 (2-cell) / 病院
@@ -113,9 +118,10 @@ const T_JUNCTION_WEST: RoadPattern = {
     { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
   ],
   verticalRoads: [
-    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+    // row 0 の境界道路 (merge されていない側)
+    { gridLine: 1, startCell: 0, endCell: 1, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' }, // 中央は両行走る (merge 境界)
+    { gridLine: 3, startCell: 0, endCell: 1, cls: 'street' },
   ],
   cells: [
     [ 'house_konbini', 'florist_bakery', 'ramen_izakaya', 'cafe_bookstore' ],
@@ -135,9 +141,10 @@ const T_JUNCTION_EAST: RoadPattern = {
     { gridLine: 1, startCell: 2, endCell: 4, cls: 'street' },
   ],
   verticalRoads: [
-    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    // row 1 のみ (row 0 は merge されている)
+    { gridLine: 1, startCell: 1, endCell: 2, cls: 'street' },
     { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 3, startCell: 1, endCell: 2, cls: 'street' },
   ],
   cells: [
     [ 'shop_parasol_row', 'merged_right', 'cafe_bookstore_row', 'merged_right' ],
@@ -191,9 +198,10 @@ const DENSE_ALLEY: RoadPattern = {
     { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
   ],
   verticalRoads: [
-    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+    // row 0 のみ (row 1 は merged)
+    { gridLine: 1, startCell: 0, endCell: 1, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' }, // 2 merges の境界は両行
+    { gridLine: 3, startCell: 0, endCell: 1, cls: 'street' },
   ],
   cells: [
     [ 'ramen_izakaya', 'konbini_corner', 'florist_bakery', 'cafe_bookstore' ],
@@ -223,9 +231,10 @@ const OFFICE_DISTRICT: RoadPattern = {
     { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
   ],
   verticalRoads: [
-    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
-    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+    // row 0 と row 1 で一部異なる (row 1 の merge 内部は除外)
+    { gridLine: 1, startCell: 0, endCell: 1, cls: 'street' }, // row 0 のみ (row 1 merge 内部)
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' }, // 両行 (merge 境界)
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' }, // 両行
   ],
   cells: [
     [ 'bank_post', 'cafe_bookstore_row', 'shop_parasol_row', 'laundromat_pharmacy' ],

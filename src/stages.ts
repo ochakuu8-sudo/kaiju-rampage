@@ -254,10 +254,36 @@ const INITIAL_CITY_RECIPES: string[][][] = [
 
 // ===== Grid-based scene placement =====
 
+/** シーン内の建物重心 (center of mass) を計算 */
+function sceneBuildingCenterX(scene: Scene): number {
+  if (scene.buildings.length === 0) return scene.width / 2;
+  let totalW = 0;
+  let weighted = 0;
+  for (const b of scene.buildings) {
+    const bw = C.BUILDING_DEFS[b.size].w;
+    weighted += b.dx * bw;
+    totalW += bw;
+  }
+  return totalW > 0 ? weighted / totalW : scene.width / 2;
+}
+
+/** シーン内の建物のみの左右端 (家具は含めない) */
+function sceneBuildingBounds(scene: Scene): { left: number; right: number } {
+  if (scene.buildings.length === 0) return { left: 0, right: scene.width };
+  let left = Infinity, right = -Infinity;
+  for (const b of scene.buildings) {
+    const bw = C.BUILDING_DEFS[b.size].w;
+    left = Math.min(left, b.dx - bw / 2);
+    right = Math.max(right, b.dx + bw / 2);
+  }
+  return { left, right };
+}
+
 /**
  * GridBlock の各 cell にシーンを配置する。
- * merged cell は master cell の scene が span 分の cell 幅にまたがる。
- * blockIdx は全セル共通で cityBlockIdx を使う (初期都市の場合) or chunkId (チャンクの場合)。
+ * - 建物重心を cell 中心に合わせる (bbox 中心揃えではなく)
+ * - merged cell は master cell の scene が span 分の cell 幅にまたがる
+ * - セルの使用可能幅を隣接縦道路から計算し、overflow 検知
  */
 export function placeGridBlock(
   block: GridBlock,
@@ -266,40 +292,70 @@ export function placeGridBlock(
 ): ScenePlacement {
   const out: ScenePlacement = { buildings: [], furniture: [] };
   const merges = pattern.merges ?? [];
+  const ROAD_HALF = 7; // 縦道路の半幅 (14/2)
+  const CLEARANCE = 2; // 道路との追加クリアランス
+
+  // この行の、指定 col 左右に縦道路があるか判定
+  const hasVertRoadAt = (gridLine: number, row: number): boolean => {
+    return block.verticalRoads.some(v =>
+      v.gridLine === gridLine && v.startCell <= row && v.endCell > row
+    );
+  };
 
   for (let r = 0; r < block.rows; r++) {
     for (let c = 0; c < block.cols; c++) {
       const cell = block.cells[r][c];
-      if (cell.type !== 'scene') continue;
+      if (cell.type !== 'scene' && cell.type !== 'scenes') continue;
 
-      // merged 情報を確認
       const mergeInfo = merges.find(m => m.row === r && m.col === c);
       const spanCols = mergeInfo ? mergeInfo.spanCols : 1;
 
-      // 配置範囲: master cell の左端 → master + spanCols の右端
-      const leftCellX = block.originX + c * block.cellW;
-      const totalW = spanCols * block.cellW;
+      const leftColEdge = block.originX + c * block.cellW;
+      const rightColEdge = leftColEdge + spanCols * block.cellW;
 
-      // 道路・歩道の呑み代を左右で差し引く (内部縦道路に隣接する場合)
-      // 簡単のため、cell 境界から 8px ずつ内側にシーンを置く
-      const margin = 6;
-      const availW = totalW - margin * 2;
+      const leftHasRoad = hasVertRoadAt(c, r);
+      const rightHasRoad = hasVertRoadAt(c + spanCols, r);
 
-      const scene = getScene(cell.sceneId);
-      if (scene.width > availW + 2) {
-        // サイズ超過: 中央に配置して強制的に
-        const leftX = leftCellX + (totalW - scene.width) / 2;
-        const baseY = block.originY + r * block.cellH + 12;
+      const usableLeft  = leftColEdge  + (leftHasRoad  ? ROAD_HALF + CLEARANCE : 1);
+      const usableRight = rightColEdge - (rightHasRoad ? ROAD_HALF + CLEARANCE : 1);
+      const usableW = usableRight - usableLeft;
+      const usableCenterX = (usableLeft + usableRight) / 2;
+
+      const baseY = block.originY + r * block.cellH + 12;
+
+      if (cell.type === 'scene') {
+        // 単一シーン: 建物重心を usable 中心へ
+        const scene = getScene(cell.sceneId);
+        const comX = sceneBuildingCenterX(scene);
+        const bounds = sceneBuildingBounds(scene);
+        let leftX = usableCenterX - comX;
+        if (leftX + bounds.left < usableLeft) leftX = usableLeft - bounds.left;
+        if (leftX + bounds.right > usableRight) leftX = usableRight - bounds.right;
         const p = placeScene(scene, leftX, baseY, blockIdx);
         out.buildings.push(...p.buildings);
         out.furniture.push(...p.furniture);
       } else {
-        // 余裕あり: 中央配置
-        const leftX = leftCellX + (totalW - scene.width) / 2;
-        const baseY = block.originY + r * block.cellH + 12;
-        const p = placeScene(scene, leftX, baseY, blockIdx);
-        out.buildings.push(...p.buildings);
-        out.furniture.push(...p.furniture);
+        // 複数シーン: 横並びに配置。全シーン合計幅 + gap を usable 内に等分
+        const scenes = cell.sceneIds.map(id => getScene(id));
+        const gap = 4;
+        let totalW = 0;
+        for (let i = 0; i < scenes.length; i++) {
+          if (i > 0) totalW += gap;
+          const b = sceneBuildingBounds(scenes[i]);
+          totalW += (b.right - b.left);
+        }
+        // 全体を usable 中央に配置
+        let cursor = usableCenterX - totalW / 2;
+        if (cursor < usableLeft) cursor = usableLeft;
+        if (cursor + totalW > usableRight) cursor = usableRight - totalW;
+        for (const scene of scenes) {
+          const b = sceneBuildingBounds(scene);
+          const sceneLeftX = cursor - b.left;
+          const p = placeScene(scene, sceneLeftX, baseY, blockIdx);
+          out.buildings.push(...p.buildings);
+          out.furniture.push(...p.furniture);
+          cursor += (b.right - b.left) + gap;
+        }
       }
     }
   }

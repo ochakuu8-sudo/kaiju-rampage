@@ -208,39 +208,35 @@ const BOT_SCENES: Scene[] = [
 const MID_SCENES: Scene[] = [
   // 商店街・飲食 (4軒並び + パラソル + 看板)
   {
-    id: 'shotengai_food', tier: 'mid', width: 88,
+    id: 'shotengai_food', tier: 'mid', width: 74,
     buildings: [
       { dx: 10, size: 'ramen' },   // w=16, edges 2-18
-      { dx: 33, size: 'izakaya' }, // w=20, edges 23-43
-      { dx: 56, size: 'cafe' },    // w=18, edges 47-65
-      { dx: 78, size: 'bakery' },  // w=16, edges 70-86
+      { dx: 28, size: 'izakaya' }, // w=20, edges 18-38
+      { dx: 47, size: 'cafe' },    // w=18, edges 38-56
+      { dx: 64, size: 'bakery' },  // w=16, edges 56-72
     ],
     furniture: [
       { dx:  1, dy: 5, type: 'parasol' },
-      { dx: 20, dy: 7, type: 'sign_board' },
-      { dx: 33, dy: 5, type: 'parasol' },
-      { dx: 45, dy: 7, type: 'sign_board' },
-      { dx: 56, dy: 5, type: 'parasol' },
-      { dx: 67, dy: 7, type: 'sign_board' },
-      { dx: 88, dy: 5, type: 'parasol' },
+      { dx: 18, dy: 7, type: 'sign_board' },
+      { dx: 38, dy: 5, type: 'parasol' },
+      { dx: 56, dy: 7, type: 'sign_board' },
+      { dx: 73, dy: 5, type: 'parasol' },
     ],
   },
 
-  // 娯楽街 (パチンコ + カラオケ + ゲーセン)
+  // 娯楽街 (パチンコ + ゲーセン、コンパクト版)
   {
-    id: 'shotengai_game', tier: 'mid', width: 94,
+    id: 'shotengai_game', tier: 'mid', width: 66,
     buildings: [
       { dx: 15, size: 'pachinko' },    // w=30, edges 0-30
-      { dx: 47, size: 'karaoke' },     // w=24, edges 35-59
-      { dx: 78, size: 'game_center' }, // w=28, edges 64-92
+      { dx: 50, size: 'game_center' }, // w=28, edges 36-64
     ],
     furniture: [
-      { dx:  2, dy: 6, type: 'sign_board' },
+      { dx:  1, dy: 6, type: 'sign_board' },
       { dx: 15, dy: 5, type: 'street_lamp' },
       { dx: 32, dy: 4, type: 'bicycle_rack' },
-      { dx: 47, dy: 5, type: 'street_lamp' },
-      { dx: 61, dy: 4, type: 'bicycle_rack' },
-      { dx: 78, dy: 6, type: 'sign_board' },
+      { dx: 50, dy: 5, type: 'street_lamp' },
+      { dx: 65, dy: 6, type: 'sign_board' },
     ],
   },
 
@@ -262,18 +258,18 @@ const MID_SCENES: Scene[] = [
 
   // 商店 × 3 (パラソル・看板が賑やか)
   {
-    id: 'shop_parasol_row', tier: 'mid', width: 76,
+    id: 'shop_parasol_row', tier: 'mid', width: 72,
     buildings: [
       { dx: 11, size: 'shop' },        // w=22, edges 0-22
-      { dx: 37, size: 'restaurant' },  // w=20, edges 27-47
-      { dx: 62, size: 'shop' },        // w=22, edges 51-73
+      { dx: 35, size: 'restaurant' },  // w=20, edges 25-45
+      { dx: 59, size: 'shop' },        // w=22, edges 48-70
     ],
     furniture: [
       { dx:  0, dy: 4, type: 'parasol' },
-      { dx: 24, dy: 6, type: 'sign_board' },
-      { dx: 37, dy: 4, type: 'parasol' },
-      { dx: 49, dy: 6, type: 'sign_board' },
-      { dx: 74, dy: 4, type: 'parasol' },
+      { dx: 23, dy: 6, type: 'sign_board' },
+      { dx: 35, dy: 4, type: 'parasol' },
+      { dx: 46, dy: 6, type: 'sign_board' },
+      { dx: 71, dy: 4, type: 'parasol' },
     ],
   },
 
@@ -397,40 +393,39 @@ const MID_SCENES: Scene[] = [
 // ─────────────────────────────────────────────────────────────────
 
 const TOP_SCENES: Scene[] = [
-  // 駅前広場 (駅 + バス停 × 2 + 駐車タクシー)
+  // 駅前広場 (駅 + バス停)
   {
-    id: 'train_station_plaza', tier: 'top', width: 82,
+    id: 'train_station_plaza', tier: 'top', width: 70,
     buildings: [
       { dx: 35, size: 'train_station' }, // w=50, edges 10-60
     ],
     furniture: [
-      { dx: -1, dy: 5, type: 'bus_stop' },
-      { dx: 14, dy: 5, type: 'bench' },
+      { dx:  1, dy: 5, type: 'bus_stop' },
+      { dx: 12, dy: 5, type: 'bench' },
       { dx: 35, dy: 6, type: 'street_lamp' },
-      { dx: 56, dy: 5, type: 'bench' },
-      { dx: 70, dy: 5, type: 'bus_stop' },
-      { dx: 82, dy: 5, type: 'flag_pole' },
+      { dx: 58, dy: 5, type: 'bench' },
+      { dx: 69, dy: 5, type: 'bus_stop' },
     ],
     parkedVehicles: [
-      { dx:  4, dy: 2, type: 'taxi' },
-      { dx: 76, dy: 2, type: 'taxi' },
+      { dx:  5, dy: 2, type: 'taxi' },
+      { dx: 65, dy: 2, type: 'taxi' },
     ],
   },
 
-  // 中央百貨店 (デパート + 装飾)
+  // 中央百貨店 (デパート + 装飾) — 2-cell merged 用の広めシーン
   {
-    id: 'dept_store_plaza', tier: 'top', width: 90,
+    id: 'dept_store_plaza', tier: 'top', width: 74,
     buildings: [
-      { dx: 44, size: 'department_store' }, // w=54, edges 17-71
+      { dx: 37, size: 'department_store' }, // w=54, edges 10-64
     ],
     furniture: [
-      { dx:  0, dy: 6, type: 'banner_pole' },
-      { dx: 14, dy: 5, type: 'street_lamp' },
-      { dx: 28, dy: 5, type: 'bench' },
-      { dx: 44, dy: 6, type: 'statue' },
-      { dx: 60, dy: 5, type: 'bench' },
-      { dx: 76, dy: 5, type: 'street_lamp' },
-      { dx: 90, dy: 6, type: 'banner_pole' },
+      { dx:  2, dy: 5, type: 'street_lamp' },
+      { dx: 12, dy: 5, type: 'bench' },
+      { dx: 24, dy: 6, type: 'banner_pole' },
+      { dx: 37, dy: 6, type: 'statue' },
+      { dx: 50, dy: 6, type: 'banner_pole' },
+      { dx: 62, dy: 5, type: 'bench' },
+      { dx: 72, dy: 5, type: 'street_lamp' },
     ],
   },
 
@@ -454,81 +449,79 @@ const TOP_SCENES: Scene[] = [
 
   // 学校 (運動場風)
   {
-    id: 'school_grounds', tier: 'top', width: 80,
+    id: 'school_grounds', tier: 'top', width: 74,
     buildings: [
-      { dx: 40, size: 'school' }, // w=40, edges 20-60
+      { dx: 36, size: 'school' }, // w=40, edges 16-56
     ],
     furniture: [
       { dx: -2, dy: 1, type: 'hedge' },
-      { dx:  6, dy: 4, type: 'tree' },
-      { dx: 16, dy: 5, type: 'flag_pole' },
-      { dx: 66, dy: 4, type: 'sakura_tree' },
-      { dx: 76, dy: 4, type: 'tree' },
-      { dx: 82, dy: 1, type: 'hedge' },
+      { dx:  4, dy: 4, type: 'tree' },
+      { dx: 12, dy: 5, type: 'flag_pole' },
+      { dx: 60, dy: 4, type: 'sakura_tree' },
+      { dx: 70, dy: 4, type: 'tree' },
+      { dx: 74, dy: 1, type: 'hedge' },
     ],
   },
 
   // 市役所 (噴水・旗竿・ベンチのシンメトリー)
   {
-    id: 'city_hall', tier: 'top', width: 78,
+    id: 'city_hall', tier: 'top', width: 72,
     buildings: [
-      { dx: 35, size: 'city_hall' }, // w=40, edges 15-55
+      { dx: 32, size: 'city_hall' }, // w=40, edges 12-52
     ],
     furniture: [
       { dx:  2, dy: 6, type: 'flag_pole' },
-      { dx: 12, dy: 5, type: 'statue' },
-      { dx: 22, dy: 5, type: 'bench' },
-      { dx: 35, dy: 7, type: 'fountain' },
-      { dx: 48, dy: 5, type: 'bench' },
-      { dx: 66, dy: 6, type: 'flag_pole' },
-      { dx: 76, dy: 4, type: 'planter' },
+      { dx: 10, dy: 5, type: 'statue' },
+      { dx: 20, dy: 5, type: 'bench' },
+      { dx: 32, dy: 7, type: 'fountain' },
+      { dx: 44, dy: 5, type: 'bench' },
+      { dx: 60, dy: 6, type: 'flag_pole' },
+      { dx: 70, dy: 4, type: 'planter' },
     ],
   },
 
-  // オフィスタワー群
+  // オフィスタワー群 (2-cell merged 専用、160 px 想定)
   {
-    id: 'office_tower_group', tier: 'top', width: 106,
+    id: 'office_tower_group', tier: 'top', width: 100,
     buildings: [
-      { dx: 16, size: 'office' },     // w=30, edges 1-31
-      { dx: 52, size: 'skyscraper' }, // w=28, edges 38-66
-      { dx: 88, size: 'tower' },      // w=35, edges 71-106 (gap 5)
+      { dx: 15, size: 'office' },     // w=30, edges 0-30
+      { dx: 48, size: 'skyscraper' }, // w=28, edges 34-62
+      { dx: 82, size: 'tower' },      // w=35, edges 64-99
     ],
     furniture: [
       { dx:  0, dy: 3, type: 'bollard' },
-      { dx: 34, dy: 3, type: 'electric_box' },
-      { dx: 68, dy: 3, type: 'bollard' },
-      { dx: 106, dy: 3, type: 'electric_box' },
+      { dx: 32, dy: 3, type: 'electric_box' },
+      { dx: 63, dy: 3, type: 'bollard' },
+      { dx: 100, dy: 3, type: 'electric_box' },
     ],
   },
 
-  // 時計塔 + 高層アパート + オフィス
+  // 時計塔 + 高層アパート (コンパクト 2 棟)
   {
-    id: 'clock_tower_trio', tier: 'top', width: 88,
+    id: 'clock_tower_trio', tier: 'top', width: 60,
     buildings: [
       { dx: 10, size: 'clock_tower' },    // w=16, edges 2-18
-      { dx: 38, size: 'apartment_tall' }, // w=26, edges 25-51
-      { dx: 70, size: 'office' },         // w=30, edges 55-85
+      { dx: 36, size: 'apartment_tall' }, // w=26, edges 23-49
     ],
     furniture: [
-      { dx: 21, dy: 5, type: 'street_lamp' },
-      { dx: 53, dy: 4, type: 'bench' },
-      { dx: 88, dy: 5, type: 'street_lamp' },
+      { dx: 20, dy: 5, type: 'street_lamp' },
+      { dx: 50, dy: 4, type: 'bench' },
+      { dx: 56, dy: 5, type: 'flag_pole' },
     ],
   },
 
-  // 映画館 + 図書館
+  // 映画館単体 (図書館は別シーンへ)
   {
-    id: 'movie_library', tier: 'top', width: 86,
+    id: 'movie_library', tier: 'top', width: 66,
     buildings: [
-      { dx: 19, size: 'movie_theater' }, // w=38, edges 0-38
-      { dx: 62, size: 'library' },        // w=36, edges 44-80
+      { dx: 22, size: 'movie_theater' }, // w=38, edges 3-41
     ],
     furniture: [
-      { dx: -2, dy: 6, type: 'banner_pole' },
-      { dx: 19, dy: 5, type: 'sign_board' },
-      { dx: 41, dy: 4, type: 'pine_tree' },
-      { dx: 62, dy: 4, type: 'statue' },
-      { dx: 84, dy: 4, type: 'bench' },
+      { dx:  1, dy: 6, type: 'banner_pole' },
+      { dx: 22, dy: 5, type: 'sign_board' },
+      { dx: 48, dy: 4, type: 'pine_tree' },
+      { dx: 58, dy: 4, type: 'bench' },
+      { dx: 65, dy: 6, type: 'banner_pole' },
     ],
   },
 
@@ -565,7 +558,7 @@ const TOP_SCENES: Scene[] = [
     ],
   },
 
-  // スタジアム + 無線塔
+  // スタジアム + 無線塔 (2-cell 専用、160 px 想定)
   {
     id: 'stadium_radio', tier: 'top', width: 90,
     buildings: [

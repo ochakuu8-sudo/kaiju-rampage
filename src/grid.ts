@@ -32,6 +32,7 @@ export interface RoadSegment {
 
 export type CellContent =
   | { type: 'scene'; sceneId: string }
+  | { type: 'scenes'; sceneIds: string[] }  // 1 cell に複数シーンを横並び
   | { type: 'merged'; masterRow: number; masterCol: number }
   | { type: 'random_residential' }
   | { type: 'empty' };
@@ -59,7 +60,7 @@ export interface RoadPattern {
   horizontalRoads: RoadSegment[];
   verticalRoads: RoadSegment[];
   /** cells[row][col] = scene id or special marker */
-  cells: (string | null | 'random_residential' | 'merged_right')[][];
+  cells: (string | string[] | null | 'random_residential' | 'merged_right')[][];
   /** 2-cell 以上のシーンが使う master cell 情報 */
   merges?: Array<{ row: number; col: number; spanCols: number }>;
 }
@@ -154,9 +155,9 @@ export function buildBlock(
     for (let c = 0; c < pattern.cols; c++) {
       const raw = pattern.cells[r]?.[c];
       if (raw == null) row.push({ type: 'empty' });
+      else if (Array.isArray(raw)) row.push({ type: 'scenes', sceneIds: raw });
       else if (raw === 'random_residential') row.push({ type: 'random_residential' });
       else if (raw === 'merged_right') {
-        // master 探索: 左にたどって最初の scene を見つける
         let mCol = c;
         while (mCol > 0 && pattern.cells[r][mCol - 1] === 'merged_right') mCol--;
         mCol -= 1;
