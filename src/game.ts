@@ -11,19 +11,13 @@ import { HumanManager } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
-import { getStage, getRebuildCooldown, getRebuiltSize, findEmptySpot, BLOCKS } from './stages';
+import { getStage } from './stages';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
 
 const SHARED_BUF = new Float32Array(16000 * INST_F);
 
 type GameState = 'playing' | 'ball_lost' | 'game_over';
-
-interface RebuildEntry {
-  blockIdx: number;
-  cooldown: number;
-  generation: number;
-}
 
 export class Game {
   private renderer:  Renderer;
@@ -45,7 +39,6 @@ export class Game {
   private waveElapsed  = 0;             // ウェーブ内経過秒 (WAVE_DURATIONでwave++)
   private totalDestroys= 0;
   private totalHumans  = 0;
-  private rebuildQueue: RebuildEntry[] = [];
 
   private state: GameState = 'playing';
   private stateTimer = 0;
@@ -84,7 +77,6 @@ export class Game {
     this.waveElapsed   = 0;
     this.totalDestroys = 0;
     this.totalHumans   = 0;
-    this.rebuildQueue  = [];
     this.state         = 'playing';
     this.stateTimer    = 0;
     this.ui.setWaveNum(1);
@@ -171,25 +163,6 @@ export class Game {
       this.juice.flash(0.5, 0.8, 1.0, 0.3);
     }
 
-    // 再建キュー処理
-    for (let i = this.rebuildQueue.length - 1; i >= 0; i--) {
-      const entry = this.rebuildQueue[i];
-      entry.cooldown -= rawDt;
-      if (entry.cooldown <= 0) {
-        this.tryRebuild(entry);
-        this.rebuildQueue.splice(i, 1);
-      }
-    }
-  }
-
-  private tryRebuild(entry: RebuildEntry) {
-    const newSize = getRebuiltSize(entry.generation, entry.blockIdx);
-    const w = C.BUILDING_DEFS[newSize].w;
-    const centerX = findEmptySpot(this.buildings.buildings, entry.blockIdx, w);
-    if (centerX !== null) {
-      const baseY = BLOCKS[entry.blockIdx]?.baseY ?? C.REBUILD_FALLBACK_Y;
-      this.buildings.addBuilding(centerX, baseY, newSize, entry.blockIdx, entry.generation);
-    }
   }
 
   private updateBall(dt: number) {
@@ -316,10 +289,6 @@ export class Game {
     if (bld.size === 'restaurant') this.particles.spawnFood(cx, cy, 10);
 
     this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax));
-
-    // 再建キューに追加
-    const cooldown = getRebuildCooldown(this.wave);
-    this.rebuildQueue.push({ blockIdx: bld.blockIdx, cooldown, generation: bld.generation + 1 });
   }
 
   private onBallLost() {
