@@ -161,24 +161,51 @@ export class ParticleManager {
     }
   }
 
-  /** 爆発炎 (上昇する火の粒) */
+  /** 爆発炎 — 3層構成の炎ストリーク */
   spawnFire(x: number, y: number, count: number) {
-    const FIRE_COLS: Array<[number,number,number]> = [
-      [1.0, 0.25, 0.02],
-      [1.0, 0.55, 0.04],
-      [1.0, 0.85, 0.10],
-      [1.0, 0.12, 0.0],
-    ];
-    for (let i = 0; i < count; i++) {
-      const angle = Math.PI * 0.5 + rand(-0.7, 0.7);
-      const spd   = rand(60, 220);
-      const c = FIRE_COLS[Math.floor(Math.random() * FIRE_COLS.length)];
+    // ── Layer 1: 白熱コア (細い縦ストリーク・最速・短命) ──
+    const core = Math.ceil(count * 0.28);
+    for (let i = 0; i < core; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.35, 0.35);
+      const spd   = rand(120, 320);
+      const w     = rand(2, 5);
+      const h     = rand(18, 40);
       this.emit(
-        x + rand(-14, 14), y + rand(-10, 10),
-        Math.cos(angle) * spd + rand(-50, 50), Math.sin(angle) * spd,
-        c[0], c[1], c[2],
-        rand(6, 18), rand(0.4, 1.1),
-        false, true
+        x + rand(-7, 7), y + rand(-5, 5),
+        Math.cos(angle) * spd + rand(-20, 20), Math.sin(angle) * spd,
+        1.0, rand(0.88, 1.0), rand(0.55, 0.85),   // 白〜黄
+        w, rand(0.10, 0.24),
+        false, false, 0, h, angle + Math.PI * 0.5, true  // 速度方向ストリーク・noFade
+      );
+    }
+
+    // ── Layer 2: オレンジ炎ストリーク (中速・中寿命) ──────
+    const mid = Math.ceil(count * 0.50);
+    for (let i = 0; i < mid; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.62, 0.62);
+      const spd   = rand(70, 210);
+      const w     = rand(3, 9);
+      const h     = rand(22, 52);
+      this.emit(
+        x + rand(-12, 12), y + rand(-8, 8),
+        Math.cos(angle) * spd + rand(-40, 40), Math.sin(angle) * spd,
+        1.0, rand(0.32, 0.62), rand(0.0, 0.04),   // オレンジ〜赤橙
+        w, rand(0.16, 0.36),
+        false, false, 0, h, angle + Math.PI * 0.5, true
+      );
+    }
+
+    // ── Layer 3: 赤い外炎 (遅い・ふわっとした円) ─────────
+    const outer = count - core - mid;
+    for (let i = 0; i < outer; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.85, 0.85);
+      const spd   = rand(25, 110);
+      this.emit(
+        x + rand(-16, 16), y + rand(-10, 10),
+        Math.cos(angle) * spd + rand(-45, 45), Math.sin(angle) * spd,
+        rand(0.88, 1.0), rand(0.08, 0.25), 0.0,   // 赤
+        rand(5, 13), rand(0.18, 0.38),
+        false, true   // 丸いグローで輪郭をソフトに
       );
     }
   }
