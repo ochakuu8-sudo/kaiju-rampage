@@ -171,7 +171,7 @@ export class Game {
 
     this.buildings.update(dt);
     this.furniture.update(dt);
-    this.vehicles.update(dt);
+    this.vehicles.update(dt, this.camera.y);
     this.humans.update(dt, this.ball.x, this.ball.y, this.camera.y);
     this.particles.update(dt);
     this.updateChunks();
@@ -366,6 +366,7 @@ export class Game {
     const chunk = generateChunk(chunkId);
     this.buildings.loadChunk(chunk.buildings);
     this.furniture.loadChunk(chunkId, chunk.furniture);
+    this.vehicles.addChunkLanes(chunkId, chunk.roads);
     for (const road of chunk.roads) {
       this.humans.addRoad(road.y, road.h / 2 + 2);
     }
@@ -375,6 +376,7 @@ export class Game {
   private _despawnChunk(chunkId: number) {
     this.buildings.unloadChunk(chunkId);
     this.furniture.unloadChunk(chunkId);
+    this.vehicles.removeChunkLanes(chunkId);
     this.humans.removeRoadsBelow(this.camera.bottom - C.CHUNK_DESPAWN_BEHIND);
     this.loadedChunks.delete(chunkId);
   }

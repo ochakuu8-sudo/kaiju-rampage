@@ -936,6 +936,10 @@ export class VehicleManager {
   vehicles: VehicleItem[] = [];
   private defs: VehicleDef[] = [];
   private spawnTimers: number[] = [];
+  private dynLanes: Array<{
+    chunkId: number; laneY: number; laneH: number;
+    timerR: number; timerL: number;
+  }> = [];
 
   load(defs: VehicleDef[]) {
     this.defs = defs;
@@ -943,13 +947,47 @@ export class VehicleManager {
     this.vehicles = [];
   }
 
-  update(dt: number) {
-    // Update spawn timers
+  addChunkLanes(chunkId: number, roads: { y: number; h: number }[]) {
+    for (const road of roads) {
+      this.dynLanes.push({
+        chunkId,
+        laneY: road.y, laneH: road.h,
+        timerR: 1 + Math.random() * 4,
+        timerL: 2 + Math.random() * 4,
+      });
+    }
+  }
+
+  removeChunkLanes(chunkId: number) {
+    this.dynLanes = this.dynLanes.filter(l => l.chunkId !== chunkId);
+  }
+
+  update(dt: number, cameraY = 0) {
+    const camBottom = cameraY + C.WORLD_MIN_Y;
+
+    // Update static spawn timers (initial city roads)
     for (let i = 0; i < this.defs.length; i++) {
       this.spawnTimers[i] -= dt;
       if (this.spawnTimers[i] <= 0) {
         this.spawnTimers[i] = this.defs[i].interval;
         this.spawnVehicle(this.defs[i]);
+      }
+    }
+    // Update dynamic (chunk) spawn timers — only spawn on visible/near lanes
+    const dynTypes = ['car', 'car', 'car', 'bus', 'truck'] as const;
+    for (const lane of this.dynLanes) {
+      if (lane.laneY < camBottom - 50) continue;  // road scrolled off bottom
+      lane.timerR -= dt;
+      lane.timerL -= dt;
+      if (lane.timerR <= 0) {
+        lane.timerR = 3 + Math.random() * 5;
+        const t = dynTypes[Math.floor(Math.random() * dynTypes.length)];
+        this.spawnDynVehicle(lane.laneY, lane.laneH, 1, t);
+      }
+      if (lane.timerL <= 0) {
+        lane.timerL = 3.5 + Math.random() * 5;
+        const t = dynTypes[Math.floor(Math.random() * dynTypes.length)];
+        this.spawnDynVehicle(lane.laneY, lane.laneH, -1, t);
       }
     }
     // Move vehicles
@@ -961,12 +999,27 @@ export class VehicleManager {
         v.ambTimer -= dt;
         if (v.ambTimer <= 0) v.active = false;
       }
-      // Despawn when off-screen
+      // Despawn when off-screen horizontally or scrolled below camera
       const margin = 40;
       if (v.x > 180 + margin || v.x < -180 - margin) v.active = false;
+      if (v.y < camBottom - 60) v.active = false;
     }
     // Remove inactive
     this.vehicles = this.vehicles.filter(v => v.active);
+  }
+
+  private spawnDynVehicle(laneY: number, laneH: number, dir: 1 | -1,
+    type: 'car' | 'bus' | 'truck') {
+    const info = VEHICLE_DEFS_DATA[type];
+    const yOff = dir === 1 ? -laneH / 4 : laneH / 4;
+    const startX = dir === 1 ? -180 - info.w / 2 : 180 + info.w / 2;
+    const spd = (info.speedMin + Math.random() * (info.speedMax - info.speedMin)) * dir;
+    this.vehicles.push({
+      type, x: startX, y: laneY + yOff,
+      w: info.w, h: info.h,
+      hp: info.maxHp, maxHp: info.maxHp, score: info.score,
+      speed: spd, active: true, flashTimer: 0,
+    });
   }
 
   spawnAmbulance(x: number, y: number) {
