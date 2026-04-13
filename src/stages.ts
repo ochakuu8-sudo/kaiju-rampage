@@ -165,10 +165,10 @@ export function placeScene(
 export function placeRecipe(
   sceneIds: string[],
   block: Block,
-  gap: number = 3
+  gap: number = 2
 ): ScenePlacement {
   const scenes = sceneIds.map(id => getScene(id));
-  const innerMargin = 2;
+  const innerMargin = 1;
   const availW = (block.xMax - block.xMin) - innerMargin * 2;
 
   // 入るシーンだけ採用
@@ -248,7 +248,7 @@ export function placeCity(): ScenePlacement {
   for (let ri = 0; ri < INITIAL_CITY_RECIPES.length; ri++) {
     for (let ci = 0; ci < INITIAL_CITY_RECIPES[ri].length; ci++) {
       const block = BLOCKS[ri * 3 + ci];
-      const p = placeRecipe(INITIAL_CITY_RECIPES[ri][ci], block, 4);
+      const p = placeRecipe(INITIAL_CITY_RECIPES[ri][ci], block, 2);
       out.buildings.push(...p.buildings);
       out.furniture.push(...p.furniture);
     }
@@ -509,7 +509,7 @@ function placeChunkRow(
       baseY,
       pool: [],
     };
-    const p = placeRecipe(ids, fakeBlock, 4);
+    const p = placeRecipe(ids, fakeBlock, 2);
     out.buildings.push(...p.buildings);
     out.furniture.push(...p.furniture);
   }

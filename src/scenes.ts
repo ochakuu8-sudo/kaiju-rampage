@@ -66,49 +66,49 @@ const BOT_SCENES: Scene[] = [
 
   // 一戸建て + 角コンビニ
   {
-    id: 'house_konbini', tier: 'bot', width: 52,
+    id: 'house_konbini', tier: 'bot', width: 56,
     buildings: [
       { dx: 8,  size: 'house' },       // edges 0-16
-      { dx: 30, size: 'convenience' }, // edges 18-42
+      { dx: 32, size: 'convenience' }, // edges 20-44
     ],
     furniture: [
       { dx: -2, dy: 3, type: 'tree' },
-      { dx: 17, dy: 2, type: 'flower_bed' },
-      { dx: 44, dy: 3, type: 'vending' },
-      { dx: 48, dy: 3, type: 'newspaper_stand' },
-      { dx: 52, dy: 3, type: 'bicycle_rack' },
+      { dx: 18, dy: 2, type: 'flower_bed' },
+      { dx: 48, dy: 3, type: 'vending' },
+      { dx: 52, dy: 3, type: 'newspaper_stand' },
+      { dx: 56, dy: 3, type: 'bicycle_rack' },
     ],
   },
 
   // 一戸建て + ガレージ (駐車中の車)
   {
-    id: 'house_garage', tier: 'bot', width: 44,
+    id: 'house_garage', tier: 'bot', width: 48,
     buildings: [
       { dx: 8,  size: 'house' },  // edges 0-16
-      { dx: 27, size: 'garage' }, // edges 17-37
+      { dx: 30, size: 'garage' }, // edges 20-40
     ],
     furniture: [
       { dx: -2, dy: 1, type: 'hedge' },
-      { dx: 17, dy: 3, type: 'flower_bed' },
-      { dx: 42, dy: 1, type: 'bush' },
+      { dx: 18, dy: 3, type: 'flower_bed' },
+      { dx: 45, dy: 1, type: 'bush' },
     ],
     parkedVehicles: [
-      { dx: 27, dy: 1, type: 'car' },
+      { dx: 30, dy: 1, type: 'car' },
     ],
   },
 
   // 物置 + ビニールハウス (郊外・農的)
   {
-    id: 'garden_shed', tier: 'bot', width: 42,
+    id: 'garden_shed', tier: 'bot', width: 44,
     buildings: [
       { dx: 8,  size: 'shed' },       // edges 2-14
-      { dx: 27, size: 'greenhouse' }, // edges 16-38
+      { dx: 29, size: 'greenhouse' }, // edges 18-40
     ],
     furniture: [
       { dx: -2, dy: 1, type: 'bush' },
-      { dx: 14, dy: 2, type: 'planter' },
-      { dx: 40, dy: 3, type: 'flower_bed' },
-      { dx: 44, dy: 1, type: 'bush' },
+      { dx: 15, dy: 2, type: 'planter' },
+      { dx: 42, dy: 3, type: 'flower_bed' },
+      { dx: 46, dy: 1, type: 'bush' },
     ],
   },
 
@@ -129,30 +129,30 @@ const BOT_SCENES: Scene[] = [
 
   // ラーメン + 居酒屋 (提灯風パラソル)
   {
-    id: 'ramen_izakaya', tier: 'bot', width: 46,
+    id: 'ramen_izakaya', tier: 'bot', width: 50,
     buildings: [
       { dx: 10, size: 'ramen' },   // edges 2-18
-      { dx: 30, size: 'izakaya' }, // edges 20-40
+      { dx: 34, size: 'izakaya' }, // edges 24-44
     ],
     furniture: [
       { dx: -1, dy: 3, type: 'parasol' },
-      { dx: 18, dy: 5, type: 'sign_board' },
-      { dx: 30, dy: 3, type: 'parasol' },
-      { dx: 44, dy: 3, type: 'vending' },
+      { dx: 21, dy: 5, type: 'sign_board' },
+      { dx: 34, dy: 3, type: 'parasol' },
+      { dx: 48, dy: 3, type: 'vending' },
     ],
   },
 
   // 花屋 + パン屋
   {
-    id: 'florist_bakery', tier: 'bot', width: 36,
+    id: 'florist_bakery', tier: 'bot', width: 40,
     buildings: [
       { dx: 8,  size: 'florist' }, // w=14, edges 1-15
-      { dx: 24, size: 'bakery' },  // w=16, edges 16-32
+      { dx: 26, size: 'bakery' },  // w=16, edges 18-34
     ],
     furniture: [
       { dx: -1, dy: 3, type: 'parasol' },
-      { dx: 15, dy: 2, type: 'flower_bed' },
-      { dx: 34, dy: 3, type: 'parasol' },
+      { dx: 17, dy: 2, type: 'flower_bed' },
+      { dx: 38, dy: 3, type: 'parasol' },
     ],
   },
 
@@ -174,29 +174,29 @@ const BOT_SCENES: Scene[] = [
 
   // ランドリー + 薬局
   {
-    id: 'laundromat_pharmacy', tier: 'bot', width: 42,
+    id: 'laundromat_pharmacy', tier: 'bot', width: 46,
     buildings: [
       { dx: 10, size: 'laundromat' }, // w=18, edges 1-19
-      { dx: 30, size: 'pharmacy' },   // w=20, edges 20-40
+      { dx: 33, size: 'pharmacy' },   // w=20, edges 23-43
     ],
     furniture: [
       { dx: -1, dy: 3, type: 'sign_board' },
-      { dx: 19, dy: 3, type: 'bench' },
-      { dx: 41, dy: 3, type: 'planter' },
+      { dx: 21, dy: 3, type: 'bench' },
+      { dx: 45, dy: 3, type: 'planter' },
     ],
   },
 
   // カフェ + 書店 (ブックストア通り)
   {
-    id: 'cafe_bookstore', tier: 'bot', width: 40,
+    id: 'cafe_bookstore', tier: 'bot', width: 44,
     buildings: [
       { dx: 10, size: 'cafe' },      // w=18, edges 1-19
-      { dx: 30, size: 'bookstore' }, // w=18, edges 21-39
+      { dx: 33, size: 'bookstore' }, // w=18, edges 24-42
     ],
     furniture: [
       { dx: -1, dy: 3, type: 'parasol' },
-      { dx: 20, dy: 3, type: 'bench' },
-      { dx: 40, dy: 3, type: 'newspaper_stand' },
+      { dx: 21, dy: 3, type: 'bench' },
+      { dx: 44, dy: 3, type: 'newspaper_stand' },
     ],
   },
 ];
@@ -208,84 +208,88 @@ const BOT_SCENES: Scene[] = [
 const MID_SCENES: Scene[] = [
   // 商店街・飲食 (4軒並び + パラソル + 看板)
   {
-    id: 'shotengai_food', tier: 'mid', width: 76,
+    id: 'shotengai_food', tier: 'mid', width: 88,
     buildings: [
       { dx: 10, size: 'ramen' },   // w=16, edges 2-18
-      { dx: 29, size: 'izakaya' }, // w=20, edges 19-39
-      { dx: 48, size: 'cafe' },    // w=18, edges 39-57
-      { dx: 66, size: 'bakery' },  // w=16, edges 58-74
+      { dx: 33, size: 'izakaya' }, // w=20, edges 23-43
+      { dx: 56, size: 'cafe' },    // w=18, edges 47-65
+      { dx: 78, size: 'bakery' },  // w=16, edges 70-86
     ],
     furniture: [
       { dx:  1, dy: 5, type: 'parasol' },
-      { dx: 19, dy: 7, type: 'sign_board' },
-      { dx: 38, dy: 5, type: 'parasol' },
-      { dx: 57, dy: 7, type: 'sign_board' },
-      { dx: 74, dy: 5, type: 'parasol' },
+      { dx: 20, dy: 7, type: 'sign_board' },
+      { dx: 33, dy: 5, type: 'parasol' },
+      { dx: 45, dy: 7, type: 'sign_board' },
+      { dx: 56, dy: 5, type: 'parasol' },
+      { dx: 67, dy: 7, type: 'sign_board' },
+      { dx: 88, dy: 5, type: 'parasol' },
     ],
   },
 
   // 娯楽街 (パチンコ + カラオケ + ゲーセン)
   {
-    id: 'shotengai_game', tier: 'mid', width: 86,
+    id: 'shotengai_game', tier: 'mid', width: 94,
     buildings: [
       { dx: 15, size: 'pachinko' },    // w=30, edges 0-30
-      { dx: 42, size: 'karaoke' },     // w=24, edges 30-54
-      { dx: 72, size: 'game_center' }, // w=28, edges 58-86
+      { dx: 47, size: 'karaoke' },     // w=24, edges 35-59
+      { dx: 78, size: 'game_center' }, // w=28, edges 64-92
     ],
     furniture: [
       { dx:  2, dy: 6, type: 'sign_board' },
       { dx: 15, dy: 5, type: 'street_lamp' },
-      { dx: 42, dy: 5, type: 'street_lamp' },
-      { dx: 72, dy: 6, type: 'sign_board' },
+      { dx: 32, dy: 4, type: 'bicycle_rack' },
+      { dx: 47, dy: 5, type: 'street_lamp' },
+      { dx: 61, dy: 4, type: 'bicycle_rack' },
+      { dx: 78, dy: 6, type: 'sign_board' },
     ],
   },
 
   // カフェ通り (カフェ + 書店 + 薬局)
   {
-    id: 'cafe_bookstore_row', tier: 'mid', width: 62,
+    id: 'cafe_bookstore_row', tier: 'mid', width: 66,
     buildings: [
       { dx: 10, size: 'cafe' },      // w=18, edges 1-19
-      { dx: 29, size: 'bookstore' }, // w=18, edges 20-38
-      { dx: 49, size: 'pharmacy' },  // w=20, edges 39-59
+      { dx: 32, size: 'bookstore' }, // w=18, edges 23-41
+      { dx: 54, size: 'pharmacy' },  // w=20, edges 44-64
     ],
     furniture: [
       { dx: -1, dy: 4, type: 'parasol' },
-      { dx: 19, dy: 4, type: 'bench' },
-      { dx: 39, dy: 5, type: 'street_lamp' },
-      { dx: 60, dy: 3, type: 'planter' },
+      { dx: 21, dy: 4, type: 'bench' },
+      { dx: 43, dy: 5, type: 'street_lamp' },
+      { dx: 65, dy: 3, type: 'planter' },
     ],
   },
 
   // 商店 × 3 (パラソル・看板が賑やか)
   {
-    id: 'shop_parasol_row', tier: 'mid', width: 72,
+    id: 'shop_parasol_row', tier: 'mid', width: 76,
     buildings: [
       { dx: 11, size: 'shop' },        // w=22, edges 0-22
-      { dx: 34, size: 'restaurant' },  // w=20, edges 24-44
-      { dx: 57, size: 'shop' },        // w=22, edges 46-68
+      { dx: 37, size: 'restaurant' },  // w=20, edges 27-47
+      { dx: 62, size: 'shop' },        // w=22, edges 51-73
     ],
     furniture: [
       { dx:  0, dy: 4, type: 'parasol' },
-      { dx: 22, dy: 6, type: 'sign_board' },
-      { dx: 34, dy: 4, type: 'parasol' },
-      { dx: 45, dy: 6, type: 'sign_board' },
-      { dx: 68, dy: 4, type: 'parasol' },
+      { dx: 24, dy: 6, type: 'sign_board' },
+      { dx: 37, dy: 4, type: 'parasol' },
+      { dx: 49, dy: 6, type: 'sign_board' },
+      { dx: 74, dy: 4, type: 'parasol' },
     ],
   },
 
   // 長屋通り (タウンハウス × 3)
   {
-    id: 'townhouse_row', tier: 'mid', width: 60,
+    id: 'townhouse_row', tier: 'mid', width: 64,
     buildings: [
       { dx: 10, size: 'townhouse' }, // w=18, edges 1-19
-      { dx: 30, size: 'townhouse' }, // edges 21-39
-      { dx: 50, size: 'townhouse' }, // edges 41-59
+      { dx: 32, size: 'townhouse' }, // edges 23-41
+      { dx: 54, size: 'townhouse' }, // edges 45-63
     ],
     furniture: [
       { dx: -1, dy: 4, type: 'power_pole' },
-      { dx: 20, dy: 2, type: 'planter' },
-      { dx: 40, dy: 2, type: 'bicycle_rack' },
-      { dx: 60, dy: 2, type: 'planter' },
+      { dx: 21, dy: 2, type: 'planter' },
+      { dx: 43, dy: 2, type: 'bicycle_rack' },
+      { dx: 64, dy: 2, type: 'planter' },
     ],
   },
 
@@ -324,65 +328,66 @@ const MID_SCENES: Scene[] = [
 
   // 医療・保育 (クリニック + 保育園 + 生垣)
   {
-    id: 'clinic_daycare', tier: 'mid', width: 64,
+    id: 'clinic_daycare', tier: 'mid', width: 68,
     buildings: [
       { dx: 13, size: 'clinic' },  // w=26, edges 0-26
-      { dx: 42, size: 'daycare' }, // w=28, edges 28-56
+      { dx: 46, size: 'daycare' }, // w=28, edges 32-60
     ],
     furniture: [
       { dx: -2, dy: 1, type: 'hedge' },
       { dx:  1, dy: 5, type: 'flag_pole' },
-      { dx: 27, dy: 4, type: 'bench' },
-      { dx: 56, dy: 4, type: 'tree' },
-      { dx: 64, dy: 1, type: 'hedge' },
+      { dx: 29, dy: 4, type: 'bench' },
+      { dx: 30, dy: 3, type: 'flower_bed' },
+      { dx: 62, dy: 4, type: 'tree' },
+      { dx: 68, dy: 1, type: 'hedge' },
     ],
   },
 
   // 消防 + 警察 (公共タッグ) — midB only (police h=32)
   {
-    id: 'fire_police', tier: 'midB', width: 66,
+    id: 'fire_police', tier: 'midB', width: 70,
     buildings: [
       { dx: 15, size: 'fire_station' },    // w=30, edges 0-30
-      { dx: 49, size: 'police_station' },  // w=30, edges 34-64
+      { dx: 53, size: 'police_station' },  // w=30, edges 38-68
     ],
     furniture: [
       { dx: -2, dy: 3, type: 'bollard' },
       { dx: 15, dy: 6, type: 'flag_pole' },
-      { dx: 32, dy: 3, type: 'bollard' },
-      { dx: 49, dy: 6, type: 'flag_pole' },
-      { dx: 66, dy: 4, type: 'sign_board' },
+      { dx: 34, dy: 4, type: 'traffic_light' },
+      { dx: 53, dy: 6, type: 'flag_pole' },
+      { dx: 70, dy: 4, type: 'sign_board' },
     ],
   },
 
   // 銀行 + 郵便局 — midB only (bank h=32)
   {
-    id: 'bank_post', tier: 'midB', width: 58,
+    id: 'bank_post', tier: 'midB', width: 62,
     buildings: [
       { dx: 14, size: 'bank' },        // w=28, edges 0-28
-      { dx: 42, size: 'post_office' }, // w=24, edges 30-54
+      { dx: 46, size: 'post_office' }, // w=24, edges 34-58
     ],
     furniture: [
       { dx: -2, dy: 3, type: 'bollard' },
       { dx:  2, dy: 3, type: 'atm' },
-      { dx: 28, dy: 4, type: 'street_lamp' },
-      { dx: 42, dy: 3, type: 'post_box' },
-      { dx: 58, dy: 2, type: 'planter' },
+      { dx: 30, dy: 4, type: 'street_lamp' },
+      { dx: 46, dy: 3, type: 'post_box' },
+      { dx: 62, dy: 2, type: 'planter' },
     ],
   },
 
   // 豪邸 + 商店
   {
-    id: 'mansion_shop', tier: 'mid', width: 60,
+    id: 'mansion_shop', tier: 'mid', width: 64,
     buildings: [
       { dx: 16, size: 'mansion' }, // w=32, edges 0-32
-      { dx: 45, size: 'shop' },    // w=22, edges 34-56
+      { dx: 49, size: 'shop' },    // w=22, edges 38-60
     ],
     furniture: [
       { dx: -2, dy: 1, type: 'hedge' },
       { dx:  4, dy: 4, type: 'pine_tree' },
-      { dx: 30, dy: 1, type: 'hedge' },
-      { dx: 45, dy: 4, type: 'parasol' },
-      { dx: 60, dy: 3, type: 'planter' },
+      { dx: 34, dy: 1, type: 'hedge' },
+      { dx: 49, dy: 4, type: 'parasol' },
+      { dx: 64, dy: 3, type: 'planter' },
     ],
   },
 ];
@@ -482,48 +487,48 @@ const TOP_SCENES: Scene[] = [
 
   // オフィスタワー群
   {
-    id: 'office_tower_group', tier: 'top', width: 98,
+    id: 'office_tower_group', tier: 'top', width: 106,
     buildings: [
-      { dx: 15, size: 'office' },     // w=30, edges 0-30
-      { dx: 48, size: 'skyscraper' }, // w=28, edges 34-62
-      { dx: 80, size: 'tower' },      // w=35, edges 63-98 (gap 1)
+      { dx: 16, size: 'office' },     // w=30, edges 1-31
+      { dx: 52, size: 'skyscraper' }, // w=28, edges 38-66
+      { dx: 88, size: 'tower' },      // w=35, edges 71-106 (gap 5)
     ],
     furniture: [
       { dx:  0, dy: 3, type: 'bollard' },
-      { dx: 32, dy: 3, type: 'electric_box' },
-      { dx: 63, dy: 3, type: 'bollard' },
-      { dx: 98, dy: 3, type: 'electric_box' },
+      { dx: 34, dy: 3, type: 'electric_box' },
+      { dx: 68, dy: 3, type: 'bollard' },
+      { dx: 106, dy: 3, type: 'electric_box' },
     ],
   },
 
   // 時計塔 + 高層アパート + オフィス
   {
-    id: 'clock_tower_trio', tier: 'top', width: 82,
+    id: 'clock_tower_trio', tier: 'top', width: 88,
     buildings: [
       { dx: 10, size: 'clock_tower' },    // w=16, edges 2-18
-      { dx: 36, size: 'apartment_tall' }, // w=26, edges 23-49
-      { dx: 66, size: 'office' },         // w=30, edges 51-81
+      { dx: 38, size: 'apartment_tall' }, // w=26, edges 25-51
+      { dx: 70, size: 'office' },         // w=30, edges 55-85
     ],
     furniture: [
-      { dx: 20, dy: 5, type: 'street_lamp' },
-      { dx: 50, dy: 4, type: 'bench' },
-      { dx: 82, dy: 5, type: 'street_lamp' },
+      { dx: 21, dy: 5, type: 'street_lamp' },
+      { dx: 53, dy: 4, type: 'bench' },
+      { dx: 88, dy: 5, type: 'street_lamp' },
     ],
   },
 
   // 映画館 + 図書館
   {
-    id: 'movie_library', tier: 'top', width: 80,
+    id: 'movie_library', tier: 'top', width: 86,
     buildings: [
       { dx: 19, size: 'movie_theater' }, // w=38, edges 0-38
-      { dx: 58, size: 'library' },        // w=36, edges 40-76
+      { dx: 62, size: 'library' },        // w=36, edges 44-80
     ],
     furniture: [
       { dx: -2, dy: 6, type: 'banner_pole' },
       { dx: 19, dy: 5, type: 'sign_board' },
-      { dx: 39, dy: 4, type: 'pine_tree' },
-      { dx: 58, dy: 4, type: 'statue' },
-      { dx: 78, dy: 4, type: 'bench' },
+      { dx: 41, dy: 4, type: 'pine_tree' },
+      { dx: 62, dy: 4, type: 'statue' },
+      { dx: 84, dy: 4, type: 'bench' },
     ],
   },
 
