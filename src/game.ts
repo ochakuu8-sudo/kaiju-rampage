@@ -433,7 +433,9 @@ export class Game {
     const gf = (y1: number, y2: number, r: number, g: number, b: number) =>
       writeInst(buf, n++, 0, (y1+y2)/2, W, y1-y2, r, g, b, 1);
 
-    writeInst(buf, n++, 0, (C.WORLD_MAX_Y + htLow)/2, W, C.WORLD_MAX_Y - htLow, zrR, zrG, zrB, 1);
+    // 上部ゾーン: HILLTOP以上はチャンク背景が覆うまで初期色で埋める
+    const topFill = Math.max(C.WORLD_MAX_Y, this.camera.top + 50);
+    writeInst(buf, n++, 0, (topFill + htLow)/2, W, topFill - htLow, zrR, zrG, zrB, 1);
     const maTop = C.MAIN_STREET_Y + C.MAIN_STREET_H/2 + C.SIDEWALK_H;
     gf(htLow, maTop, zrR, zrG, zrB);
     const loTop = C.LOWER_STREET_Y + C.LOWER_STREET_H/2 + C.SIDEWALK_H;
@@ -477,8 +479,10 @@ export class Game {
     drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H);
     drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H);
 
-    const ay = (C.ALLEY_Y_MIN + C.ALLEY_Y_MAX) / 2;
-    const ah = C.ALLEY_Y_MAX - C.ALLEY_Y_MIN;
+    // 縦路地: カメラ上端まで無限延長
+    const alleyTop = this.camera.top + 100;
+    const ay = (C.ALLEY_Y_MIN + alleyTop) / 2;
+    const ah = alleyTop - C.ALLEY_Y_MIN;
     for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
       writeInst(buf, n++, ax, ay, C.ALLEY_WIDTH, ah, ar, ag, ab, 1);
       writeInst(buf, n++, ax - C.ALLEY_WIDTH/2, ay, 1.5, ah, sr, sg, sb, 0.6);
@@ -510,24 +514,37 @@ export class Game {
     return n - start;
   }
 
-  /** チャンク由来の道路を描画 */
+  /** チャンク由来の背景・道路を描画 */
   private fillChunkRoads(buf: Float32Array, start: number): number {
     let n = start;
     const W = 360;
     const [rr, rg, rb] = C.ROAD_COLOR;
-    const [sr, sg, sb] = C.SIDEWALK_COLOR;
+    const [sw_r, sw_g, sw_b] = C.SIDEWALK_COLOR;
     const [lr, lg, lb] = C.ROAD_LINE_COLOR;
     const [plR, plG, plB] = C.PLANTING_COLOR;
     const swH = C.SIDEWALK_H;
 
+    // ゾーン背景色テーブル
+    const zoneBg: [number,number,number][] = [
+      [C.ZONE_RESIDENTIAL[0], C.ZONE_RESIDENTIAL[1], C.ZONE_RESIDENTIAL[2]],
+      [C.ZONE_COMMERCIAL[0],  C.ZONE_COMMERCIAL[1],  C.ZONE_COMMERCIAL[2]],
+      [0.42, 0.42, 0.48], // オフィス街: スチールグレー
+    ];
+
     for (const chunk of this.loadedChunks.values()) {
-      const { roadY, roadH } = chunk;
+      const { baseY, roadY, roadH, chunkId } = chunk;
+      const [bgR, bgG, bgB] = zoneBg[chunkId % 3];
+      const bgH  = C.CHUNK_HEIGHT;
+      const bgCY = baseY + bgH / 2;
+      // チャンク背景
+      writeInst(buf, n++, 0, bgCY, W, bgH, bgR, bgG, bgB, 1);
+      // 道路
       const swTop = roadY + roadH / 2 + swH / 2;
       const swBot = roadY - roadH / 2 - swH / 2;
       writeInst(buf, n++, 0, swTop + swH / 2 + 1.5, W, 3, plR, plG, plB, 1);
       writeInst(buf, n++, 0, swBot - swH / 2 - 1.5, W, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, 0, swTop, W, swH, sr, sg, sb, 1);
-      writeInst(buf, n++, 0, swBot, W, swH, sr, sg, sb, 1);
+      writeInst(buf, n++, 0, swTop, W, swH, sw_r, sw_g, sw_b, 1);
+      writeInst(buf, n++, 0, swBot, W, swH, sw_r, sw_g, sw_b, 1);
       writeInst(buf, n++, 0, roadY, W, roadH, rr, rg, rb, 1);
       writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
     }
