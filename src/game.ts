@@ -466,26 +466,98 @@ export class Game {
     const [rr,rg,rb] = C.ROAD_COLOR;
     const [sr,sg,sb] = C.SIDEWALK_COLOR;
     const [lr2,lg2,lb2] = C.ROAD_LINE_COLOR;
+    const [cbR,cbG,cbB] = C.CURB_COLOR;
+    const [mhR,mhG,mhB] = C.MANHOLE_COLOR;
+    const [pvR,pvG,pvB,pvA] = C.PAVING_COLOR;
 
-    const drawRoad = (cy: number, h: number, doubleCenter = false) => {
-      const swTop = cy + h/2 + C.SIDEWALK_H/2;
-      const swBot = cy - h/2 - C.SIDEWALK_H/2;
-      writeInst(buf, n++, 0, swTop + C.SIDEWALK_H/2 + 1.5, W, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, 0, swBot - C.SIDEWALK_H/2 - 1.5, W, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, 0, swTop, W, C.SIDEWALK_H, sr, sg, sb, 1);
-      writeInst(buf, n++, 0, swBot, W, C.SIDEWALK_H, sr, sg, sb, 1);
+    type RoadClass = 'avenue' | 'street' | 'alley';
+
+    /** 道路+歩道+ディテール (縁石・マンホール・舗装パターン) を描画 */
+    const drawRoad = (cy: number, h: number, cls: RoadClass = 'street') => {
+      const swH =
+        cls === 'avenue' ? 6 :
+        cls === 'street' ? 4 :
+        2;
+      const swTop = cy + h/2 + swH/2;
+      const swBot = cy - h/2 - swH/2;
+
+      // 植栽帯 (sidewalk の外側)
+      if (cls !== 'alley') {
+        writeInst(buf, n++, 0, swTop + swH/2 + 1.5, W, 3, plR, plG, plB, 1);
+        writeInst(buf, n++, 0, swBot - swH/2 - 1.5, W, 3, plR, plG, plB, 1);
+      }
+      // 歩道本体
+      writeInst(buf, n++, 0, swTop, W, swH, sr, sg, sb, 1);
+      writeInst(buf, n++, 0, swBot, W, swH, sr, sg, sb, 1);
+
+      // 舗装パターン (石畳風の縦縞)
+      if (cls !== 'alley') {
+        for (let x = -170; x <= 170; x += 12) {
+          writeInst(buf, n++, x, swTop, 1, swH, pvR, pvG, pvB, pvA);
+          writeInst(buf, n++, x, swBot, 1, swH, pvR, pvG, pvB, pvA);
+        }
+      }
+
+      // 縁石 (curb) — 歩道と道路の境界
+      writeInst(buf, n++, 0, cy + h/2 + 0.5, W, 1, cbR, cbG, cbB, 1);
+      writeInst(buf, n++, 0, cy - h/2 - 0.5, W, 1, cbR, cbG, cbB, 1);
+
+      // 道路本体
       writeInst(buf, n++, 0, cy, W, h, rr, rg, rb, 1);
-      if (doubleCenter) {
+
+      // 中央線
+      if (cls === 'avenue') {
         writeInst(buf, n++, 0, cy + 2, W, 1.5, lr2, lg2, lb2, 1);
         writeInst(buf, n++, 0, cy - 2, W, 1.5, lr2, lg2, lb2, 1);
-      } else {
-        writeInst(buf, n++, 0, cy, W, 1.5, lr2, lg2, lb2, 1);
+        // 破線レーン (薄い白)
+        for (let x = -165; x <= 165; x += 18) {
+          writeInst(buf, n++, x + 6, cy + 5, 10, 1, 0.95, 0.95, 0.95, 0.5);
+          writeInst(buf, n++, x + 6, cy - 5, 10, 1, 0.95, 0.95, 0.95, 0.5);
+        }
+      } else if (cls === 'street') {
+        // 白破線 1 本
+        for (let x = -165; x <= 165; x += 14) {
+          writeInst(buf, n++, x + 5, cy, 8, 1.2, 0.95, 0.95, 0.95, 0.55);
+        }
+      }
+
+      // マンホール (道路中央に一定間隔)
+      if (cls !== 'alley') {
+        for (let x = -150; x <= 150; x += 55) {
+          writeInst(buf, n++, x, cy, 4, 4, mhR, mhG, mhB, 1, 0, 1);
+        }
       }
     };
-    drawRoad(C.HILLTOP_STREET_Y,   C.HILLTOP_STREET_H);
-    drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H, true);
-    drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H);
-    drawRoad(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H);
+    drawRoad(C.HILLTOP_STREET_Y,   C.HILLTOP_STREET_H, 'street');
+    drawRoad(C.MAIN_STREET_Y,      C.MAIN_STREET_H,    'avenue');
+    drawRoad(C.LOWER_STREET_Y,     C.LOWER_STREET_H,   'street');
+
+    // ─── リバーサイド = 川 ──────────────────────────────────
+    const [rvcR,rvcG,rvcB] = C.RIVER_COLOR;
+    const [rvlR,rvlG,rvlB,rvlA] = C.RIVER_LIGHT;
+    const [rvbR,rvbG,rvbB] = C.RIVER_BANK;
+    const [brR,brG,brB] = C.BRIDGE_COLOR;
+    const [brlR,brlG,brlB] = C.BRIDGE_RAIL_COLOR;
+    const drawRiver = (cy: number, h: number) => {
+      const bankH = 3;
+      // 上岸 (遊歩道)
+      writeInst(buf, n++, 0, cy + h/2 + bankH/2, W, bankH, rvbR, rvbG, rvbB, 1);
+      // 下岸
+      writeInst(buf, n++, 0, cy - h/2 - bankH/2, W, bankH, rvbR, rvbG, rvbB, 1);
+      // 川本体
+      writeInst(buf, n++, 0, cy, W, h, rvcR, rvcG, rvcB, 1);
+      // 波紋 (2-3 本の明るい横線)
+      writeInst(buf, n++, 0, cy + 2, W, 0.8, rvlR, rvlG, rvlB, rvlA);
+      writeInst(buf, n++, 0, cy - 2, W, 0.8, rvlR, rvlG, rvlB, rvlA);
+      // 橋 (路地と同じ X 座標に 2 本)
+      for (const bx of [C.ALLEY_1_X, C.ALLEY_2_X]) {
+        writeInst(buf, n++, bx, cy, C.ALLEY_WIDTH + 4, h + bankH * 2 + 2, brR, brG, brB, 1);
+        // 欄干
+        writeInst(buf, n++, bx, cy + h/2 + bankH + 1, C.ALLEY_WIDTH + 4, 1, brlR, brlG, brlB, 1);
+        writeInst(buf, n++, bx, cy - h/2 - bankH - 1, C.ALLEY_WIDTH + 4, 1, brlR, brlG, brlB, 1);
+      }
+    };
+    drawRiver(C.RIVERSIDE_STREET_Y, C.RIVERSIDE_STREET_H);
 
     // 側壁・上部ガイド: カメラ追従（スクリーン固定）
     const cy = this.camera.y;
@@ -513,6 +585,10 @@ export class Game {
       [C.ZONE_OFFICE_BG[0],   C.ZONE_OFFICE_BG[1],   C.ZONE_OFFICE_BG[2]],  // スチールグレー
     ];
 
+    const [cbR, cbG, cbB] = C.CURB_COLOR;
+    const [mhR, mhG, mhB] = C.MANHOLE_COLOR;
+    const [pvR, pvG, pvB, pvA] = C.PAVING_COLOR;
+
     for (const chunk of this.loadedChunks.values()) {
       const { baseY, chunkId } = chunk;
       const [bgR, bgG, bgB] = zoneBg[chunkId % 3];
@@ -523,12 +599,30 @@ export class Game {
         const { y: roadY, h: roadH } = road;
         const swTop = roadY + roadH / 2 + swH / 2;
         const swBot = roadY - roadH / 2 - swH / 2;
+        // 植栽帯
         writeInst(buf, n++, 0, swTop + swH / 2 + 1.5, W, 3, plR, plG, plB, 1);
         writeInst(buf, n++, 0, swBot - swH / 2 - 1.5, W, 3, plR, plG, plB, 1);
+        // 歩道
         writeInst(buf, n++, 0, swTop, W, swH, sw_r, sw_g, sw_b, 1);
         writeInst(buf, n++, 0, swBot, W, swH, sw_r, sw_g, sw_b, 1);
+        // 舗装パターン
+        for (let x = -170; x <= 170; x += 12) {
+          writeInst(buf, n++, x, swTop, 1, swH, pvR, pvG, pvB, pvA);
+          writeInst(buf, n++, x, swBot, 1, swH, pvR, pvG, pvB, pvA);
+        }
+        // 縁石
+        writeInst(buf, n++, 0, roadY + roadH / 2 + 0.5, W, 1, cbR, cbG, cbB, 1);
+        writeInst(buf, n++, 0, roadY - roadH / 2 - 0.5, W, 1, cbR, cbG, cbB, 1);
+        // 道路
         writeInst(buf, n++, 0, roadY, W, roadH, rr, rg, rb, 1);
-        writeInst(buf, n++, 0, roadY, W, 1.5, lr, lg, lb, 1);
+        // 中央線 (白破線)
+        for (let x = -165; x <= 165; x += 14) {
+          writeInst(buf, n++, x + 5, roadY, 8, 1.2, 0.95, 0.95, 0.95, 0.55);
+        }
+        // マンホール
+        for (let x = -150; x <= 150; x += 55) {
+          writeInst(buf, n++, x, roadY, 4, 4, mhR, mhG, mhB, 1, 0, 1);
+        }
       }
     }
     return n - start;
@@ -588,8 +682,9 @@ export class Game {
     let n = start;
     const [ar, ag, ab] = C.ALLEY_COLOR;
     const [sr, sg, sb] = C.SIDEWALK_COLOR;
-    const cwW = C.ALLEY_WIDTH - 2;
-    const stripeH = 2.5, stripeGap = 4;
+    const [ixR, ixG, ixB] = C.INTERSECTION_COLOR;
+    const [cwR, cwG, cwB, cwA] = C.CROSSWALK_COLOR;
+    const [slR, slG, slB, slA] = C.STOPLINE_COLOR;
 
     // 縦路地本体: 画面下端からカメラ上端+余裕まで連続描画
     const alleyTop = this.camera.top + 120;
@@ -601,18 +696,37 @@ export class Game {
       writeInst(buf, n++, ax + C.ALLEY_WIDTH / 2, alleyMid, 1.5, alleyH, sr, sg, sb, 0.6);
     }
 
-    // 初期都市の交差点: 4本の横道路
+    // 初期都市の道路 (川 = RIVERSIDE は除外: 橋で描画済み)
     const initialRoads = [
       { cy: C.HILLTOP_STREET_Y,   h: C.HILLTOP_STREET_H },
       { cy: C.MAIN_STREET_Y,      h: C.MAIN_STREET_H },
       { cy: C.LOWER_STREET_Y,     h: C.LOWER_STREET_H },
-      { cy: C.RIVERSIDE_STREET_Y, h: C.RIVERSIDE_STREET_H },
     ];
+
+    /** 1 交差点分のディテール (明るいアスファルト塊 + 横ゼブラ + 停止線) */
+    const drawIntersection = (ax: number, cy: number, h: number) => {
+      const ixW = C.ALLEY_WIDTH + 4;
+      // 明るいアスファルト塊 (交差点を識別)
+      writeInst(buf, n++, ax, cy, ixW, h + 2, ixR, ixG, ixB, 1);
+      // 横断歩道 (道路進行方向に直角 = 横縞を路地幅に敷く)
+      // 道路の上端・下端両方、路地の左右両脇に置く
+      const cwStripeH = 1.5;
+      const cwLen = C.ALLEY_WIDTH;
+      const edgeOffset = h / 2 - 2;
+      for (let i = 0; i < 3; i++) {
+        const yOff = edgeOffset - i * 2;
+        writeInst(buf, n++, ax, cy + yOff, cwLen, cwStripeH, cwR, cwG, cwB, cwA);
+        writeInst(buf, n++, ax, cy - yOff, cwLen, cwStripeH, cwR, cwG, cwB, cwA);
+      }
+      // 停止線 (交差点の外側、路地手前)
+      const slOffset = ixW / 2 + 1;
+      writeInst(buf, n++, ax - slOffset, cy, 2, h - 2, slR, slG, slB, slA);
+      writeInst(buf, n++, ax + slOffset, cy, 2, h - 2, slR, slG, slB, slA);
+    };
+
     for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
       for (const road of initialRoads) {
-        for (let sy = road.cy - road.h / 2 + 1; sy < road.cy + road.h / 2; sy += stripeGap) {
-          writeInst(buf, n++, ax, sy, cwW, stripeH, 0.90, 0.90, 0.90, 0.8);
-        }
+        drawIntersection(ax, road.cy, road.h);
       }
     }
 
@@ -620,9 +734,7 @@ export class Game {
     for (const chunk of this.loadedChunks.values()) {
       for (const road of chunk.roads) {
         for (const ax of [C.ALLEY_1_X, C.ALLEY_2_X]) {
-          for (let sy = road.y - road.h / 2 + 1; sy < road.y + road.h / 2; sy += stripeGap) {
-            writeInst(buf, n++, ax, sy, cwW, stripeH, 0.90, 0.90, 0.90, 0.8);
-          }
+          drawIntersection(ax, road.y, road.h);
         }
       }
     }

@@ -690,9 +690,10 @@ const VEHICLES: VehicleDef[] = [
   { type:'taxi',       lane:'lower',     direction:-1, speed:50,  interval: 6.5 },
   { type:'motorcycle', lane:'lower',     direction: 1, speed:75,  interval: 7.0 },
   { type:'delivery',   lane:'lower',     direction:-1, speed:38,  interval:11.0 },
-  { type:'car',        lane:'riverside', direction:-1, speed:35,  interval: 8.0 },
-  { type:'car',        lane:'riverside', direction: 1, speed:38,  interval:11.0 },
-  { type:'van',        lane:'riverside', direction:-1, speed:32,  interval:13.0 },
+  // RIVERSIDE は川に変換したため車両レーンを削除
+  // 代わりに main/lower に追加して総台数を維持
+  { type:'car',        lane:'main',      direction:-1, speed:52,  interval: 6.0 },
+  { type:'van',        lane:'lower',     direction: 1, speed:40,  interval: 9.0 },
 ];
 
 // ===== ステージ設定 =====

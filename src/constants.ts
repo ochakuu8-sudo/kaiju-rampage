@@ -198,6 +198,16 @@ export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.60, 0.
 export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.85, 0.85, 0.45, 1];
 export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.38, 0.38, 0.35, 1];
 
+// 道路ディテール
+export const CURB_COLOR:       readonly [number,number,number,number] = [0.22, 0.22, 0.24, 1];
+export const MANHOLE_COLOR:    readonly [number,number,number,number] = [0.18, 0.18, 0.20, 1];
+export const CROSSWALK_COLOR:  readonly [number,number,number,number] = [0.92, 0.92, 0.92, 0.9];
+export const STOPLINE_COLOR:   readonly [number,number,number,number] = [0.92, 0.92, 0.92, 0.85];
+export const PAVING_COLOR:     readonly [number,number,number,number] = [0.72, 0.70, 0.64, 0.35];
+export const INTERSECTION_COLOR: readonly [number,number,number,number] = [0.46, 0.46, 0.48, 1];
+export const BRIDGE_COLOR:     readonly [number,number,number,number] = [0.58, 0.48, 0.38, 1];
+export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 0.32, 0.26, 1];
+
 // ===== 自動スクロール =====
 export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s
 export const HUMAN_SPEED_BONUS   = 1;    // 人間を潰すごとのカメラ加速量 px/s
