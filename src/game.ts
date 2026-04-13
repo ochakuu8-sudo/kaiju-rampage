@@ -275,18 +275,38 @@ export class Game {
     this.sound.buildingDestroy();
 
     const isLarge = bld.maxHp >= 3;
-    if (isLarge) { this.juice.hitstop(C.HITSTOP_LARGE); this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR, 1.5); this.juice.flash(1, 1, 1, 0.35); }
-    else { this.juice.hitstop(C.HITSTOP_SMALL); this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR); }
+    const sc = bld.maxHp; // 1=小 2=中 3-4=大
+    if (isLarge) { this.juice.hitstop(C.HITSTOP_LARGE); this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR, 1.5); this.juice.flash(1, 1, 1, 0.40); }
+    else         { this.juice.hitstop(C.HITSTOP_SMALL);  this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR); this.juice.flash(1, 0.85, 0.4, 0.18); }
 
     const [dr, dg, db] = bld.baseColor;
-    this.particles.spawnDebris(cx, cy, 10 + bld.maxHp * 5, dr, dg, db);
-    this.particles.spawnSmoke(cx, cy, 4);
-    this.particles.spawnSpark(cx, cy, 8);
+    const top = bld.y + bld.h;
 
-    if (bld.size === 'hospital') this.vehicles.spawnAmbulance(cx < 0 ? 190 : -190, C.MAIN_STREET_Y);
-    if (bld.size === 'school')   this.particles.spawnConfetti(cx, cy, 15);
-    if (bld.size === 'temple')   { this.particles.spawnElectric(cx, cy, 10); this.juice.flash(1.0, 0.7, 0.2, 0.25); }
-    if (bld.size === 'restaurant') this.particles.spawnFood(cx, cy, 10);
+    // ── メイン破壊エフェクト ──────────────────────────────
+    this.particles.spawnDebris(cx, cy,  18 + sc * 12, dr, dg, db);
+    this.particles.spawnSmoke (cx, cy,   5 + sc * 5);
+    this.particles.spawnSpark (cx, cy,  16 + sc * 10);
+    this.particles.spawnFire  (cx, cy,  10 + sc * 7);
+    this.particles.spawnDust  (cx, bld.y, bld.w, 6 + sc * 4);
+
+    // ── 大型ビル: 頂部からも追加演出 ─────────────────────
+    if (isLarge) {
+      this.particles.spawnDebris(cx, top, 14, dr, dg, db);
+      this.particles.spawnSpark (cx, top, 18);
+      this.particles.spawnFire  (cx, top, 14);
+      this.particles.spawnSmoke (cx, top,  6);
+    }
+
+    // ── ガラス散乱: オフィス系 ───────────────────────────
+    if (bld.size === 'office' || bld.size === 'tower' || bld.size === 'skyscraper') {
+      this.particles.spawnGlass(cx, cy, 14 + sc * 6);
+    }
+
+    // ── 特殊建物 ─────────────────────────────────────────
+    if (bld.size === 'hospital')   this.vehicles.spawnAmbulance(cx < 0 ? 190 : -190, C.MAIN_STREET_Y);
+    if (bld.size === 'school')     this.particles.spawnConfetti(cx, cy, 22);
+    if (bld.size === 'temple')     { this.particles.spawnElectric(cx, cy, 16); this.juice.flash(1.0, 0.7, 0.2, 0.30); }
+    if (bld.size === 'restaurant') this.particles.spawnFood(cx, cy, 14);
 
     this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax));
   }

@@ -82,13 +82,13 @@ export class ParticleManager {
   spawnDebris(x: number, y: number, count: number, buildingR: number, buildingG: number, buildingB: number) {
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const spd   = rand(40, 160);
+      const spd   = rand(80, 320);
       this.emit(
-        x + rand(-10, 10), y + rand(-10, 10),
-        Math.cos(angle) * spd, Math.sin(angle) * spd,
-        buildingR * rand(0.7, 1), buildingG * rand(0.7, 1), buildingB * rand(0.7, 1),
-        rand(4, 10), rand(0.5, 1.0),
-        true, false, rand(-6, 6)
+        x + rand(-22, 22), y + rand(-16, 16),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(30, 100),
+        buildingR * rand(0.45, 1.1), buildingG * rand(0.45, 1.1), buildingB * rand(0.45, 1.1),
+        rand(5, 16), rand(0.55, 1.3),
+        true, false, rand(-10, 10)
       );
     }
   }
@@ -150,13 +150,13 @@ export class ParticleManager {
   spawnSpark(x: number, y: number, count: number) {
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const spd   = rand(60, 200);
+      const spd   = rand(120, 420);
       this.emit(
-        x, y,
+        x + rand(-6, 6), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
-        1, rand(0.7, 1), rand(0, 0.3),
-        rand(2, 4), rand(0.1, 0.25),
-        false, true
+        1, rand(0.65, 1), rand(0, 0.2),
+        rand(2, 5), rand(0.12, 0.32),
+        true, true  // 重力あり → 弧を描いて落ちる
       );
     }
   }
@@ -164,12 +164,50 @@ export class ParticleManager {
   /** 煙 */
   spawnSmoke(x: number, y: number, count: number) {
     for (let i = 0; i < count; i++) {
-      const v = rand(0.4, 0.7);
+      const v = rand(0.25, 0.55);
       this.emit(
-        x + rand(-12, 12), y + rand(-8, 8),
-        rand(-20, 20), rand(20, 60),
+        x + rand(-20, 20), y + rand(-12, 12),
+        rand(-28, 28), rand(35, 100),
         v, v, v,
-        rand(10, 20), rand(0.5, 1.5),
+        rand(18, 38), rand(1.0, 2.6),
+        false, true
+      );
+    }
+  }
+
+  /** 爆発炎 (上昇する火の粒) */
+  spawnFire(x: number, y: number, count: number) {
+    const FIRE_COLS: Array<[number,number,number]> = [
+      [1.0, 0.25, 0.02],
+      [1.0, 0.55, 0.04],
+      [1.0, 0.85, 0.10],
+      [1.0, 0.12, 0.0],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.7, 0.7);
+      const spd   = rand(60, 220);
+      const c = FIRE_COLS[Math.floor(Math.random() * FIRE_COLS.length)];
+      this.emit(
+        x + rand(-14, 14), y + rand(-10, 10),
+        Math.cos(angle) * spd + rand(-50, 50), Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(6, 18), rand(0.4, 1.1),
+        false, true
+      );
+    }
+  }
+
+  /** 粉塵 (建物底部から水平拡散) */
+  spawnDust(x: number, y: number, width: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const dir = Math.random() > 0.5 ? 1 : -1;
+      const spd = rand(40, 120);
+      const v   = rand(0.48, 0.68);
+      this.emit(
+        x + rand(-width * 0.5, width * 0.5), y + rand(-4, 6),
+        dir * spd + rand(-20, 20), rand(8, 35),
+        v, v * rand(0.85, 1), v * rand(0.72, 0.92),
+        rand(12, 28), rand(0.8, 1.8),
         false, true
       );
     }
