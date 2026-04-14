@@ -29,10 +29,10 @@ export class Ball {
     return Math.min(C.BALL_RADIUS_MAX, C.BALL_RADIUS + p * C.BALL_RADIUS_GROWTH);
   }
 
-  /** 1 ヒットで与えるダメージ。パワー BALL_DAMAGE_STEP ごとに +1。
-   *  初期 (power=0) は 1 ダメージ。HP=2 以上のものは一撃で壊せない。 */
+  /** 1 ヒットで与えるダメージ。速度に比例 (speed 25 → damage 13)。最低 1。 */
   get damage(): number {
-    return 1 + Math.floor(Math.min(this.power, C.BALL_POWER_MAX) / C.BALL_DAMAGE_STEP);
+    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    return Math.max(1, Math.floor(spd * C.BALL_SPEED_DAMAGE_FACTOR));
   }
 
   /** 人間を1体食べたときに呼ぶ。
@@ -274,6 +274,7 @@ export interface BuildingData {
   spawnTimer: number;   // > 0: スポーンアニメーション進行中
   blockIdx: number;     // 所属ブロックID (0〜14)
   generation: number;   // 再建回数
+  hitCooldown: number;  // > 0: ボール貫通後の再ヒット禁止タイマー (秒)
 }
 
 export class BuildingManager {
@@ -305,6 +306,7 @@ export class BuildingManager {
         flashTimer: 0,
         rubbleTimer: 0,
         spawnTimer: 0,
+        hitCooldown: 0,
         blockIdx: d.blockIdx ?? 0,
         generation: 0,
         baseColor,
@@ -338,6 +340,7 @@ export class BuildingManager {
         flashTimer: 0,
         rubbleTimer: 0,
         spawnTimer: 0,
+        hitCooldown: 0,
         blockIdx: d.blockIdx ?? -1,
         generation: 0,
         baseColor: palette[pi],
@@ -380,6 +383,7 @@ export class BuildingManager {
       flashTimer: 0,
       rubbleTimer: 0,
       spawnTimer: C.SPAWN_ANIM_DURATION,
+      hitCooldown: 0,
       blockIdx,
       generation,
       baseColor,
@@ -403,6 +407,7 @@ export class BuildingManager {
     for (const b of this.buildings) {
       if (b.flashTimer > 0) b.flashTimer -= dt;
       if (b.spawnTimer > 0) b.spawnTimer = Math.max(0, b.spawnTimer - dt);
+      if (b.hitCooldown > 0) b.hitCooldown = Math.max(0, b.hitCooldown - dt);
       if (b.destroyTimer > 0) {
         b.destroyTimer -= dt;
         if (b.destroyTimer <= 0) b.active = false;
@@ -431,7 +436,7 @@ export class BuildingManager {
       const list = this.chunkMap.get(key);
       if (!list) continue;
       for (const b of list) {
-        if (!b.active || b.destroyTimer > 0) continue;
+        if (!b.active || b.destroyTimer > 0 || b.hitCooldown > 0) continue;
         const res = resolveCircleAABB(bx, by, br, vx, vy, b.x, b.y, b.w, b.h);
         if (res) {
           return { bld: b, newBx: res[0], newBy: res[1], newVx: res[2], newVy: res[3] };
@@ -445,6 +450,7 @@ export class BuildingManager {
   damage(b: BuildingData, dmg: number = 1): boolean {
     b.hp -= dmg;
     b.flashTimer = 0.08;
+    b.hitCooldown = C.BUILDING_HIT_COOLDOWN; // 貫通後の再ヒット禁止
     if (b.hp <= 0) {
       b.destroyTimer = 0.2;
       b.rubbleTimer = C.RUBBLE_DURATION + 0.2; // 崩壊アニメ後も瓦礫として残る

@@ -189,7 +189,6 @@ export class Game {
     const b = this.ball;
     if (!b.active) return;
     const r = b.radius;
-    const dmg = b.damage;
     const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
     const SUB = speed > 15 ? 4 : speed > 8 ? 2 : 1;
     const dts = dt / SUB;
@@ -221,16 +220,26 @@ export class Game {
       }
       if (!bldResult) {
         const h = this.buildings.checkBallHit(b.x, b.y, r, b.vx, b.vy);
-        if (h) { bldResult = h; b.x = h.newBx; b.y = h.newBy; b.vx = h.newVx; b.vy = h.newVy; [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED); }
+        // 貫通: 位置のみ補正し速度方向は変えない
+        if (h) { bldResult = h; b.x = h.newBx; b.y = h.newBy; }
       }
     }
 
     if (flipperSoundNeeded) { this.sound.flipper(); this.juice.ballHitFlash(); }
     else if (wallSoundNeeded) { this.sound.wallHit(); }
 
+    // 速度ベースのダメージ (サブステップ後の速度を参照)
+    const dmg = b.damage;
+
     if (bldResult) {
       const { bld } = bldResult;
+      const actualDmg = Math.min(dmg, Math.max(0, bld.hp)); // 実際に削るHP
       const destroyed = this.buildings.damage(bld, dmg);
+      // 貫通減速: 削ったHP量に応じて速度を落とす
+      const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      const speedLoss = actualDmg * C.BALL_PENETRATION_SLOW;
+      const newSpd = Math.max(0, curSpd - speedLoss);
+      if (curSpd > 0) { b.vx = b.vx / curSpd * newSpd; b.vy = b.vy / curSpd * newSpd; }
       if (destroyed) {
         this.onBuildingDestroyed(bld);
       } else {
