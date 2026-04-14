@@ -35,14 +35,17 @@ export class Ball {
     return 1 + Math.floor(Math.min(this.power, C.BALL_POWER_MAX) / C.BALL_DAMAGE_STEP);
   }
 
-  /** 人間を食べたときに呼ぶ */
-  addPower(amount: number = C.BALL_POWER_PER_HUMAN) {
-    this.power = Math.min(C.BALL_POWER_MAX, this.power + amount);
+  /** 人間を1体食べたときに呼ぶ。
+   *  power p→p+1 に必要な kill 数は BASE_KILLS * KILL_GROWTH^p で指数的に増加し、
+   *  1 kill あたりの power 増加量 = 1 / (BASE_KILLS * KILL_GROWTH^p) となる。 */
+  addPower() {
+    const killsNeeded = C.BALL_POWER_BASE_KILLS * Math.pow(C.BALL_POWER_KILL_GROWTH, this.power);
+    this.power = Math.min(C.BALL_POWER_MAX, this.power + 1 / killsNeeded);
   }
 
   /** ボールロスト時にパワーを一部失う */
   losePowerOnBallLost() {
-    this.power = Math.floor(this.power * C.BALL_POWER_LOSS_ON_LOST);
+    this.power = this.power * C.BALL_POWER_LOSS_ON_LOST;
   }
 
   reset() {

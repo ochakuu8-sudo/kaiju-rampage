@@ -16,8 +16,11 @@ export const BALL_RADIUS = 9;            // 初期/最小半径
 export const BALL_RADIUS_MAX = 18;       // 最大半径 (パワーアップ後)
 export const BALL_RADIUS_GROWTH = 0.18;  // パワー 1 ごとに増える半径
 export const BALL_POWER_MAX = 50;        // パワー上限
-export const BALL_POWER_PER_HUMAN = 1;   // 人間 1 体潰すごとのパワー増加
-export const BALL_DAMAGE_STEP = 4;       // この値ごとに攻撃力が +1 される (max power 50 → damage 13)
+// パワーアップ指数コスト: power p→p+1 に必要なkill数 = BASE_KILLS * KILL_GROWTH^p
+// 例) kill 60体 → power≈11.5 / kill 300体 → power≈25 / kill ~3500体 → power MAX(50)
+export const BALL_POWER_BASE_KILLS  = 3;    // power 0→1 に必要な kill 数
+export const BALL_POWER_KILL_GROWTH = 1.1;  // 1 レベルごとのコスト倍率 (10%増し)
+export const BALL_DAMAGE_STEP = 4;          // この値ごとに攻撃力が +1 される (max power 50 → damage 13)
 export const BALL_POWER_LOSS_ON_LOST = 0.5; // ボールロスト時にパワーをこの割合に
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
