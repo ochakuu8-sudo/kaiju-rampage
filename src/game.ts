@@ -308,8 +308,9 @@ export class Game {
     this.score += bld.score;
     this.sound.buildingDestroy();
 
-    const isLarge = bld.maxHp >= 3;
-    const sc = bld.maxHp; // 1=小 2=中 3-4=大
+    // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う
+    const sc = Math.ceil(bld.maxHp / 4); // hp4→1, hp8→2, hp11→3, hp13→4
+    const isLarge = bld.maxHp >= 11;
     if (isLarge) { this.juice.hitstop(C.HITSTOP_LARGE); this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR, 1.5); this.juice.flash(1, 1, 1, 0.40); }
     else         { this.juice.hitstop(C.HITSTOP_SMALL);  this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR); this.juice.flash(1, 0.85, 0.4, 0.18); }
 
@@ -317,9 +318,9 @@ export class Game {
     const top = bld.y + bld.h;
 
     // ── メイン破壊エフェクト ──────────────────────────────
-    this.particles.spawnDebris(cx, cy,  18 + sc * 12, dr, dg, db);
-    this.particles.spawnSpark (cx, cy,  16 + sc * 10);
-    this.particles.spawnFire  (cx, cy,  10 + sc * 7);
+    this.particles.spawnDebris(cx, cy, 18 + sc * 12, dr, dg, db);
+    this.particles.spawnSpark (cx, cy, 16 + sc * 10);
+    this.particles.spawnFire  (cx, cy, 10 + sc *  7);
 
     // ── 大型ビル: 頂部からも追加演出 ─────────────────────
     if (isLarge) {
@@ -328,16 +329,92 @@ export class Game {
       this.particles.spawnFire  (cx, top, 14);
     }
 
-    // ── ガラス散乱: オフィス系 ───────────────────────────
-    if (bld.size === 'office' || bld.size === 'tower' || bld.size === 'skyscraper') {
-      this.particles.spawnGlass(cx, cy, 14 + sc * 6);
+    // ── ガラス散乱: 高層・ガラス張りビル ─────────────────
+    if (bld.size === 'office'     || bld.size === 'tower'      || bld.size === 'skyscraper' ||
+        bld.size === 'apartment_tall' || bld.size === 'city_hall') {
+      this.particles.spawnGlass(cx, cy, 14 + sc * 5);
     }
 
-    // ── 特殊建物 ─────────────────────────────────────────
-    if (bld.size === 'hospital')   this.vehicles.spawnAmbulance(cx < 0 ? 190 : -190, C.MAIN_STREET_Y);
-    if (bld.size === 'school')     this.particles.spawnConfetti(cx, cy, 22);
-    if (bld.size === 'temple')     { this.particles.spawnElectric(cx, cy, 16); this.juice.flash(1.0, 0.7, 0.2, 0.30); }
-    if (bld.size === 'restaurant') this.particles.spawnFood(cx, cy, 14);
+    // ── 爆発: ガソリンスタンド ───────────────────────────
+    if (bld.size === 'gas_station') {
+      this.particles.spawnFire(cx, cy, 20);
+      this.particles.spawnSpark(cx, cy, 20);
+    }
+
+    // ── 紙幣: 銀行・百貨店 ───────────────────────────────
+    if (bld.size === 'bank' || bld.size === 'department_store') {
+      this.particles.spawnCash(cx, cy, 16 + sc * 4);
+    }
+
+    // ── 本: 図書館・書店 ─────────────────────────────────
+    if (bld.size === 'library' || bld.size === 'bookstore') {
+      this.particles.spawnBooks(cx, cy, 14 + sc * 3);
+    }
+
+    // ── 花びら: 花屋・温室 ───────────────────────────────
+    if (bld.size === 'florist' || bld.size === 'greenhouse') {
+      this.particles.spawnFlower(cx, cy, 16);
+    }
+
+    // ── 桜吹雪: 神社 ─────────────────────────────────────
+    if (bld.size === 'shrine') {
+      this.particles.spawnSakuraPetals(cx, cy, 20);
+    }
+
+    // ── 電気スパーク: 寺院・ゲームセンター・警察 ──────────
+    if (bld.size === 'temple') {
+      this.particles.spawnElectric(cx, cy, 16);
+      this.juice.flash(1.0, 0.7, 0.2, 0.30);
+    }
+    if (bld.size === 'game_center' || bld.size === 'police_station') {
+      this.particles.spawnElectric(cx, cy, 12);
+    }
+
+    // ── 食べ物: 飲食・食料品 ─────────────────────────────
+    if (bld.size === 'restaurant' || bld.size === 'cafe'       || bld.size === 'bakery' ||
+        bld.size === 'ramen'      || bld.size === 'izakaya'    ||
+        bld.size === 'supermarket'|| bld.size === 'convenience') {
+      this.particles.spawnFood(cx, cy, 14);
+    }
+
+    // ── 蒸気: 熱い食べ物・蒸気機関 ──────────────────────
+    if (bld.size === 'ramen' || bld.size === 'izakaya' || bld.size === 'train_station') {
+      this.particles.spawnSteam(cx, cy, 12);
+    }
+
+    // ── 水しぶき: 貯水タンク ─────────────────────────────
+    if (bld.size === 'water_tower') {
+      this.particles.spawnWater(cx, cy, 20);
+    }
+
+    // ── 泡 + 蒸気: コインランドリー ──────────────────────
+    if (bld.size === 'laundromat') {
+      this.particles.spawnBubbles(cx, cy, 14);
+      this.particles.spawnSteam(cx, cy, 10);
+    }
+
+    // ── 紙吹雪: 娯楽・お祝い ────────────────────────────
+    if (bld.size === 'school'       || bld.size === 'movie_theater' ||
+        bld.size === 'pachinko'     || bld.size === 'karaoke'       ||
+        bld.size === 'department_store') {
+      this.particles.spawnConfetti(cx, cy, 20);
+    }
+
+    // ── 風船: 遊園地・子ども施設 ─────────────────────────
+    if (bld.size === 'ferris_wheel' || bld.size === 'stadium' ||
+        bld.size === 'daycare'      || bld.size === 'karaoke') {
+      this.particles.spawnBalloons(cx, cy, 12);
+    }
+
+    // ── ポップコーン: 映画館・スタジアム ─────────────────
+    if (bld.size === 'movie_theater' || bld.size === 'stadium') {
+      this.particles.spawnPopcorn(cx, cy, 12);
+    }
+
+    // ── 救急車: 病院 ─────────────────────────────────────
+    if (bld.size === 'hospital') {
+      this.vehicles.spawnAmbulance(cx < 0 ? 190 : -190, C.MAIN_STREET_Y);
+    }
 
     this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax));
   }
