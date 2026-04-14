@@ -274,7 +274,6 @@ export interface BuildingData {
   spawnTimer: number;   // > 0: スポーンアニメーション進行中
   blockIdx: number;     // 所属ブロックID (0〜14)
   generation: number;   // 再建回数
-  hitCooldown: number;  // > 0: ボール貫通後の再ヒット禁止タイマー (秒)
 }
 
 export class BuildingManager {
@@ -306,7 +305,6 @@ export class BuildingManager {
         flashTimer: 0,
         rubbleTimer: 0,
         spawnTimer: 0,
-        hitCooldown: 0,
         blockIdx: d.blockIdx ?? 0,
         generation: 0,
         baseColor,
@@ -340,7 +338,6 @@ export class BuildingManager {
         flashTimer: 0,
         rubbleTimer: 0,
         spawnTimer: 0,
-        hitCooldown: 0,
         blockIdx: d.blockIdx ?? -1,
         generation: 0,
         baseColor: palette[pi],
@@ -383,7 +380,6 @@ export class BuildingManager {
       flashTimer: 0,
       rubbleTimer: 0,
       spawnTimer: C.SPAWN_ANIM_DURATION,
-      hitCooldown: 0,
       blockIdx,
       generation,
       baseColor,
@@ -407,7 +403,6 @@ export class BuildingManager {
     for (const b of this.buildings) {
       if (b.flashTimer > 0) b.flashTimer -= dt;
       if (b.spawnTimer > 0) b.spawnTimer = Math.max(0, b.spawnTimer - dt);
-      if (b.hitCooldown > 0) b.hitCooldown = Math.max(0, b.hitCooldown - dt);
       if (b.destroyTimer > 0) {
         b.destroyTimer -= dt;
         if (b.destroyTimer <= 0) b.active = false;
@@ -436,7 +431,7 @@ export class BuildingManager {
       const list = this.chunkMap.get(key);
       if (!list) continue;
       for (const b of list) {
-        if (!b.active || b.destroyTimer > 0 || b.hitCooldown > 0) continue;
+        if (!b.active || b.destroyTimer > 0) continue;
         const res = resolveCircleAABB(bx, by, br, vx, vy, b.x, b.y, b.w, b.h);
         if (res) {
           return { bld: b, newBx: res[0], newBy: res[1], newVx: res[2], newVy: res[3] };
@@ -450,7 +445,6 @@ export class BuildingManager {
   damage(b: BuildingData, dmg: number = 1): boolean {
     b.hp -= dmg;
     b.flashTimer = 0.08;
-    b.hitCooldown = C.BUILDING_HIT_COOLDOWN; // 貫通後の再ヒット禁止
     if (b.hp <= 0) {
       b.destroyTimer = 0.2;
       b.rubbleTimer = C.RUBBLE_DURATION + 0.2; // 崩壊アニメ後も瓦礫として残る

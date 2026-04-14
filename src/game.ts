@@ -235,19 +235,18 @@ export class Game {
       const { bld } = bldResult;
       const actualDmg = Math.min(dmg, Math.max(0, bld.hp)); // 実際に削るHP
       const destroyed = this.buildings.damage(bld, dmg);
-      // 貫通減速: 削ったHP量に応じて速度を落とす
-      const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-      const speedLoss = actualDmg * C.BALL_PENETRATION_SLOW;
-      const newSpd = Math.max(0, curSpd - speedLoss);
-      if (curSpd > 0) { b.vx = b.vx / curSpd * newSpd; b.vy = b.vy / curSpd * newSpd; }
       if (destroyed) {
+        // 貫通: 速度方向はそのまま、削ったHP分だけ減速
+        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        const newSpd = Math.max(0, curSpd - actualDmg * C.BALL_PENETRATION_SLOW);
+        if (curSpd > 0) { b.vx = b.vx / curSpd * newSpd; b.vy = b.vy / curSpd * newSpd; }
         this.onBuildingDestroyed(bld);
       } else {
-        // 壊せなかった: 完全反射方向に少しだけ押し返す (20%)
-        const dvx = bldResult.newVx - b.vx;
-        const dvy = bldResult.newVy - b.vy;
-        b.vx += dvx * 0.2;
-        b.vy += dvy * 0.2;
+        // 非破壊: 定数最小反発 (乗り続け防止)
+        const rSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2);
+        const scale = Math.max(1, C.BALL_MIN_REPEL_SPEED / Math.max(rSpd, 0.01));
+        b.vx = bldResult.newVx * scale;
+        b.vy = bldResult.newVy * scale;
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
         this.juice.ballHitFlash();

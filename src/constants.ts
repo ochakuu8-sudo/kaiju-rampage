@@ -22,7 +22,7 @@ export const BALL_POWER_BASE_KILLS  = 3;    // power 0→1 に必要な kill 数
 export const BALL_POWER_KILL_GROWTH = 1.1;  // 1 レベルごとのコスト倍率 (10%増し)
 export const BALL_SPEED_DAMAGE_FACTOR = 0.52; // speed × factor = damage (speed 25 → damage 13)
 export const BALL_PENETRATION_SLOW = 1.5;    // 建物貫通時の減速量 (actualDmg × factor = speed loss)
-export const BUILDING_HIT_COOLDOWN = 0.3;   // 同一建物への再ヒット禁止クールダウン (秒)
+export const BALL_MIN_REPEL_SPEED = 4;       // 非破壊時の最小反発速度 (乗り続け防止)
 export const BALL_POWER_LOSS_ON_LOST = 0.5; // ボールロスト時にパワーをこの割合に
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
