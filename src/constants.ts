@@ -42,7 +42,8 @@ export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
 export const FLIPPER_REST_DEG = -30;
 export const FLIPPER_ACTIVE_DEG = 30;
-export const FLIPPER_POWER = 16;
+export const FLIPPER_POWER = 10;
+export const FLIPPER_POWER_BOOST = 1.5; // max power 時に発射速度が (1+1.5)=2.5倍
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 
 // ===== 建物 =====

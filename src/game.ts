@@ -213,7 +213,9 @@ export class Game {
         if (res) {
           [b.x, b.y, b.vx, b.vy] = res;
           const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
-          b.vx = nvx; b.vy = nvy;
+          // パワーに応じて発射速度を強化 (power 0→1.0倍, max→2.5倍)
+          const flipBoost = 1 + (b.power / C.BALL_POWER_MAX) * C.FLIPPER_POWER_BOOST;
+          b.vx = nvx * flipBoost; b.vy = nvy * flipBoost;
           [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
           flipperSoundNeeded = true; break;
         }
