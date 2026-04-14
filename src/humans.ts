@@ -146,6 +146,16 @@ export class HumanManager {
     this.activeCount = 0;
   }
 
+  /** ゲーム開始時: 初期横道路3本に通行人を均等に配置 */
+  spawnOnStreets(countPerStreet: number): void {
+    for (const road of INITIAL_H_ROADS) {
+      for (let i = 0; i < countPerStreet; i++) {
+        const cx = rand(C.WORLD_MIN_X + 20, C.WORLD_MAX_X - 20);
+        this.spawn(cx, road.y, 1);
+      }
+    }
+  }
+
   /** 指定座標付近に n 体スポーン */
   spawn(cx: number, cy: number, n: number) {
     let spawned = 0;

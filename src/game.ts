@@ -112,6 +112,7 @@ export class Game {
     this.bgBottomR = cfg.bgBottomR; this.bgBottomG = cfg.bgBottomG; this.bgBottomB = cfg.bgBottomB;
     this.humans.reset();
     this.humans.resetRoads();
+    this.humans.spawnOnStreets(20);  // 3道路 × 20体 = 60体の初期通行人
     this.particles.reset();
     this.camera.reset();
     this.loadedChunks.clear();
