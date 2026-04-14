@@ -430,115 +430,252 @@ export class Game {
     this.renderer.drawFlash(this.juice.flashR, this.juice.flashG, this.juice.flashB, this.juice.flashAlpha);
   }
 
-  /** 1 タイル分の地面を描画。型別のベース色 + ディテールを出力。 */
+  /**
+   * 1 タイル分の地面を描画。型ごとに異なる描画技法を使用:
+   * - 自然物 (grass / dirt / gravel / fallen_leaves) は疑似ランダム配置で
+   *   個別の葉・石・草を散らす
+   * - 人工物 (wood_deck / tile / stone_pavement) は個別タイルをシェーディング
+   * - 街路 (asphalt / concrete) は細かい骨材やヒビを描く
+   */
   private drawGroundTile(buf: Float32Array, idx: number, tile: GroundTile): number {
     let n = idx;
     const { type, x, y, w, h } = tile;
+    // セル位置で決まる deterministic hash (同じタイルは常に同じパターン)
+    const hash = (i: number) => {
+      const v = Math.sin(x * 12.9898 + y * 78.233 + i * 37.719) * 43758.5453;
+      return v - Math.floor(v);
+    };
+
     switch (type) {
-      case 'concrete': {
-        writeInst(buf, n++, x, y, w, h, 0.68, 0.66, 0.62, 1);
-        // expansion joint lines (水平 2 本)
-        writeInst(buf, n++, x, y - h * 0.25, w, 0.5, 0.48, 0.46, 0.42, 0.75);
-        writeInst(buf, n++, x, y + h * 0.25, w, 0.5, 0.48, 0.46, 0.42, 0.75);
-        // subtle stains
-        writeInst(buf, n++, x - w * 0.15, y + h * 0.1, w * 0.18, h * 0.1, 0.58, 0.56, 0.52, 0.4);
-        break;
-      }
+      // ─── 石畳: 不規則な石をオフセットして並べる ───────────
       case 'stone_pavement': {
-        writeInst(buf, n++, x, y, w, h, 0.55, 0.50, 0.42, 1);
-        // 3x3 stone grid lines
-        const hs = h / 3, ws = w / 3;
-        for (let i = 1; i < 3; i++) {
-          writeInst(buf, n++, x, y - h / 2 + i * hs, w, 0.6, 0.32, 0.28, 0.22, 0.85);
-          writeInst(buf, n++, x - w / 2 + i * ws, y, 0.6, h, 0.32, 0.28, 0.22, 0.85);
+        // 目地の暗い下地
+        writeInst(buf, n++, x, y, w, h, 0.32, 0.28, 0.22, 1);
+        // 4 行 × 3 列、行ごとに半セル分オフセット (煉瓦積み)
+        const rows = 4;
+        const cols = 3;
+        const sh = h / rows;
+        const sw = w / cols;
+        for (let r = 0; r < rows; r++) {
+          const rowOff = (r % 2) * sw * 0.5;
+          for (let c = -1; c <= cols; c++) {
+            const sx = x - w / 2 + (c + 0.5) * sw + rowOff;
+            const sy = y - h / 2 + (r + 0.5) * sh;
+            if (sx < x - w / 2 - sw * 0.15 || sx > x + w / 2 + sw * 0.15) continue;
+            const hv = hash(r * 13 + c * 7);
+            const shade = 0.50 + hv * 0.15;
+            writeInst(buf, n++, sx, sy, sw * 0.88, sh * 0.82,
+              shade * 1.05, shade * 0.95, shade * 0.80, 1);
+            // 石の上辺ハイライト
+            writeInst(buf, n++, sx, sy - sh * 0.32, sw * 0.80, 0.4,
+              Math.min(1, shade + 0.15), Math.min(1, shade + 0.10), shade * 0.90, 0.7);
+          }
         }
-        // brick-offset highlight (one lighter tile)
-        writeInst(buf, n++, x - ws / 2, y - hs / 2, ws * 0.82, hs * 0.82, 0.62, 0.57, 0.48, 0.35);
-        writeInst(buf, n++, x + ws / 2, y + hs / 2, ws * 0.82, hs * 0.82, 0.62, 0.57, 0.48, 0.35);
         break;
       }
-      case 'asphalt': {
-        writeInst(buf, n++, x, y, w, h, 0.30, 0.30, 0.32, 1);
-        // lighter specks
-        writeInst(buf, n++, x - w * 0.25, y - h * 0.2, 2, 2, 0.48, 0.48, 0.50, 0.5);
-        writeInst(buf, n++, x + w * 0.1,  y + h * 0.15, 2, 2, 0.48, 0.48, 0.50, 0.5);
-        writeInst(buf, n++, x - w * 0.05, y + h * 0.3, 2, 2, 0.48, 0.48, 0.50, 0.5);
-        writeInst(buf, n++, x + w * 0.25, y - h * 0.1, 2, 2, 0.42, 0.42, 0.44, 0.55);
-        // faint worn tire track
-        writeInst(buf, n++, x, y, w * 0.7, 0.6, 0.24, 0.24, 0.26, 0.55);
-        break;
-      }
-      case 'wood_deck': {
-        writeInst(buf, n++, x, y, w, h, 0.60, 0.42, 0.24, 1);
-        // plank lines (4 縦)
-        for (let i = 1; i < 5; i++) {
-          writeInst(buf, n++, x - w / 2 + i * (w / 5), y, 0.5, h, 0.35, 0.22, 0.10, 0.85);
-        }
-        // 木目ハイライト
-        writeInst(buf, n++, x - w * 0.15, y - h * 0.2, w * 0.3, 0.3, 0.75, 0.52, 0.30, 0.4);
-        writeInst(buf, n++, x + w * 0.1,  y + h * 0.25, w * 0.35, 0.3, 0.75, 0.52, 0.30, 0.4);
-        break;
-      }
-      case 'tile': {
-        writeInst(buf, n++, x, y, w, h, 0.78, 0.74, 0.68, 1);
-        // 3x3 grid
-        const hs = h / 3, ws = w / 3;
-        for (let i = 1; i < 3; i++) {
-          writeInst(buf, n++, x, y - h / 2 + i * hs, w, 0.4, 0.55, 0.52, 0.48, 0.8);
-          writeInst(buf, n++, x - w / 2 + i * ws, y, 0.4, h, 0.55, 0.52, 0.48, 0.8);
-        }
-        // 1 枚だけ色違い (accent)
-        writeInst(buf, n++, x - ws, y - hs, ws * 0.85, hs * 0.85, 0.85, 0.80, 0.72, 0.5);
-        break;
-      }
+
+      // ─── 芝: 多数の草の葉をランダム配置 ──────────────────
       case 'grass': {
-        writeInst(buf, n++, x, y, w, h, 0.32, 0.55, 0.22, 1);
-        // darker patches
-        writeInst(buf, n++, x - w * 0.2, y - h * 0.2, w * 0.5, h * 0.3, 0.26, 0.48, 0.18, 0.55);
-        writeInst(buf, n++, x + w * 0.15, y + h * 0.15, w * 0.35, h * 0.25, 0.38, 0.62, 0.26, 0.55);
-        // 草の spikes
-        writeInst(buf, n++, x + w * 0.3, y - h * 0.1, 1, 2, 0.52, 0.74, 0.30, 0.8);
-        writeInst(buf, n++, x - w * 0.1, y + h * 0.3, 1, 2, 0.52, 0.74, 0.30, 0.8);
-        writeInst(buf, n++, x + w * 0.0, y - h * 0.3, 1, 2, 0.52, 0.74, 0.30, 0.8);
-        break;
-      }
-      case 'dirt': {
-        writeInst(buf, n++, x, y, w, h, 0.45, 0.33, 0.20, 1);
-        // 色ムラ
-        writeInst(buf, n++, x - w * 0.2, y, w * 0.4, h * 0.4, 0.38, 0.28, 0.16, 0.55);
-        writeInst(buf, n++, x + w * 0.15, y - h * 0.25, w * 0.35, h * 0.3, 0.52, 0.38, 0.24, 0.45);
-        writeInst(buf, n++, x - w * 0.1, y + h * 0.25, w * 0.3, h * 0.25, 0.40, 0.30, 0.18, 0.5);
-        // 小石
-        writeInst(buf, n++, x + w * 0.25, y + h * 0.1, 1.5, 1.5, 0.55, 0.50, 0.42, 0.75, 0, 1);
-        writeInst(buf, n++, x - w * 0.25, y - h * 0.15, 1.5, 1.5, 0.55, 0.50, 0.42, 0.75, 0, 1);
-        break;
-      }
-      case 'fallen_leaves': {
-        writeInst(buf, n++, x, y, w, h, 0.40, 0.30, 0.18, 1);
-        // 色とりどりの落ち葉
-        writeInst(buf, n++, x - w * 0.25, y - h * 0.20, 2.5, 2, 0.85, 0.35, 0.12, 0.90, 0, 1);
-        writeInst(buf, n++, x + w * 0.15, y - h * 0.30, 2.5, 2, 0.92, 0.70, 0.15, 0.90, 0, 1);
-        writeInst(buf, n++, x - w * 0.05, y + h * 0.10, 2.5, 2, 0.78, 0.25, 0.10, 0.90, 0, 1);
-        writeInst(buf, n++, x + w * 0.30, y + h * 0.05, 2.5, 2, 0.88, 0.55, 0.20, 0.90, 0, 1);
-        writeInst(buf, n++, x - w * 0.20, y + h * 0.30, 2.5, 2, 0.72, 0.42, 0.15, 0.90, 0, 1);
-        writeInst(buf, n++, x + w * 0.05, y - h * 0.05, 2.5, 2, 0.95, 0.60, 0.18, 0.90, 0, 1);
-        writeInst(buf, n++, x + w * 0.22, y + h * 0.28, 2.5, 2, 0.65, 0.28, 0.08, 0.90, 0, 1);
-        writeInst(buf, n++, x - w * 0.12, y - h * 0.12, 2.5, 2, 0.90, 0.50, 0.15, 0.90, 0, 1);
-        break;
-      }
-      case 'gravel': {
-        writeInst(buf, n++, x, y, w, h, 0.58, 0.54, 0.48, 1);
-        // 枯山水の砂紋 (水平の薄い波線)
-        writeInst(buf, n++, x, y - h * 0.15, w * 0.9, 0.4, 0.72, 0.68, 0.60, 0.45);
-        writeInst(buf, n++, x, y + h * 0.15, w * 0.9, 0.4, 0.72, 0.68, 0.60, 0.45);
-        // 小石
-        const gravelPts: [number, number][] = [
-          [-0.3, -0.25], [0.1, -0.2], [-0.1, 0.05], [0.25, 0.1], [-0.2, 0.25], [0.3, 0.3],
-          [-0.35, 0.05], [0.0, 0.0], [0.35, -0.15],
-        ];
-        for (const [dxp, dyp] of gravelPts) {
-          writeInst(buf, n++, x + w * dxp, y + h * dyp, 1.8, 1.8, 0.45, 0.42, 0.38, 0.85, 0, 1);
+        // ベース (中間的な緑)
+        writeInst(buf, n++, x, y, w, h, 0.30, 0.52, 0.20, 1);
+        // 有機的な色ムラパッチ 2 つ (円)
+        writeInst(buf, n++, x - w * 0.22, y - h * 0.18, w * 0.5, h * 0.4,
+          0.24, 0.44, 0.16, 0.65, 0, 1);
+        writeInst(buf, n++, x + w * 0.20, y + h * 0.22, w * 0.5, h * 0.4,
+          0.38, 0.62, 0.24, 0.60, 0, 1);
+        // 草の葉を 28 枚ランダム散布 (縦に細長い長方形)
+        for (let i = 0; i < 28; i++) {
+          const bx = x + (hash(i * 2) - 0.5) * w * 0.92;
+          const by = y + (hash(i * 2 + 1) - 0.5) * h * 0.92;
+          const bright = 0.55 + hash(i * 3 + 7) * 0.25;
+          writeInst(buf, n++, bx, by, 0.6, 1.8,
+            0.30 + bright * 0.08, bright + 0.15, 0.18, 0.9);
         }
+        // 小さな白花 2 つ (アクセント)
+        for (let i = 0; i < 2; i++) {
+          const bx = x + (hash(100 + i) - 0.5) * w * 0.85;
+          const by = y + (hash(200 + i) - 0.5) * h * 0.85;
+          writeInst(buf, n++, bx, by, 1.3, 1.3, 0.96, 0.93, 0.82, 0.9, 0, 1);
+        }
+        break;
+      }
+
+      // ─── 土: 有機的な色ブロブ + 小石 ─────────────────────
+      case 'dirt': {
+        writeInst(buf, n++, x, y, w, h, 0.46, 0.33, 0.20, 1);
+        // 柔らかい色ブロブ 8 個 (円形で有機感)
+        for (let i = 0; i < 8; i++) {
+          const bx = x + (hash(i * 3) - 0.5) * w * 0.85;
+          const by = y + (hash(i * 3 + 1) - 0.5) * h * 0.85;
+          const sz = 3.5 + hash(i * 3 + 2) * 6;
+          const dark = i % 2 === 0;
+          const r = dark ? 0.36 : 0.54;
+          const g = dark ? 0.26 : 0.40;
+          const bcol = dark ? 0.14 : 0.24;
+          writeInst(buf, n++, bx, by, sz, sz * 0.75, r, g, bcol, 0.60, 0, 1);
+        }
+        // 小石 6 個 (円)
+        for (let i = 0; i < 6; i++) {
+          const bx = x + (hash(100 + i * 2) - 0.5) * w * 0.9;
+          const by = y + (hash(101 + i * 2) - 0.5) * h * 0.9;
+          const sz = 1.3 + hash(200 + i) * 0.9;
+          writeInst(buf, n++, bx, by, sz, sz,
+            0.58 + hash(300 + i) * 0.1, 0.52, 0.44, 0.85, 0, 1);
+        }
+        break;
+      }
+
+      // ─── 玉砂利: 大量の丸い石で敷き詰める ─────────────────
+      case 'gravel': {
+        // ベース
+        writeInst(buf, n++, x, y, w, h, 0.60, 0.56, 0.48, 1);
+        // 枯山水の砂紋 (薄い水平線 3 本)
+        writeInst(buf, n++, x, y - h * 0.28, w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45);
+        writeInst(buf, n++, x, y,              w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45);
+        writeInst(buf, n++, x, y + h * 0.28,   w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45);
+        // 砂利の石を敷き詰める (32 個、大小さまざま)
+        for (let i = 0; i < 32; i++) {
+          const bx = x + (hash(i * 4) - 0.5) * w * 0.95;
+          const by = y + (hash(i * 4 + 1) - 0.5) * h * 0.95;
+          const sz = 1.2 + hash(i * 4 + 2) * 1.6;
+          const shade = 0.45 + hash(i * 4 + 3) * 0.22;
+          writeInst(buf, n++, bx, by, sz, sz,
+            shade, shade - 0.02, shade - 0.08, 0.92, 0, 1);
+        }
+        break;
+      }
+
+      // ─── 落ち葉: 土の上に多色の紅葉を散らす ─────────────
+      case 'fallen_leaves': {
+        // 湿った土の下地
+        writeInst(buf, n++, x, y, w, h, 0.36, 0.26, 0.14, 1);
+        // 下地の暗い色ムラ 2 つ
+        writeInst(buf, n++, x - w * 0.2, y + h * 0.1, w * 0.5, h * 0.4,
+          0.28, 0.20, 0.10, 0.55, 0, 1);
+        writeInst(buf, n++, x + w * 0.15, y - h * 0.2, w * 0.4, h * 0.3,
+          0.42, 0.30, 0.16, 0.45, 0, 1);
+        // 紅葉を 26 枚散らす (8 色パレット)
+        const leafPalette: Array<[number, number, number]> = [
+          [0.90, 0.30, 0.10], // 鮮紅
+          [0.95, 0.68, 0.15], // 黄
+          [0.82, 0.26, 0.08], // 深紅
+          [0.88, 0.52, 0.18], // 橙
+          [0.72, 0.40, 0.14], // 茶
+          [0.96, 0.58, 0.20], // 明橙
+          [0.60, 0.22, 0.06], // 暗紅
+          [0.85, 0.78, 0.22], // 黄緑
+        ];
+        for (let i = 0; i < 26; i++) {
+          const bx = x + (hash(i * 5) - 0.5) * w * 0.92;
+          const by = y + (hash(i * 5 + 1) - 0.5) * h * 0.92;
+          const ci = Math.floor(hash(i * 5 + 2) * leafPalette.length);
+          const [r, g, bcol] = leafPalette[ci];
+          const sz = 1.8 + hash(i * 5 + 3) * 1.4;
+          writeInst(buf, n++, bx, by, sz, sz * 0.7, r, g, bcol, 0.92, 0, 1);
+        }
+        break;
+      }
+
+      // ─── アスファルト: 骨材スペックル + タイヤ跡 ──────────
+      case 'asphalt': {
+        // ベース
+        writeInst(buf, n++, x, y, w, h, 0.28, 0.28, 0.30, 1);
+        // 暗いムラ 2 つ (円で有機感)
+        writeInst(buf, n++, x - w * 0.15, y - h * 0.1, w * 0.45, h * 0.35,
+          0.22, 0.22, 0.24, 0.55, 0, 1);
+        writeInst(buf, n++, x + w * 0.1, y + h * 0.2, w * 0.4, h * 0.3,
+          0.33, 0.33, 0.35, 0.45, 0, 1);
+        // 骨材 (多数の明色小ドット)
+        for (let i = 0; i < 26; i++) {
+          const bx = x + (hash(i * 6) - 0.5) * w * 0.95;
+          const by = y + (hash(i * 6 + 1) - 0.5) * h * 0.95;
+          const shade = 0.42 + hash(i * 6 + 2) * 0.18;
+          writeInst(buf, n++, bx, by, 0.8, 0.8,
+            shade, shade, shade + 0.03, 0.80, 0, 1);
+        }
+        // タイヤ跡 2 本 (うっすら)
+        writeInst(buf, n++, x - w * 0.18, y - h * 0.05, w * 0.72, 0.5, 0.20, 0.20, 0.22, 0.6);
+        writeInst(buf, n++, x + w * 0.12, y + h * 0.12, w * 0.60, 0.5, 0.20, 0.20, 0.22, 0.6);
+        break;
+      }
+
+      // ─── ウッドデッキ: 板目 + 釘 + 節 ────────────────────
+      case 'wood_deck': {
+        // 板間の暗い目地
+        writeInst(buf, n++, x, y, w, h, 0.24, 0.14, 0.05, 1);
+        // 5 枚の板 (明暗交互)
+        const plankCount = 5;
+        const plankW = w / plankCount;
+        for (let i = 0; i < plankCount; i++) {
+          const px = x - w / 2 + (i + 0.5) * plankW;
+          const shade = i % 2 === 0 ? 1.0 : 0.85;
+          writeInst(buf, n++, px, y, plankW * 0.92, h * 0.96,
+            0.62 * shade, 0.42 * shade, 0.22 * shade, 1);
+          // 薄い木目線 (縦 2 本)
+          writeInst(buf, n++, px - plankW * 0.2, y, 0.3, h * 0.9,
+            0.42 * shade, 0.26 * shade, 0.12 * shade, 0.55);
+          writeInst(buf, n++, px + plankW * 0.15, y, 0.3, h * 0.9,
+            0.42 * shade, 0.26 * shade, 0.12 * shade, 0.55);
+          // 釘 2 本 (板の両端)
+          writeInst(buf, n++, px, y - h * 0.40, 0.7, 0.7, 0.18, 0.14, 0.08, 1, 0, 1);
+          writeInst(buf, n++, px, y + h * 0.40, 0.7, 0.7, 0.18, 0.14, 0.08, 1, 0, 1);
+        }
+        // 節 2 つをランダム位置に
+        for (let i = 0; i < 2; i++) {
+          const kx = x + (hash(10 + i) - 0.5) * w * 0.75;
+          const ky = y + (hash(20 + i) - 0.5) * h * 0.75;
+          writeInst(buf, n++, kx, ky, 2.4, 1.6, 0.35, 0.20, 0.08, 0.85, 0, 1);
+          writeInst(buf, n++, kx, ky, 1.2, 0.8, 0.20, 0.10, 0.04, 0.9, 0, 1);
+        }
+        break;
+      }
+
+      // ─── タイル: 個別タイルをシェーディング ───────────────
+      case 'tile': {
+        // 目地の暗い下地
+        writeInst(buf, n++, x, y, w, h, 0.44, 0.42, 0.38, 1);
+        // 4×3 のタイル、各タイルを個別シェード
+        const cols = 4, rows = 3;
+        const tileW = w / cols;
+        const tileH = h / rows;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const tx = x - w / 2 + (c + 0.5) * tileW;
+            const ty = y - h / 2 + (r + 0.5) * tileH;
+            const hv = hash(r * 17 + c * 5);
+            const shade = 0.72 + hv * 0.16;
+            writeInst(buf, n++, tx, ty, tileW * 0.90, tileH * 0.84,
+              shade, shade - 0.02, shade - 0.06, 1);
+            // タイルの上辺ハイライト
+            writeInst(buf, n++, tx, ty - tileH * 0.34, tileW * 0.80, 0.4,
+              Math.min(1, shade + 0.15), Math.min(1, shade + 0.12), shade, 0.7);
+          }
+        }
+        break;
+      }
+
+      // ─── コンクリート: 不定形のヒビ + シミ ────────────────
+      case 'concrete': {
+        // 微妙にムラのある下地
+        writeInst(buf, n++, x, y, w, h, 0.68, 0.66, 0.62, 1);
+        // 有機的な色の淡いムラ 2 つ (円)
+        writeInst(buf, n++, x - w * 0.22, y - h * 0.15, w * 0.5, h * 0.4,
+          0.72, 0.70, 0.66, 0.6, 0, 1);
+        writeInst(buf, n++, x + w * 0.18, y + h * 0.2, w * 0.5, h * 0.4,
+          0.60, 0.58, 0.54, 0.55, 0, 1);
+        // エキスパンションジョイント (水平直線 2 本)
+        writeInst(buf, n++, x, y - h * 0.33, w, 0.6, 0.38, 0.36, 0.32, 0.75);
+        writeInst(buf, n++, x, y + h * 0.33, w, 0.6, 0.38, 0.36, 0.32, 0.75);
+        // 不定形のヒビ (折れ線風の 3 セグメント)
+        writeInst(buf, n++, x - w * 0.32, y - h * 0.08, w * 0.28, 0.4,
+          0.30, 0.28, 0.24, 0.85);
+        writeInst(buf, n++, x - w * 0.05, y + h * 0.02, w * 0.26, 0.4,
+          0.30, 0.28, 0.24, 0.85);
+        writeInst(buf, n++, x + w * 0.22, y + h * 0.12, w * 0.22, 0.4,
+          0.30, 0.28, 0.24, 0.85);
+        // 油シミ 1 つ (円形)
+        writeInst(buf, n++, x + w * 0.28, y - h * 0.25, w * 0.14, h * 0.1,
+          0.48, 0.44, 0.38, 0.7, 0, 1);
         break;
       }
     }
