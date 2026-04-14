@@ -13,16 +13,7 @@ export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
 export const BALL_RADIUS = 9;            // ボール半径 (固定)
-export const BALL_POWER_MAX = 50;        // パワー上限
-// パワーアップ指数コスト: power p→p+1 に必要なkill数 = BASE_KILLS * KILL_GROWTH^p
-// 例) kill 60体 → power≈11.5 / kill 300体 → power≈25 / kill ~3500体 → power MAX(50)
-export const BALL_POWER_BASE_KILLS  = 3;    // power 0→1 に必要な kill 数
-export const BALL_POWER_KILL_GROWTH = 1.1;  // 1 レベルごとのコスト倍率 (10%増し)
-export const BALL_SPEED_DAMAGE_FACTOR = 0.52; // speed × factor = damage (speed 25 → damage 13)
-export const BALL_PENETRATION_SLOW = 0.5;    // 貫通時の減速量 (actualDmg × factor = speed loss)
-export const BALL_MIN_REPEL_SPEED = 4;       // 非破壊時の最小反発速度 (乗り続け防止)
-export const BALL_POWER_ACCEL = 0.2;         // パワーによる方向加速 (px/frame² at max power)
-export const BALL_POWER_LOSS_ON_LOST = 0.0; // ボール落下時にパワーを完全リセット
+export const BALL_MIN_REPEL_SPEED = 4;   // 非破壊時の最小反発速度 (乗り続け防止)
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
@@ -228,15 +219,15 @@ export const BRIDGE_COLOR:     readonly [number,number,number,number] = [0.58, 0
 export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 0.32, 0.26, 1];
 
 // ===== 自動スクロール =====
-export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s (一定)
+export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s (初期値)
+export const SCROLL_DAMAGE_STEP  = 10;   // スクロール速度 STEP px/s 増加ごとに威力+1
 
 // ===== チャンク生成 =====
 export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)
 export const CHUNK_SPAWN_AHEAD    = 600; // カメラ上端から先読みする距離
 export const CHUNK_DESPAWN_BEHIND = 400; // カメラ下端から削除する距離
 
-// ===== スコア =====
-export const SCORE_PER_HUMAN  = 50;  // 人間 1 体潰したときの得点
+
 
 // ===== SFCシムシティ風ゾーン色 =====
 export const ZONE_RESIDENTIAL: readonly [number,number,number,number] = [0.38, 0.62, 0.28, 1];  // 明るい緑

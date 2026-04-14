@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
   <title>怪獣ピンボール</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -35,9 +33,7 @@
     #distance-display { position: absolute; top: 8px; left: 10px; font-size: 13px; color: #8cf; text-shadow: 0 1px 4px #000; }
     /* ゾーン名: 距離の右 */
     #zone-display { position: absolute; top: 8px; left: 10px; margin-top: 22px; font-size: 11px; color: #adf; text-shadow: 0 1px 4px #000; }
-    /* スコア: 中央上 */
-    #timer { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 900; text-shadow: 0 1px 6px #000; color: #ffd24a; }
-    /* パワーバー (人間を食べると伸びる) */
+    /* スクロール速度バー (人間を食べると伸びる) */
     #life-wrap {
       position: absolute; top: 36px; left: 8px; right: 8px;
       height: 10px;
@@ -69,23 +65,6 @@
     #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
-    /* スコアポップアップ (レトロピクセルフォント) */
-    .score-pop {
-      position: absolute;
-      font-family: 'Press Start 2P', monospace;
-      pointer-events: none;
-      white-space: nowrap;
-      transform: translateX(-50%);
-      animation: score-float 1.1s linear forwards;
-      z-index: 5;
-      image-rendering: pixelated;
-    }
-    @keyframes score-float {
-      0%   { opacity: 1; transform: translateX(-50%) translateY(0px);   }
-      70%  { opacity: 1; transform: translateX(-50%) translateY(-40px);  }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-60px);  }
-    }
-
   </style>
 </head>
 <body>
@@ -94,7 +73,6 @@
   <div id="overlay">
     <div id="distance-display">0 m</div>
     <div id="zone-display">住宅街</div>
-    <div id="timer">0</div>
     <div id="life-wrap"><div id="life-fill"></div></div>
   </div>
   <div id="gameover">

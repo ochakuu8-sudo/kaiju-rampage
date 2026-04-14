@@ -17,8 +17,6 @@ export class Ball {
   vx = 0;
   vy = 0;
   active = true;
-  /** 人間を食べた累積パワー (0..BALL_POWER_MAX) */
-  power = 0;
   // トレイル: リングバッファ
   trail: Float32Array = new Float32Array(C.TRAIL_LEN * 2);
   trailHead = 0;
@@ -26,25 +24,6 @@ export class Ball {
   /** ボール半径 (固定) */
   get radius(): number {
     return C.BALL_RADIUS;
-  }
-
-  /** 1 ヒットで与えるダメージ。速度に比例 (speed 25 → damage 13)。最低 1。 */
-  get damage(): number {
-    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    return Math.max(1, Math.floor(spd * C.BALL_SPEED_DAMAGE_FACTOR));
-  }
-
-  /** 人間を1体食べたときに呼ぶ。
-   *  power p→p+1 に必要な kill 数は BASE_KILLS * KILL_GROWTH^p で指数的に増加し、
-   *  1 kill あたりの power 増加量 = 1 / (BASE_KILLS * KILL_GROWTH^p) となる。 */
-  addPower() {
-    const killsNeeded = C.BALL_POWER_BASE_KILLS * Math.pow(C.BALL_POWER_KILL_GROWTH, this.power);
-    this.power = Math.min(C.BALL_POWER_MAX, this.power + 1 / killsNeeded);
-  }
-
-  /** ボールロスト時にパワーを一部失う */
-  losePowerOnBallLost() {
-    this.power = this.power * C.BALL_POWER_LOSS_ON_LOST;
   }
 
   reset() {
@@ -62,7 +41,6 @@ export class Ball {
 
   /** ゲーム全体のリセット (再スタート時に使用) */
   fullReset() {
-    this.power = 0;
     this.reset();
   }
 

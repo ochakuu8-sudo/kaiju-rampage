@@ -37,8 +37,6 @@ export class Game {
   private ball:      Ball;
   private flippers:  [Flipper, Flipper];
 
-  // スコアシステム
-  private score        = 0;
   private totalDestroys= 0;
   private totalHumans  = 0;
 
@@ -91,15 +89,13 @@ export class Game {
   }
 
   private initRun() {
-    this.score         = 0;
     this.totalDestroys = 0;
     this.totalHumans   = 0;
     this.state         = 'playing';
     this.stateTimer    = 0;
     this.ui.setDistance(0);
     this.ui.setZone(0);
-    this.ui.setScore(0);
-    this.ui.setPowerGauge(0, C.BALL_POWER_MAX);
+    this.ui.setPowerGauge(0, 100);
   }
 
   private loadCity() {
@@ -178,9 +174,8 @@ export class Game {
     this.particles.update(dt);
     this.updateChunks();
 
-    // スコア・パワー・距離 表示を更新
-    this.ui.setScore(this.score);
-    this.ui.setPowerGauge(this.ball.power, C.BALL_POWER_MAX);
+    // スクロール速度・距離 表示を更新
+    this.ui.setPowerGauge(this.camera.scrollSpeed - C.SCROLL_BASE_SPEED, 100);
     this.ui.setDistance(this.camera.distanceMeters);
     this.ui.setZone(this.nextChunkId);
   }
@@ -199,13 +194,6 @@ export class Game {
       b.vy -= C.GRAVITY * dts * 60;
       b.x  += b.vx * dts * 60;
       b.y  += b.vy * dts * 60;
-      // パワーによる方向加速: 進行方向に一定の推力を与え速度を維持・強化する
-      const _spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-      if (_spd > 0.5) {
-        const accel = (b.power / C.BALL_POWER_MAX) * C.BALL_POWER_ACCEL * dts * 60;
-        b.vx += (b.vx / _spd) * accel;
-        b.vy += (b.vy / _spd) * accel;
-      }
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
       const camTop = this.camera.y + C.WORLD_MAX_Y;
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
@@ -235,18 +223,14 @@ export class Game {
     if (flipperSoundNeeded) { this.sound.flipper(); this.juice.ballHitFlash(); }
     else if (wallSoundNeeded) { this.sound.wallHit(); }
 
-    // 速度ベースのダメージ (speed 0→1, speed 25→13)
-    const dmg = b.damage;
+    // スクロール速度ベースのダメージ: base速度→1, +STEP px/sごとに+1
+    const dmg = Math.max(1, 1 + Math.floor((this.camera.scrollSpeed - C.SCROLL_BASE_SPEED) / C.SCROLL_DAMAGE_STEP));
 
     if (bldResult) {
       const { bld } = bldResult;
-      const actualDmg = Math.min(dmg, Math.max(0, bld.hp));
       const destroyed = this.buildings.damage(bld, dmg);
       if (destroyed) {
-        // 破壊: actualDmg 分だけ減速して貫通
-        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        const newSpd = Math.max(0, curSpd - actualDmg * C.BALL_PENETRATION_SLOW);
-        if (curSpd > 0) { b.vx = b.vx / curSpd * newSpd; b.vy = b.vy / curSpd * newSpd; }
+        // 破壊: 純粋貫通 (速度変化なし)
         this.onBuildingDestroyed(bld);
       } else {
         // 非破壊: 定数最小反発 (乗り続け防止)
@@ -273,19 +257,11 @@ export class Game {
 
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
-      const fActual = Math.min(dmg, Math.max(0, furnitureHit.hp));
       const destroyed = this.furniture.damage(furnitureHit, dmg);
-      // 貫通: actualDmg 分だけ減速
-      { const sp = Math.sqrt(b.vx*b.vx+b.vy*b.vy); const ns = Math.max(0, sp - fActual*C.BALL_PENETRATION_SLOW); if(sp>0){b.vx=b.vx/sp*ns;b.vy=b.vy/sp*ns;} }
       if (!destroyed) {
         // 非破壊: 最小反発
         const rsp = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
         if(rsp < C.BALL_MIN_REPEL_SPEED){const s=C.BALL_MIN_REPEL_SPEED/Math.max(rsp,0.01);b.vx*=s;b.vy*=s;}
-      }
-      if (destroyed) {
-        this.score += furnitureHit.score;
-        const fpX = b.x + 180, fpY = this.camera.y + 290 - b.y;
-        this.ui.spawnScorePop(fpX, fpY, furnitureHit.score, 'furniture');
       }
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
       else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
@@ -299,14 +275,8 @@ export class Game {
 
     const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, r);
     if (vehicleHit) {
-      const vActual = Math.min(dmg, Math.max(0, vehicleHit.hp));
       const destroyed = this.vehicles.damage(vehicleHit, dmg);
-      // 貫通: actualDmg 分だけ減速
-      { const sp = Math.sqrt(b.vx*b.vx+b.vy*b.vy); const ns = Math.max(0, sp - vActual*C.BALL_PENETRATION_SLOW); if(sp>0){b.vx=b.vx/sp*ns;b.vy=b.vy/sp*ns;} }
       if (destroyed) {
-        this.score += vehicleHit.score;
-        const vpX = b.x + 180, vpY = this.camera.y + 290 - b.y;
-        this.ui.spawnScorePop(vpX, vpY, vehicleHit.score, 'vehicle');
         this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
         this.particles.spawnSpark(b.x, b.y, 6);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
@@ -327,12 +297,8 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
-      // 人間を食べる → ボールのパワー (= サイズ + 攻撃力) アップ + スコア加算
-      for (let k = 0; k < crushed.length; k++) b.addPower();
-      const humanScore = crushed.length * C.SCORE_PER_HUMAN;
-      this.score += humanScore;
-      const hpX = b.x + 180, hpY = this.camera.y + 290 - b.y - 12;
-      this.ui.spawnScorePop(hpX, hpY, humanScore, 'human');
+      // 人間を食べる → スクロール速度アップ (+1px/s per human)
+      this.camera.addScrollSpeed(crushed.length);
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
@@ -345,12 +311,6 @@ export class Game {
     const cx = bld.x + bld.w / 2;
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
-    this.score += bld.score;
-    // スコアポップアップ (ワールド→スクリーン座標変換)
-    const popX = (bld.x + bld.w / 2) + 180;
-    const popY = this.camera.y + 290 - (bld.y + bld.h);
-    const bldTier = bld.score >= 1200 ? 'building-lg' : bld.score >= 600 ? 'building-md' : 'building-sm';
-    this.ui.spawnScorePop(popX, popY, bld.score, bldTier);
     this.sound.buildingDestroy();
 
     // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う
@@ -510,8 +470,6 @@ export class Game {
 
   private onBallLost() {
     this.ball.active = false;
-    // パワーを半分失う (パワーアップ要素を維持しつつ、ロストを「もったいない」にする)
-    this.ball.losePowerOnBallLost();
     this.sound.ballLost();
     this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
     this.state = 'ball_lost';
@@ -522,7 +480,7 @@ export class Game {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.score, this.totalDestroys, this.totalHumans);
+      this.ui.showGameOver(this.totalDestroys, this.totalHumans, this.camera.scrollSpeed);
     }, 800);
   }
 
@@ -1201,8 +1159,8 @@ export class Game {
     const isFl = this.juice.isBallFlashing();
     const radius = C.BALL_RADIUS; // 固定サイズ
 
-    // パワーに応じた色: orange(0) → red(0.5) → electric blue(1.0)
-    const pt = b.power / C.BALL_POWER_MAX;
+    // スクロール速度に応じた色: orange(base) → red(+50) → electric blue(+100)
+    const pt = Math.min(1, (this.camera.scrollSpeed - C.SCROLL_BASE_SPEED) / 100);
     let cr: number, cg: number, cb: number;
     if (pt < 0.5) {
       const s = pt * 2;

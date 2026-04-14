@@ -5,9 +5,10 @@ import * as C from './constants';
 
 export class Camera {
   y = 0;
+  scrollSpeed = C.SCROLL_BASE_SPEED;
 
-  get scrollSpeed(): number {
-    return C.SCROLL_BASE_SPEED;
+  addScrollSpeed(delta: number) {
+    this.scrollSpeed += delta;
   }
 
   update(dt: number) {
@@ -25,5 +26,6 @@ export class Camera {
 
   reset() {
     this.y = 0;
+    this.scrollSpeed = C.SCROLL_BASE_SPEED;
   }
 }
