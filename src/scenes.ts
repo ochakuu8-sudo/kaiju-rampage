@@ -17,6 +17,21 @@ import type { BuildingSize } from './constants';
 
 export type SceneTier = 'bot' | 'mid' | 'midB' | 'top';
 
+/**
+ * 地面タイプ — 各シーンのコンセプトに合わせてセル全体に敷く。
+ * 建物・家具の背後に描画され、道路は上書きされる。
+ */
+export type GroundType =
+  | 'concrete'        // 一般的な都市 (歩道・駐車場)
+  | 'stone_pavement'  // 石畳 (寺社・広場・伝統地区)
+  | 'asphalt'         // 舗装道路 (ガソリンスタンド・駐車場)
+  | 'wood_deck'       // ウッドデッキ (カフェ・書店)
+  | 'tile'            // タイル (病院・銀行・百貨店)
+  | 'grass'           // 芝 (住宅街・公園)
+  | 'dirt'            // 土 (農家・校庭・バックアレイ)
+  | 'fallen_leaves'   // 落ち葉 (寺の庭・森)
+  | 'gravel';         // 玉砂利 (神社参道・枯山水)
+
 export interface SceneBuilding {
   dx: number;          // scene 左端からのセンターX
   dy?: number;         // scene baseY からの Y オフセット (undefined=0、奥行き表現に使用)
@@ -39,6 +54,8 @@ export interface Scene {
   id: string;
   tier: SceneTier;
   width: number;
+  /** セル地面タイプ (undefined の場合はグラウンド描画なし) */
+  ground?: GroundType;
   buildings: SceneBuilding[];
   furniture: SceneFurniture[];
   parkedVehicles?: SceneParkedVehicle[];
@@ -53,7 +70,7 @@ const BOT_SCENES: Scene[] = [
   // 裏庭、さらに奥は共用の裏路地 (電柱と裏の木立) で街区の後端を画す。
   // 前面 dy 0-8, 裏庭 dy 20-45, 裏路地 dy 55-72 と、cell の縦を 3 段で使う。
   {
-    id: 'house_trio_garden', tier: 'bot', width: 56,
+    id: 'house_trio_garden', tier: 'bot', width: 56, ground: 'grass',
     buildings: [
       { dx:  8, dy:  0, size: 'house' },
       { dx: 28, dy:  0, size: 'house' },
@@ -89,7 +106,7 @@ const BOT_SCENES: Scene[] = [
   // コンビニの店頭。中層は住宅の裏庭とコンビニの搬入動線。
   // 奥は共用裏路地で、電柱と裏庭の木立が街区の後端を作る。
   {
-    id: 'house_konbini', tier: 'bot', width: 56,
+    id: 'house_konbini', tier: 'bot', width: 56, ground: 'concrete',
     buildings: [
       { dx:  8, dy:  0, size: 'house' },
       { dx: 32, dy:  0, size: 'convenience' },
@@ -122,7 +139,7 @@ const BOT_SCENES: Scene[] = [
   // コンセプト: 家とガレージの住宅街区。前面は玄関と駐車の車。中層は
   // 裏庭にビニールハウス (家庭菜園)、奥は裏路地で電柱と木立。
   {
-    id: 'house_garage', tier: 'bot', width: 48,
+    id: 'house_garage', tier: 'bot', width: 48, ground: 'dirt',
     buildings: [
       { dx:  8, dy:  0, size: 'house' },
       { dx: 30, dy:  0, size: 'garage' },
@@ -158,7 +175,7 @@ const BOT_SCENES: Scene[] = [
   // 敷地の奥は畝 (flower_bed) が手前から奥まで広がる畑地。
   // 最奥は防風林 (tree) と電柱で敷地の後端を示す。
   {
-    id: 'garden_shed', tier: 'bot', width: 44,
+    id: 'garden_shed', tier: 'bot', width: 44, ground: 'dirt',
     buildings: [
       { dx:  8, dy:  0, size: 'shed' },
       { dx: 29, dy:  0, size: 'greenhouse' },
@@ -187,7 +204,7 @@ const BOT_SCENES: Scene[] = [
   // 看板, 自転車)。中層は裏の搬入エリアで dumpster と recycling。
   // 奥は空き地と電柱・木 1 本で敷地の後端。
   {
-    id: 'konbini_corner', tier: 'bot', width: 40,
+    id: 'konbini_corner', tier: 'bot', width: 40, ground: 'asphalt',
     buildings: [
       { dx: 14, dy:  0, size: 'convenience' },
       // 店裏の従業員ガレージ
@@ -223,7 +240,7 @@ const BOT_SCENES: Scene[] = [
   // 中層は店の裏口の搬入エリア、奥は路地裏の電柱と裏庭の木で
   // 街区の後端を作る。
   {
-    id: 'ramen_izakaya', tier: 'bot', width: 50,
+    id: 'ramen_izakaya', tier: 'bot', width: 50, ground: 'concrete',
     buildings: [
       { dx: 10, dy:  0, size: 'ramen' },
       { dx: 34, dy:  0, size: 'izakaya' },
@@ -260,7 +277,7 @@ const BOT_SCENES: Scene[] = [
   // コンセプト: 花屋とパン屋の路面店街区。前面は花の陳列とパラソル。
   // 中層は店裏の小さな搬入口と植栽。奥は電柱と木で裏路地を示す。
   {
-    id: 'florist_bakery', tier: 'bot', width: 40,
+    id: 'florist_bakery', tier: 'bot', width: 40, ground: 'wood_deck',
     buildings: [
       { dx:  8, dy:  0, size: 'florist' },
       { dx: 26, dy:  0, size: 'bakery' },
@@ -291,7 +308,7 @@ const BOT_SCENES: Scene[] = [
   // ボラード・駐車中の車)。中層は敷地内の油タンクと洗車用設備。
   // 奥はフェンスの外の裏路地を示す電柱と木。
   {
-    id: 'gas_station_corner', tier: 'bot', width: 46,
+    id: 'gas_station_corner', tier: 'bot', width: 46, ground: 'asphalt',
     buildings: [
       { dx: 16, dy:  0, size: 'gas_station' },
       // 整備工場
@@ -327,7 +344,7 @@ const BOT_SCENES: Scene[] = [
   // コンセプト: ランドリーと薬局の街区。前面は客が待つベンチと看板、
   // 中層は共用の駐輪と搬入動線、奥は電柱と木で裏路地を形成。
   {
-    id: 'laundromat_pharmacy', tier: 'bot', width: 46,
+    id: 'laundromat_pharmacy', tier: 'bot', width: 46, ground: 'concrete',
     buildings: [
       { dx: 10, dy:  0, size: 'laundromat' },
       { dx: 33, dy:  0, size: 'pharmacy' },
@@ -360,7 +377,7 @@ const BOT_SCENES: Scene[] = [
   // 屋外ワゴン。中層はオーナーの静かな裏庭 (植栽と桜)、奥は
   // 路地の電柱で街区の後端。
   {
-    id: 'cafe_bookstore', tier: 'bot', width: 44,
+    id: 'cafe_bookstore', tier: 'bot', width: 44, ground: 'wood_deck',
     buildings: [
       { dx: 10, dy:  0, size: 'cafe' },
       { dx: 33, dy:  0, size: 'bookstore' },
@@ -398,7 +415,7 @@ const MID_SCENES: Scene[] = [
   // のぼり旗・自販機・客の自転車で賑やか。中層は店裏の搬入路で
   // 電気設備。奥は裏路地で電柱 + 街灯が整然と並ぶ商店街の後端。
   {
-    id: 'shotengai_food', tier: 'mid', width: 74,
+    id: 'shotengai_food', tier: 'mid', width: 74, ground: 'concrete',
     buildings: [
       { dx: 10, dy:  0, size: 'ramen' },
       { dx: 28, dy:  0, size: 'izakaya' },
@@ -442,7 +459,7 @@ const MID_SCENES: Scene[] = [
   // 自転車・自販機で派手。中層は業務用搬入路で dumpster と電気設備。
   // 奥は裏路地で電柱と街灯が並ぶ商業地らしい後端。
   {
-    id: 'shotengai_game', tier: 'mid', width: 66,
+    id: 'shotengai_game', tier: 'mid', width: 66, ground: 'asphalt',
     buildings: [
       { dx: 15, dy:  0, size: 'pachinko' },
       { dx: 50, dy:  0, size: 'game_center' },
@@ -481,7 +498,7 @@ const MID_SCENES: Scene[] = [
   // 前面はテラス席・ワゴン・看板。中層は店裏の共用駐輪と搬入動線。
   // 奥は裏路地の電柱と桜で静かな街区の後端。
   {
-    id: 'cafe_bookstore_row', tier: 'mid', width: 66,
+    id: 'cafe_bookstore_row', tier: 'mid', width: 66, ground: 'wood_deck',
     buildings: [
       { dx: 10, dy:  0, size: 'cafe' },
       { dx: 32, dy:  0, size: 'bookstore' },
@@ -517,7 +534,7 @@ const MID_SCENES: Scene[] = [
   // パラソルと看板、店間にベンチと自販機。中層は搬入路でダンプスター
   // と電気設備。奥は街灯と電柱が並ぶ裏路地の後端。
   {
-    id: 'shop_parasol_row', tier: 'mid', width: 72,
+    id: 'shop_parasol_row', tier: 'mid', width: 72, ground: 'concrete',
     buildings: [
       { dx: 11, dy:  0, size: 'shop' },
       { dx: 35, dy:  0, size: 'restaurant' },
@@ -556,7 +573,7 @@ const MID_SCENES: Scene[] = [
   // (郵便受け・花壇)、中層は共用の裏庭 (物置・駐輪)、奥は裏路地
   // で電柱と街灯。
   {
-    id: 'townhouse_row', tier: 'mid', width: 64,
+    id: 'townhouse_row', tier: 'mid', width: 64, ground: 'grass',
     buildings: [
       { dx: 10, dy:  0, size: 'townhouse' },
       { dx: 32, dy:  0, size: 'townhouse' },
@@ -594,7 +611,7 @@ const MID_SCENES: Scene[] = [
   // 本殿、本殿の背後は cell の縦を深く使った鎮守の森 — 松と竹が
   // 3 層重ねで奥まで続く。境内の奥行きで cell 全体を聖域化。
   {
-    id: 'shrine_complex', tier: 'mid', width: 68,
+    id: 'shrine_complex', tier: 'mid', width: 68, ground: 'gravel',
     buildings: [
       { dx: 34, dy:  0, size: 'shrine' },
       // 奥宮 (神域の深さ)
@@ -631,7 +648,7 @@ const MID_SCENES: Scene[] = [
   // 背後は裏山で、松林と竹林が cell の奥まで深く続く。寺の庭と
   // 裏山の境界が曖昧な日本の寺院風景。
   {
-    id: 'temple_garden', tier: 'mid', width: 62,
+    id: 'temple_garden', tier: 'mid', width: 62, ground: 'fallen_leaves',
     buildings: [
       { dx: 22, dy:  0, size: 'temple' },
       // 茶室 (庭園の奥)
@@ -665,7 +682,7 @@ const MID_SCENES: Scene[] = [
   // 囲み、待合ベンチと看板。中層は保育園の園庭 (桜と駐輪)。
   // 奥は職員駐車場で電気設備と電柱。
   {
-    id: 'clinic_daycare', tier: 'mid', width: 68,
+    id: 'clinic_daycare', tier: 'mid', width: 68, ground: 'tile',
     buildings: [
       { dx: 13, dy:  0, size: 'clinic' },
       { dx: 46, dy:  0, size: 'daycare' },
@@ -698,7 +715,7 @@ const MID_SCENES: Scene[] = [
   // バリア (bollard + 消火栓 + 信号機) と旗竿。中層は職員
   // 駐車場と設備。奥は裏路地の電柱と街灯。
   {
-    id: 'fire_police', tier: 'midB', width: 70,
+    id: 'fire_police', tier: 'midB', width: 70, ground: 'asphalt',
     buildings: [
       { dx: 15, dy:  0, size: 'fire_station' },
       { dx: 53, dy:  0, size: 'police_station' },
@@ -732,7 +749,7 @@ const MID_SCENES: Scene[] = [
   // 街灯とベンチ。中層は職員通用口で自転車ラックと電気設備。
   // 奥は裏路地の電柱と街灯。
   {
-    id: 'bank_post', tier: 'midB', width: 62,
+    id: 'bank_post', tier: 'midB', width: 62, ground: 'tile',
     buildings: [
       { dx: 14, dy:  0, size: 'bank' },
       { dx: 46, dy:  0, size: 'post_office' },
@@ -763,7 +780,7 @@ const MID_SCENES: Scene[] = [
   // 松と石像、商店の店頭パラソル。中層は豪邸の伝統的な庭園 (松と竹)。
   // 奥は深い庭園の奥座敷で桜と松林が cell の最奥まで続く。
   {
-    id: 'mansion_shop', tier: 'mid', width: 64,
+    id: 'mansion_shop', tier: 'mid', width: 64, ground: 'stone_pavement',
     buildings: [
       { dx: 16, dy:  0, size: 'mansion' },
       { dx: 49, dy:  0, size: 'shop' },
@@ -806,7 +823,7 @@ const TOP_SCENES: Scene[] = [
   // 待ちベンチ・駐輪)、中央は駅舎 + 旗竿 + 創設者の銅像。駅舎背後は
   // 駅裏で電気設備と裏手の街灯、最奥は桜並木で駅前の雰囲気。
   {
-    id: 'train_station_plaza', tier: 'top', width: 70,
+    id: 'train_station_plaza', tier: 'top', width: 70, ground: 'stone_pavement',
     buildings: [
       { dx: 35, dy:  0, size: 'train_station' },
       // 駅裏の詰所
@@ -846,7 +863,7 @@ const TOP_SCENES: Scene[] = [
   // ベンチ・街灯)、中層は広場の植栽帯、奥は搬入エリアで電気設備、
   // 最奥は裏路地の電柱で街区の後端。
   {
-    id: 'dept_store_plaza', tier: 'top', width: 74,
+    id: 'dept_store_plaza', tier: 'top', width: 74, ground: 'tile',
     buildings: [
       { dx: 37, dy:  0, size: 'department_store' },
       // 搬入用の業務ガレージ
@@ -882,7 +899,7 @@ const TOP_SCENES: Scene[] = [
   // (旗竿・ベンチ・看板・ボラード・消火栓)、救急車入口。
   // 中層は職員駐車場と電気設備、奥は裏庭で街灯と木立。
   {
-    id: 'hospital_scene', tier: 'top', width: 66,
+    id: 'hospital_scene', tier: 'top', width: 66, ground: 'tile',
     buildings: [
       { dx: 27, dy:  0, size: 'hospital' },
       // 救急別棟
@@ -920,7 +937,7 @@ const TOP_SCENES: Scene[] = [
   // に校長名の看板。中層は校庭 (二宮金次郎像・植栽・駐輪)。奥は
   // 裏山 (松林) で、学校の後方が自然に続く風景。
   {
-    id: 'school_grounds', tier: 'top', width: 74,
+    id: 'school_grounds', tier: 'top', width: 74, ground: 'dirt',
     buildings: [
       { dx: 36, dy:  0, size: 'school' },
       // 体育館
@@ -954,7 +971,7 @@ const TOP_SCENES: Scene[] = [
   // 旗竿 2 本・銅像 2 体・ベンチ・生垣)。中層は広場の植栽帯。
   // 奥は市役所の裏庭で松林の庭園、最奥に街灯。
   {
-    id: 'city_hall', tier: 'top', width: 72,
+    id: 'city_hall', tier: 'top', width: 72, ground: 'stone_pavement',
     buildings: [
       { dx: 32, dy:  0, size: 'city_hall' },
       // 裏庭の茶室 — 市役所の文化的深さ
@@ -989,7 +1006,7 @@ const TOP_SCENES: Scene[] = [
   // (ボラード・看板・ベンチ・街灯)、中層はビル前のプランター。
   // 奥は配電設備と街灯、最奥は裏の木立で都会の硬質な後端。
   {
-    id: 'office_tower_group', tier: 'top', width: 100,
+    id: 'office_tower_group', tier: 'top', width: 100, ground: 'concrete',
     buildings: [
       { dx: 15, dy:  0, size: 'office' },
       { dx: 48, dy:  0, size: 'skyscraper' },
@@ -1030,7 +1047,7 @@ const TOP_SCENES: Scene[] = [
   // マンション入口。中層は住民用スペース (植栽・駐輪)。
   // 奥は裏の木立で街区の後端。
   {
-    id: 'clock_tower_trio', tier: 'top', width: 60,
+    id: 'clock_tower_trio', tier: 'top', width: 60, ground: 'stone_pavement',
     buildings: [
       { dx: 10, dy:  0, size: 'clock_tower' },
       { dx: 36, dy:  0, size: 'apartment_tall' },
@@ -1063,7 +1080,7 @@ const TOP_SCENES: Scene[] = [
   // 待ち客スペース (ベンチ・新聞スタンド・自販機)。中層はロビー
   // 裏の大看板。奥は搬入口 (ダンプスター・電気設備)、最奥は裏路地。
   {
-    id: 'movie_library', tier: 'top', width: 66,
+    id: 'movie_library', tier: 'top', width: 66, ground: 'concrete',
     buildings: [
       { dx: 22, dy:  0, size: 'movie_theater' },
       // 併設図書館 (文化地区)
@@ -1095,7 +1112,7 @@ const TOP_SCENES: Scene[] = [
   // 銅像・旗竿)、中層は植栽帯、奥は裏庭で松林が cell の最奥まで
   // 深く続く伝統的な公共建築の風景。
   {
-    id: 'museum_complex', tier: 'top', width: 60,
+    id: 'museum_complex', tier: 'top', width: 60, ground: 'gravel',
     buildings: [
       { dx: 22, dy:  0, size: 'museum' },
       // 収蔵庫
@@ -1130,7 +1147,7 @@ const TOP_SCENES: Scene[] = [
   // ボラードで区画分離。中層は駐車場の街灯。奥は搬入口で電気設備と
   // ダンプスター、最奥は裏路地の電柱。
   {
-    id: 'supermarket_front', tier: 'top', width: 72,
+    id: 'supermarket_front', tier: 'top', width: 72, ground: 'asphalt',
     buildings: [
       { dx: 20, dy:  0, size: 'supermarket' },
       // 生鮮搬入棟
@@ -1170,7 +1187,7 @@ const TOP_SCENES: Scene[] = [
   // (電気ボックス)。中層は広場の街灯。奥は駐車場・搬入口、
   // 最奥は敷地を囲う木立。
   {
-    id: 'stadium_radio', tier: 'top', width: 90,
+    id: 'stadium_radio', tier: 'top', width: 90, ground: 'concrete',
     buildings: [
       { dx: 30, dy:  0, size: 'stadium' },
       { dx: 80, dy:  0, size: 'radio_tower' },
@@ -1207,7 +1224,7 @@ const TOP_SCENES: Scene[] = [
   // 待ちエリア (ベンチ・パラソル・露店)、生垣で敷地を囲む。
   // 中層は広場の街灯と植栽、奥は桜の並木と電柱で遊園地の後端。
   {
-    id: 'ferris_wheel_zone', tier: 'top', width: 66,
+    id: 'ferris_wheel_zone', tier: 'top', width: 66, ground: 'stone_pavement',
     buildings: [
       { dx: 22, dy:  0, size: 'ferris_wheel' },
       // 屋台小屋
@@ -1243,7 +1260,7 @@ const TOP_SCENES: Scene[] = [
   // 前面は給水塔側が電気設備、マンション側が入口 (郵便受け・駐輪)、
   // 生垣で敷地を分ける。中層は敷地内設備、奥は裏路地の電柱と木。
   {
-    id: 'water_tower_apartment', tier: 'top', width: 60,
+    id: 'water_tower_apartment', tier: 'top', width: 60, ground: 'concrete',
     buildings: [
       { dx: 10, dy:  0, size: 'water_tower' },
       { dx: 42, dy:  0, size: 'apartment_tall' },

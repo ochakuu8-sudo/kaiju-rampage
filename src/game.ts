@@ -13,7 +13,7 @@ import { JuiceManager } from './juice';
 import { UIManager } from './ui';
 import { Camera } from './camera';
 import { getStage, generateChunk, getInitialCityRoadData } from './stages';
-import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad } from './stages';
+import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad, GroundTile } from './stages';
 import type { Intersection } from './grid';
 import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
 import type { BuildingData } from './entities';
@@ -50,6 +50,8 @@ export class Game {
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
+  // 初期都市のセル地面タイル
+  private initialCityGrounds: GroundTile[] = [];
 
   private bgTopR = 0.52; private bgTopG = 0.74; private bgTopB = 0.96;
   private bgBottomR = 0.38; private bgBottomG = 0.36; private bgBottomB = 0.33;
@@ -109,6 +111,7 @@ export class Game {
     this.buildings.load(cfg.buildings);
     this.furniture.load(cfg.furniture);
     this.vehicles.load(cfg.vehicles);
+    this.initialCityGrounds = cfg.grounds;
     this.bgTopR = cfg.bgTopR; this.bgTopG = cfg.bgTopG; this.bgTopB = cfg.bgTopB;
     this.bgBottomR = cfg.bgBottomR; this.bgBottomG = cfg.bgBottomG; this.bgBottomB = cfg.bgBottomB;
     this.humans.reset();
@@ -427,6 +430,121 @@ export class Game {
     this.renderer.drawFlash(this.juice.flashR, this.juice.flashG, this.juice.flashB, this.juice.flashAlpha);
   }
 
+  /** 1 タイル分の地面を描画。型別のベース色 + ディテールを出力。 */
+  private drawGroundTile(buf: Float32Array, idx: number, tile: GroundTile): number {
+    let n = idx;
+    const { type, x, y, w, h } = tile;
+    switch (type) {
+      case 'concrete': {
+        writeInst(buf, n++, x, y, w, h, 0.68, 0.66, 0.62, 1);
+        // expansion joint lines (水平 2 本)
+        writeInst(buf, n++, x, y - h * 0.25, w, 0.5, 0.48, 0.46, 0.42, 0.75);
+        writeInst(buf, n++, x, y + h * 0.25, w, 0.5, 0.48, 0.46, 0.42, 0.75);
+        // subtle stains
+        writeInst(buf, n++, x - w * 0.15, y + h * 0.1, w * 0.18, h * 0.1, 0.58, 0.56, 0.52, 0.4);
+        break;
+      }
+      case 'stone_pavement': {
+        writeInst(buf, n++, x, y, w, h, 0.55, 0.50, 0.42, 1);
+        // 3x3 stone grid lines
+        const hs = h / 3, ws = w / 3;
+        for (let i = 1; i < 3; i++) {
+          writeInst(buf, n++, x, y - h / 2 + i * hs, w, 0.6, 0.32, 0.28, 0.22, 0.85);
+          writeInst(buf, n++, x - w / 2 + i * ws, y, 0.6, h, 0.32, 0.28, 0.22, 0.85);
+        }
+        // brick-offset highlight (one lighter tile)
+        writeInst(buf, n++, x - ws / 2, y - hs / 2, ws * 0.82, hs * 0.82, 0.62, 0.57, 0.48, 0.35);
+        writeInst(buf, n++, x + ws / 2, y + hs / 2, ws * 0.82, hs * 0.82, 0.62, 0.57, 0.48, 0.35);
+        break;
+      }
+      case 'asphalt': {
+        writeInst(buf, n++, x, y, w, h, 0.30, 0.30, 0.32, 1);
+        // lighter specks
+        writeInst(buf, n++, x - w * 0.25, y - h * 0.2, 2, 2, 0.48, 0.48, 0.50, 0.5);
+        writeInst(buf, n++, x + w * 0.1,  y + h * 0.15, 2, 2, 0.48, 0.48, 0.50, 0.5);
+        writeInst(buf, n++, x - w * 0.05, y + h * 0.3, 2, 2, 0.48, 0.48, 0.50, 0.5);
+        writeInst(buf, n++, x + w * 0.25, y - h * 0.1, 2, 2, 0.42, 0.42, 0.44, 0.55);
+        // faint worn tire track
+        writeInst(buf, n++, x, y, w * 0.7, 0.6, 0.24, 0.24, 0.26, 0.55);
+        break;
+      }
+      case 'wood_deck': {
+        writeInst(buf, n++, x, y, w, h, 0.60, 0.42, 0.24, 1);
+        // plank lines (4 縦)
+        for (let i = 1; i < 5; i++) {
+          writeInst(buf, n++, x - w / 2 + i * (w / 5), y, 0.5, h, 0.35, 0.22, 0.10, 0.85);
+        }
+        // 木目ハイライト
+        writeInst(buf, n++, x - w * 0.15, y - h * 0.2, w * 0.3, 0.3, 0.75, 0.52, 0.30, 0.4);
+        writeInst(buf, n++, x + w * 0.1,  y + h * 0.25, w * 0.35, 0.3, 0.75, 0.52, 0.30, 0.4);
+        break;
+      }
+      case 'tile': {
+        writeInst(buf, n++, x, y, w, h, 0.78, 0.74, 0.68, 1);
+        // 3x3 grid
+        const hs = h / 3, ws = w / 3;
+        for (let i = 1; i < 3; i++) {
+          writeInst(buf, n++, x, y - h / 2 + i * hs, w, 0.4, 0.55, 0.52, 0.48, 0.8);
+          writeInst(buf, n++, x - w / 2 + i * ws, y, 0.4, h, 0.55, 0.52, 0.48, 0.8);
+        }
+        // 1 枚だけ色違い (accent)
+        writeInst(buf, n++, x - ws, y - hs, ws * 0.85, hs * 0.85, 0.85, 0.80, 0.72, 0.5);
+        break;
+      }
+      case 'grass': {
+        writeInst(buf, n++, x, y, w, h, 0.32, 0.55, 0.22, 1);
+        // darker patches
+        writeInst(buf, n++, x - w * 0.2, y - h * 0.2, w * 0.5, h * 0.3, 0.26, 0.48, 0.18, 0.55);
+        writeInst(buf, n++, x + w * 0.15, y + h * 0.15, w * 0.35, h * 0.25, 0.38, 0.62, 0.26, 0.55);
+        // 草の spikes
+        writeInst(buf, n++, x + w * 0.3, y - h * 0.1, 1, 2, 0.52, 0.74, 0.30, 0.8);
+        writeInst(buf, n++, x - w * 0.1, y + h * 0.3, 1, 2, 0.52, 0.74, 0.30, 0.8);
+        writeInst(buf, n++, x + w * 0.0, y - h * 0.3, 1, 2, 0.52, 0.74, 0.30, 0.8);
+        break;
+      }
+      case 'dirt': {
+        writeInst(buf, n++, x, y, w, h, 0.45, 0.33, 0.20, 1);
+        // 色ムラ
+        writeInst(buf, n++, x - w * 0.2, y, w * 0.4, h * 0.4, 0.38, 0.28, 0.16, 0.55);
+        writeInst(buf, n++, x + w * 0.15, y - h * 0.25, w * 0.35, h * 0.3, 0.52, 0.38, 0.24, 0.45);
+        writeInst(buf, n++, x - w * 0.1, y + h * 0.25, w * 0.3, h * 0.25, 0.40, 0.30, 0.18, 0.5);
+        // 小石
+        writeInst(buf, n++, x + w * 0.25, y + h * 0.1, 1.5, 1.5, 0.55, 0.50, 0.42, 0.75, 0, 1);
+        writeInst(buf, n++, x - w * 0.25, y - h * 0.15, 1.5, 1.5, 0.55, 0.50, 0.42, 0.75, 0, 1);
+        break;
+      }
+      case 'fallen_leaves': {
+        writeInst(buf, n++, x, y, w, h, 0.40, 0.30, 0.18, 1);
+        // 色とりどりの落ち葉
+        writeInst(buf, n++, x - w * 0.25, y - h * 0.20, 2.5, 2, 0.85, 0.35, 0.12, 0.90, 0, 1);
+        writeInst(buf, n++, x + w * 0.15, y - h * 0.30, 2.5, 2, 0.92, 0.70, 0.15, 0.90, 0, 1);
+        writeInst(buf, n++, x - w * 0.05, y + h * 0.10, 2.5, 2, 0.78, 0.25, 0.10, 0.90, 0, 1);
+        writeInst(buf, n++, x + w * 0.30, y + h * 0.05, 2.5, 2, 0.88, 0.55, 0.20, 0.90, 0, 1);
+        writeInst(buf, n++, x - w * 0.20, y + h * 0.30, 2.5, 2, 0.72, 0.42, 0.15, 0.90, 0, 1);
+        writeInst(buf, n++, x + w * 0.05, y - h * 0.05, 2.5, 2, 0.95, 0.60, 0.18, 0.90, 0, 1);
+        writeInst(buf, n++, x + w * 0.22, y + h * 0.28, 2.5, 2, 0.65, 0.28, 0.08, 0.90, 0, 1);
+        writeInst(buf, n++, x - w * 0.12, y - h * 0.12, 2.5, 2, 0.90, 0.50, 0.15, 0.90, 0, 1);
+        break;
+      }
+      case 'gravel': {
+        writeInst(buf, n++, x, y, w, h, 0.58, 0.54, 0.48, 1);
+        // 枯山水の砂紋 (水平の薄い波線)
+        writeInst(buf, n++, x, y - h * 0.15, w * 0.9, 0.4, 0.72, 0.68, 0.60, 0.45);
+        writeInst(buf, n++, x, y + h * 0.15, w * 0.9, 0.4, 0.72, 0.68, 0.60, 0.45);
+        // 小石
+        const gravelPts: [number, number][] = [
+          [-0.3, -0.25], [0.1, -0.2], [-0.1, 0.05], [0.25, 0.1], [-0.2, 0.25], [0.3, 0.3],
+          [-0.35, 0.05], [0.0, 0.0], [0.35, -0.15],
+        ];
+        for (const [dxp, dyp] of gravelPts) {
+          writeInst(buf, n++, x + w * dxp, y + h * dyp, 1.8, 1.8, 0.45, 0.42, 0.38, 0.85, 0, 1);
+        }
+        break;
+      }
+    }
+    return n - idx;
+  }
+
   private fillWalls(buf: Float32Array, start: number): number {
     let n = start;
     const W = 360, WC = 0.18;
@@ -453,6 +571,11 @@ export class Game {
     const rvTop = C.RIVERSIDE_STREET_Y + C.RIVERSIDE_STREET_H/2 + C.SIDEWALK_H;
     gf(loLow, rvTop, zvR, zvG, zvB);
     gf(rvLow, C.WORLD_MIN_Y, zsR, zsG, zsB);
+
+    // ── 初期都市セル地面 (ゾーン bg の上、道路の下) ──────────
+    for (const tile of this.initialCityGrounds) {
+      n += this.drawGroundTile(buf, n, tile);
+    }
 
     const sL = this.getSlopeL(), sR = this.getSlopeR();
     writeInst(buf, n++, sL.cx, sL.cy, sL.hw*2, sL.hh*2, 0.38, 0.58, 0.30, 1, sL.angle);
@@ -675,6 +798,10 @@ export class Game {
       const [bgR, bgG, bgB] = zoneBg[chunkId % 3];
       // チャンク背景
       writeInst(buf, n++, 0, baseY + C.CHUNK_HEIGHT / 2, W, C.CHUNK_HEIGHT, bgR, bgG, bgB, 1);
+      // セル地面 (背景の上、道路の下)
+      for (const tile of chunk.grounds) {
+        n += this.drawGroundTile(buf, n, tile);
+      }
       // 水平道路
       for (const r of chunk.horizontalRoads) {
         drawH(r.cy, r.h, r.xMin, r.xMax, r.cls);

@@ -9,7 +9,7 @@
 import * as C from './constants';
 import type { FurnitureType, VehicleType } from './entities';
 import type { BuildingData } from './entities';
-import { getScene, SCENES_BY_TIER, type Scene } from './scenes';
+import { getScene, SCENES_BY_TIER, type Scene, type GroundType } from './scenes';
 import {
   buildBlock,
   horizontalRoadWorld,
@@ -64,6 +64,7 @@ export interface StageConfig {
   bumpers: BumperDef[];
   furniture: FurnitureDef[];
   vehicles: VehicleDef[];
+  grounds: GroundTile[];
   bgTopR: number; bgTopG: number; bgTopB: number;
   bgBottomR: number; bgBottomG: number; bgBottomB: number;
 }
@@ -131,9 +132,19 @@ export const BLOCKS: Block[] = ROWS.flatMap((row, ri) =>
 
 // ===== シーン配置ヘルパー =====
 
+/** セル全体に敷く地面タイル (シーン背景用) */
+export interface GroundTile {
+  type: GroundType;
+  x: number;   // セル中心X
+  y: number;   // セル中心Y
+  w: number;   // セル幅
+  h: number;   // セル高さ
+}
+
 export interface ScenePlacement {
   buildings: BuildingDef[];
   furniture: FurnitureDef[];
+  grounds?: GroundTile[];
 }
 
 /** 1 シーンを指定左端に配置する */
@@ -290,7 +301,7 @@ export function placeGridBlock(
   pattern: RoadPattern,
   blockIdx: number
 ): ScenePlacement {
-  const out: ScenePlacement = { buildings: [], furniture: [] };
+  const out: ScenePlacement = { buildings: [], furniture: [], grounds: [] };
   const merges = pattern.merges ?? [];
   const ROAD_HALF = 7; // 縦道路の半幅 (14/2)
   const CLEARANCE = 2; // 道路との追加クリアランス
@@ -323,9 +334,21 @@ export function placeGridBlock(
 
       const baseY = block.originY + r * block.cellH + 12;
 
+      // 地面タイル: セル全体 (usable 範囲) を覆う
+      const cellCenterY = block.originY + r * block.cellH + block.cellH / 2;
+
       if (cell.type === 'scene') {
         // 単一シーン: 建物重心を usable 中心へ
         const scene = getScene(cell.sceneId);
+        if (scene.ground) {
+          out.grounds!.push({
+            type: scene.ground,
+            x: usableCenterX,
+            y: cellCenterY,
+            w: usableW,
+            h: block.cellH,
+          });
+        }
         const comX = sceneBuildingCenterX(scene);
         const bounds = sceneBuildingBounds(scene);
         let leftX = usableCenterX - comX;
@@ -337,6 +360,17 @@ export function placeGridBlock(
       } else {
         // 複数シーン: 横並びに配置。全シーン合計幅 + gap を usable 内に等分
         const scenes = cell.sceneIds.map(id => getScene(id));
+        // 地面: 最初のシーンの ground を使用 (混在セルは前半の雰囲気で)
+        const firstGround = scenes[0]?.ground;
+        if (firstGround) {
+          out.grounds!.push({
+            type: firstGround,
+            x: usableCenterX,
+            y: cellCenterY,
+            w: usableW,
+            h: block.cellH,
+          });
+        }
         const gap = 4;
         let totalW = 0;
         for (let i = 0; i < scenes.length; i++) {
@@ -494,6 +528,8 @@ export interface ChunkData {
   buildings: BuildingDef[];
   furniture: FurnitureDef[];
   specialAreas: ChunkSpecialArea[];
+  /** セル地面タイル — 描画用 */
+  grounds: GroundTile[];
 }
 
 // ===== ゾーン別建物プール =====
@@ -718,6 +754,7 @@ export function generateChunk(chunkId: number): ChunkData {
 
   const buildings: BuildingDef[] = [];
   const furniture: FurnitureDef[] = [];
+  const grounds: GroundTile[] = [];
   const specialAreas: ChunkSpecialArea[] = [];
   const horizontalRoads: ResolvedHorizontalRoad[] = [];
   const verticalRoads: ResolvedVerticalRoad[] = [];
@@ -733,6 +770,7 @@ export function generateChunk(chunkId: number): ChunkData {
     const p = placeGridBlock(block, pattern, chunkId);
     buildings.push(...p.buildings);
     furniture.push(...p.furniture);
+    if (p.grounds) grounds.push(...p.grounds);
 
     // 水平道路を resolve
     for (const seg of pattern.horizontalRoads) {
@@ -796,6 +834,7 @@ export function generateChunk(chunkId: number): ChunkData {
     buildings,
     furniture,
     specialAreas,
+    grounds,
   };
 }
 
@@ -929,6 +968,7 @@ export function getStage(level: number): StageConfig {
     // 静的な歩道家具 + シーン付属家具
     furniture: [...FURNITURE, ...city.furniture],
     vehicles: VEHICLES,
+    grounds: city.grounds ?? [],
     bgTopR: 0.52, bgTopG: 0.74, bgTopB: 0.96,
     bgBottomR: 0.38, bgBottomG: 0.36, bgBottomB: 0.33,
   };
