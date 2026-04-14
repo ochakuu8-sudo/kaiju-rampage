@@ -235,18 +235,14 @@ export class Game {
     if (flipperSoundNeeded) { this.sound.flipper(); this.juice.ballHitFlash(); }
     else if (wallSoundNeeded) { this.sound.wallHit(); }
 
-    // 速度ベースのダメージ (サブステップ後の速度を参照)
+    // パワーベースのダメージ (power 0→1, power 50→13)
     const dmg = b.damage;
 
     if (bldResult) {
       const { bld } = bldResult;
-      const actualDmg = Math.min(dmg, Math.max(0, bld.hp)); // 実際に削るHP
       const destroyed = this.buildings.damage(bld, dmg);
       if (destroyed) {
-        // 貫通: 速度方向はそのまま、削ったHP分だけ減速
-        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        const newSpd = Math.max(0, curSpd - actualDmg * C.BALL_PENETRATION_SLOW);
-        if (curSpd > 0) { b.vx = b.vx / curSpd * newSpd; b.vy = b.vy / curSpd * newSpd; }
+        // 破壊: 減速なし・速度そのままで貫通
         this.onBuildingDestroyed(bld);
       } else {
         // 非破壊: 定数最小反発 (乗り続け防止)

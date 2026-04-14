@@ -28,10 +28,10 @@ export class Ball {
     return C.BALL_RADIUS;
   }
 
-  /** 1 ヒットで与えるダメージ。速度に比例 (speed 25 → damage 13)。最低 1。 */
+  /** 1 ヒットで与えるダメージ。パワー BALL_DAMAGE_STEP ごとに +1。
+   *  power=0 → 1 / power=50 → 13 */
   get damage(): number {
-    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    return Math.max(1, Math.floor(spd * C.BALL_SPEED_DAMAGE_FACTOR));
+    return 1 + Math.floor(Math.min(this.power, C.BALL_POWER_MAX) / C.BALL_DAMAGE_STEP);
   }
 
   /** 人間を1体食べたときに呼ぶ。
