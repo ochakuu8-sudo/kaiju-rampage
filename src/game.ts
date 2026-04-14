@@ -243,6 +243,11 @@ export class Game {
       if (destroyed) {
         this.onBuildingDestroyed(bld);
       } else {
+        // 壊せなかった: 完全反射方向に少しだけ押し返す (20%)
+        const dvx = bldResult.newVx - b.vx;
+        const dvy = bldResult.newVy - b.vy;
+        b.vx += dvx * 0.2;
+        b.vy += dvy * 0.2;
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
         this.juice.ballHitFlash();
