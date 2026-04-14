@@ -18,7 +18,8 @@ export const BALL_POWER_MAX = 50;        // パワー上限
 // 例) kill 60体 → power≈11.5 / kill 300体 → power≈25 / kill ~3500体 → power MAX(50)
 export const BALL_POWER_BASE_KILLS  = 3;    // power 0→1 に必要な kill 数
 export const BALL_POWER_KILL_GROWTH = 1.1;  // 1 レベルごとのコスト倍率 (10%増し)
-export const BALL_DAMAGE_STEP = 4;          // この値ごとに攻撃力が +1 される (max power 50 → damage 13)
+export const BALL_SPEED_DAMAGE_FACTOR = 0.52; // speed × factor = damage (speed 25 → damage 13)
+export const BALL_PENETRATION_SLOW = 0.5;    // 貫通時の減速量 (actualDmg × factor = speed loss)
 export const BALL_MIN_REPEL_SPEED = 4;       // 非破壊時の最小反発速度 (乗り続け防止)
 export const BALL_POWER_ACCEL = 0.2;         // パワーによる方向加速 (px/frame² at max power)
 export const BALL_POWER_LOSS_ON_LOST = 0.0; // ボール落下時にパワーを完全リセット

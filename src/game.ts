@@ -235,14 +235,18 @@ export class Game {
     if (flipperSoundNeeded) { this.sound.flipper(); this.juice.ballHitFlash(); }
     else if (wallSoundNeeded) { this.sound.wallHit(); }
 
-    // パワーベースのダメージ (power 0→1, power 50→13)
+    // 速度ベースのダメージ (speed 0→1, speed 25→13)
     const dmg = b.damage;
 
     if (bldResult) {
       const { bld } = bldResult;
+      const actualDmg = Math.min(dmg, Math.max(0, bld.hp));
       const destroyed = this.buildings.damage(bld, dmg);
       if (destroyed) {
-        // 破壊: 減速なし・速度そのままで貫通
+        // 破壊: actualDmg 分だけ減速して貫通
+        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        const newSpd = Math.max(0, curSpd - actualDmg * C.BALL_PENETRATION_SLOW);
+        if (curSpd > 0) { b.vx = b.vx / curSpd * newSpd; b.vy = b.vy / curSpd * newSpd; }
         this.onBuildingDestroyed(bld);
       } else {
         // 非破壊: 定数最小反発 (乗り続け防止)
@@ -269,7 +273,15 @@ export class Game {
 
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
+      const fActual = Math.min(dmg, Math.max(0, furnitureHit.hp));
       const destroyed = this.furniture.damage(furnitureHit, dmg);
+      // 貫通: actualDmg 分だけ減速
+      { const sp = Math.sqrt(b.vx*b.vx+b.vy*b.vy); const ns = Math.max(0, sp - fActual*C.BALL_PENETRATION_SLOW); if(sp>0){b.vx=b.vx/sp*ns;b.vy=b.vy/sp*ns;} }
+      if (!destroyed) {
+        // 非破壊: 最小反発
+        const rsp = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+        if(rsp < C.BALL_MIN_REPEL_SPEED){const s=C.BALL_MIN_REPEL_SPEED/Math.max(rsp,0.01);b.vx*=s;b.vy*=s;}
+      }
       if (destroyed) {
         this.score += furnitureHit.score;
         const fpX = b.x + 180, fpY = this.camera.y + 290 - b.y;
@@ -283,14 +295,14 @@ export class Game {
       else if (furnitureHit.type === 'tree' || furnitureHit.type === 'vending') this.particles.spawnDebris(b.x, b.y, 4, 0.5, 0.4, 0.3);
       else this.particles.spawnSpark(b.x, b.y, 3);
       this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
-      b.vy = Math.abs(b.vy) * C.WALL_DAMPING;
     }
 
     const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, r);
     if (vehicleHit) {
-      b.vx = -b.vx * C.WALL_DAMPING; b.vy = Math.abs(b.vy) * C.WALL_DAMPING + 2;
-      [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+      const vActual = Math.min(dmg, Math.max(0, vehicleHit.hp));
       const destroyed = this.vehicles.damage(vehicleHit, dmg);
+      // 貫通: actualDmg 分だけ減速
+      { const sp = Math.sqrt(b.vx*b.vx+b.vy*b.vy); const ns = Math.max(0, sp - vActual*C.BALL_PENETRATION_SLOW); if(sp>0){b.vx=b.vx/sp*ns;b.vy=b.vy/sp*ns;} }
       if (destroyed) {
         this.score += vehicleHit.score;
         const vpX = b.x + 180, vpY = this.camera.y + 290 - b.y;
@@ -299,6 +311,9 @@ export class Game {
         this.particles.spawnSpark(b.x, b.y, 6);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
       } else {
+        // 非破壊: 最小反発
+        const rsp = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+        if(rsp < C.BALL_MIN_REPEL_SPEED){const s=C.BALL_MIN_REPEL_SPEED/Math.max(rsp,0.01);b.vx*=s;b.vy*=s;}
         this.particles.spawnSpark(b.x, b.y, 3);
         this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
       }
