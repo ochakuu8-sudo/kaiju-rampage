@@ -23,10 +23,9 @@ export class Ball {
   trail: Float32Array = new Float32Array(C.TRAIL_LEN * 2);
   trailHead = 0;
 
-  /** 現在のボール半径 (パワーに比例して大きくなる) */
+  /** ボール半径 (固定) */
   get radius(): number {
-    const p = Math.min(this.power, C.BALL_POWER_MAX);
-    return Math.min(C.BALL_RADIUS_MAX, C.BALL_RADIUS + p * C.BALL_RADIUS_GROWTH);
+    return C.BALL_RADIUS;
   }
 
   /** 1 ヒットで与えるダメージ。速度に比例 (speed 25 → damage 13)。最低 1。 */

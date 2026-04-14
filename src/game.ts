@@ -199,6 +199,13 @@ export class Game {
       b.vy -= C.GRAVITY * dts * 60;
       b.x  += b.vx * dts * 60;
       b.y  += b.vy * dts * 60;
+      // パワーによる方向加速: 進行方向に一定の推力を与え速度を維持・強化する
+      const _spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      if (_spd > 0.5) {
+        const accel = (b.power / C.BALL_POWER_MAX) * C.BALL_POWER_ACCEL * dts * 60;
+        b.vx += (b.vx / _spd) * accel;
+        b.vy += (b.vy / _spd) * accel;
+      }
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
       const camTop = this.camera.y + C.WORLD_MAX_Y;
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
@@ -213,9 +220,7 @@ export class Game {
         if (res) {
           [b.x, b.y, b.vx, b.vy] = res;
           const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
-          // パワーに応じて発射速度を強化 (power 0→1.0倍, max→2.5倍)
-          const flipBoost = 1 + (b.power / C.BALL_POWER_MAX) * C.FLIPPER_POWER_BOOST;
-          b.vx = nvx * flipBoost; b.vy = nvy * flipBoost;
+          b.vx = nvx; b.vy = nvy;
           [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
           flipperSoundNeeded = true; break;
         }
@@ -1169,16 +1174,30 @@ export class Game {
     if (!b.active) return 0;
     let n = start;
     const isFl = this.juice.isBallFlashing();
-    const radius = b.radius;
-    for (let t = 0; t < C.TRAIL_LEN; t++) {
-      const age = t / C.TRAIL_LEN;
-      const idx = (b.trailHead - 1 - t + C.TRAIL_LEN) % C.TRAIL_LEN;
+    const radius = C.BALL_RADIUS; // 固定サイズ
+
+    // パワーに応じた色: orange(0) → red(0.5) → electric blue(1.0)
+    const pt = b.power / C.BALL_POWER_MAX;
+    let cr: number, cg: number, cb: number;
+    if (pt < 0.5) {
+      const s = pt * 2;
+      cr = 1.0; cg = 0.55 - s * 0.45; cb = 0.05 + s * 0.05;
+    } else {
+      const s = (pt - 0.5) * 2;
+      cr = 1.0 - s * 0.8; cg = 0.10 + s * 0.40; cb = 0.10 + s * 0.90;
+    }
+
+    // トレイル
+    for (let ti = 0; ti < C.TRAIL_LEN; ti++) {
+      const age = ti / C.TRAIL_LEN;
+      const idx = (b.trailHead - 1 - ti + C.TRAIL_LEN) % C.TRAIL_LEN;
       const tx = b.trail[idx * 2], ty = b.trail[idx * 2 + 1];
       const alpha = (1 - age) * 0.45;
       const sz = radius * 2 * (1 - age * 0.6);
-      writeInst(buf, n++, tx, ty, sz, sz, 0.95, 0.40 - age * 0.2, 0.08, alpha, 0, 1);
+      writeInst(buf, n++, tx, ty, sz, sz, cr, cg * (1 - age * 0.5), cb, alpha, 0, 1);
     }
-    const r = isFl ? 1 : 0.95, g = isFl ? 1 : 0.55, bv = isFl ? 1 : 0.10;
+
+    const r = isFl ? 1 : cr, g = isFl ? 1 : cg, bv = isFl ? 1 : cb;
     writeInst(buf, n++, b.x, b.y, radius * 2, radius * 2, r, g, bv, 1, 0, 1);
     return n - start;
   }
