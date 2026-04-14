@@ -46,77 +46,15 @@ in float v_circle;
 out vec4 fragColor;
 
 void main() {
-  if (v_circle > 1.5) {
-    // フラット矩形: 建物ヒューリスティクスをスキップ (地面タイル等)
-    fragColor = v_color;
-    return;
-  }
   if (v_circle > 0.5) {
     // 円描画
     float d = length(v_uv) * 2.0;
     if (d > 1.0) discard;
     float glow = 1.0 - smoothstep(0.6, 1.0, d);
     fragColor = vec4(v_color.rgb + glow * 0.4, v_color.a);
-  } else if (v_size.y >= 35.0 && v_size.y < v_size.x * 5.0 && v_size.x < 180.0) {
-    // 高層ビル (apartment/office/tower/skyscraper): 窓グリッド描画
-    // v_size.y < v_size.x * 5.0 で縦路地(幅20,高さ186)を除外
-    // v_size.x < 180.0 で全幅地面塗り(幅360)を除外
-    vec2 uv  = v_uv + vec2(0.5);          // 0..1
-    vec2 px  = uv * v_size;               // ビル内ピクセル座標
-    float sw = v_size.x;
-    float sh = v_size.y;
-
-    bool isRoof     = px.y > sh - 3.0;
-    bool isBase     = px.y < 2.0;
-    bool isSideWall = px.x < 2.0 || px.x > sw - 2.0;
-
-    if (isRoof) {
-      fragColor = vec4(v_color.rgb * 0.65, v_color.a);
-    } else if (isBase || isSideWall) {
-      fragColor = v_color;
-    } else {
-      float gW = 6.0, gH = 8.0;
-      float modX = mod(px.x - 2.0, gW);
-      float modY = mod(px.y - 2.0, gH);
-      bool win = modX >= 1.0 && modX < gW - 1.0 && modY >= 1.0 && modY < gH - 1.5;
-      if (win) {
-        vec2 cell = floor((px - vec2(2.0)) / vec2(gW, gH));
-        float rnd = fract(sin(dot(cell, vec2(127.1, 311.7))) * 43758.5453);
-        float br  = 0.7 + rnd * 0.3;
-        vec3  wc  = vec3(1.0, 0.85, 0.4) * br * 0.5;
-        fragColor = vec4(min(v_color.rgb + wc, vec3(1.0)), v_color.a);
-      } else {
-        fragColor = v_color;
-      }
-    }
-  } else if (v_size.y >= 22.0 && v_size.y < v_size.x * 5.0 && v_size.x < 180.0) {
-    // 店舗 (shop h=25): ショーウィンドウ + 看板帯
-    vec2 uv  = v_uv + vec2(0.5);
-    vec2 px  = uv * v_size;
-    float sh = v_size.y;
-
-    bool isSign   = px.y > sh - 4.0;          // 上部看板帯
-    bool isWindow = px.y < 10.0 && px.y > 2.0 && px.x > 2.0 && px.x < v_size.x - 2.0;
-
-    if (isSign) {
-      fragColor = vec4(v_color.rgb * 1.2, v_color.a);
-    } else if (isWindow) {
-      // ショーウィンドウ: 明るい暖色
-      fragColor = vec4(min(v_color.rgb + vec3(0.3, 0.25, 0.1), vec3(1.0)), v_color.a);
-    } else {
-      fragColor = v_color;
-    }
   } else {
-    // 住宅 (house h=20): 上部を屋根として暗め
-    vec2 uv  = v_uv + vec2(0.5);
-    vec2 px  = uv * v_size;
-    float sh = v_size.y;
-    bool isRoof = px.y > sh - 5.0;
-    if (isRoof) {
-      fragColor = vec4(v_color.rgb * 0.7, v_color.a);
-    } else {
-      fragColor = v_color;
-    }
+    // プレーン矩形 — 建物のディテールはすべて TS 側でハードコード描画する
+    fragColor = v_color;
   }
 }`;
 

@@ -421,6 +421,53 @@ export class BuildingManager {
   }
 
   /** 横ビュー: 影→ファサード→種類別ディテール */
+  /**
+   * 高層ビル系の窓グリッドを描画 (旧シェーダーヒューリスティクスの代替)。
+   * 4×6 px 単位セルでファサードに矩形窓を並べる。建物ごとに deterministic な
+   * シードを使うので、同じ建物は常に同じパターンになる。
+   * - marginTop: 屋根 / 看板用の上余白
+   * - marginBot: 1F エントランス用の下余白
+   */
+  private drawBuildingWindows(
+    buf: Float32Array, n: number,
+    cx: number, bot: number, bW: number, bH: number,
+    cr: number, cg: number, cb: number,
+    marginTop: number = 5,
+    marginBot: number = 8
+  ): number {
+    const usableW = bW - 4;
+    const usableH = bH - marginTop - marginBot;
+    if (usableW < 4 || usableH < 6) return n;
+    const cols = Math.max(1, Math.floor(usableW / 4));
+    const rows = Math.max(1, Math.floor(usableH / 6));
+    const stepX = usableW / cols;
+    const stepY = usableH / rows;
+    const startX = cx - usableW / 2 + stepX / 2;
+    const startY = bot + marginBot + stepY / 2;
+    // 建物ごと固定シード (同じ建物は常に同じ窓パターン)
+    const seed = Math.abs(Math.floor(cx * 13.7 + bot * 7.3));
+    const winW = Math.min(2.4, stepX * 0.55);
+    const winH = Math.min(3.4, stepY * 0.55);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const wx = startX + c * stepX;
+        const wy = startY + r * stepY;
+        const hv = ((seed * 31 + r * 17 + c * 5) % 97) / 97;
+        if (hv > 0.40) {
+          // 灯っている窓 (黄色)
+          const br = 0.55 + hv * 0.35;
+          writeInst(buf, n++, wx, wy, winW, winH,
+            0.95 * br, 0.85 * br, 0.45 * br, 1);
+        } else {
+          // 暗い窓 (室内消灯)
+          writeInst(buf, n++, wx, wy, winW, winH,
+            cr * 0.50, cg * 0.48, cb * 0.42, 1);
+        }
+      }
+    }
+    return n;
+  }
+
   fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
     const camBot = cameraY + C.WORLD_MIN_Y - 100;
@@ -505,7 +552,9 @@ export class BuildingManager {
           break;
         }
         case 'apartment': {
-          // 各階バルコニー帯
+          // 窓グリッド (バルコニー帯の下に隠れる部分も含めて埋める)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 4, 12);
+          // 各階バルコニー帯 (窓の上に重ねる)
           const flH = bH / 4;
           for (let i = 1; i <= 3; i++) {
             writeInst(buf, n++, cx, bot + flH * i, bW + 3, 2.5,
@@ -516,6 +565,8 @@ export class BuildingManager {
           break;
         }
         case 'office': {
+          // 窓グリッド (ロビーより上)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 5, 16);
           // ロビーガラス
           writeInst(buf, n++, cx, bot + 7, bW * 0.48, 13, 0.60, 0.80, 0.92, 0.82);
           // 基礎帯
@@ -523,6 +574,8 @@ export class BuildingManager {
           break;
         }
         case 'tower': {
+          // 窓グリッド
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 8, 18);
           // エントランス
           writeInst(buf, n++, cx, bot + 8, bW * 0.52, 15, 0.55, 0.75, 0.90, 0.80);
           // 基礎帯
@@ -533,6 +586,8 @@ export class BuildingManager {
           break;
         }
         case 'skyscraper': {
+          // 窓グリッド (ロビーより上)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 5, 20);
           // アンテナ
           writeInst(buf, n++, cx, top + 9, 3, 17, cr * 0.68, cg * 0.68, cb * 0.68, 1);
           // ロビー
@@ -566,6 +621,8 @@ export class BuildingManager {
           break;
         }
         case 'school': {
+          // 窓グリッド (教室の窓)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 7, 14);
           // 上部バンド
           writeInst(buf, n++, cx, top - 3, bW, 5, cr * 0.82, cg * 0.78, cb * 0.55, 1);
           // 玄関ガラス
@@ -573,6 +630,8 @@ export class BuildingManager {
           break;
         }
         case 'hospital': {
+          // 窓グリッド (病室)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 5, 16);
           // 赤十字マーク（中〜上部）
           writeInst(buf, n++, cx, bot + bH * 0.68, 4, bH * 0.32, 0.85, 0.12, 0.12, 1);
           writeInst(buf, n++, cx, bot + bH * 0.68, bW * 0.28, 4, 0.85, 0.12, 0.12, 1);
@@ -674,6 +733,8 @@ export class BuildingManager {
           break;
         }
         case 'apartment_tall': {
+          // 窓グリッド
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 4, 14);
           // 各階バルコニー帯（5階相当）
           const atFlH = bH / 5;
           for (let i = 1; i <= 4; i++) {
@@ -811,6 +872,8 @@ export class BuildingManager {
           break;
         }
         case 'museum': {
+          // 窓グリッド (柱廊の上の階)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 9, bH * 0.55);
           // 柱廊（前面ストライプ）
           for (const xOff of [-bW * 0.35, -bW * 0.12, bW * 0.12, bW * 0.35]) {
             writeInst(buf, n++, cx + xOff, bot + bH * 0.40, 3, bH * 0.75, cr * 0.90, cg * 0.85, cb * 0.72, 1);
@@ -819,6 +882,8 @@ export class BuildingManager {
           break;
         }
         case 'city_hall': {
+          // 窓グリッド (左右翼の窓)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, 6, 8);
           // 中央塔
           writeInst(buf, n++, cx, cy + bH * 0.18, bW * 0.35, bH * 0.65, cr * 0.95, cg * 0.92, cb * 0.80, 1);
           // 旗竿（上）
@@ -875,6 +940,8 @@ export class BuildingManager {
         }
         // ── 1-D ランドマーク ───────────────────────────────────────
         case 'clock_tower': {
+          // 窓グリッド (時計面の下の塔本体)
+          n = this.drawBuildingWindows(buf, n, cx, bot, bW, bH, cr, cg, cb, bH * 0.32, 8);
           // 時計面（円）
           writeInst(buf, n++, cx, top - bH * 0.15, bW + 2, bW + 2, cr * 0.92, cg * 0.88, cb * 0.72, 1, 0, 1);
           // 針（水平バー）
