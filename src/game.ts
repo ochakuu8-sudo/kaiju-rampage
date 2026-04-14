@@ -43,6 +43,10 @@ export class Game {
   private state: GameState = 'playing';
   private stateTimer = 0;
 
+  // タイマー / チェックポイント
+  private timeRemaining   = C.TIMER_INITIAL_SEC;
+  private nextCheckpointM = C.CHECKPOINT_INTERVAL_M;
+
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
@@ -89,13 +93,17 @@ export class Game {
   }
 
   private initRun() {
-    this.totalDestroys = 0;
-    this.totalHumans   = 0;
-    this.state         = 'playing';
-    this.stateTimer    = 0;
+    this.totalDestroys   = 0;
+    this.totalHumans     = 0;
+    this.state           = 'playing';
+    this.stateTimer      = 0;
+    this.timeRemaining   = C.TIMER_INITIAL_SEC;
+    this.nextCheckpointM = C.CHECKPOINT_INTERVAL_M;
     this.ui.setDistance(0);
     this.ui.setZone(0);
     this.ui.setPowerGauge(0, 100);
+    this.ui.setTimer(C.TIMER_INITIAL_SEC);
+    this.ui.setQuota(0, C.CHECKPOINT_INTERVAL_M);
   }
 
   private loadCity() {
@@ -178,6 +186,29 @@ export class Game {
     this.ui.setPowerGauge(this.camera.scrollSpeed - C.SCROLL_BASE_SPEED, 100);
     this.ui.setDistance(this.camera.distanceMeters);
     this.ui.setZone(this.nextChunkId);
+
+    // タイマー更新 (hitstop で止まらないよう rawDt を使用)
+    this.timeRemaining -= rawDt;
+
+    // チェックポイント到達判定
+    const dist = this.camera.distanceMeters;
+    while (dist >= this.nextCheckpointM) {
+      this.timeRemaining   += C.CHECKPOINT_BONUS_SEC;
+      this.nextCheckpointM += C.CHECKPOINT_INTERVAL_M;
+      this.juice.flash(1, 1, 0.4, 0.25);
+    }
+
+    // タイマー切れ → ゲームオーバー
+    if (this.timeRemaining <= 0) {
+      this.timeRemaining = 0;
+      this.ui.setTimer(0);
+      this.ui.setQuota(dist, this.nextCheckpointM);
+      this.onGameOver();
+      return;
+    }
+
+    this.ui.setTimer(this.timeRemaining);
+    this.ui.setQuota(dist, this.nextCheckpointM);
   }
 
   private updateBall(dt: number) {
@@ -480,7 +511,7 @@ export class Game {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.totalDestroys, this.totalHumans, this.camera.scrollSpeed);
+      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 

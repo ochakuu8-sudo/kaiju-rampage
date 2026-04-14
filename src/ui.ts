@@ -12,6 +12,8 @@ export class UIManager {
   private elDistance  = document.getElementById('distance-display')!;
   private elZone      = document.getElementById('zone-display')!;
   private elPowerFill = document.getElementById('life-fill')!;
+  private elTimer     = document.getElementById('timer-display')!;
+  private elQuota     = document.getElementById('quota-display')!;
   private elGameover  = document.getElementById('gameover')!;
   private elFinalDist = document.getElementById('final-wave')!;
   private elFinalBest = document.getElementById('final-best')!;
@@ -31,10 +33,22 @@ export class UIManager {
     this.elPowerFill.classList.toggle('low', pct <= 25);
   }
 
-  showGameOver(destroys: number, humans: number, scrollSpeed: number) {
-    this.elFinalDist.textContent  = `Destroys: ${destroys}`;
-    this.elFinalBest.textContent  = `Humans: ${humans.toLocaleString()}`;
-    this.elFinalStats.textContent = `Speed: ${Math.round(scrollSpeed)} px/s`;
+  setTimer(seconds: number) {
+    const s = Math.max(0, Math.ceil(seconds));
+    this.elTimer.textContent = String(s);
+    this.elTimer.classList.toggle('low',  s <= 10 && s > 5);
+    this.elTimer.classList.toggle('crit', s <= 5);
+  }
+
+  setQuota(currentM: number, nextM: number) {
+    const remain = Math.max(0, nextM - currentM);
+    this.elQuota.textContent = `Next: ${remain} m`;
+  }
+
+  showGameOver(distanceM: number, destroys: number, humans: number) {
+    this.elFinalDist.textContent  = `${distanceM.toLocaleString()} m`;
+    this.elFinalBest.textContent  = `Destroys: ${destroys}`;
+    this.elFinalStats.textContent = `Humans: ${humans.toLocaleString()}`;
     this.elGameover.classList.add('show');
   }
 

@@ -219,8 +219,13 @@ export const BRIDGE_COLOR:     readonly [number,number,number,number] = [0.58, 0
 export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 0.32, 0.26, 1];
 
 // ===== 自動スクロール =====
-export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s (初期値)
+export const SCROLL_BASE_SPEED   = 0;    // カメラ上昇速度 px/s (初期値: 人間を潰して初めて動き出す)
 export const SCROLL_DAMAGE_STEP  = 10;   // スクロール速度 STEP px/s 増加ごとに威力+1
+
+// ===== タイマー / ノルマ =====
+export const TIMER_INITIAL_SEC     = 30;  // 開始時の残り時間
+export const CHECKPOINT_INTERVAL_M = 100; // 次チェックポイントまでの距離 (m)
+export const CHECKPOINT_BONUS_SEC  = 30;  // 到達ボーナス秒数
 
 // ===== チャンク生成 =====
 export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)
