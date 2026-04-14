@@ -29,17 +29,84 @@ const V_ALLEYS = [
   { x: C.ALLEY_2_X, tol: C.ALLEY_WIDTH / 2 + 2 },
 ];
 
-// 人間の服の色パレット（鮮やかで視認しやすい色）
-const HUMAN_PALETTE: ReadonlyArray<[number,number,number]> = [
-  [1.00, 0.20, 0.20], // 赤
-  [0.20, 0.50, 1.00], // 青
-  [1.00, 0.85, 0.10], // 黄
-  [0.20, 0.85, 0.30], // 緑
-  [1.00, 0.50, 0.10], // オレンジ
-  [0.80, 0.20, 0.95], // 紫
-  [0.10, 0.90, 0.90], // シアン
-  [1.00, 0.40, 0.70], // ピンク
+// 人間のバリエーションパターン
+//   shirt: 上半身の服の色 (常に必須)
+//   pants: 下半身の色 (省略可。あれば body の下端をこの色で覆う)
+//   hair:  頭部上面に乗る髪の色 (省略可)
+//   hat:   髪のさらに上に乗る帽子の色 (省略可)
+//   bag:   体の横に持つかばんの色 (省略可)
+interface HumanKind {
+  shirt: readonly [number, number, number];
+  pants?: readonly [number, number, number];
+  hair?: readonly [number, number, number];
+  hat?: readonly [number, number, number];
+  bag?: readonly [number, number, number];
+}
+
+const HUMAN_KINDS: ReadonlyArray<HumanKind> = [
+  // 0: 会社員 (黒髪 + ダークスーツ + 茶色のブリーフケース)
+  { shirt: [0.18, 0.22, 0.42], pants: [0.10, 0.12, 0.25],
+    hair:  [0.08, 0.06, 0.04], bag:   [0.55, 0.35, 0.18] },
+  // 1: OL (白ブラウス + 紺スカート + 茶髪 + ハンドバッグ)
+  { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.22, 0.45],
+    hair:  [0.35, 0.20, 0.10], bag:   [0.85, 0.30, 0.50] },
+  // 2: 学生 (白シャツ + 紺スラックス + 黒髪 + 赤い学生鞄)
+  { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.28, 0.55],
+    hair:  [0.08, 0.06, 0.04], bag:   [0.85, 0.20, 0.18] },
+  // 3: 子供 — 赤シャツ + 黄色い帽子
+  { shirt: [1.00, 0.30, 0.20], pants: [0.20, 0.30, 0.55],
+    hair:  [0.30, 0.18, 0.08], hat:   [1.00, 0.85, 0.10] },
+  // 4: 子供 — 黄シャツ
+  { shirt: [1.00, 0.85, 0.15], pants: [0.20, 0.30, 0.55],
+    hair:  [0.10, 0.08, 0.04] },
+  // 5: 私服 — 青シャツ + ジーンズ
+  { shirt: [0.20, 0.50, 1.00], pants: [0.20, 0.30, 0.55],
+    hair:  [0.20, 0.12, 0.08] },
+  // 6: 私服 — 緑シャツ + ベージュパンツ
+  { shirt: [0.20, 0.85, 0.30], pants: [0.55, 0.45, 0.30],
+    hair:  [0.10, 0.08, 0.04] },
+  // 7: 私服 — 紫シャツ + 黒パンツ
+  { shirt: [0.78, 0.20, 0.92], pants: [0.18, 0.18, 0.20],
+    hair:  [0.10, 0.08, 0.04] },
+  // 8: ジョガー (ピンクシャツ + 黒タイツ + 白ヘッドバンド)
+  { shirt: [1.00, 0.40, 0.70], pants: [0.15, 0.15, 0.18],
+    hair:  [0.25, 0.15, 0.08], hat:   [0.95, 0.95, 0.95] },
+  // 9: 観光客 (アロハ + ベージュ + 麦わら帽 + バックパック)
+  { shirt: [0.95, 0.40, 0.30], pants: [0.65, 0.55, 0.35],
+    hair:  [0.30, 0.18, 0.10], hat:   [0.95, 0.85, 0.40], bag: [0.30, 0.20, 0.10] },
+  // 10: お年寄り (くすんだ茶 + 白髪)
+  { shirt: [0.58, 0.52, 0.45], pants: [0.40, 0.36, 0.32],
+    hair:  [0.92, 0.90, 0.85] },
+  // 11: シェフ (白い服 + 白いコック帽)
+  { shirt: [0.95, 0.95, 0.95], pants: [0.95, 0.95, 0.95],
+    hair:  [0.08, 0.06, 0.04], hat:   [0.96, 0.96, 0.96] },
 ];
+
+/** 重み付き種類選択。比較的「ごく普通の人」を多めに、特殊型を少なめに。 */
+const HUMAN_KIND_WEIGHTS: ReadonlyArray<number> = [
+  6, // 0 会社員
+  4, // 1 OL
+  4, // 2 学生
+  3, // 3 子供 (赤)
+  3, // 4 子供 (黄)
+  5, // 5 私服 青
+  4, // 6 私服 緑
+  3, // 7 私服 紫
+  2, // 8 ジョガー
+  2, // 9 観光客
+  3, // 10 お年寄り
+  1, // 11 シェフ
+];
+const HUMAN_KIND_TOTAL = HUMAN_KIND_WEIGHTS.reduce((a, b) => a + b, 0);
+
+function pickHumanKind(): number {
+  let r = Math.random() * HUMAN_KIND_TOTAL;
+  for (let i = 0; i < HUMAN_KIND_WEIGHTS.length; i++) {
+    r -= HUMAN_KIND_WEIGHTS[i];
+    if (r <= 0) return i;
+  }
+  return HUMAN_KIND_WEIGHTS.length - 1;
+}
 
 export class HumanManager {
   px:       Float32Array = new Float32Array(C.MAX_HUMANS);
@@ -51,7 +118,7 @@ export class HumanManager {
   speed:    Float32Array = new Float32Array(C.MAX_HUMANS);
   scaleX:   Float32Array = new Float32Array(C.MAX_HUMANS);
   mode:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
-  colorIdx:   Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_PALETTE index
+  kind:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_KINDS index
   blastTimer: Float32Array = new Float32Array(C.MAX_HUMANS); // 吹き飛ばしフェーズ残り時間
 
   activeCount = 0;
@@ -106,7 +173,7 @@ export class HumanManager {
       this.vy[i]    = rand(-5, 5);
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
-      this.colorIdx[i] = Math.floor(Math.random() * HUMAN_PALETTE.length);
+      this.kind[i]     = pickHumanKind();
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -134,7 +201,7 @@ export class HumanManager {
       this.blastTimer[i] = rand(0.30, 0.55);
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
-      this.colorIdx[i]   = Math.floor(Math.random() * HUMAN_PALETTE.length);
+      this.kind[i]       = pickHumanKind();
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -349,9 +416,41 @@ export class HumanManager {
       const sx = C.HUMAN_W * this.scaleX[i];
       const sy = C.HUMAN_H * (2 - this.scaleX[i]);
       const px = this.px[i];
-      const [cr, cg, cb] = HUMAN_PALETTE[this.colorIdx[i]];
-      writeInst(buf, n++, px, py - sy * 0.15, sx, sy * 0.6, cr, cg, cb, 1, 0, 0);
+      const kind = HUMAN_KINDS[this.kind[i]];
+
+      // 1. 上半身 (シャツ)
+      const [sr, sg, sb] = kind.shirt;
+      writeInst(buf, n++, px, py - sy * 0.15, sx, sy * 0.6, sr, sg, sb, 1, 0, 0);
+
+      // 2. 下半身 (ズボン) — body の下半分にオーバーレイ
+      if (kind.pants) {
+        const [pr, pg, pb] = kind.pants;
+        writeInst(buf, n++, px, py - sy * 0.30, sx, sy * 0.30, pr, pg, pb, 1, 0, 0);
+      }
+
+      // 3. かばん — 体の右側に小さく
+      if (kind.bag) {
+        const [br, bg, bb] = kind.bag;
+        writeInst(buf, n++, px + sx * 0.55, py - sy * 0.20, sx * 0.42, sy * 0.42,
+          br, bg, bb, 1, 0, 0);
+      }
+
+      // 4. 頭 (肌色の円)
       writeInst(buf, n++, px, py + sy * 0.30, sx, sx, 0.95, 0.75, 0.55, 1, 0, 1);
+
+      // 5. 髪 — 頭の上半分にオーバーレイ
+      if (kind.hair) {
+        const [hr, hg, hb] = kind.hair;
+        writeInst(buf, n++, px, py + sy * 0.30 + sx * 0.30, sx * 0.92, sx * 0.45,
+          hr, hg, hb, 1, 0, 0);
+      }
+
+      // 6. 帽子 — 髪のさらに上
+      if (kind.hat) {
+        const [hr2, hg2, hb2] = kind.hat;
+        writeInst(buf, n++, px, py + sy * 0.30 + sx * 0.70, sx * 1.05, sx * 0.35,
+          hr2, hg2, hb2, 1, 0, 0);
+      }
     }
     return n - startIdx;
   }
