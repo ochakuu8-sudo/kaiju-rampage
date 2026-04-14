@@ -274,7 +274,11 @@ export class Game {
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
       const destroyed = this.furniture.damage(furnitureHit, dmg);
-      if (destroyed) this.score += furnitureHit.score;
+      if (destroyed) {
+        this.score += furnitureHit.score;
+        const fpX = b.x + 180, fpY = this.camera.y + 290 - b.y;
+        this.ui.spawnScorePop(fpX, fpY, furnitureHit.score, 'furniture');
+      }
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
       else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
       else if (furnitureHit.type === 'sign_board' && destroyed) this.particles.spawnConfetti(b.x, b.y, 8);
@@ -293,6 +297,8 @@ export class Game {
       const destroyed = this.vehicles.damage(vehicleHit, dmg);
       if (destroyed) {
         this.score += vehicleHit.score;
+        const vpX = b.x + 180, vpY = this.camera.y + 290 - b.y;
+        this.ui.spawnScorePop(vpX, vpY, vehicleHit.score, 'vehicle');
         this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
         this.particles.spawnSpark(b.x, b.y, 6);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
@@ -312,7 +318,10 @@ export class Game {
       this.totalHumans += crushed.length;
       // 人間を食べる → ボールのパワー (= サイズ + 攻撃力) アップ + スコア加算
       for (let k = 0; k < crushed.length; k++) b.addPower();
-      this.score += crushed.length * C.SCORE_PER_HUMAN;
+      const humanScore = crushed.length * C.SCORE_PER_HUMAN;
+      this.score += humanScore;
+      const hpX = b.x + 180, hpY = this.camera.y + 290 - b.y - 12;
+      this.ui.spawnScorePop(hpX, hpY, humanScore, 'human');
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
@@ -329,7 +338,8 @@ export class Game {
     // スコアポップアップ (ワールド→スクリーン座標変換)
     const popX = (bld.x + bld.w / 2) + 180;
     const popY = this.camera.y + 290 - (bld.y + bld.h);
-    this.ui.spawnScorePop(popX, popY, bld.score);
+    const bldTier = bld.score >= 1200 ? 'building-lg' : bld.score >= 600 ? 'building-md' : 'building-sm';
+    this.ui.spawnScorePop(popX, popY, bld.score, bldTier);
     this.sound.buildingDestroy();
 
     // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う

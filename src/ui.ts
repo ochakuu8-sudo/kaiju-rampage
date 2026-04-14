@@ -37,24 +37,27 @@ export class UIManager {
     this.elScore.classList.remove('danger');
   }
 
-  /** 建物破壊時に浮き上がるスコアポップアップを生成 */
-  spawnScorePop(screenX: number, screenY: number, score: number) {
+  /**
+   * スコアポップアップを生成
+   * tier: 'building-lg' | 'building-md' | 'building-sm' | 'vehicle' | 'furniture' | 'human'
+   */
+  spawnScorePop(screenX: number, screenY: number, score: number,
+                tier: 'building-lg' | 'building-md' | 'building-sm' | 'vehicle' | 'furniture' | 'human' = 'building-sm') {
     const el = document.createElement('div');
     el.className = 'score-pop';
-    el.textContent = '¥' + score.toLocaleString();
+    el.textContent = '+¥' + score.toLocaleString();
     el.style.left = screenX + 'px';
     el.style.top  = screenY + 'px';
-    if (score >= 1200) {
-      el.style.fontSize = '26px'; el.style.color = '#ffe000';
-    } else if (score >= 600) {
-      el.style.fontSize = '21px'; el.style.color = '#ff6a00';
-    } else if (score >= 300) {
-      el.style.fontSize = '18px'; el.style.color = '#ff8c00';
-    } else {
-      el.style.fontSize = '15px'; el.style.color = '#ffd24a';
+    switch (tier) {
+      case 'building-lg':  el.style.fontSize = '13px'; el.style.color = '#ffe84a'; el.style.textShadow = '0 0 8px #ff0, 2px 2px 0 #000'; break;
+      case 'building-md':  el.style.fontSize = '10px'; el.style.color = '#ff8c00'; el.style.textShadow = '2px 2px 0 #000'; break;
+      case 'building-sm':  el.style.fontSize = '8px';  el.style.color = '#ffd24a'; el.style.textShadow = '1px 1px 0 #000'; break;
+      case 'vehicle':      el.style.fontSize = '8px';  el.style.color = '#f88';    el.style.textShadow = '1px 1px 0 #000'; break;
+      case 'furniture':    el.style.fontSize = '7px';  el.style.color = '#8cf';    el.style.textShadow = '1px 1px 0 #000'; break;
+      case 'human':        el.style.fontSize = '7px';  el.style.color = '#8f8';    el.style.textShadow = '1px 1px 0 #000'; break;
     }
     this.elOverlay.appendChild(el);
-    setTimeout(() => el.remove(), 1400);
+    setTimeout(() => el.remove(), 1200);
   }
 
   setPowerGauge(power: number, maxPower: number) {
