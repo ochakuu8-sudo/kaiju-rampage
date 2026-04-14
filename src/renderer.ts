@@ -46,6 +46,11 @@ in float v_circle;
 out vec4 fragColor;
 
 void main() {
+  if (v_circle > 1.5) {
+    // フラット矩形: 建物ヒューリスティクスをスキップ (地面タイル等)
+    fragColor = v_color;
+    return;
+  }
   if (v_circle > 0.5) {
     // 円描画
     float d = length(v_uv) * 2.0;

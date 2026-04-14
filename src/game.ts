@@ -446,11 +446,14 @@ export class Game {
       return v - Math.floor(v);
     };
 
+    // FLAT = 2 (地面は建物窓ヒューリスティクスをスキップ)
+    const F = 2;
+
     switch (type) {
       // ─── 石畳: 不規則な石をオフセットして並べる ───────────
       case 'stone_pavement': {
         // 目地の暗い下地
-        writeInst(buf, n++, x, y, w, h, 0.32, 0.28, 0.22, 1);
+        writeInst(buf, n++, x, y, w, h, 0.32, 0.28, 0.22, 1, 0, F);
         // 4 行 × 3 列、行ごとに半セル分オフセット (煉瓦積み)
         const rows = 4;
         const cols = 3;
@@ -465,10 +468,10 @@ export class Game {
             const hv = hash(r * 13 + c * 7);
             const shade = 0.50 + hv * 0.15;
             writeInst(buf, n++, sx, sy, sw * 0.88, sh * 0.82,
-              shade * 1.05, shade * 0.95, shade * 0.80, 1);
+              shade * 1.05, shade * 0.95, shade * 0.80, 1, 0, F);
             // 石の上辺ハイライト
             writeInst(buf, n++, sx, sy - sh * 0.32, sw * 0.80, 0.4,
-              Math.min(1, shade + 0.15), Math.min(1, shade + 0.10), shade * 0.90, 0.7);
+              Math.min(1, shade + 0.15), Math.min(1, shade + 0.10), shade * 0.90, 0.7, 0, F);
           }
         }
         break;
@@ -477,7 +480,7 @@ export class Game {
       // ─── 芝: 多数の草の葉をランダム配置 ──────────────────
       case 'grass': {
         // ベース (中間的な緑)
-        writeInst(buf, n++, x, y, w, h, 0.30, 0.52, 0.20, 1);
+        writeInst(buf, n++, x, y, w, h, 0.30, 0.52, 0.20, 1, 0, F);
         // 有機的な色ムラパッチ 2 つ (円)
         writeInst(buf, n++, x - w * 0.22, y - h * 0.18, w * 0.5, h * 0.4,
           0.24, 0.44, 0.16, 0.65, 0, 1);
@@ -489,7 +492,7 @@ export class Game {
           const by = y + (hash(i * 2 + 1) - 0.5) * h * 0.92;
           const bright = 0.55 + hash(i * 3 + 7) * 0.25;
           writeInst(buf, n++, bx, by, 0.6, 1.8,
-            0.30 + bright * 0.08, bright + 0.15, 0.18, 0.9);
+            0.30 + bright * 0.08, bright + 0.15, 0.18, 0.9, 0, F);
         }
         // 小さな白花 2 つ (アクセント)
         for (let i = 0; i < 2; i++) {
@@ -502,7 +505,7 @@ export class Game {
 
       // ─── 土: 有機的な色ブロブ + 小石 ─────────────────────
       case 'dirt': {
-        writeInst(buf, n++, x, y, w, h, 0.46, 0.33, 0.20, 1);
+        writeInst(buf, n++, x, y, w, h, 0.46, 0.33, 0.20, 1, 0, F);
         // 柔らかい色ブロブ 8 個 (円形で有機感)
         for (let i = 0; i < 8; i++) {
           const bx = x + (hash(i * 3) - 0.5) * w * 0.85;
@@ -528,11 +531,11 @@ export class Game {
       // ─── 玉砂利: 大量の丸い石で敷き詰める ─────────────────
       case 'gravel': {
         // ベース
-        writeInst(buf, n++, x, y, w, h, 0.60, 0.56, 0.48, 1);
+        writeInst(buf, n++, x, y, w, h, 0.60, 0.56, 0.48, 1, 0, F);
         // 枯山水の砂紋 (薄い水平線 3 本)
-        writeInst(buf, n++, x, y - h * 0.28, w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45);
-        writeInst(buf, n++, x, y,              w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45);
-        writeInst(buf, n++, x, y + h * 0.28,   w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45);
+        writeInst(buf, n++, x, y - h * 0.28, w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45, 0, F);
+        writeInst(buf, n++, x, y,              w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45, 0, F);
+        writeInst(buf, n++, x, y + h * 0.28,   w * 0.92, 0.5, 0.78, 0.72, 0.62, 0.45, 0, F);
         // 砂利の石を敷き詰める (32 個、大小さまざま)
         for (let i = 0; i < 32; i++) {
           const bx = x + (hash(i * 4) - 0.5) * w * 0.95;
@@ -548,7 +551,7 @@ export class Game {
       // ─── 落ち葉: 土の上に多色の紅葉を散らす ─────────────
       case 'fallen_leaves': {
         // 湿った土の下地
-        writeInst(buf, n++, x, y, w, h, 0.36, 0.26, 0.14, 1);
+        writeInst(buf, n++, x, y, w, h, 0.36, 0.26, 0.14, 1, 0, F);
         // 下地の暗い色ムラ 2 つ
         writeInst(buf, n++, x - w * 0.2, y + h * 0.1, w * 0.5, h * 0.4,
           0.28, 0.20, 0.10, 0.55, 0, 1);
@@ -579,7 +582,7 @@ export class Game {
       // ─── アスファルト: 骨材スペックル + タイヤ跡 ──────────
       case 'asphalt': {
         // ベース
-        writeInst(buf, n++, x, y, w, h, 0.28, 0.28, 0.30, 1);
+        writeInst(buf, n++, x, y, w, h, 0.28, 0.28, 0.30, 1, 0, F);
         // 暗いムラ 2 つ (円で有機感)
         writeInst(buf, n++, x - w * 0.15, y - h * 0.1, w * 0.45, h * 0.35,
           0.22, 0.22, 0.24, 0.55, 0, 1);
@@ -594,15 +597,15 @@ export class Game {
             shade, shade, shade + 0.03, 0.80, 0, 1);
         }
         // タイヤ跡 2 本 (うっすら)
-        writeInst(buf, n++, x - w * 0.18, y - h * 0.05, w * 0.72, 0.5, 0.20, 0.20, 0.22, 0.6);
-        writeInst(buf, n++, x + w * 0.12, y + h * 0.12, w * 0.60, 0.5, 0.20, 0.20, 0.22, 0.6);
+        writeInst(buf, n++, x - w * 0.18, y - h * 0.05, w * 0.72, 0.5, 0.20, 0.20, 0.22, 0.6, 0, F);
+        writeInst(buf, n++, x + w * 0.12, y + h * 0.12, w * 0.60, 0.5, 0.20, 0.20, 0.22, 0.6, 0, F);
         break;
       }
 
       // ─── ウッドデッキ: 板目 + 釘 + 節 ────────────────────
       case 'wood_deck': {
         // 板間の暗い目地
-        writeInst(buf, n++, x, y, w, h, 0.24, 0.14, 0.05, 1);
+        writeInst(buf, n++, x, y, w, h, 0.24, 0.14, 0.05, 1, 0, F);
         // 5 枚の板 (明暗交互)
         const plankCount = 5;
         const plankW = w / plankCount;
@@ -610,12 +613,12 @@ export class Game {
           const px = x - w / 2 + (i + 0.5) * plankW;
           const shade = i % 2 === 0 ? 1.0 : 0.85;
           writeInst(buf, n++, px, y, plankW * 0.92, h * 0.96,
-            0.62 * shade, 0.42 * shade, 0.22 * shade, 1);
+            0.62 * shade, 0.42 * shade, 0.22 * shade, 1, 0, F);
           // 薄い木目線 (縦 2 本)
           writeInst(buf, n++, px - plankW * 0.2, y, 0.3, h * 0.9,
-            0.42 * shade, 0.26 * shade, 0.12 * shade, 0.55);
+            0.42 * shade, 0.26 * shade, 0.12 * shade, 0.55, 0, F);
           writeInst(buf, n++, px + plankW * 0.15, y, 0.3, h * 0.9,
-            0.42 * shade, 0.26 * shade, 0.12 * shade, 0.55);
+            0.42 * shade, 0.26 * shade, 0.12 * shade, 0.55, 0, F);
           // 釘 2 本 (板の両端)
           writeInst(buf, n++, px, y - h * 0.40, 0.7, 0.7, 0.18, 0.14, 0.08, 1, 0, 1);
           writeInst(buf, n++, px, y + h * 0.40, 0.7, 0.7, 0.18, 0.14, 0.08, 1, 0, 1);
@@ -633,7 +636,7 @@ export class Game {
       // ─── タイル: 個別タイルをシェーディング ───────────────
       case 'tile': {
         // 目地の暗い下地
-        writeInst(buf, n++, x, y, w, h, 0.44, 0.42, 0.38, 1);
+        writeInst(buf, n++, x, y, w, h, 0.44, 0.42, 0.38, 1, 0, F);
         // 4×3 のタイル、各タイルを個別シェード
         const cols = 4, rows = 3;
         const tileW = w / cols;
@@ -645,10 +648,10 @@ export class Game {
             const hv = hash(r * 17 + c * 5);
             const shade = 0.72 + hv * 0.16;
             writeInst(buf, n++, tx, ty, tileW * 0.90, tileH * 0.84,
-              shade, shade - 0.02, shade - 0.06, 1);
+              shade, shade - 0.02, shade - 0.06, 1, 0, F);
             // タイルの上辺ハイライト
             writeInst(buf, n++, tx, ty - tileH * 0.34, tileW * 0.80, 0.4,
-              Math.min(1, shade + 0.15), Math.min(1, shade + 0.12), shade, 0.7);
+              Math.min(1, shade + 0.15), Math.min(1, shade + 0.12), shade, 0.7, 0, F);
           }
         }
         break;
@@ -657,22 +660,22 @@ export class Game {
       // ─── コンクリート: 不定形のヒビ + シミ ────────────────
       case 'concrete': {
         // 微妙にムラのある下地
-        writeInst(buf, n++, x, y, w, h, 0.68, 0.66, 0.62, 1);
+        writeInst(buf, n++, x, y, w, h, 0.68, 0.66, 0.62, 1, 0, F);
         // 有機的な色の淡いムラ 2 つ (円)
         writeInst(buf, n++, x - w * 0.22, y - h * 0.15, w * 0.5, h * 0.4,
           0.72, 0.70, 0.66, 0.6, 0, 1);
         writeInst(buf, n++, x + w * 0.18, y + h * 0.2, w * 0.5, h * 0.4,
           0.60, 0.58, 0.54, 0.55, 0, 1);
         // エキスパンションジョイント (水平直線 2 本)
-        writeInst(buf, n++, x, y - h * 0.33, w, 0.6, 0.38, 0.36, 0.32, 0.75);
-        writeInst(buf, n++, x, y + h * 0.33, w, 0.6, 0.38, 0.36, 0.32, 0.75);
+        writeInst(buf, n++, x, y - h * 0.33, w, 0.6, 0.38, 0.36, 0.32, 0.75, 0, F);
+        writeInst(buf, n++, x, y + h * 0.33, w, 0.6, 0.38, 0.36, 0.32, 0.75, 0, F);
         // 不定形のヒビ (折れ線風の 3 セグメント)
         writeInst(buf, n++, x - w * 0.32, y - h * 0.08, w * 0.28, 0.4,
-          0.30, 0.28, 0.24, 0.85);
+          0.30, 0.28, 0.24, 0.85, 0, F);
         writeInst(buf, n++, x - w * 0.05, y + h * 0.02, w * 0.26, 0.4,
-          0.30, 0.28, 0.24, 0.85);
+          0.30, 0.28, 0.24, 0.85, 0, F);
         writeInst(buf, n++, x + w * 0.22, y + h * 0.12, w * 0.22, 0.4,
-          0.30, 0.28, 0.24, 0.85);
+          0.30, 0.28, 0.24, 0.85, 0, F);
         // 油シミ 1 つ (円形)
         writeInst(buf, n++, x + w * 0.28, y - h * 0.25, w * 0.14, h * 0.1,
           0.48, 0.44, 0.38, 0.7, 0, 1);
