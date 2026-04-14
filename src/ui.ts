@@ -17,6 +17,7 @@ export class UIManager {
   private elFinalDist = document.getElementById('final-wave')!;
   private elFinalBest = document.getElementById('final-best')!;
   private elFinalStats= document.getElementById('final-stats')!;
+  private elOverlay   = document.getElementById('overlay')!;
   private _bestScore  = 0;
 
   constructor() {
@@ -32,8 +33,28 @@ export class UIManager {
   }
 
   setScore(score: number) {
-    this.elScore.textContent = score.toLocaleString();
+    this.elScore.textContent = '¥' + score.toLocaleString();
     this.elScore.classList.remove('danger');
+  }
+
+  /** 建物破壊時に浮き上がるスコアポップアップを生成 */
+  spawnScorePop(screenX: number, screenY: number, score: number) {
+    const el = document.createElement('div');
+    el.className = 'score-pop';
+    el.textContent = '¥' + score.toLocaleString();
+    el.style.left = screenX + 'px';
+    el.style.top  = screenY + 'px';
+    if (score >= 1200) {
+      el.style.fontSize = '26px'; el.style.color = '#ffe000';
+    } else if (score >= 600) {
+      el.style.fontSize = '21px'; el.style.color = '#ff6a00';
+    } else if (score >= 300) {
+      el.style.fontSize = '18px'; el.style.color = '#ff8c00';
+    } else {
+      el.style.fontSize = '15px'; el.style.color = '#ffd24a';
+    }
+    this.elOverlay.appendChild(el);
+    setTimeout(() => el.remove(), 1400);
   }
 
   setPowerGauge(power: number, maxPower: number) {
@@ -47,7 +68,7 @@ export class UIManager {
       this._bestScore = score;
       localStorage.setItem('kaiju_best_score', String(score));
     }
-    this.elFinalDist.textContent  = `${score.toLocaleString()} pts`;
+    this.elFinalDist.textContent  = `¥${score.toLocaleString()}`;
     this.elFinalBest.textContent  = `Best: ${this._bestScore.toLocaleString()} pts`;
     this.elFinalStats.textContent = `Destroys: ${destroys} | Humans: ${humans.toLocaleString()}`;
     this.elGameover.classList.add('show');

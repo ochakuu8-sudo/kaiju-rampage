@@ -67,6 +67,24 @@
     #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
+    /* 建物破壊スコアポップアップ */
+    .score-pop {
+      position: absolute;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      pointer-events: none;
+      white-space: nowrap;
+      transform: translateX(-50%);
+      animation: score-float 1.3s ease-out forwards;
+      z-index: 5;
+      text-shadow: 0 1px 6px #000, 0 0 12px currentColor;
+    }
+    @keyframes score-float {
+      0%   { opacity: 1; transform: translateX(-50%) scale(0.5)  translateY(0px);   }
+      18%  { opacity: 1; transform: translateX(-50%) scale(1.45) translateY(-14px); }
+      100% { opacity: 0; transform: translateX(-50%) scale(0.85) translateY(-75px); }
+    }
+
   </style>
 </head>
 <body>

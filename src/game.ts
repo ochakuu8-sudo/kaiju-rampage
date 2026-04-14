@@ -326,6 +326,10 @@ export class Game {
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
     this.score += bld.score;
+    // スコアポップアップ (ワールド→スクリーン座標変換)
+    const popX = (bld.x + bld.w / 2) + 180;
+    const popY = this.camera.y + 290 - (bld.y + bld.h);
+    this.ui.spawnScorePop(popX, popY, bld.score);
     this.sound.buildingDestroy();
 
     // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う
