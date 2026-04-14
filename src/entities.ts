@@ -17,9 +17,33 @@ export class Ball {
   vx = 0;
   vy = 0;
   active = true;
+  /** 人間を食べた累積パワー (0..BALL_POWER_MAX) */
+  power = 0;
   // トレイル: リングバッファ
   trail: Float32Array = new Float32Array(C.TRAIL_LEN * 2);
   trailHead = 0;
+
+  /** 現在のボール半径 (パワーに比例して大きくなる) */
+  get radius(): number {
+    const p = Math.min(this.power, C.BALL_POWER_MAX);
+    return Math.min(C.BALL_RADIUS_MAX, C.BALL_RADIUS + p * C.BALL_RADIUS_GROWTH);
+  }
+
+  /** 1 ヒットで与えるダメージ。パワー BALL_DAMAGE_STEP ごとに +1。
+   *  初期 (power=0) は 1 ダメージ。HP=2 以上のものは一撃で壊せない。 */
+  get damage(): number {
+    return 1 + Math.floor(Math.min(this.power, C.BALL_POWER_MAX) / C.BALL_DAMAGE_STEP);
+  }
+
+  /** 人間を食べたときに呼ぶ */
+  addPower(amount: number = C.BALL_POWER_PER_HUMAN) {
+    this.power = Math.min(C.BALL_POWER_MAX, this.power + amount);
+  }
+
+  /** ボールロスト時にパワーを一部失う */
+  losePowerOnBallLost() {
+    this.power = Math.floor(this.power * C.BALL_POWER_LOSS_ON_LOST);
+  }
 
   reset() {
     this.x = C.BALL_START_X;
@@ -32,6 +56,12 @@ export class Ball {
       this.trail[i * 2 + 1] = C.BALL_START_Y;
     }
     this.trailHead = 0;
+  }
+
+  /** ゲーム全体のリセット (再スタート時に使用) */
+  fullReset() {
+    this.power = 0;
+    this.reset();
   }
 
   /** カメラY位置を考慮したリセット */
@@ -409,8 +439,8 @@ export class BuildingManager {
   }
 
   /** 建物にダメージを与え、破壊されたら destroyTimer & rubbleTimer セット */
-  damage(b: BuildingData): boolean {
-    b.hp--;
+  damage(b: BuildingData, dmg: number = 1): boolean {
+    b.hp -= dmg;
     b.flashTimer = 0.08;
     if (b.hp <= 0) {
       b.destroyTimer = 0.2;
@@ -1295,7 +1325,7 @@ export class FurnitureManager {
     for (const d of defs) {
       this.items.push({
         type: d.type, x: d.x, y: d.y,
-        hp: d.hp ?? 1, active: true, score: d.score ?? 50,
+        hp: d.hp ?? 2, active: true, score: d.score ?? 50,
         lightTimer: LIGHT_DURATIONS[0], lightState: 0,
         chunkId: -1,
       });
@@ -1307,7 +1337,7 @@ export class FurnitureManager {
     for (const d of defs) {
       this.items.push({
         type: d.type, x: d.x, y: d.y,
-        hp: 1, active: true, score: 50,
+        hp: 2, active: true, score: 50,
         lightTimer: LIGHT_DURATIONS[0], lightState: 0,
         chunkId,
       });
@@ -1349,8 +1379,8 @@ export class FurnitureManager {
     return null;
   }
 
-  damage(item: FurnitureItem): boolean {
-    item.hp--;
+  damage(item: FurnitureItem, dmg: number = 1): boolean {
+    item.hp -= dmg;
     if (item.hp <= 0) {
       item.active = false;
       return true;
@@ -1888,14 +1918,14 @@ interface VehicleDef {
 }
 
 const VEHICLE_DEFS_DATA: Record<VehicleType, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
-  car:        { w: 20, h: 10, maxHp: 1, score: 120, speedMin: 50,  speedMax: 70  },
-  bus:        { w: 28, h: 12, maxHp: 2, score: 200, speedMin: 35,  speedMax: 50  },
-  truck:      { w: 24, h: 12, maxHp: 2, score: 180, speedMin: 30,  speedMax: 45  },
-  ambulance:  { w: 22, h: 10, maxHp: 1, score: 500, speedMin: 100, speedMax: 120 },
-  taxi:       { w: 20, h: 10, maxHp: 1, score: 150, speedMin: 55,  speedMax: 75  },
-  motorcycle: { w: 12, h:  7, maxHp: 1, score: 100, speedMin: 70,  speedMax: 100 },
-  delivery:   { w: 22, h: 11, maxHp: 1, score: 140, speedMin: 40,  speedMax: 60  },
-  van:        { w: 22, h: 11, maxHp: 2, score: 160, speedMin: 35,  speedMax: 55  },
+  car:        { w: 20, h: 10, maxHp: 2, score: 120, speedMin: 50,  speedMax: 70  },
+  bus:        { w: 28, h: 12, maxHp: 3, score: 200, speedMin: 35,  speedMax: 50  },
+  truck:      { w: 24, h: 12, maxHp: 3, score: 180, speedMin: 30,  speedMax: 45  },
+  ambulance:  { w: 22, h: 10, maxHp: 2, score: 500, speedMin: 100, speedMax: 120 },
+  taxi:       { w: 20, h: 10, maxHp: 2, score: 150, speedMin: 55,  speedMax: 75  },
+  motorcycle: { w: 12, h:  7, maxHp: 2, score: 100, speedMin: 70,  speedMax: 100 },
+  delivery:   { w: 22, h: 11, maxHp: 2, score: 140, speedMin: 40,  speedMax: 60  },
+  van:        { w: 22, h: 11, maxHp: 3, score: 160, speedMin: 35,  speedMax: 55  },
 };
 
 // Car color palette (deterministic by position)
@@ -2054,8 +2084,8 @@ export class VehicleManager {
     return null;
   }
 
-  damage(v: VehicleItem): boolean {
-    v.hp--;
+  damage(v: VehicleItem, dmg: number = 1): boolean {
+    v.hp -= dmg;
     v.flashTimer = 0.1;
     if (v.hp <= 0) { v.active = false; return true; }
     return false;

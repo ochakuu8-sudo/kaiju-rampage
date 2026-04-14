@@ -12,7 +12,13 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-export const BALL_RADIUS = 9;
+export const BALL_RADIUS = 9;            // 初期/最小半径
+export const BALL_RADIUS_MAX = 18;       // 最大半径 (パワーアップ後)
+export const BALL_RADIUS_GROWTH = 0.18;  // パワー 1 ごとに増える半径
+export const BALL_POWER_MAX = 50;        // パワー上限
+export const BALL_POWER_PER_HUMAN = 1;   // 人間 1 体潰すごとのパワー増加
+export const BALL_DAMAGE_STEP = 5;       // この値ごとに攻撃力が +1 される
+export const BALL_POWER_LOSS_ON_LOST = 0.5; // ボールロスト時にパワーをこの割合に
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 25;
 export const WALL_DAMPING = 0.78;
@@ -22,10 +28,6 @@ export const BALL_START_Y = -100;
 export const TRAIL_LEN = 12;
 
 // ===== ウェーブシステム =====
-export const WAVE_TIME           = 30;   // ライフタイマー初期値(秒)
-export const BALL_LOST_PENALTY   = 5;    // ボールロスト時のペナルティ(秒)
-export const TIME_PER_HUMAN      = 2;    // 人間1人潰すごとに回復する秒数
-export const WAVE_DURATION       = 60;   // 何秒ごとにwave++するか
 export const RUBBLE_DURATION     = 5;    // 瓦礫が残る時間(秒)
 export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーション時間(秒)
 export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
@@ -61,60 +63,61 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
 }> = {
   // ===== オリジナル =====
-  house:          { w: 16, h: 20, hp: 1, score: 100,  humanMin: 3,   humanMax: 7   },
-  convenience:    { w: 24, h: 22, hp: 1, score: 120,  humanMin: 3,   humanMax: 7   },
-  shop:           { w: 22, h: 25, hp: 1, score: 150,  humanMin: 40,  humanMax: 60  },
-  restaurant:     { w: 20, h: 28, hp: 1, score: 130,  humanMin: 40,  humanMax: 60  },
-  apartment:      { w: 24, h: 40, hp: 2, score: 300,  humanMin: 40,  humanMax: 65  },
-  temple:         { w: 30, h: 30, hp: 2, score: 350,  humanMin: 35,  humanMax: 55  },
-  parking:        { w: 36, h: 35, hp: 2, score: 300,  humanMin: 30,  humanMax: 50  },
-  office:         { w: 30, h: 55, hp: 2, score: 400,  humanMin: 220, humanMax: 300 },
-  tower:          { w: 35, h: 70, hp: 3, score: 600,  humanMin: 240, humanMax: 320 },
-  skyscraper:     { w: 28, h: 90, hp: 4, score: 1000, humanMin: 260, humanMax: 350 },
-  hospital:       { w: 35, h: 50, hp: 3, score: 500,  humanMin: 200, humanMax: 280 },
-  school:         { w: 40, h: 45, hp: 3, score: 550,  humanMin: 260, humanMax: 350 },
+  // hp は最低 2 (初期パワーでは一撃で壊れない)
+  house:          { w: 16, h: 20, hp: 2, score: 100,  humanMin: 3,   humanMax: 7   },
+  convenience:    { w: 24, h: 22, hp: 2, score: 120,  humanMin: 3,   humanMax: 7   },
+  shop:           { w: 22, h: 25, hp: 2, score: 150,  humanMin: 40,  humanMax: 60  },
+  restaurant:     { w: 20, h: 28, hp: 2, score: 130,  humanMin: 40,  humanMax: 60  },
+  apartment:      { w: 24, h: 40, hp: 3, score: 300,  humanMin: 40,  humanMax: 65  },
+  temple:         { w: 30, h: 30, hp: 3, score: 350,  humanMin: 35,  humanMax: 55  },
+  parking:        { w: 36, h: 35, hp: 3, score: 300,  humanMin: 30,  humanMax: 50  },
+  office:         { w: 30, h: 55, hp: 4, score: 400,  humanMin: 220, humanMax: 300 },
+  tower:          { w: 35, h: 70, hp: 5, score: 600,  humanMin: 240, humanMax: 320 },
+  skyscraper:     { w: 28, h: 90, hp: 6, score: 1000, humanMin: 260, humanMax: 350 },
+  hospital:       { w: 35, h: 50, hp: 5, score: 500,  humanMin: 200, humanMax: 280 },
+  school:         { w: 40, h: 45, hp: 5, score: 550,  humanMin: 260, humanMax: 350 },
   // ===== 1-A 住宅系 =====
-  townhouse:      { w: 18, h: 24, hp: 1, score: 120,  humanMin: 4,   humanMax: 10  },
-  mansion:        { w: 32, h: 28, hp: 2, score: 280,  humanMin: 8,   humanMax: 18  },
-  garage:         { w: 20, h: 14, hp: 1, score: 70,   humanMin: 1,   humanMax: 4   },
-  shed:           { w: 12, h: 12, hp: 1, score: 50,   humanMin: 1,   humanMax: 3   },
-  greenhouse:     { w: 22, h: 18, hp: 1, score: 100,  humanMin: 2,   humanMax: 6   },
-  daycare:        { w: 28, h: 22, hp: 1, score: 160,  humanMin: 25,  humanMax: 45  },
-  clinic:         { w: 26, h: 28, hp: 2, score: 220,  humanMin: 25,  humanMax: 45  },
-  shrine:         { w: 26, h: 28, hp: 2, score: 280,  humanMin: 18,  humanMax: 35  },
-  apartment_tall: { w: 26, h: 58, hp: 3, score: 520,  humanMin: 130, humanMax: 190 },
+  townhouse:      { w: 18, h: 24, hp: 2, score: 120,  humanMin: 4,   humanMax: 10  },
+  mansion:        { w: 32, h: 28, hp: 3, score: 280,  humanMin: 8,   humanMax: 18  },
+  garage:         { w: 20, h: 14, hp: 2, score: 70,   humanMin: 1,   humanMax: 4   },
+  shed:           { w: 12, h: 12, hp: 2, score: 50,   humanMin: 1,   humanMax: 3   },
+  greenhouse:     { w: 22, h: 18, hp: 2, score: 100,  humanMin: 2,   humanMax: 6   },
+  daycare:        { w: 28, h: 22, hp: 2, score: 160,  humanMin: 25,  humanMax: 45  },
+  clinic:         { w: 26, h: 28, hp: 3, score: 220,  humanMin: 25,  humanMax: 45  },
+  shrine:         { w: 26, h: 28, hp: 3, score: 280,  humanMin: 18,  humanMax: 35  },
+  apartment_tall: { w: 26, h: 58, hp: 5, score: 520,  humanMin: 130, humanMax: 190 },
   // ===== 1-B 商業系 =====
-  cafe:           { w: 18, h: 20, hp: 1, score: 120,  humanMin: 15,  humanMax: 30  },
-  bakery:         { w: 16, h: 18, hp: 1, score: 110,  humanMin: 12,  humanMax: 22  },
-  bookstore:      { w: 18, h: 22, hp: 1, score: 120,  humanMin: 12,  humanMax: 22  },
-  pharmacy:       { w: 20, h: 22, hp: 1, score: 130,  humanMin: 18,  humanMax: 30  },
-  supermarket:    { w: 40, h: 28, hp: 2, score: 280,  humanMin: 80,  humanMax: 130 },
-  karaoke:        { w: 24, h: 30, hp: 2, score: 200,  humanMin: 50,  humanMax: 80  },
-  pachinko:       { w: 30, h: 28, hp: 2, score: 200,  humanMin: 60,  humanMax: 90  },
-  laundromat:     { w: 18, h: 18, hp: 1, score: 90,   humanMin: 8,   humanMax: 18  },
-  florist:        { w: 14, h: 18, hp: 1, score: 90,   humanMin: 8,   humanMax: 16  },
-  ramen:          { w: 16, h: 20, hp: 1, score: 110,  humanMin: 15,  humanMax: 28  },
-  izakaya:        { w: 20, h: 22, hp: 1, score: 130,  humanMin: 20,  humanMax: 38  },
-  game_center:    { w: 28, h: 26, hp: 2, score: 180,  humanMin: 45,  humanMax: 75  },
+  cafe:           { w: 18, h: 20, hp: 2, score: 120,  humanMin: 15,  humanMax: 30  },
+  bakery:         { w: 16, h: 18, hp: 2, score: 110,  humanMin: 12,  humanMax: 22  },
+  bookstore:      { w: 18, h: 22, hp: 2, score: 120,  humanMin: 12,  humanMax: 22  },
+  pharmacy:       { w: 20, h: 22, hp: 2, score: 130,  humanMin: 18,  humanMax: 30  },
+  supermarket:    { w: 40, h: 28, hp: 3, score: 280,  humanMin: 80,  humanMax: 130 },
+  karaoke:        { w: 24, h: 30, hp: 3, score: 200,  humanMin: 50,  humanMax: 80  },
+  pachinko:       { w: 30, h: 28, hp: 3, score: 200,  humanMin: 60,  humanMax: 90  },
+  laundromat:     { w: 18, h: 18, hp: 2, score: 90,   humanMin: 8,   humanMax: 18  },
+  florist:        { w: 14, h: 18, hp: 2, score: 90,   humanMin: 8,   humanMax: 16  },
+  ramen:          { w: 16, h: 20, hp: 2, score: 110,  humanMin: 15,  humanMax: 28  },
+  izakaya:        { w: 20, h: 22, hp: 2, score: 130,  humanMin: 20,  humanMax: 38  },
+  game_center:    { w: 28, h: 26, hp: 3, score: 180,  humanMin: 45,  humanMax: 75  },
   // ===== 1-C 公共系 =====
-  bank:           { w: 28, h: 32, hp: 2, score: 350,  humanMin: 35,  humanMax: 55  },
-  post_office:    { w: 24, h: 26, hp: 1, score: 200,  humanMin: 25,  humanMax: 45  },
-  library:        { w: 36, h: 34, hp: 2, score: 300,  humanMin: 45,  humanMax: 75  },
-  museum:         { w: 40, h: 38, hp: 3, score: 500,  humanMin: 75,  humanMax: 110 },
-  city_hall:      { w: 40, h: 44, hp: 3, score: 600,  humanMin: 90,  humanMax: 140 },
-  fire_station:   { w: 30, h: 30, hp: 2, score: 320,  humanMin: 15,  humanMax: 30  },
-  police_station: { w: 30, h: 32, hp: 2, score: 380,  humanMin: 25,  humanMax: 45  },
-  train_station:  { w: 50, h: 36, hp: 3, score: 600,  humanMin: 140, humanMax: 220 },
-  movie_theater:  { w: 38, h: 32, hp: 2, score: 400,  humanMin: 90,  humanMax: 140 },
-  gas_station:    { w: 30, h: 18, hp: 1, score: 180,  humanMin: 8,   humanMax: 16  },
+  bank:           { w: 28, h: 32, hp: 3, score: 350,  humanMin: 35,  humanMax: 55  },
+  post_office:    { w: 24, h: 26, hp: 2, score: 200,  humanMin: 25,  humanMax: 45  },
+  library:        { w: 36, h: 34, hp: 3, score: 300,  humanMin: 45,  humanMax: 75  },
+  museum:         { w: 40, h: 38, hp: 4, score: 500,  humanMin: 75,  humanMax: 110 },
+  city_hall:      { w: 40, h: 44, hp: 5, score: 600,  humanMin: 90,  humanMax: 140 },
+  fire_station:   { w: 30, h: 30, hp: 3, score: 320,  humanMin: 15,  humanMax: 30  },
+  police_station: { w: 30, h: 32, hp: 3, score: 380,  humanMin: 25,  humanMax: 45  },
+  train_station:  { w: 50, h: 36, hp: 5, score: 600,  humanMin: 140, humanMax: 220 },
+  movie_theater:  { w: 38, h: 32, hp: 3, score: 400,  humanMin: 90,  humanMax: 140 },
+  gas_station:    { w: 30, h: 18, hp: 2, score: 180,  humanMin: 8,   humanMax: 16  },
   // ===== 1-D ランドマーク =====
-  clock_tower:    { w: 16, h: 68, hp: 3, score: 700,  humanMin: 8,   humanMax: 18  },
-  radio_tower:    { w: 10, h: 88, hp: 3, score: 800,  humanMin: 3,   humanMax: 8   },
-  ferris_wheel:   { w: 44, h: 48, hp: 4, score: 900,  humanMin: 25,  humanMax: 50  },
-  stadium:        { w: 60, h: 38, hp: 4, score: 1000, humanMin: 180, humanMax: 360 },
-  water_tower:      { w: 18, h: 48, hp: 2, score: 380,  humanMin: 0,   humanMax: 5   },
+  clock_tower:    { w: 16, h: 68, hp: 5, score: 700,  humanMin: 8,   humanMax: 18  },
+  radio_tower:    { w: 10, h: 88, hp: 4, score: 800,  humanMin: 3,   humanMax: 8   },
+  ferris_wheel:   { w: 44, h: 48, hp: 6, score: 900,  humanMin: 25,  humanMax: 50  },
+  stadium:        { w: 60, h: 38, hp: 6, score: 1000, humanMin: 180, humanMax: 360 },
+  water_tower:      { w: 18, h: 48, hp: 3, score: 380,  humanMin: 0,   humanMax: 5   },
   // ===== 特大施設 =====
-  department_store: { w: 54, h: 38, hp: 3, score: 700,  humanMin: 160, humanMax: 260 },
+  department_store: { w: 54, h: 38, hp: 5, score: 700,  humanMin: 160, humanMax: 260 },
 };
 
 // ===== 人間 =====
@@ -220,21 +223,15 @@ export const BRIDGE_COLOR:     readonly [number,number,number,number] = [0.58, 0
 export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 0.32, 0.26, 1];
 
 // ===== 自動スクロール =====
-export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s
-export const HUMAN_SPEED_BONUS   = 1;    // 人間を潰すごとのカメラ加速量 px/s
-export const SPEED_DECAY_RATE    = 0.02; // 速度ボーナスの減衰率 (per frame at 60fps)
+export const SCROLL_BASE_SPEED   = 30;   // カメラ上昇速度 px/s (一定)
 
 // ===== チャンク生成 =====
 export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)
 export const CHUNK_SPAWN_AHEAD    = 600; // カメラ上端から先読みする距離
 export const CHUNK_DESPAWN_BEHIND = 400; // カメラ下端から削除する距離
 
-// ===== タイマー (新ルール) =====
-export const INITIAL_TIME    = 45;  // 初期タイマー (秒)
-export const TIME_BUILDING   = 1.5; // 建物破壊でもらえる秒数
-export const TIME_BUMPER     = 0.5; // バンパーヒットでもらえる秒数
-export const TIME_BALL_LOST  = -5;  // ボールロスト時のペナルティ (秒)
-export const BALL_UPWARD_BIAS = 3;  // ランチャー上方バイアス
+// ===== スコア =====
+export const SCORE_PER_HUMAN  = 50;  // 人間 1 体潰したときの得点
 
 // ===== SFCシムシティ風ゾーン色 =====
 export const ZONE_RESIDENTIAL: readonly [number,number,number,number] = [0.38, 0.62, 0.28, 1];  // 明るい緑

@@ -37,10 +37,8 @@ export class Game {
   private ball:      Ball;
   private flippers:  [Flipper, Flipper];
 
-  // サバイバルシステム
-  private wave         = 1;
-  private lifeTimer    = C.WAVE_TIME;   // ライフタイマー (0でゲームオーバー)
-  private waveElapsed  = 0;             // ウェーブ内経過秒 (WAVE_DURATIONでwave++)
+  // スコアシステム
+  private score        = 0;
   private totalDestroys= 0;
   private totalHumans  = 0;
 
@@ -87,23 +85,21 @@ export class Game {
     this.input.registerRestartTap(document.getElementById('gameover')!);
     this.input.onRestart(() => this.restart());
 
-    this.initWave1();
+    this.initRun();
     this.loadCity();
     this.startLoop();
   }
 
-  private initWave1() {
-    this.wave          = 1;
-    this.lifeTimer     = C.INITIAL_TIME;
-    this.waveElapsed   = 0;
+  private initRun() {
+    this.score         = 0;
     this.totalDestroys = 0;
     this.totalHumans   = 0;
     this.state         = 'playing';
     this.stateTimer    = 0;
     this.ui.setDistance(0);
     this.ui.setZone(0);
-    this.ui.setTimer(C.INITIAL_TIME);
-    this.ui.setLifeGauge(C.INITIAL_TIME, C.INITIAL_TIME);
+    this.ui.setScore(0);
+    this.ui.setPowerGauge(0, C.BALL_POWER_MAX);
   }
 
   private loadCity() {
@@ -120,12 +116,13 @@ export class Game {
     this.camera.reset();
     this.loadedChunks.clear();
     this.nextChunkId = 0;
+    this.ball.fullReset();
     this.ball.resetWithCamera(this.camera.y);
   }
 
   private restart() {
     this.ui.hideGameOver();
-    this.initWave1();
+    this.initRun();
     this.loadCity();
   }
 
@@ -180,24 +177,18 @@ export class Game {
     this.particles.update(dt);
     this.updateChunks();
 
-    // ライフタイマー減少
-    this.lifeTimer -= rawDt;
-    this.ui.setTimer(Math.max(0, this.lifeTimer));
-    this.ui.setLifeGauge(Math.max(0, this.lifeTimer), C.INITIAL_TIME);
-    if (this.lifeTimer <= 0) {
-      this.onGameOver();
-      return;
-    }
-
-    // 距離・ゾーン表示を更新
+    // スコア・パワー・距離 表示を更新
+    this.ui.setScore(this.score);
+    this.ui.setPowerGauge(this.ball.power, C.BALL_POWER_MAX);
     this.ui.setDistance(this.camera.distanceMeters);
     this.ui.setZone(this.nextChunkId);
-
   }
 
   private updateBall(dt: number) {
     const b = this.ball;
     if (!b.active) return;
+    const r = b.radius;
+    const dmg = b.damage;
     const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
     const SUB = speed > 15 ? 4 : speed > 8 ? 2 : 1;
     const dts = dt / SUB;
@@ -210,15 +201,15 @@ export class Game {
       b.y  += b.vy * dts * 60;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
       const camTop = this.camera.y + C.WORLD_MAX_Y;
-      if (b.x - C.BALL_RADIUS < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + C.BALL_RADIUS; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      if (b.x + C.BALL_RADIUS > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - C.BALL_RADIUS; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      if (b.y + C.BALL_RADIUS > camTop - 40) { b.y = camTop - 40 - C.BALL_RADIUS; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
+      if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
+      if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
+      if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
       for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
-        const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, slope);
+        const res = resolveCircleOBB(b.x, b.y, r, b.vx, b.vy, slope);
         if (res) { [b.x, b.y, b.vx, b.vy] = res; wallSoundNeeded = true; break; }
       }
       for (const fl of this.flippers) {
-        const res = resolveCircleOBB(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy, fl.getOBB());
+        const res = resolveCircleOBB(b.x, b.y, r, b.vx, b.vy, fl.getOBB());
         if (res) {
           [b.x, b.y, b.vx, b.vy] = res;
           const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
@@ -228,7 +219,7 @@ export class Game {
         }
       }
       if (!bldResult) {
-        const h = this.buildings.checkBallHit(b.x, b.y, C.BALL_RADIUS, b.vx, b.vy);
+        const h = this.buildings.checkBallHit(b.x, b.y, r, b.vx, b.vy);
         if (h) { bldResult = h; b.x = h.newBx; b.y = h.newBy; b.vx = h.newVx; b.vy = h.newVy; [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED); }
       }
     }
@@ -238,7 +229,7 @@ export class Game {
 
     if (bldResult) {
       const { bld } = bldResult;
-      const destroyed = this.buildings.damage(bld);
+      const destroyed = this.buildings.damage(bld, dmg);
       if (destroyed) {
         this.onBuildingDestroyed(bld);
       } else {
@@ -249,7 +240,7 @@ export class Game {
       }
     }
 
-    const fountainHit = this.furniture.checkFountainBumper(b.x, b.y, C.BALL_RADIUS);
+    const fountainHit = this.furniture.checkFountainBumper(b.x, b.y, r);
     if (fountainHit) {
       const dx = b.x - fountainHit.x, dy = b.y - fountainHit.y;
       const len = Math.sqrt(dx*dx + dy*dy) || 1;
@@ -259,9 +250,10 @@ export class Game {
       this.particles.spawnWater(b.x, b.y, 6);
     }
 
-    const furnitureHit = this.furniture.checkBallHit(b.x, b.y, C.BALL_RADIUS);
+    const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
-      const destroyed = this.furniture.damage(furnitureHit);
+      const destroyed = this.furniture.damage(furnitureHit, dmg);
+      if (destroyed) this.score += furnitureHit.score;
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
       else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
       else if (furnitureHit.type === 'sign_board' && destroyed) this.particles.spawnConfetti(b.x, b.y, 8);
@@ -273,25 +265,33 @@ export class Game {
       b.vy = Math.abs(b.vy) * C.WALL_DAMPING;
     }
 
-    const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, C.BALL_RADIUS);
+    const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, r);
     if (vehicleHit) {
       b.vx = -b.vx * C.WALL_DAMPING; b.vy = Math.abs(b.vy) * C.WALL_DAMPING + 2;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
-      const destroyed = this.vehicles.damage(vehicleHit);
-      if (destroyed) { this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55); this.particles.spawnSpark(b.x, b.y, 6); this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR); }
-      else { this.particles.spawnSpark(b.x, b.y, 3); this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5); }
+      const destroyed = this.vehicles.damage(vehicleHit, dmg);
+      if (destroyed) {
+        this.score += vehicleHit.score;
+        this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
+        this.particles.spawnSpark(b.x, b.y, 6);
+        this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
+      } else {
+        this.particles.spawnSpark(b.x, b.y, 3);
+        this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
+      }
       this.juice.ballHitFlash();
     }
 
-    const crushed = this.humans.checkCrush(b.x, b.y, C.BALL_RADIUS);
+    const crushed = this.humans.checkCrush(b.x, b.y, r);
     if (crushed.length > 0) {
       for (const idx of crushed) {
         const [hx, hy] = this.humans.getPos(idx);
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
-      // 人間を潰すとカメラ加速（タイマー回復は建物破壊のみ）
-      for (let k = 0; k < crushed.length; k++) this.camera.addSpeedBonus();
+      // 人間を食べる → ボールのパワー (= サイズ + 攻撃力) アップ + スコア加算
+      for (let k = 0; k < crushed.length; k++) b.addPower();
+      this.score += crushed.length * C.SCORE_PER_HUMAN;
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
@@ -304,9 +304,8 @@ export class Game {
     const cx = bld.x + bld.w / 2;
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
+    this.score += bld.score;
     this.sound.buildingDestroy();
-    // 建物破壊でタイマー加算（スコアに応じて多め）
-    this.lifeTimer = Math.min(C.INITIAL_TIME, this.lifeTimer + C.TIME_BUILDING * bld.maxHp);
 
     const isLarge = bld.maxHp >= 3;
     const sc = bld.maxHp; // 1=小 2=中 3-4=大
@@ -388,10 +387,10 @@ export class Game {
 
   private onBallLost() {
     this.ball.active = false;
-    this.lifeTimer = Math.max(0, this.lifeTimer + C.TIME_BALL_LOST);
+    // パワーを半分失う (パワーアップ要素を維持しつつ、ロストを「もったいない」にする)
+    this.ball.losePowerOnBallLost();
     this.sound.ballLost();
     this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
-    if (this.lifeTimer <= 0) { this.onGameOver(); return; }
     this.state = 'ball_lost';
     this.stateTimer = 1.0;
   }
@@ -400,7 +399,7 @@ export class Game {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+      this.ui.showGameOver(this.score, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 
@@ -1077,16 +1076,17 @@ export class Game {
     if (!b.active) return 0;
     let n = start;
     const isFl = this.juice.isBallFlashing();
+    const radius = b.radius;
     for (let t = 0; t < C.TRAIL_LEN; t++) {
       const age = t / C.TRAIL_LEN;
       const idx = (b.trailHead - 1 - t + C.TRAIL_LEN) % C.TRAIL_LEN;
       const tx = b.trail[idx * 2], ty = b.trail[idx * 2 + 1];
       const alpha = (1 - age) * 0.45;
-      const sz = C.BALL_RADIUS * 2 * (1 - age * 0.6);
+      const sz = radius * 2 * (1 - age * 0.6);
       writeInst(buf, n++, tx, ty, sz, sz, 0.95, 0.40 - age * 0.2, 0.08, alpha, 0, 1);
     }
     const r = isFl ? 1 : 0.95, g = isFl ? 1 : 0.55, bv = isFl ? 1 : 0.10;
-    writeInst(buf, n++, b.x, b.y, C.BALL_RADIUS * 2, C.BALL_RADIUS * 2, r, g, bv, 1, 0, 1);
+    writeInst(buf, n++, b.x, b.y, radius * 2, radius * 2, r, g, bv, 1, 0, 1);
     return n - start;
   }
 }
