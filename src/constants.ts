@@ -12,7 +12,7 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-export const BALL_RADIUS = 9;            // ボール半径 (固定)
+export const BALL_RADIUS = 12;           // ボール半径 (固定)
 export const BALL_MIN_REPEL_SPEED = 4;   // 非破壊時の最小反発速度 (乗り続け防止)
 export const GRAVITY = 0.3;
 export const MAX_BALL_SPEED = 40;
@@ -35,7 +35,7 @@ export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
 export const FLIPPER_REST_DEG = -30;
 export const FLIPPER_ACTIVE_DEG = 30;
-export const FLIPPER_POWER = 28;
+export const FLIPPER_POWER = 20;
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 
 // ===== 建物 =====
