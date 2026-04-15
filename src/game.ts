@@ -15,7 +15,7 @@ import { Camera } from './camera';
 import { getStage, generateChunk, getInitialCityRoadData } from './stages';
 import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad, GroundTile } from './stages';
 import type { Intersection } from './grid';
-import { resolveCircleOBB, clampSpeed, rand, randInt } from './physics';
+import { resolveCircleOBB, clampSpeed, rand, randInt, circleAABB } from './physics';
 import type { BuildingData } from './entities';
 
 const SHARED_BUF = new Float32Array(20000 * INST_F);
@@ -216,8 +216,19 @@ export class Game {
     if (!b.active) return;
     const r = b.radius;
     const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-    const SUB = speed > 15 ? 4 : speed > 8 ? 2 : 1;
+    // 1 substep あたりの移動量を ball 半径未満に抑えてトンネリングを防ぐ
+    // (ball radius = 9, 速度 40 でも 7 substep で ~5.7 px/substep)
+    const SUB = Math.max(1, Math.min(8, Math.ceil(speed / 6)));
     const dts = dt / SUB;
+
+    // 貫通中の建物から抜けたら lastPiercedBld をクリア
+    if (b.lastPiercedBld) {
+      const pbld = b.lastPiercedBld;
+      if (!pbld.active || pbld.destroyTimer > 0 ||
+          !circleAABB(b.x, b.y, r, pbld.x, pbld.y, pbld.w, pbld.h)) {
+        b.lastPiercedBld = null;
+      }
+    }
     let wallSoundNeeded = false, flipperSoundNeeded = false;
     let bldResult: { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null = null;
 
@@ -245,9 +256,9 @@ export class Game {
         }
       }
       if (!bldResult) {
-        const h = this.buildings.checkBallHit(b.x, b.y, r, b.vx, b.vy);
-        // 貫通: 位置のみ補正し速度方向は変えない
-        if (h) { bldResult = h; b.x = h.newBx; b.y = h.newBy; }
+        const h = this.buildings.checkBallHit(b.x, b.y, r, b.vx, b.vy, b.lastPiercedBld);
+        // 貫通: 位置は動かさない (ボールは自然に建物を通り抜ける)
+        if (h) { bldResult = h; }
       }
     }
 
@@ -264,7 +275,7 @@ export class Game {
       const actualDmg = Math.min(dmg, bld.hp);
       const destroyed = this.buildings.damage(bld, dmg);
 
-      // 常に貫通: ボール速度を与ダメージに比例して減速 (方向は維持)
+      // 常に貫通: ボール速度を与ダメージに比例して減速 (方向・位置は維持)
       const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
       const newSpd = Math.max(
         C.BALL_MIN_PIERCE_SPEED,
@@ -272,14 +283,13 @@ export class Game {
       );
       const k = newSpd / curSpd;
       b.vx *= k; b.vy *= k;
-      // 建物の反対側まで押し出して再衝突を防ぐ
-      const pushLen = Math.sqrt(bld.w * bld.w + bld.h * bld.h) + 4;
-      b.x = bldResult.newBx + (b.vx / newSpd) * pushLen;
-      b.y = bldResult.newBy + (b.vy / newSpd) * pushLen;
 
       if (destroyed) {
         this.onBuildingDestroyed(bld);
+        b.lastPiercedBld = null;
       } else {
+        // 再衝突防止: まだ AABB 内にいる間は同じ建物に当たらない
+        b.lastPiercedBld = bld;
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
         this.juice.ballHitFlash();

@@ -17,6 +17,8 @@ export class Ball {
   vx = 0;
   vy = 0;
   active = true;
+  /** 最後に貫通中の建物: その AABB から抜けるまで再衝突しない */
+  lastPiercedBld: BuildingData | null = null;
   // トレイル: リングバッファ
   trail: Float32Array = new Float32Array(C.TRAIL_LEN * 2);
   trailHead = 0;
@@ -32,6 +34,7 @@ export class Ball {
     this.vx = 2;    // 右方向（坂を滑り降りてフリッパーへ）
     this.vy = -1;
     this.active = true;
+    this.lastPiercedBld = null;
     for (let i = 0; i < C.TRAIL_LEN; i++) {
       this.trail[i * 2]     = C.BALL_START_X;
       this.trail[i * 2 + 1] = C.BALL_START_Y;
@@ -394,7 +397,8 @@ export class BuildingManager {
    */
   checkBallHit(
     bx: number, by: number, br: number,
-    vx: number, vy: number
+    vx: number, vy: number,
+    skip: BuildingData | null = null
   ): { bld: BuildingData; newBx: number; newBy: number; newVx: number; newVy: number } | null {
     // ボールが初期都市内かチャンク内かでバケットを絞る
     const keysToCheck: number[] = [];
@@ -409,6 +413,7 @@ export class BuildingManager {
       if (!list) continue;
       for (const b of list) {
         if (!b.active || b.destroyTimer > 0) continue;
+        if (b === skip) continue; // 貫通中の建物は再衝突しない
         const res = resolveCircleAABB(bx, by, br, vx, vy, b.x, b.y, b.w, b.h);
         if (res) {
           return { bld: b, newBx: res[0], newBy: res[1], newVx: res[2], newVy: res[3] };
