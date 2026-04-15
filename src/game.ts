@@ -272,7 +272,10 @@ export class Game {
     if (bldResult) {
       const { bld } = bldResult;
       const hpBefore = bld.hp;
-      const destroyed = this.buildings.damage(bld, dmg);
+      // 小・中型 (HP ≤ 10) は強制 1 撃破壊。大型のみ通常ダメージで反射あり
+      const forceDestroy = hpBefore <= 10;
+      const dmgToApply = forceDestroy ? hpBefore : dmg;
+      const destroyed = this.buildings.damage(bld, dmgToApply);
 
       if (destroyed) {
         // 破壊貫通: ボール速度を破壊前 HP に比例して減速 (方向は維持)
