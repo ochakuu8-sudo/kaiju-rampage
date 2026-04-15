@@ -33,22 +33,35 @@
     #distance-display { position: absolute; top: 8px; left: 10px; font-size: 13px; color: #8cf; text-shadow: 0 1px 4px #000; }
     /* ゾーン名: 距離の右 */
     #zone-display { position: absolute; top: 8px; left: 10px; margin-top: 22px; font-size: 11px; color: #adf; text-shadow: 0 1px 4px #000; }
-    /* スクロール速度バー (人間を食べると伸びる) */
+    /* スピードメーター (レースゲーム風) */
     #life-wrap {
-      position: absolute; top: 36px; left: 8px; right: 8px;
+      position: absolute; top: 36px; left: 8px; right: 48px;
       height: 10px;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 5px;
       overflow: hidden;
     }
     #life-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #f60, #fc3, #f0f);
+      background: linear-gradient(90deg, #0cf 0%, #0f8 40%, #ff6 70%, #f44 100%);
       border-radius: 5px;
-      transition: width 0.15s;
+      transition: width 0.12s;
+      box-shadow: 0 0 6px currentColor;
     }
-    #life-fill.low { background: linear-gradient(90deg, #555, #888); }
+    #life-fill.low  { background: linear-gradient(90deg, #369, #6bd); }
+    #life-fill.high { animation: speedpulse 0.4s infinite alternate; }
+    @keyframes speedpulse { from { filter: brightness(1); } to { filter: brightness(1.4); } }
+    /* 速度数値: バーの右 */
+    #speed-number {
+      position: absolute; top: 32px; right: 8px;
+      font-size: 16px; font-weight: 900;
+      color: #fff; text-shadow: 0 0 6px #0cf, 0 1px 3px #000;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+      min-width: 36px; text-align: right;
+    }
 
     /* タイマー: 上部中央 */
     #timer-display {
@@ -89,6 +102,7 @@
     <div id="distance-display">0 m</div>
     <div id="zone-display">住宅街</div>
     <div id="life-wrap"><div id="life-fill"></div></div>
+    <div id="speed-number">0</div>
     <div id="timer-display">30</div>
     <div id="quota-display">Next: 100 m</div>
   </div>

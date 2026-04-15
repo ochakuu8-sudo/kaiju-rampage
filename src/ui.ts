@@ -1,5 +1,5 @@
 /**
- * ui.ts — DOM UI 更新（スクロール速度 + 距離表示モード）
+ * ui.ts — DOM UI 更新（レースゲーム風スピードメーター + 距離表示）
  */
 
 const ZONE_NAMES: Record<number, string> = {
@@ -9,15 +9,16 @@ const ZONE_NAMES: Record<number, string> = {
 };
 
 export class UIManager {
-  private elDistance  = document.getElementById('distance-display')!;
-  private elZone      = document.getElementById('zone-display')!;
-  private elPowerFill = document.getElementById('life-fill')!;
-  private elTimer     = document.getElementById('timer-display')!;
-  private elQuota     = document.getElementById('quota-display')!;
-  private elGameover  = document.getElementById('gameover')!;
-  private elFinalDist = document.getElementById('final-wave')!;
-  private elFinalBest = document.getElementById('final-best')!;
-  private elFinalStats= document.getElementById('final-stats')!;
+  private elDistance    = document.getElementById('distance-display')!;
+  private elZone        = document.getElementById('zone-display')!;
+  private elSpeedFill   = document.getElementById('life-fill')!;
+  private elSpeedNumber = document.getElementById('speed-number')!;
+  private elTimer       = document.getElementById('timer-display')!;
+  private elQuota       = document.getElementById('quota-display')!;
+  private elGameover    = document.getElementById('gameover')!;
+  private elFinalDist   = document.getElementById('final-wave')!;
+  private elFinalBest   = document.getElementById('final-best')!;
+  private elFinalStats  = document.getElementById('final-stats')!;
 
   setDistance(meters: number) {
     this.elDistance.textContent = `${meters.toLocaleString()} m`;
@@ -27,10 +28,13 @@ export class UIManager {
     this.elZone.textContent = ZONE_NAMES[chunkId % 3] ?? '';
   }
 
-  setPowerGauge(bonus: number, maxBonus: number) {
-    const pct = maxBonus > 0 ? Math.min(100, (bonus / maxBonus) * 100) : 0;
-    this.elPowerFill.style.width = `${pct}%`;
-    this.elPowerFill.classList.toggle('low', pct <= 25);
+  /** レースゲーム風スピードメーター: 現在速度と上限から bar% と数値を更新 */
+  setSpeedMeter(speed: number, maxSpeed: number) {
+    const pct = maxSpeed > 0 ? Math.min(100, (speed / maxSpeed) * 100) : 0;
+    this.elSpeedFill.style.width = `${pct}%`;
+    this.elSpeedFill.classList.toggle('low',  pct <= 15);
+    this.elSpeedFill.classList.toggle('high', pct >= 80);
+    this.elSpeedNumber.textContent = String(Math.round(speed));
   }
 
   setTimer(seconds: number) {

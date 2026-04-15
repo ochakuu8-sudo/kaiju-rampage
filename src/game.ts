@@ -101,7 +101,7 @@ export class Game {
     this.nextCheckpointM = C.CHECKPOINT_INTERVAL_M;
     this.ui.setDistance(0);
     this.ui.setZone(0);
-    this.ui.setPowerGauge(0, 100);
+    this.ui.setSpeedMeter(0, C.SCROLL_MAX);
     this.ui.setTimer(C.TIMER_INITIAL_SEC);
     this.ui.setQuota(0, C.CHECKPOINT_INTERVAL_M);
   }
@@ -183,7 +183,7 @@ export class Game {
     this.updateChunks();
 
     // スクロール速度・距離 表示を更新
-    this.ui.setPowerGauge(this.camera.scrollSpeed - C.SCROLL_BASE_SPEED, 100);
+    this.ui.setSpeedMeter(this.camera.scrollSpeed, C.SCROLL_MAX);
     this.ui.setDistance(this.camera.distanceMeters);
     this.ui.setZone(this.nextChunkId);
 

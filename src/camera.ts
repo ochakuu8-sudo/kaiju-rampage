@@ -12,8 +12,12 @@ export class Camera {
   }
 
   update(dt: number) {
-    // スクロール速度を 0 に向かって減衰 (完全停止あり)
-    this.scrollSpeed = Math.max(0, this.scrollSpeed - C.SCROLL_DECAY * dt);
+    // 指数減衰 (空気抵抗モデル dv/dt = -DRAG * v): exp は任意 dt で安定
+    this.scrollSpeed *= Math.exp(-C.SCROLL_DRAG * dt);
+    // 最低速度: ごく小さくなったら完全停止 (演出上の静止)
+    if (this.scrollSpeed < 0.5) this.scrollSpeed = 0;
+    // 最高速度上限: カメラがボールより速くなる暴走防止
+    if (this.scrollSpeed > C.SCROLL_MAX) this.scrollSpeed = C.SCROLL_MAX;
     this.y += this.scrollSpeed * dt;
   }
 
