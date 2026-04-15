@@ -395,6 +395,8 @@ export class HumanManager {
     const crushed: number[] = [];
     for (let k = 0; k < this.activeLen; k++) {
       const i = this.activeIndices[k];
+      // 建物破壊で吹き飛ばし中の人間は無敵 (円状に散らばるまでの演出保護)
+      if (this.blastTimer[i] > 0) continue;
       const hx = this.px[i] - C.HUMAN_W / 2;
       const hy = this.py[i] - C.HUMAN_H / 2;
       const nearX = Math.max(hx, Math.min(ballX, hx + C.HUMAN_W));
