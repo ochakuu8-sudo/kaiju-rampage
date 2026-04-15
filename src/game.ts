@@ -329,8 +329,8 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
-      // 人間を食べる → スクロール速度アップ (+1px/s per human)
-      this.camera.addScrollSpeed(crushed.length);
+      // 人間を食べる → スクロール速度アップ (HUMAN_SCROLL_GAIN px/s per human)
+      this.camera.addScrollSpeed(crushed.length * C.HUMAN_SCROLL_GAIN);
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
