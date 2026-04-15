@@ -62,7 +62,7 @@ export interface RoadPattern {
   /** cells[row][col] = scene id or special marker */
   cells: (string | string[] | null | 'random_residential' | 'merged_right')[][];
   /** 2-cell 以上のシーンが使う master cell 情報 */
-  merges?: Array<{ row: number; col: number; spanCols: number }>;
+  merges?: Array<{ row: number; col: number; spanCols: number; spanRows?: number }>;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export function getIntersections(block: GridBlock): Intersection[] {
   const out: Intersection[] = [];
   for (const h of block.horizontalRoads) {
     const hWorld = horizontalRoadWorld(block, h);
-    const hThickness = h.thickness ?? (h.cls === 'avenue' ? 18 : 14);
+    const hThickness = h.thickness ?? (h.cls === 'avenue' ? C.CHUNK_ROAD_THICK_AVENUE : C.CHUNK_ROAD_THICK_STREET);
     for (const v of block.verticalRoads) {
       const vWorld = verticalRoadWorld(block, v);
       // 交差するのは、水平のY位置が垂直のY範囲に含まれ、かつ垂直のX位置が水平のX範囲に含まれるとき
@@ -131,7 +131,7 @@ export function getIntersections(block: GridBlock): Intersection[] {
           x: vWorld.cx,
           y: hWorld.cy,
           hThickness,
-          vThickness: v.thickness ?? 14,
+          vThickness: v.thickness ?? C.CHUNK_ROAD_THICK_STREET,
         });
       }
     }
@@ -150,18 +150,36 @@ export function buildBlock(
   cellH: number = C.CELL_H
 ): GridBlock {
   const cells: CellContent[][] = [];
+  const merges = pattern.merges ?? [];
+
+  // (r,c) が merge rect の内部か (master か 従属か) を判定
+  const findMerge = (r: number, c: number): { masterRow: number; masterCol: number } | null => {
+    for (const m of merges) {
+      const sr = m.spanRows ?? 1;
+      const sc = m.spanCols;
+      if (r >= m.row && r < m.row + sr && c >= m.col && c < m.col + sc) {
+        return { masterRow: m.row, masterCol: m.col };
+      }
+    }
+    return null;
+  };
+
   for (let r = 0; r < pattern.rows; r++) {
     const row: CellContent[] = [];
     for (let c = 0; c < pattern.cols; c++) {
+      const mergeAt = findMerge(r, c);
+      if (mergeAt && (mergeAt.masterRow !== r || mergeAt.masterCol !== c)) {
+        // 従属セル: master を参照
+        row.push({ type: 'merged', masterRow: mergeAt.masterRow, masterCol: mergeAt.masterCol });
+        continue;
+      }
       const raw = pattern.cells[r]?.[c];
       if (raw == null) row.push({ type: 'empty' });
       else if (Array.isArray(raw)) row.push({ type: 'scenes', sceneIds: raw });
       else if (raw === 'random_residential') row.push({ type: 'random_residential' });
       else if (raw === 'merged_right') {
-        let mCol = c;
-        while (mCol > 0 && pattern.cells[r][mCol - 1] === 'merged_right') mCol--;
-        mCol -= 1;
-        row.push({ type: 'merged', masterRow: r, masterCol: mCol });
+        // 後方互換: 従来マーカーだが、merges 定義が正しければこちらは master 側でなければ通らない
+        row.push({ type: 'empty' });
       } else {
         row.push({ type: 'scene', sceneId: raw });
       }

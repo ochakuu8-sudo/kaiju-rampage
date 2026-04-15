@@ -1012,36 +1012,22 @@ export class Game {
       [C.ZONE_OFFICE_BG[0],   C.ZONE_OFFICE_BG[1],   C.ZONE_OFFICE_BG[2]],
     ];
 
-    // 水平道路セグメント描画 (部分幅対応)
+    // 水平道路セグメント描画 (細身路地、歩道なし)
     const drawH = (cy: number, h: number, xMin: number, xMax: number, cls: 'avenue'|'street') => {
       const segW = xMax - xMin;
       const segCX = (xMin + xMax) / 2;
-      const swH = cls === 'avenue' ? 6 : 4;
-      const swTop = cy + h/2 + swH/2;
-      const swBot = cy - h/2 - swH/2;
-      writeInst(buf, n++, segCX, swTop + swH/2 + 1.5, segW, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, segCX, swBot - swH/2 - 1.5, segW, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, segCX, swTop, segW, swH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, segCX, swBot, segW, swH, sw_r, sw_g, sw_b, 1);
-      for (let x = Math.ceil(xMin/12)*12; x <= xMax; x += 12) {
-        writeInst(buf, n++, x, swTop, 1, swH, pvR, pvG, pvB, pvA);
-        writeInst(buf, n++, x, swBot, 1, swH, pvR, pvG, pvB, pvA);
-      }
+      // 薄い縁石
       writeInst(buf, n++, segCX, cy + h/2 + 0.5, segW, 1, cbR, cbG, cbB, 1);
       writeInst(buf, n++, segCX, cy - h/2 - 0.5, segW, 1, cbR, cbG, cbB, 1);
+      // 路面
       writeInst(buf, n++, segCX, cy, segW, h, rr, rg, rb, 1);
+      // 中央破線 (avenue のみ目立たない線を追加)
       if (cls === 'avenue') {
-        writeInst(buf, n++, segCX, cy + 2, segW, 1.5, lr2, lg2, lb2, 1);
-        writeInst(buf, n++, segCX, cy - 2, segW, 1.5, lr2, lg2, lb2, 1);
-      } else {
-        for (let x = Math.ceil(xMin/14)*14; x <= xMax - 10; x += 14) {
-          writeInst(buf, n++, x + 5, cy, 8, 1.2, 0.95, 0.95, 0.95, 0.55);
+        for (let x = Math.ceil(xMin/10)*10; x <= xMax - 6; x += 10) {
+          writeInst(buf, n++, x + 3, cy, 5, 0.8, 0.9, 0.9, 0.9, 0.5);
         }
       }
-      for (let x = Math.ceil(xMin/55)*55; x <= xMax - 10; x += 55) {
-        writeInst(buf, n++, x, cy, 4, 4, mhR, mhG, mhB, 1, 0, 1);
-      }
-      // 袋小路マーカー (世界壁でない端点)
+      // 袋小路マーカー
       if (xMin > C.WORLD_MIN_X + 1) {
         writeInst(buf, n++, xMin + 1, cy, 2, h, cbR, cbG, cbB, 1);
       }
@@ -1050,22 +1036,15 @@ export class Game {
       }
     };
 
-    // 垂直道路セグメント描画 (部分高さ対応)
-    const drawV = (cx: number, w: number, yMin: number, yMax: number, cls: 'avenue'|'street') => {
+    // 垂直道路セグメント描画 (細身路地、歩道なし)
+    const drawV = (cx: number, w: number, yMin: number, yMax: number, _cls: 'avenue'|'street') => {
       const segH = yMax - yMin;
       const segCY = (yMin + yMax) / 2;
-      const swW = cls === 'avenue' ? 6 : 4;
-      writeInst(buf, n++, cx - w/2 - swW/2, segCY, swW, segH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, cx + w/2 + swW/2, segCY, swW, segH, sw_r, sw_g, sw_b, 1);
+      // 薄い縁石
       writeInst(buf, n++, cx - w/2 - 0.5, segCY, 1, segH, cbR, cbG, cbB, 1);
       writeInst(buf, n++, cx + w/2 + 0.5, segCY, 1, segH, cbR, cbG, cbB, 1);
+      // 路面
       writeInst(buf, n++, cx, segCY, w, segH, rr, rg, rb, 1);
-      for (let y = Math.ceil(yMin/14)*14; y <= yMax - 10; y += 14) {
-        writeInst(buf, n++, cx, y + 5, 1.2, 8, 0.95, 0.95, 0.95, 0.55);
-      }
-      for (let y = Math.ceil(yMin/55)*55; y <= yMax - 10; y += 55) {
-        writeInst(buf, n++, cx, y, 4, 4, mhR, mhG, mhB, 1, 0, 1);
-      }
     };
 
     for (const chunk of this.loadedChunks.values()) {
