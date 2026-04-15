@@ -257,8 +257,8 @@ export class Game {
       }
       if (!bldResult) {
         const h = this.buildings.checkBallHit(b.x, b.y, r, b.vx, b.vy, b.lastPiercedBld);
-        // 貫通: 位置は動かさない (ボールは自然に建物を通り抜ける)
-        if (h) { bldResult = h; }
+        // 衝突位置に補正 (建物近傍面)。破壊/非破壊の分岐は post-loop で処理
+        if (h) { bldResult = h; b.x = h.newBx; b.y = h.newBy; }
       }
     }
 
@@ -271,25 +271,28 @@ export class Game {
 
     if (bldResult) {
       const { bld } = bldResult;
-      // 与ダメージ (実際に建物から削る HP) = min(dmg, hp)
-      const actualDmg = Math.min(dmg, bld.hp);
+      const hpBefore = bld.hp;
       const destroyed = this.buildings.damage(bld, dmg);
 
-      // 常に貫通: ボール速度を与ダメージに比例して減速 (方向・位置は維持)
-      const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
-      const newSpd = Math.max(
-        C.BALL_MIN_PIERCE_SPEED,
-        curSpd - actualDmg * C.BALL_PIERCE_LOSS_PER_DMG
-      );
-      const k = newSpd / curSpd;
-      b.vx *= k; b.vy *= k;
-
       if (destroyed) {
-        this.onBuildingDestroyed(bld);
-        b.lastPiercedBld = null;
-      } else {
-        // 再衝突防止: まだ AABB 内にいる間は同じ建物に当たらない
+        // 破壊貫通: ボール速度を破壊前 HP に比例して減速 (方向は維持)
+        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
+        const newSpd = Math.max(
+          C.BALL_MIN_PIERCE_SPEED,
+          curSpd - hpBefore * C.BALL_PIERCE_LOSS_PER_DMG
+        );
+        const k = newSpd / curSpd;
+        b.vx *= k; b.vy *= k;
+        // 貫通中フラグで destroyTimer 中の再衝突を防ぐ
         b.lastPiercedBld = bld;
+        this.onBuildingDestroyed(bld);
+      } else {
+        // 非破壊: 反射 (ピンボール挙動)
+        const rSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2);
+        const scale = Math.max(1, C.BALL_MIN_REPEL_SPEED / Math.max(rSpd, 0.01));
+        b.vx = bldResult.newVx * scale;
+        b.vy = bldResult.newVy * scale;
+        b.lastPiercedBld = null;
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
         this.juice.ballHitFlash();
