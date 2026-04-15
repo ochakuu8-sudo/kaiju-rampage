@@ -303,8 +303,8 @@ export function placeGridBlock(
 ): ScenePlacement {
   const out: ScenePlacement = { buildings: [], furniture: [], grounds: [] };
   const merges = pattern.merges ?? [];
-  const ROAD_HALF = 3; // 縦道路の半幅 (細身 6/2)
-  const CLEARANCE = 0; // 道路との追加クリアランス (撤廃)
+  const ROAD_HALF = 7; // 縦道路の半幅 (14/2)
+  const CLEARANCE = 2; // 道路との追加クリアランス
 
   // この行の、指定 col 左右に縦道路があるか判定
   const hasVertRoadAt = (gridLine: number, row: number): boolean => {
@@ -320,7 +320,6 @@ export function placeGridBlock(
 
       const mergeInfo = merges.find(m => m.row === r && m.col === c);
       const spanCols = mergeInfo ? mergeInfo.spanCols : 1;
-      const spanRows = mergeInfo?.spanRows ?? 1;
 
       const leftColEdge = block.originX + c * block.cellW;
       const rightColEdge = leftColEdge + spanCols * block.cellW;
@@ -335,9 +334,8 @@ export function placeGridBlock(
 
       const baseY = block.originY + r * block.cellH + 12;
 
-      // 地面タイル: セル全体 (usable 範囲 × spanRows 分の高さ) を覆う
-      const fullCellH = block.cellH * spanRows;
-      const cellCenterY = block.originY + r * block.cellH + fullCellH / 2;
+      // 地面タイル: セル全体 (usable 範囲) を覆う
+      const cellCenterY = block.originY + r * block.cellH + block.cellH / 2;
 
       if (cell.type === 'scene') {
         // 単一シーン: 建物重心を usable 中心へ
@@ -348,7 +346,7 @@ export function placeGridBlock(
             x: usableCenterX,
             y: cellCenterY,
             w: usableW,
-            h: fullCellH,
+            h: block.cellH,
           });
         }
         const comX = sceneBuildingCenterX(scene);
@@ -370,7 +368,7 @@ export function placeGridBlock(
             x: usableCenterX,
             y: cellCenterY,
             w: usableW,
-            h: fullCellH,
+            h: block.cellH,
           });
         }
         const gap = 4;
@@ -429,10 +427,9 @@ export function placeCity(): ScenePlacement {
   // 初期都市 grid:
   //   既存の固定道路 Y (RIVER=-80, LOWER=26, MAIN=133, HILLTOP=240) に合わせて
   //   cellH = 107 で近似 (107 × 3 = 321 ≈ 240 - (-80) = 320)
-  //   rows: 3, cols: 4 (初期都市専用サイズ、chunk 用 60×60 とは別)
+  //   rows: 3, cols: 4
   //   originX = -180 (世界左壁), originY = -80 (RIVER 中心)
-  const INITIAL_CELL_W = 90;  // 初期都市専用 (新 C.CELL_W=60 を使わない)
-  const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, INITIAL_CELL_W, 107);
+  const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 107);
   return placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
 }
 
@@ -442,8 +439,7 @@ export function getInitialCityRoadData(): {
   verticalRoads: ResolvedVerticalRoad[];
   intersections: Intersection[];
 } {
-  const INITIAL_CELL_W = 90;  // 初期都市専用
-  const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, INITIAL_CELL_W, 100);
+  const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 100);
   // 初期都市の水平道路は固定位置 (RIVER/LOWER/MAIN/HILLTOP) に合わせるため、
   // pattern の gridLine index (0..3) を実際の Y 座標にマッピング
   // gridLine 0 = RIVER (描画しない)、1 = LOWER、2 = MAIN、3 = HILLTOP
@@ -462,14 +458,14 @@ export function getInitialCityRoadData(): {
   const horizontalRoads: ResolvedHorizontalRoad[] = block.horizontalRoads.map(seg => ({
     cy: lineYs[seg.gridLine],
     h: seg.thickness ?? (seg.cls === 'avenue' ? lineHs[seg.gridLine] : lineHs[seg.gridLine]),
-    xMin: -180 + seg.startCell * INITIAL_CELL_W,
-    xMax: -180 + seg.endCell * INITIAL_CELL_W,
+    xMin: -180 + seg.startCell * C.CELL_W,
+    xMax: -180 + seg.endCell * C.CELL_W,
     cls: seg.cls,
   }));
   // 垂直道路: gridLine 0..4 → X = -180, -90, 0, 90, 180
   // startCell/endCell は row index で、実際の Y 座標は lineYs 配列から取得
   const verticalRoads: ResolvedVerticalRoad[] = block.verticalRoads.map(seg => ({
-    cx: -180 + seg.gridLine * INITIAL_CELL_W,
+    cx: -180 + seg.gridLine * C.CELL_W,
     w: seg.thickness ?? 14,
     // startCell=0 は RIVER 線から、endCell=3 は HILLTOP 線まで
     yMin: lineYs[seg.startCell],
@@ -763,7 +759,12 @@ export function generateChunk(chunkId: number): ChunkData {
   const horizontalRoads: ResolvedHorizontalRoad[] = [];
   const verticalRoads: ResolvedVerticalRoad[] = [];
 
-  {
+  // park_break は特殊エリア化
+  if (pattern.id === 'park_break') {
+    const centerY = baseY + C.CHUNK_HEIGHT / 2;
+    specialAreas.push({ type: 'park', y: centerY, h: C.CHUNK_HEIGHT - 20 });
+    furniture.push(...generateParkFurniture(centerY, chunkId));
+  } else {
     // grid block を生成してシーン配置
     const block = buildBlock(pattern, -180, baseY, C.CELL_W, C.CELL_H);
     const p = placeGridBlock(block, pattern, chunkId);
@@ -771,14 +772,14 @@ export function generateChunk(chunkId: number): ChunkData {
     furniture.push(...p.furniture);
     if (p.grounds) grounds.push(...p.grounds);
 
-    // 水平道路を resolve (細身: street=6, avenue=10)
+    // 水平道路を resolve
     for (const seg of pattern.horizontalRoads) {
       const cy = baseY + seg.gridLine * C.CELL_H;
       const xMin = -180 + seg.startCell * C.CELL_W;
       const xMax = -180 + seg.endCell * C.CELL_W;
       horizontalRoads.push({
         cy,
-        h: seg.thickness ?? (seg.cls === 'avenue' ? C.CHUNK_ROAD_THICK_AVENUE : C.CHUNK_ROAD_THICK_STREET),
+        h: seg.thickness ?? (seg.cls === 'avenue' ? 18 : 14),
         xMin, xMax,
         cls: seg.cls,
       });
@@ -790,7 +791,7 @@ export function generateChunk(chunkId: number): ChunkData {
       const yMax = baseY + seg.endCell * C.CELL_H;
       verticalRoads.push({
         cx,
-        w: seg.thickness ?? C.CHUNK_ROAD_THICK_STREET,
+        w: seg.thickness ?? 14,
         yMin, yMax,
         cls: seg.cls,
       });
@@ -815,8 +816,14 @@ export function generateChunk(chunkId: number): ChunkData {
     .filter(r => r.xMin <= -179 && r.xMax >= 179)
     .map(r => ({ y: r.cy, h: r.h }));
 
-  // 歩道家具は細身道路 (6px) では配置スペースがないので chunk では生成しない
-  // (初期都市は従来どおり FURNITURE 配列で描画)
+  // 歩道家具: 水平道路のみ対象 (全幅のみ)
+  for (const r of horizontalRoads) {
+    if (r.xMin <= -179 && r.xMax >= 179) {
+      const zoneType = pattern.id === 'office_district' ? 2 :
+                       pattern.id === 'suburban_calm' ? 0 : 1;
+      furniture.push(...generateSidewalkFurniture(r.cy, zoneType, chunkId));
+    }
+  }
 
   return {
     chunkId, baseY,
