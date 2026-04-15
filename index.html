@@ -50,6 +50,21 @@
     }
     #life-fill.low { background: linear-gradient(90deg, #555, #888); }
 
+    /* タイマー: 上部中央 */
+    #timer-display {
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      font-size: 32px; font-weight: 900; color: #ffe680;
+      text-shadow: 0 0 8px #f80, 0 2px 4px #000;
+      letter-spacing: 1px;
+    }
+    #timer-display.low  { color: #ff6; animation: blink 0.5s infinite; }
+    #timer-display.crit { color: #f44; animation: blink 0.25s infinite; }
+    /* ノルマ: タイマーの下 */
+    #quota-display {
+      position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; color: #8cf; text-shadow: 0 1px 4px #000;
+    }
+
     /* ゲームオーバー */
     #gameover {
       position: absolute; inset: 0;
@@ -66,7 +81,7 @@
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   </style>
-  <script type="module" crossorigin src="/kaiju-rampage/assets/index-14zTVbfQ.js"></script>
+  <script type="module" crossorigin src="/kaiju-rampage/assets/index-Qptg4hel.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -75,6 +90,8 @@
     <div id="distance-display">0 m</div>
     <div id="zone-display">住宅街</div>
     <div id="life-wrap"><div id="life-fill"></div></div>
+    <div id="timer-display">30</div>
+    <div id="quota-display">Next: 100 m</div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
