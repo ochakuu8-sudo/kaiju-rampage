@@ -254,8 +254,9 @@ export class Game {
     if (flipperSoundNeeded) { this.sound.flipper(); this.juice.ballHitFlash(); }
     else if (wallSoundNeeded) { this.sound.wallHit(); }
 
-    // スクロール速度ベースのダメージ: base速度→1, +STEP px/sごとに+1
-    const dmg = Math.max(1, 1 + Math.floor((this.camera.scrollSpeed - C.SCROLL_BASE_SPEED) / C.SCROLL_DAMAGE_STEP));
+    // ダメージはボール速度だけに依存: dmg = max(1, floor(ballSpeed / DIV))
+    const ballSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+    const dmg = Math.max(1, Math.floor(ballSpd / C.BALL_DAMAGE_DIVISOR));
 
     if (bldResult) {
       const { bld } = bldResult;

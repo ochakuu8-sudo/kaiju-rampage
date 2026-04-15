@@ -220,7 +220,9 @@ export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 
 
 // ===== 自動スクロール =====
 export const SCROLL_BASE_SPEED   = 0;    // カメラ上昇速度 px/s (初期値: 人間を潰して初めて動き出す)
-export const SCROLL_DAMAGE_STEP  = 10;   // スクロール速度 STEP px/s 増加ごとに威力+1
+export const SCROLL_DECAY        = 3;    // px/s² : scrollSpeed が毎秒この量だけ 0 に向かって減衰
+// ===== ダメージ (ボール速度依存) =====
+export const BALL_DAMAGE_DIVISOR = 3;    // dmg = max(1, floor(ballSpeed / DIV))
 
 // ===== タイマー / ノルマ =====
 export const TIMER_INITIAL_SEC     = 30;  // 開始時の残り時間

@@ -12,6 +12,8 @@ export class Camera {
   }
 
   update(dt: number) {
+    // スクロール速度を 0 に向かって減衰 (完全停止あり)
+    this.scrollSpeed = Math.max(0, this.scrollSpeed - C.SCROLL_DECAY * dt);
     this.y += this.scrollSpeed * dt;
   }
 
