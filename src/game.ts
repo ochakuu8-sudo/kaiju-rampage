@@ -260,16 +260,26 @@ export class Game {
 
     if (bldResult) {
       const { bld } = bldResult;
+      // 与ダメージ (実際に建物から削る HP) = min(dmg, hp)
+      const actualDmg = Math.min(dmg, bld.hp);
       const destroyed = this.buildings.damage(bld, dmg);
+
+      // 常に貫通: ボール速度を与ダメージに比例して減速 (方向は維持)
+      const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
+      const newSpd = Math.max(
+        C.BALL_MIN_PIERCE_SPEED,
+        curSpd - actualDmg * C.BALL_PIERCE_LOSS_PER_DMG
+      );
+      const k = newSpd / curSpd;
+      b.vx *= k; b.vy *= k;
+      // 建物の反対側まで押し出して再衝突を防ぐ
+      const pushLen = Math.sqrt(bld.w * bld.w + bld.h * bld.h) + 4;
+      b.x = bldResult.newBx + (b.vx / newSpd) * pushLen;
+      b.y = bldResult.newBy + (b.vy / newSpd) * pushLen;
+
       if (destroyed) {
-        // 破壊: 純粋貫通 (速度変化なし)
         this.onBuildingDestroyed(bld);
       } else {
-        // 非破壊: 定数最小反発 (乗り続け防止)
-        const rSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2);
-        const scale = Math.max(1, C.BALL_MIN_REPEL_SPEED / Math.max(rSpd, 0.01));
-        b.vx = bldResult.newVx * scale;
-        b.vy = bldResult.newVy * scale;
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
         this.juice.ballHitFlash();
