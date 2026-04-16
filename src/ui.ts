@@ -52,9 +52,9 @@ export class UIManager {
     this.elTimer.classList.toggle('crit', s <= 5);
   }
 
-  /** 被害総額 HUD 更新 (災害速報風) */
+  /** 被害総額 HUD 更新 (レトロスコアカウンター) */
   setScore(score: number) {
-    this.elDamage.textContent = `被害総額 ${formatYen(score)}`;
+    this.elDamage.textContent = formatYen(score);
   }
 
   /** ダメージポップアップ (ワールド座標 → スクリーン座標に変換) */
@@ -70,9 +70,10 @@ export class UIManager {
     el.style.left = `${screenX}px`;
     el.style.top  = `${screenY}px`;
 
-    // 金額に応じたサイズ感
-    if (amount >= 1000) el.classList.add('big');
-    if (amount >= 3000) el.classList.add('mega');
+    // 金額に応じた4段階演出
+    if (amount >= 5000)      el.classList.add('mega');
+    else if (amount >= 2000) el.classList.add('large');
+    else if (amount >= 500)  el.classList.add('big');
 
     this.elOverlay.appendChild(el);
 
