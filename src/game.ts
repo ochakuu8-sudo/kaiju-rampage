@@ -39,13 +39,19 @@ export class Game {
 
   private totalDestroys= 0;
   private totalHumans  = 0;
+  private totalScore   = 0;
 
   private state: GameState = 'playing';
   private stateTimer = 0;
 
-  // タイマー / チェックポイント
-  private timeRemaining   = C.TIMER_INITIAL_SEC;
-  private nextCheckpointM = C.CHECKPOINT_INTERVAL_M;
+  // タイマー
+  private timeRemaining = C.TIMER_INITIAL_SEC;
+
+  // スコアバッチ (短時間内の破壊をまとめてポップアップ)
+  private scoreBatchAmount = 0;
+  private scoreBatchTimer  = 0;
+  private scoreBatchX      = 0;
+  private scoreBatchY      = 0;
 
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
@@ -95,15 +101,17 @@ export class Game {
   private initRun() {
     this.totalDestroys   = 0;
     this.totalHumans     = 0;
+    this.totalScore      = 0;
+    this.scoreBatchAmount = 0;
+    this.scoreBatchTimer  = 0;
     this.state           = 'playing';
     this.stateTimer      = 0;
     this.timeRemaining   = C.TIMER_INITIAL_SEC;
-    this.nextCheckpointM = C.CHECKPOINT_INTERVAL_M;
     this.ui.setDistance(0);
     this.ui.setZone(0);
     this.ui.setSpeedMeter(0, C.SCROLL_MAX);
     this.ui.setTimer(C.TIMER_INITIAL_SEC);
-    this.ui.setQuota(0, C.CHECKPOINT_INTERVAL_M);
+    this.ui.setScore(0);
   }
 
   private loadCity() {
@@ -194,25 +202,28 @@ export class Game {
     // タイマー更新 (hitstop で止まらないよう rawDt を使用)
     this.timeRemaining -= rawDt;
 
-    // チェックポイント到達判定
-    const dist = this.camera.distanceMeters;
-    while (dist >= this.nextCheckpointM) {
-      this.timeRemaining   += C.CHECKPOINT_BONUS_SEC;
-      this.nextCheckpointM += C.CHECKPOINT_INTERVAL_M;
-      this.juice.flash(1, 1, 0.4, 0.25);
+    // スコアバッチ: ウィンドウ時間経過でフラッシュ
+    if (this.scoreBatchAmount > 0) {
+      this.scoreBatchTimer -= rawDt;
+      if (this.scoreBatchTimer <= 0) {
+        this.ui.spawnDamagePopup(
+          this.scoreBatchAmount,
+          this.scoreBatchX, this.scoreBatchY,
+          this.camera.y,
+        );
+        this.scoreBatchAmount = 0;
+      }
     }
 
     // タイマー切れ → ゲームオーバー
     if (this.timeRemaining <= 0) {
       this.timeRemaining = 0;
       this.ui.setTimer(0);
-      this.ui.setQuota(dist, this.nextCheckpointM);
       this.onGameOver();
       return;
     }
 
     this.ui.setTimer(this.timeRemaining);
-    this.ui.setQuota(dist, this.nextCheckpointM);
   }
 
   private updateBall(dt: number) {
@@ -324,6 +335,8 @@ export class Game {
         // 非破壊: 最小反発
         const rsp = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
         if(rsp < C.BALL_MIN_REPEL_SPEED){const s=C.BALL_MIN_REPEL_SPEED/Math.max(rsp,0.01);b.vx*=s;b.vy*=s;}
+      } else {
+        this.addScore(furnitureHit.score, b.x, b.y);
       }
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
       else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
@@ -339,6 +352,7 @@ export class Game {
     if (vehicleHit) {
       const destroyed = this.vehicles.damage(vehicleHit, dmg);
       if (destroyed) {
+        this.addScore(vehicleHit.score, b.x, b.y);
         this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
         this.particles.spawnSpark(b.x, b.y, 6);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
@@ -359,6 +373,7 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
+      this.addScore(crushed.length * C.HUMAN_CRUSH_SCORE, b.x, b.y);
       // 人間を食べる → スクロール速度アップ (HUMAN_SCROLL_GAIN px/s per human)
       this.camera.addScrollSpeed(crushed.length * C.HUMAN_SCROLL_GAIN);
       this.sound.humanCrush(1);
@@ -373,6 +388,7 @@ export class Game {
     const cx = bld.x + bld.w / 2;
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
+    this.addScore(bld.score, cx, cy);
     this.sound.buildingDestroy();
 
     // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う
@@ -542,11 +558,33 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
+  /** スコア加算 + バッチ合算管理 */
+  private addScore(pts: number, worldX: number, worldY: number) {
+    this.totalScore += pts;
+    this.ui.setScore(this.totalScore);
+    // バッチに追加 (ウィンドウ内なら合算、新規ならリセット)
+    if (this.scoreBatchAmount === 0) {
+      this.scoreBatchX = worldX;
+      this.scoreBatchY = worldY;
+    } else {
+      // 重心に寄せる
+      this.scoreBatchX = (this.scoreBatchX + worldX) / 2;
+      this.scoreBatchY = (this.scoreBatchY + worldY) / 2;
+    }
+    this.scoreBatchAmount += pts;
+    this.scoreBatchTimer = C.SCORE_BATCH_WINDOW;
+  }
+
   private onGameOver() {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+      // 残っているバッチを即フラッシュ
+      if (this.scoreBatchAmount > 0) {
+        this.totalScore += 0; // already added
+        this.scoreBatchAmount = 0;
+      }
+      this.ui.showGameOver(this.totalScore, this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 

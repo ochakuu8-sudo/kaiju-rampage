@@ -230,10 +230,13 @@ export const SCROLL_GAIN_DECAY   = 3;    // ゲイン指数減衰: gain = base *
 // ===== ダメージ (ボール速度依存) =====
 export const BALL_DAMAGE_DIVISOR = 3;    // dmg = max(1, floor(ballSpeed / DIV))
 
-// ===== タイマー / ノルマ =====
-export const TIMER_INITIAL_SEC     = 30;  // 開始時の残り時間
-export const CHECKPOINT_INTERVAL_M = 100; // 次チェックポイントまでの距離 (m)
-export const CHECKPOINT_BONUS_SEC  = 30;  // 到達ボーナス秒数
+// ===== タイマー =====
+export const TIMER_INITIAL_SEC     = 90;  // 固定制限時間 (秒)
+
+// ===== スコアポップアップ =====
+export const SCORE_BATCH_WINDOW    = 0.4; // バッチ合算ウィンドウ (秒)
+export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)
+export const SCORE_POPUP_DURATION  = 1.2; // ポップアップ表示時間 (秒)
 
 // ===== チャンク生成 =====
 export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)
