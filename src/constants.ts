@@ -126,7 +126,6 @@ export const HUMAN_H = 6;
 export const HUMAN_BASE_SPEED = 65; // px/s
 export const HUMAN_FEAR_BOOST = 1.8;
 export const HUMAN_FEAR_RADIUS = 60;
-export const HUMAN_CRUSH_SCORE = 100;
 export const HUMAN_DIR_CHANGE_MIN = 0.5;
 export const HUMAN_DIR_CHANGE_MAX = 1.5;
 
