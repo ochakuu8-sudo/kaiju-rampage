@@ -235,7 +235,10 @@ export const TIMER_INITIAL_SEC     = 90;  // 固定制限時間 (秒)
 
 // ===== スコアポップアップ =====
 export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)
-export const SCORE_POPUP_DURATION  = 1.2; // ポップアップ表示時間 (秒)
+export const SCORE_POPUP_DUR_SMALL = 0.5; // < ¥500 (家具・人間等)
+export const SCORE_POPUP_DUR_BIG   = 0.8; // ≥ ¥500
+export const SCORE_POPUP_DUR_LARGE = 1.0; // ≥ ¥2000
+export const SCORE_POPUP_DUR_MEGA  = 1.4; // ≥ ¥5000
 
 // ===== チャンク生成 =====
 export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)

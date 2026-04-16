@@ -68,19 +68,30 @@ export class UIManager {
     el.className = 'damage-popup';
     el.textContent = formatYen(amount);
 
-    // 金額に応じた4段階演出
-    if (amount >= 5000)      el.classList.add('mega');
-    else if (amount >= 2000) el.classList.add('large');
-    else if (amount >= 500)  el.classList.add('big');
+    // 金額に応じた4段階演出 + 表示時間
+    let dur: number;
+    if (amount >= 5000) {
+      el.classList.add('mega');
+      dur = C.SCORE_POPUP_DUR_MEGA;
+    } else if (amount >= 2000) {
+      el.classList.add('large');
+      dur = C.SCORE_POPUP_DUR_LARGE;
+    } else if (amount >= 500) {
+      el.classList.add('big');
+      dur = C.SCORE_POPUP_DUR_BIG;
+    } else {
+      dur = C.SCORE_POPUP_DUR_SMALL;
+    }
+
+    // CSSアニメーション時間を金額に合わせる
+    el.style.animationDuration = `${dur}s`;
 
     // ワールド座標で配置 (コンテナの translateY がカメラ追従)
     el.style.left = `${180 + worldX}px`;
     el.style.top  = `${290 - worldY}px`;
 
     this.elPopupLayer.appendChild(el);
-
-    // アニメーション完了後に DOM から除去
-    setTimeout(() => el.remove(), C.SCORE_POPUP_DURATION * 1000);
+    setTimeout(() => el.remove(), dur * 1000);
   }
 
   /** 毎フレーム1回: ポップアップレイヤー全体をカメラに追従 */
