@@ -550,14 +550,14 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
-  /** エリアキー算出 (3列 × 高さ100pxグリッド) */
+  /** エリアキー算出 (CELL_W × CELL_H グリッド準拠) */
   private getAreaKey(worldX: number, worldY: number): string {
-    const col = Math.min(2, Math.max(0, Math.floor((worldX + 180) / 120)));
-    const row = Math.floor(worldY / 100);
+    const col = Math.min(C.GRID_COLS - 1, Math.max(0, Math.floor((worldX + 180) / C.CELL_W)));
+    const row = Math.floor(worldY / C.CELL_H);
     return `${col}_${row}`;
   }
 
-  /** スコア加算 + エリア準拠バッチ合算 */
+  /** スコア加算 + セル準拠バッチ合算 */
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
@@ -568,14 +568,14 @@ export class Game {
       existing.amount += pts;
       // タイマーはリセットしない (固定ウィンドウ)
     } else {
-      // エリア中心座標を算出
-      const col = Math.min(2, Math.max(0, Math.floor((worldX + 180) / 120)));
-      const row = Math.floor(worldY / 100);
+      // セル中心座標を算出
+      const col = Math.min(C.GRID_COLS - 1, Math.max(0, Math.floor((worldX + 180) / C.CELL_W)));
+      const row = Math.floor(worldY / C.CELL_H);
       this.scoreBatches.set(key, {
         amount: pts,
         timer: C.SCORE_BATCH_WINDOW,
-        cx: col * 120 - 120,
-        cy: row * 100 + 50,
+        cx: col * C.CELL_W - 180 + C.CELL_W / 2,
+        cy: row * C.CELL_H + C.CELL_H / 2,
       });
     }
   }
