@@ -27,9 +27,7 @@ export class UIManager {
   private elFinalBest   = document.getElementById('final-best')!;
   private elFinalStats  = document.getElementById('final-stats')!;
   private elOverlay     = document.getElementById('overlay')!;
-
-  // ワールド座標に固定されたポップアップを追跡
-  private activePopups: Array<{ el: HTMLElement; worldX: number; worldY: number; timer: number }> = [];
+  private elPopupLayer  = document.getElementById('popup-layer')!;
 
   setDistance(meters: number) {
     this.elDistance.textContent = `${meters.toLocaleString()} m`;
@@ -64,8 +62,8 @@ export class UIManager {
     this.elDamage.classList.add('pulse');
   }
 
-  /** ダメージポップアップ (ワールド座標に固定、スクロール追従) */
-  spawnDamagePopup(amount: number, worldX: number, worldY: number, cameraY: number) {
+  /** ダメージポップアップ (ワールド座標に固定、コンテナごとスクロール追従) */
+  spawnDamagePopup(amount: number, worldX: number, worldY: number, _cameraY: number) {
     const el = document.createElement('div');
     el.className = 'damage-popup';
     el.textContent = formatYen(amount);
@@ -75,30 +73,19 @@ export class UIManager {
     else if (amount >= 2000) el.classList.add('large');
     else if (amount >= 500)  el.classList.add('big');
 
-    // 初期位置をセット
-    const screenX = 180 + worldX;
-    const screenY = 290 - (worldY - cameraY);
-    el.style.left = `${screenX}px`;
-    el.style.top  = `${screenY}px`;
+    // ワールド座標で配置 (コンテナの translateY がカメラ追従)
+    el.style.left = `${180 + worldX}px`;
+    el.style.top  = `${290 - worldY}px`;
 
-    this.elOverlay.appendChild(el);
-    this.activePopups.push({ el, worldX, worldY, timer: C.SCORE_POPUP_DURATION });
+    this.elPopupLayer.appendChild(el);
+
+    // アニメーション完了後に DOM から除去
+    setTimeout(() => el.remove(), C.SCORE_POPUP_DURATION * 1000);
   }
 
-  /** 毎フレーム呼び出し: ポップアップ位置をカメラに合わせて更新 */
-  updatePopups(cameraY: number, dt: number) {
-    for (let i = this.activePopups.length - 1; i >= 0; i--) {
-      const p = this.activePopups[i];
-      p.timer -= dt;
-      if (p.timer <= 0) {
-        p.el.remove();
-        this.activePopups.splice(i, 1);
-        continue;
-      }
-      // ワールド座標 → スクリーン座標
-      const screenY = 290 - (p.worldY - cameraY);
-      p.el.style.top = `${screenY}px`;
-    }
+  /** 毎フレーム1回: ポップアップレイヤー全体をカメラに追従 */
+  updatePopupLayer(cameraY: number) {
+    this.elPopupLayer.style.transform = `translateY(${cameraY}px)`;
   }
 
   showGameOver(score: number, distanceM: number, destroys: number, humans: number) {

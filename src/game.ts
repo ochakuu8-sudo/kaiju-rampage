@@ -191,8 +191,8 @@ export class Game {
     this.ui.setDistance(this.camera.distanceMeters);
     this.ui.setZone(this.nextChunkId);
 
-    // ポップアップ位置をカメラ追従
-    this.ui.updatePopups(this.camera.y, rawDt);
+    // ポップアップレイヤーをカメラ追従 (コンテナ1つだけ更新)
+    this.ui.updatePopupLayer(this.camera.y);
 
     // タイマー更新 (hitstop で止まらないよう rawDt を使用)
     this.timeRemaining -= rawDt;
