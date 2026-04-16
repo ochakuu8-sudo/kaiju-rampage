@@ -8,15 +8,18 @@ export class Camera {
   scrollSpeed = C.SCROLL_BASE_SPEED;
 
   addScrollSpeed(delta: number) {
-    this.scrollSpeed += delta;
+    // 指数ゲイン: 速度が高いほど同じ人数で得られる加速が小さい
+    const ratio = this.scrollSpeed / C.SCROLL_MAX;
+    const effectiveGain = delta * Math.exp(-ratio * C.SCROLL_GAIN_DECAY);
+    this.scrollSpeed += effectiveGain;
   }
 
   update(dt: number) {
-    // 指数減衰 (空気抵抗モデル dv/dt = -DRAG * v): exp は任意 dt で安定
-    this.scrollSpeed *= Math.exp(-C.SCROLL_DRAG * dt);
-    // 最低速度: ごく小さくなったら完全停止 (演出上の静止)
-    if (this.scrollSpeed < 0.5) this.scrollSpeed = 0;
-    // 最高速度上限: カメラがボールより速くなる暴走防止
+    // 線形減衰: 毎秒一定量ずつ減速
+    this.scrollSpeed -= C.SCROLL_LINEAR_DRAIN * dt;
+    // 最低速度: 0 以下にはならない
+    if (this.scrollSpeed < 0) this.scrollSpeed = 0;
+    // 最高速度上限
     if (this.scrollSpeed > C.SCROLL_MAX) this.scrollSpeed = C.SCROLL_MAX;
     this.y += this.scrollSpeed * dt;
   }
