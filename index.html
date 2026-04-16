@@ -54,9 +54,9 @@
     #life-fill {
       height: 100%;
       width: 0%;
-      /* グラデーションはメーター全体幅に敷き、fill の width でマスクする。
-         background-size は JS 側で (100 / pct * 100)% に設定。
-         10% ごとにはっきり色が切り替わる 10 段階のハードステップ。 */
+      /* グラデーションはメーター実幅 (px) で固定描画し、fill の width で
+         マスクする。background-size は JS 側で `${wrap.clientWidth}px 100%`
+         に上書きされる。10% ごとにはっきり色が切り替わる 10 段階。 */
       background-image: linear-gradient(90deg,
         #0048ff 0% 10%,
         #0088ff 10% 20%,

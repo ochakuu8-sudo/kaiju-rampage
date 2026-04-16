@@ -29,6 +29,14 @@ export class UIManager {
   private elOverlay     = document.getElementById('overlay')!;
   private elPopupLayer  = document.getElementById('popup-layer')!;
 
+  constructor() {
+    // スピードメーターのグラデーションはメーター実幅 (px) で固定する。
+    // こうしないと background-size を % で指定した場合、fill の width に
+    // 連動して色の縮尺も動いてしまい、現在速度が読み取れなくなる。
+    const wrap = document.getElementById('life-wrap')!;
+    this.elSpeedFill.style.backgroundSize = `${wrap.clientWidth}px 100%`;
+  }
+
   setDistance(meters: number) {
     this.elDistance.textContent = `${meters.toLocaleString()} m`;
   }
@@ -38,15 +46,11 @@ export class UIManager {
   }
 
   /** レースゲーム風スピードメーター
-   *  グラデーションはメーター全体幅を基準に敷き、fill の width で増分だけ可視化する。
-   *  こうすることで fill の右端の色 = 現在のスピードの色、になる。 */
+   *  グラデーションはメーター実幅 (constructor で px 固定) で描画されるので、
+   *  fill の width を変えるだけで右端の色 = 現在のスピードの色になる。 */
   setSpeedMeter(speed: number, maxSpeed: number) {
     const pct = maxSpeed > 0 ? Math.min(100, (speed / maxSpeed) * 100) : 0;
     this.elSpeedFill.style.width = `${pct}%`;
-    // background-size を fill の (100/pct) 倍にすることで、グラデーションが
-    // 常にメーター全体幅ぶんのスケールで描画されるようになる。
-    const bgPct = pct > 0.1 ? (10000 / pct) : 100000;
-    this.elSpeedFill.style.backgroundSize = `${bgPct}% 100%`;
     this.elSpeedFill.classList.toggle('high', pct >= 80);
     this.elSpeedNumber.textContent = String(Math.round(speed));
   }
