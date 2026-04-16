@@ -92,17 +92,17 @@
       position: absolute;
       font-family: 'Press Start 2P', monospace;
       font-size: 8px;
-      color: rgba(255,255,255,0.7);
+      color: #fff;
       white-space: nowrap;
       pointer-events: none;
-      text-shadow: 1px 1px 0 #000;
+      text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
       letter-spacing: 0.5px;
       transform: translate(-50%, -50%);
       animation: popup-rise-small 0.7s ease-out forwards;
     }
     @keyframes popup-rise-small {
-      0%   { opacity: 0.6; transform: translate(-50%, -50%) scale(0.7); }
-      15%  { opacity: 0.7; transform: translate(-50%, -70%) scale(1.0); }
+      0%   { opacity: 1;   transform: translate(-50%, -50%) scale(0.7); }
+      15%  { opacity: 1;   transform: translate(-50%, -70%) scale(1.0); }
       100% { opacity: 0;   transform: translate(-50%, -130%) scale(0.8); }
     }
     /* ¥500+ — 黄色 */
