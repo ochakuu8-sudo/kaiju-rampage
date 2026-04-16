@@ -47,9 +47,6 @@ export class Game {
   // タイマー
   private timeRemaining = C.TIMER_INITIAL_SEC;
 
-  // スコアバッチ (エリア準拠: 同一区画の破壊を合算)
-  private scoreBatches = new Map<string, { amount: number; timer: number; cx: number; cy: number }>();
-
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
@@ -99,7 +96,6 @@ export class Game {
     this.totalDestroys   = 0;
     this.totalHumans     = 0;
     this.totalScore      = 0;
-    this.scoreBatches.clear();
     this.state           = 'playing';
     this.stateTimer      = 0;
     this.timeRemaining   = C.TIMER_INITIAL_SEC;
@@ -197,15 +193,6 @@ export class Game {
 
     // タイマー更新 (hitstop で止まらないよう rawDt を使用)
     this.timeRemaining -= rawDt;
-
-    // スコアバッチ: エリア別にウィンドウ時間経過でフラッシュ
-    for (const [key, batch] of this.scoreBatches) {
-      batch.timer -= rawDt;
-      if (batch.timer <= 0) {
-        this.ui.spawnDamagePopup(batch.amount, batch.cx, batch.cy, this.camera.y);
-        this.scoreBatches.delete(key);
-      }
-    }
 
     // タイマー切れ → ゲームオーバー
     if (this.timeRemaining <= 0) {
@@ -550,42 +537,17 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
-  /** エリアキー算出 (CELL_W × CELL_H グリッド準拠) */
-  private getAreaKey(worldX: number, worldY: number): string {
-    const col = Math.min(C.GRID_COLS - 1, Math.max(0, Math.floor((worldX + 180) / C.CELL_W)));
-    const row = Math.floor(worldY / C.CELL_H);
-    return `${col}_${row}`;
-  }
-
-  /** スコア加算 + セル準拠バッチ合算 */
+  /** スコア加算 + 即時ポップアップ */
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
-
-    const key = this.getAreaKey(worldX, worldY);
-    const existing = this.scoreBatches.get(key);
-    if (existing) {
-      existing.amount += pts;
-      // タイマーはリセットしない (固定ウィンドウ)
-    } else {
-      // セル中心座標を算出
-      const col = Math.min(C.GRID_COLS - 1, Math.max(0, Math.floor((worldX + 180) / C.CELL_W)));
-      const row = Math.floor(worldY / C.CELL_H);
-      this.scoreBatches.set(key, {
-        amount: pts,
-        timer: C.SCORE_BATCH_WINDOW,
-        cx: col * C.CELL_W - 180 + C.CELL_W / 2,
-        cy: row * C.CELL_H + C.CELL_H / 2,
-      });
-    }
+    this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
   }
 
   private onGameOver() {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      // 残っているバッチを即クリア
-      this.scoreBatches.clear();
       this.ui.showGameOver(this.totalScore, this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }

@@ -234,7 +234,6 @@ export const BALL_DAMAGE_DIVISOR = 3;    // dmg = max(1, floor(ballSpeed / DIV))
 export const TIMER_INITIAL_SEC     = 90;  // 固定制限時間 (秒)
 
 // ===== スコアポップアップ =====
-export const SCORE_BATCH_WINDOW    = 0.25; // バッチ合算ウィンドウ (秒) — 最初の破壊から固定時間で発火
 export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)
 export const SCORE_POPUP_DURATION  = 1.2; // ポップアップ表示時間 (秒)
 
