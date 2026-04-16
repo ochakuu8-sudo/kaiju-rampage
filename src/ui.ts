@@ -29,6 +29,10 @@ export class UIManager {
   private elOverlay     = document.getElementById('overlay')!;
   private elPopupLayer  = document.getElementById('popup-layer')!;
 
+  // HUDスコアのロールアップ演出: displayed が target に徐々に追従する
+  private displayedScore = 0;
+  private targetScore    = 0;
+
   constructor() {
     // スピードメーターのグラデーションはメーター実幅 (px) で固定する。
     // こうしないと background-size を % で指定した場合、fill の width に
@@ -62,13 +66,38 @@ export class UIManager {
     this.elTimer.classList.toggle('crit', s <= 5);
   }
 
-  /** 被害総額 HUD 更新 (レトロスコアカウンター + パルス演出) */
+  /** 被害総額 HUD 更新: ロールアップ演出のため target だけ記録する。
+   *  実際の数値描画は tickScore(dt) が毎フレーム追従させる。 */
   setScore(score: number) {
-    this.elDamage.textContent = formatYen(score);
-    // スコア加算パルス: アニメーション再トリガー
+    this.targetScore = score;
+    // スコア加算の "ピカッ" パルスは即時トリガーで維持
     this.elDamage.classList.remove('pulse');
     void this.elDamage.offsetWidth;
     this.elDamage.classList.add('pulse');
+  }
+
+  /** 毎フレーム呼ばれ、displayedScore を targetScore に追従させる。 */
+  tickScore(dt: number) {
+    if (this.displayedScore === this.targetScore) return;
+    const diff = this.targetScore - this.displayedScore;
+    const step = Math.max(
+      C.SCORE_ROLLUP_MIN_STEP,
+      Math.ceil(Math.abs(diff) * dt * C.SCORE_ROLLUP_SPEED),
+    );
+    if (diff > 0) {
+      this.displayedScore = Math.min(this.targetScore, this.displayedScore + step);
+    } else {
+      this.displayedScore = Math.max(this.targetScore, this.displayedScore - step);
+    }
+    this.elDamage.textContent = formatYen(this.displayedScore);
+  }
+
+  /** リスタート時: ¥0 からの逆ロールダウンを防ぐため即時リセット */
+  resetScore() {
+    this.displayedScore = 0;
+    this.targetScore    = 0;
+    this.elDamage.textContent = formatYen(0);
+    this.elDamage.classList.remove('pulse');
   }
 
   /** ダメージポップアップ (ワールド座標に固定、コンテナごとスクロール追従) */
