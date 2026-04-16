@@ -52,9 +52,13 @@ export class UIManager {
     this.elTimer.classList.toggle('crit', s <= 5);
   }
 
-  /** 被害総額 HUD 更新 (レトロスコアカウンター) */
+  /** 被害総額 HUD 更新 (レトロスコアカウンター + パルス演出) */
   setScore(score: number) {
     this.elDamage.textContent = formatYen(score);
+    // スコア加算パルス: アニメーション再トリガー
+    this.elDamage.classList.remove('pulse');
+    void this.elDamage.offsetWidth;
+    this.elDamage.classList.add('pulse');
   }
 
   /** ダメージポップアップ (ワールド座標 → スクリーン座標に変換) */

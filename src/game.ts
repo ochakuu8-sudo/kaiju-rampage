@@ -537,11 +537,13 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
-  /** スコア加算 + 即時ポップアップ */
+  /** スコア加算 + 即時ポップアップ (¥200未満は省略) */
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
-    this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
+    if (pts >= 200) {
+      this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
+    }
   }
 
   private onGameOver() {
