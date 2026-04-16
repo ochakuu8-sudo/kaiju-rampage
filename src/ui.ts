@@ -28,6 +28,9 @@ export class UIManager {
   private elFinalStats  = document.getElementById('final-stats')!;
   private elOverlay     = document.getElementById('overlay')!;
 
+  // ワールド座標に固定されたポップアップを追跡
+  private activePopups: Array<{ el: HTMLElement; worldX: number; worldY: number; timer: number }> = [];
+
   setDistance(meters: number) {
     this.elDistance.textContent = `${meters.toLocaleString()} m`;
   }
@@ -61,28 +64,41 @@ export class UIManager {
     this.elDamage.classList.add('pulse');
   }
 
-  /** ダメージポップアップ (ワールド座標 → スクリーン座標に変換) */
+  /** ダメージポップアップ (ワールド座標に固定、スクロール追従) */
   spawnDamagePopup(amount: number, worldX: number, worldY: number, cameraY: number) {
     const el = document.createElement('div');
     el.className = 'damage-popup';
     el.textContent = formatYen(amount);
-
-    // ワールド座標 → スクリーン座標 (canvas 360x580 基準)
-    const screenX = 180 + worldX;                    // 中央 = 180
-    const screenY = 290 - (worldY - cameraY);        // Y 反転
-
-    el.style.left = `${screenX}px`;
-    el.style.top  = `${screenY}px`;
 
     // 金額に応じた4段階演出
     if (amount >= 5000)      el.classList.add('mega');
     else if (amount >= 2000) el.classList.add('large');
     else if (amount >= 500)  el.classList.add('big');
 
-    this.elOverlay.appendChild(el);
+    // 初期位置をセット
+    const screenX = 180 + worldX;
+    const screenY = 290 - (worldY - cameraY);
+    el.style.left = `${screenX}px`;
+    el.style.top  = `${screenY}px`;
 
-    // アニメーション完了後に DOM から除去
-    setTimeout(() => el.remove(), C.SCORE_POPUP_DURATION * 1000);
+    this.elOverlay.appendChild(el);
+    this.activePopups.push({ el, worldX, worldY, timer: C.SCORE_POPUP_DURATION });
+  }
+
+  /** 毎フレーム呼び出し: ポップアップ位置をカメラに合わせて更新 */
+  updatePopups(cameraY: number, dt: number) {
+    for (let i = this.activePopups.length - 1; i >= 0; i--) {
+      const p = this.activePopups[i];
+      p.timer -= dt;
+      if (p.timer <= 0) {
+        p.el.remove();
+        this.activePopups.splice(i, 1);
+        continue;
+      }
+      // ワールド座標 → スクリーン座標
+      const screenY = 290 - (p.worldY - cameraY);
+      p.el.style.top = `${screenY}px`;
+    }
   }
 
   showGameOver(score: number, distanceM: number, destroys: number, humans: number) {

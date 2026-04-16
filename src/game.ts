@@ -191,6 +191,9 @@ export class Game {
     this.ui.setDistance(this.camera.distanceMeters);
     this.ui.setZone(this.nextChunkId);
 
+    // ポップアップ位置をカメラ追従
+    this.ui.updatePopups(this.camera.y, rawDt);
+
     // タイマー更新 (hitstop で止まらないよう rawDt を使用)
     this.timeRemaining -= rawDt;
 
@@ -537,13 +540,11 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
-  /** スコア加算 + 即時ポップアップ (¥200未満は省略) */
+  /** スコア加算 + 即時ポップアップ */
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
-    if (pts >= 200) {
-      this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
-    }
+    this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
   }
 
   private onGameOver() {
