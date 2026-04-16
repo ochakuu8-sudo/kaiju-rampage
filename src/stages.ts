@@ -65,6 +65,8 @@ export interface StageConfig {
   furniture: FurnitureDef[];
   vehicles: VehicleDef[];
   grounds: GroundTile[];
+  /** 初期都市にシーンが事前配置した humans (ワールド座標) */
+  prePlacedHumans: Array<{ x: number; y: number }>;
   bgTopR: number; bgTopG: number; bgTopB: number;
   bgBottomR: number; bgBottomG: number; bgBottomB: number;
 }
@@ -141,10 +143,14 @@ export interface GroundTile {
   h: number;   // セル高さ
 }
 
+/** シーン配置時に生成された pre-placed humans (ワールド座標) */
+export interface PrePlacedHumanDef { x: number; y: number; }
+
 export interface ScenePlacement {
   buildings: BuildingDef[];
   furniture: FurnitureDef[];
   grounds?: GroundTile[];
+  humans?: PrePlacedHumanDef[];
 }
 
 /** 1 シーンを指定左端に配置する */
@@ -175,7 +181,10 @@ export function placeScene(
       });
     }
   }
-  return { buildings, furniture };
+  const humans: PrePlacedHumanDef[] | undefined = scene.prePlacedHumans
+    ? scene.prePlacedHumans.map(h => ({ x: leftX + h.dx, y: baseY + h.dy }))
+    : undefined;
+  return { buildings, furniture, humans };
 }
 
 /**
@@ -301,7 +310,7 @@ export function placeGridBlock(
   pattern: RoadPattern,
   blockIdx: number
 ): ScenePlacement {
-  const out: ScenePlacement = { buildings: [], furniture: [], grounds: [] };
+  const out: ScenePlacement = { buildings: [], furniture: [], grounds: [], humans: [] };
   const merges = pattern.merges ?? [];
   const ROAD_HALF = 7; // 縦道路の半幅 (14/2)
   const CLEARANCE = 2; // 道路との追加クリアランス
@@ -357,6 +366,7 @@ export function placeGridBlock(
         const p = placeScene(scene, leftX, baseY, blockIdx);
         out.buildings.push(...p.buildings);
         out.furniture.push(...p.furniture);
+        if (p.humans) out.humans!.push(...p.humans);
       } else {
         // 複数シーン: 横並びに配置。全シーン合計幅 + gap を usable 内に等分
         const scenes = cell.sceneIds.map(id => getScene(id));
@@ -388,6 +398,7 @@ export function placeGridBlock(
           const p = placeScene(scene, sceneLeftX, baseY, blockIdx);
           out.buildings.push(...p.buildings);
           out.furniture.push(...p.furniture);
+          if (p.humans) out.humans!.push(...p.humans);
           cursor += (b.right - b.left) + gap;
         }
       }
@@ -530,6 +541,8 @@ export interface ChunkData {
   specialAreas: ChunkSpecialArea[];
   /** セル地面タイル — 描画用 */
   grounds: GroundTile[];
+  /** シーンが事前配置した humans (ワールド座標) — _spawnChunk 時に spawnAt() */
+  prePlacedHumans: Array<{ x: number; y: number }>;
 }
 
 // ===== ゾーン別建物プール =====
@@ -633,6 +646,15 @@ function generateParkFurniture(centerY: number, chunkId: number): FurnitureDef[]
   // 旗竿
   items.push({ type: 'flag_pole', x: -155, y: centerY - 20 });
   items.push({ type: 'flag_pole', x:  155, y: centerY - 20 });
+  // 公園設備: 自販機・パラソル・像で壊しがい追加
+  items.push({ type: 'vending', x: -130, y: centerY - 18 });
+  items.push({ type: 'vending', x:  130, y: centerY - 18 });
+  items.push({ type: 'parasol', x: -50, y: centerY + 14 });
+  items.push({ type: 'parasol', x:  50, y: centerY + 14 });
+  items.push({ type: 'statue', x: -140, y: centerY });
+  items.push({ type: 'statue', x:  140, y: centerY });
+  items.push({ type: 'street_lamp', x: -90, y: centerY + 18 });
+  items.push({ type: 'street_lamp', x:  90, y: centerY + 18 });
   return items;
 }
 
@@ -758,6 +780,7 @@ export function generateChunk(chunkId: number): ChunkData {
   const specialAreas: ChunkSpecialArea[] = [];
   const horizontalRoads: ResolvedHorizontalRoad[] = [];
   const verticalRoads: ResolvedVerticalRoad[] = [];
+  const prePlacedHumans: Array<{ x: number; y: number }> = [];
 
   // park_break は特殊エリア化
   if (pattern.id === 'park_break') {
@@ -771,6 +794,7 @@ export function generateChunk(chunkId: number): ChunkData {
     buildings.push(...p.buildings);
     furniture.push(...p.furniture);
     if (p.grounds) grounds.push(...p.grounds);
+    if (p.humans) prePlacedHumans.push(...p.humans);
 
     // 水平道路を resolve
     for (const seg of pattern.horizontalRoads) {
@@ -835,6 +859,7 @@ export function generateChunk(chunkId: number): ChunkData {
     furniture,
     specialAreas,
     grounds,
+    prePlacedHumans,
   };
 }
 
@@ -969,6 +994,7 @@ export function getStage(level: number): StageConfig {
     furniture: [...FURNITURE, ...city.furniture],
     vehicles: VEHICLES,
     grounds: city.grounds ?? [],
+    prePlacedHumans: city.humans ?? [],
     bgTopR: 0.52, bgTopG: 0.74, bgTopB: 0.96,
     bgBottomR: 0.38, bgBottomG: 0.36, bgBottomB: 0.33,
   };

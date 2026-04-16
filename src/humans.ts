@@ -156,6 +156,33 @@ export class HumanManager {
     }
   }
 
+  /**
+   * シーン内の指定座標に 1 体配置 (道路スナップなし)。
+   * pre-placed scene humans 用 — その場で待機 → ボール接近で逃走開始。
+   */
+  spawnAt(cx: number, cy: number) {
+    for (let i = 0; i < C.MAX_HUMANS; i++) {
+      if (this.state[i] !== ST_INACTIVE) continue;
+      this.state[i] = ST_RUNNING;
+      this.activeIndices[this.activeLen++] = i;
+      this.px[i]    = cx;
+      this.py[i]    = cy;
+      const spd     = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
+      this.speed[i] = spd;
+      // FREE モードで開始: 道路エリアに触れたらロックされる
+      this.mode[i]  = MODE_FREE;
+      // 初期はゆっくり徘徊
+      const angle = Math.random() * Math.PI * 2;
+      this.vx[i]    = Math.cos(angle) * spd * 0.3;
+      this.vy[i]    = Math.sin(angle) * spd * 0.3;
+      this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
+      this.scaleX[i]   = 1;
+      this.kind[i]     = pickHumanKind();
+      this.activeCount = this.activeLen;
+      return;
+    }
+  }
+
   /** 指定座標付近に n 体スポーン */
   spawn(cx: number, cy: number, n: number) {
     let spawned = 0;

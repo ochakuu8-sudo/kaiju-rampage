@@ -117,6 +117,10 @@ export class Game {
     this.humans.reset();
     this.humans.resetRoads();
     this.humans.spawnOnStreets(20);  // 3道路 × 20体 = 60体の初期通行人
+    // シーン事前配置の humans (行列・観客・通行人)
+    for (const h of cfg.prePlacedHumans) {
+      this.humans.spawnAt(h.x, h.y);
+    }
     this.particles.reset();
     this.camera.reset();
     this.loadedChunks.clear();
@@ -514,6 +518,10 @@ export class Game {
     this.vehicles.addChunkLanes(chunkId, chunk.roads);
     for (const road of chunk.roads) {
       this.humans.addRoad(road.y, road.h / 2 + 2);
+    }
+    // シーン事前配置の humans (行列・観客)
+    for (const h of chunk.prePlacedHumans) {
+      this.humans.spawnAt(h.x, h.y);
     }
     this.loadedChunks.set(chunkId, chunk);
   }

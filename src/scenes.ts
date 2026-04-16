@@ -50,6 +50,12 @@ export interface SceneParkedVehicle {
   type: VehicleType;
 }
 
+/** シーンに事前配置する人間 (行列・群衆) */
+export interface ScenePrePlacedHuman {
+  dx: number;
+  dy: number;
+}
+
 export interface Scene {
   id: string;
   tier: SceneTier;
@@ -59,6 +65,8 @@ export interface Scene {
   buildings: SceneBuilding[];
   furniture: SceneFurniture[];
   parkedVehicles?: SceneParkedVehicle[];
+  /** シーン内の固定人間配置 (行列・観客・通行人) */
+  prePlacedHumans?: ScenePrePlacedHuman[];
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -291,6 +299,9 @@ const BOT_SCENES: Scene[] = [
       { dx: 17, dy:  4, type: 'a_frame_sign' },
       { dx: 26, dy:  6, type: 'shop_awning' },
       { dx: 38, dy:  3, type: 'potted_plant' },
+      // 店先強化: 花屋ショーケースとパン屋旗
+      { dx:  4, dy: 12, type: 'banner_pole' },
+      { dx: 32, dy: 10, type: 'chouchin' },
       // 前庭: パン屋脇に室外機
       { dx: 36, dy: 22, type: 'ac_unit' },
       // 中後層: ハウス脇の植栽トレイと猫
@@ -322,6 +333,9 @@ const BOT_SCENES: Scene[] = [
       { dx: 26, dy:  4, type: 'traffic_cone' },
       { dx: 34, dy:  2, type: 'bollard' },
       { dx: 42, dy:  3, type: 'fire_extinguisher' },
+      // 店先強化: 価格ボードと案内
+      { dx: 10, dy: 12, type: 'a_frame_sign' },
+      { dx: 38, dy: 12, type: 'sign_board' },
       // 前庭: タイヤ置場 (土のう代用) と LP ガスボンベ
       { dx:  4, dy: 22, type: 'gas_canister' },
       { dx: 42, dy: 22, type: 'sandbags' },
@@ -356,6 +370,9 @@ const BOT_SCENES: Scene[] = [
       { dx: 10, dy:  5, type: 'sign_board' },
       { dx: 22, dy:  3, type: 'vending' },
       { dx: 33, dy:  6, type: 'shop_awning' },
+      // 店先強化: ランドリー旗と薬局テント
+      { dx:  4, dy: 10, type: 'banner_pole' },
+      { dx: 40, dy: 10, type: 'chouchin' },
       // 前庭: 共用の駐輪
       { dx: 22, dy: 24, type: 'bicycle_rack' },
       // 中前層: ランドリー側の物干し竿、薬局側の室外機
@@ -392,6 +409,9 @@ const BOT_SCENES: Scene[] = [
       { dx: 22, dy:  3, type: 'bench' },
       { dx: 33, dy:  4, type: 'a_frame_sign' },
       { dx: 41, dy:  3, type: 'newspaper_stand' },
+      // 店先強化: カフェのメニューボードと書店の提灯
+      { dx: 16, dy: 12, type: 'banner_pole' },
+      { dx: 38, dy: 10, type: 'chouchin' },
       // 前庭: 中央の桜と猫
       { dx: 22, dy: 26, type: 'sakura_tree' },
       { dx: 38, dy: 26, type: 'cat' },
@@ -452,6 +472,12 @@ const MID_SCENES: Scene[] = [
       { dx: 24, dy: 88, type: 'street_lamp' },
       { dx: 50, dy: 88, type: 'street_lamp' },
       { dx: 76, dy: 86, type: 'power_pole' },
+    ],
+    // ラーメン屋の行列 + 商店街の通行客
+    prePlacedHumans: [
+      { dx:  6, dy: 8 },
+      { dx: 14, dy: 8 },
+      { dx: 38, dy: 7 },
     ],
   },
 
@@ -515,6 +541,9 @@ const MID_SCENES: Scene[] = [
       { dx: 43, dy:  5, type: 'street_lamp' },
       { dx: 54, dy:  6, type: 'shop_awning' },
       { dx: 65, dy:  3, type: 'potted_plant' },
+      // 店先強化: カフェ旗と薬局提灯
+      { dx: 14, dy: 12, type: 'banner_pole' },
+      { dx: 60, dy: 10, type: 'chouchin' },
       // 前庭: 共用駐輪と猫
       { dx: 32, dy: 24, type: 'bicycle_rack' },
       { dx: 18, dy: 26, type: 'cat' },
@@ -527,6 +556,11 @@ const MID_SCENES: Scene[] = [
       // 最奥: 桜 2 本で framing
       { dx: 14, dy: 90, type: 'sakura_tree' },
       { dx: 50, dy: 90, type: 'sakura_tree' },
+    ],
+    // テラス席の客と通行人
+    prePlacedHumans: [
+      { dx:  4, dy: 8 },
+      { dx: 50, dy: 8 },
     ],
   },
 
@@ -567,6 +601,11 @@ const MID_SCENES: Scene[] = [
       { dx: 48, dy: 88, type: 'street_lamp' },
       { dx: 74, dy: 86, type: 'power_pole' },
     ],
+    // 通行人 2 人
+    prePlacedHumans: [
+      { dx: 22, dy: 8 },
+      { dx: 60, dy: 8 },
+    ],
   },
 
   // コンセプト: 長屋風タウンハウス 3 軒の街区。前面は各戸の玄関
@@ -598,6 +637,10 @@ const MID_SCENES: Scene[] = [
       // 中後層: 共用の物干し竿と LP ガスボンベ
       { dx: 10, dy: 50, type: 'laundry_pole' },
       { dx: 54, dy: 52, type: 'gas_canister' },
+      // 裏庭補強: ゴミ集積所と設備
+      { dx: 22, dy: 60, type: 'dumpster' },
+      { dx: 46, dy: 62, type: 'recycling_bin' },
+      { dx: 58, dy: 60, type: 'electric_box' },
       // 奥: 電柱 2 本 + 縁側の猫
       { dx: -2, dy: 68, type: 'power_pole' },
       { dx: 32, dy: 70, type: 'cat' },
@@ -641,6 +684,11 @@ const MID_SCENES: Scene[] = [
       { dx:  4, dy: 88, type: 'bamboo_cluster' },
       { dx: 34, dy: 90, type: 'pine_tree' },
       { dx: 64, dy: 88, type: 'bamboo_cluster' },
+    ],
+    // 鳥居前の参拝客
+    prePlacedHumans: [
+      { dx: 28, dy: 10 },
+      { dx: 40, dy: 10 },
     ],
   },
 
@@ -703,6 +751,10 @@ const MID_SCENES: Scene[] = [
       { dx: 13, dy: 22, type: 'ac_unit' },
       // 中後層: 物干し竿 (検査室の白衣)
       { dx: 13, dy: 52, type: 'laundry_pole' },
+      // 裏庭補強: 医療廃棄物・設備
+      { dx: 46, dy: 56, type: 'dumpster' },
+      { dx: 60, dy: 58, type: 'gas_canister' },
+      { dx:  4, dy: 60, type: 'recycling_bin' },
       // 奥: 電柱 2 本
       { dx: -2, dy: 68, type: 'power_pole' },
       { dx: 68, dy: 68, type: 'power_pole' },
@@ -738,6 +790,10 @@ const MID_SCENES: Scene[] = [
       { dx:  4, dy: 58, type: 'electric_box' },
       { dx: 34, dy: 56, type: 'tarp' },
       { dx: 66, dy: 58, type: 'electric_box' },
+      // 裏庭補強: 訓練資材と廃棄物
+      { dx: 20, dy: 66, type: 'sandbags' },
+      { dx: 48, dy: 68, type: 'dumpster' },
+      { dx: 60, dy: 66, type: 'gas_canister' },
       // 最奥: 裏路地の電柱と街灯
       { dx: -2, dy: 86, type: 'power_pole' },
       { dx: 34, dy: 88, type: 'street_lamp' },
@@ -769,6 +825,10 @@ const MID_SCENES: Scene[] = [
       // 中後層: 配電箱 2 つ
       { dx:  4, dy: 56, type: 'electric_box' },
       { dx: 58, dy: 56, type: 'electric_box' },
+      // 裏庭補強: 金庫室通用口の設備
+      { dx: 20, dy: 62, type: 'dumpster' },
+      { dx: 38, dy: 64, type: 'recycling_bin' },
+      { dx: 50, dy: 62, type: 'gas_canister' },
       // 最奥: 電柱と街灯
       { dx: -2, dy: 86, type: 'power_pole' },
       { dx: 30, dy: 88, type: 'street_lamp' },
@@ -802,6 +862,9 @@ const MID_SCENES: Scene[] = [
       // 中後層: 茶室前の飛石と石灯籠
       { dx: 12, dy: 54, type: 'stone_lantern' },
       { dx: 32, dy: 56, type: 'stepping_stones' },
+      // 裏庭補強: 庭の手入れ用品
+      { dx: 50, dy: 58, type: 'garbage' },
+      { dx: 58, dy: 56, type: 'tarp' },
       // 奥: 庭園の鯉池と松
       { dx:  4, dy: 68, type: 'pine_tree' },
       { dx: 36, dy: 70, type: 'koi_pond' },
@@ -844,6 +907,11 @@ const TOP_SCENES: Scene[] = [
       { dx: 48, dy: 14, type: 'chouchin' },
       // 中前層: 広場中央の銅像
       { dx: 35, dy: 26, type: 'statue' },
+      // 中段補完: 駅前の小物 (自販機・電話ボックス・郵便ポスト)
+      { dx:  8, dy: 38, type: 'vending' },
+      { dx: 22, dy: 40, type: 'telephone_booth' },
+      { dx: 50, dy: 40, type: 'post_box' },
+      { dx: 62, dy: 38, type: 'recycling_bin' },
       // 中後層: 駅裏の電気設備
       { dx:  4, dy: 56, type: 'electric_box' },
       { dx: 66, dy: 56, type: 'electric_box' },
@@ -856,6 +924,13 @@ const TOP_SCENES: Scene[] = [
     parkedVehicles: [
       { dx:  5, dy: 2, type: 'taxi' },
       { dx: 65, dy: 2, type: 'taxi' },
+    ],
+    // バス停の通勤客 + 駅前広場の人々
+    prePlacedHumans: [
+      { dx:  2, dy: 9 },
+      { dx: 28, dy: 8 },
+      { dx: 42, dy: 8 },
+      { dx: 68, dy: 9 },
     ],
   },
 
@@ -885,6 +960,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 25, dy: 26, type: 'potted_plant' },
       { dx: 49, dy: 26, type: 'potted_plant' },
       { dx: 60, dy: 24, type: 'planter' },
+      // 中段補完: 駐輪・自販機・ベンチ
+      { dx: 14, dy: 38, type: 'bicycle_rack' },
+      { dx: 37, dy: 38, type: 'bench' },
+      { dx: 60, dy: 38, type: 'vending' },
       // 中後層: 室外機 + 電気設備
       { dx:  4, dy: 56, type: 'ac_unit' },
       { dx: 70, dy: 56, type: 'ac_unit' },
@@ -892,6 +971,11 @@ const TOP_SCENES: Scene[] = [
       { dx: -2, dy: 86, type: 'power_pole' },
       { dx: 37, dy: 88, type: 'street_lamp' },
       { dx: 76, dy: 86, type: 'power_pole' },
+    ],
+    // 噴水周りの買い物客
+    prePlacedHumans: [
+      { dx: 30, dy: 10 },
+      { dx: 44, dy: 10 },
     ],
   },
 
@@ -920,6 +1004,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 38, dy: 24, type: 'potted_plant' },
       // 中前層: 室外機 (病院の大型空調)
       { dx: 52, dy: 22, type: 'ac_unit' },
+      // 中段補完: 救急動線の小物
+      { dx: 16, dy: 36, type: 'recycling_bin' },
+      { dx: 38, dy: 38, type: 'bicycle_rack' },
+      { dx: 52, dy: 40, type: 'telephone_booth' },
       // 中後層: 別棟脇の白衣物干しと洗濯 (療養感)
       { dx:  8, dy: 56, type: 'laundry_pole' },
       { dx: 52, dy: 58, type: 'electric_box' },
@@ -930,6 +1018,11 @@ const TOP_SCENES: Scene[] = [
     ],
     parkedVehicles: [
       { dx: 58, dy: 2, type: 'ambulance' },
+    ],
+    // 待合の患者と看護師
+    prePlacedHumans: [
+      { dx: 22, dy: 9 },
+      { dx: 34, dy: 9 },
     ],
   },
 
@@ -957,6 +1050,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 54, dy: 14, type: 'potted_plant' },
       // 前庭: 二宮金次郎像 (中央)
       { dx: 36, dy: 26, type: 'statue' },
+      // 中段補完: 校庭の用具と駐輪
+      { dx: 16, dy: 38, type: 'bicycle_rack' },
+      { dx: 36, dy: 40, type: 'planter' },
+      { dx: 56, dy: 38, type: 'vending' },
       // 中後層: 体育倉庫脇の土のうと用具
       { dx: 12, dy: 56, type: 'sandbags' },
       { dx: 60, dy: 56, type: 'sandbags' },
@@ -964,6 +1061,11 @@ const TOP_SCENES: Scene[] = [
       { dx:  4, dy: 86, type: 'pine_tree' },
       { dx: 36, dy: 90, type: 'pine_tree' },
       { dx: 68, dy: 86, type: 'pine_tree' },
+    ],
+    // 校門前の生徒たち
+    prePlacedHumans: [
+      { dx: 30, dy: 9 },
+      { dx: 42, dy: 9 },
     ],
   },
 
@@ -990,6 +1092,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 12, dy: 26, type: 'planter' },
       { dx: 32, dy: 24, type: 'bonsai' },
       { dx: 52, dy: 26, type: 'planter' },
+      // 中段補完: 公共施設の小物 (ATM・郵便ポスト・ベンチ)
+      { dx:  6, dy: 38, type: 'atm' },
+      { dx: 32, dy: 40, type: 'bench' },
+      { dx: 58, dy: 38, type: 'post_box' },
       // 中後層: 茶室前の石灯籠と飛石
       { dx: 16, dy: 50, type: 'stone_lantern' },
       { dx: 32, dy: 52, type: 'stepping_stones' },
@@ -1032,6 +1138,9 @@ const TOP_SCENES: Scene[] = [
       { dx: 15, dy: 26, type: 'street_lamp' },
       { dx: 48, dy: 26, type: 'street_lamp' },
       { dx: 82, dy: 26, type: 'street_lamp' },
+      // 中段補完: 都市インフラの小物
+      { dx: 32, dy: 38, type: 'telephone_booth' },
+      { dx: 65, dy: 38, type: 'post_box' },
       // 中後層: ビル屋上の業務空調 (室外機)
       { dx: 15, dy: 50, type: 'ac_unit' },
       { dx: 48, dy: 52, type: 'ac_unit' },
@@ -1066,6 +1175,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 36, dy: 14, type: 'potted_plant' },
       // 中前層: マンション住民の物干し
       { dx: 36, dy: 22, type: 'laundry_pole' },
+      // 中段補完: 住人共用設備
+      { dx: 12, dy: 38, type: 'vending' },
+      { dx: 24, dy: 40, type: 'recycling_bin' },
+      { dx: 48, dy: 38, type: 'post_box' },
       // 中後層: 室外機
       { dx: 36, dy: 56, type: 'ac_unit' },
       // 最奥: 住宅地らしい桜並木 + 屋根の上の猫
@@ -1099,6 +1212,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 32, dy: 14, type: 'chouchin' },
       // 中前層: 室外機 (映画館の業務空調)
       { dx:  4, dy: 22, type: 'ac_unit' },
+      // 中段補完: 待ち客の小物
+      { dx: 16, dy: 38, type: 'vending' },
+      { dx: 30, dy: 40, type: 'newspaper_stand' },
+      { dx: 54, dy: 38, type: 'bicycle_rack' },
       // 中後層: 図書館前の盆栽
       { dx: 44, dy: 56, type: 'bonsai' },
       // 最奥: 文化地区らしい桜
@@ -1132,6 +1249,10 @@ const TOP_SCENES: Scene[] = [
       // 中前層: 盆栽 (左右対称)
       { dx:  6, dy: 24, type: 'bonsai' },
       { dx: 38, dy: 24, type: 'bonsai' },
+      // 中段補完: 来館者の小物 (ベンチ・新聞・自販機)
+      { dx:  6, dy: 38, type: 'newspaper_stand' },
+      { dx: 22, dy: 40, type: 'bench' },
+      { dx: 38, dy: 38, type: 'vending' },
       // 中後層: 庭石 + 飛石
       { dx:  4, dy: 56, type: 'rock' },
       { dx: 22, dy: 56, type: 'stepping_stones' },
@@ -1166,6 +1287,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 32, dy: 14, type: 'post_box' },
       // 中前層: 駐車場の街灯
       { dx: 56, dy: 26, type: 'street_lamp' },
+      // 中段補完: 駐車場の小物
+      { dx:  8, dy: 38, type: 'recycling_bin' },
+      { dx: 30, dy: 40, type: 'bench' },
+      { dx: 56, dy: 40, type: 'traffic_cone' },
       // 中後層: 搬入のダンプスター + 牛乳ケース + ブルーシート
       { dx: 22, dy: 58, type: 'milk_crate_stack' },
       { dx: 40, dy: 58, type: 'dumpster' },
@@ -1210,6 +1335,10 @@ const TOP_SCENES: Scene[] = [
       // 中前層: 無線塔側の電気設備、スタジアム側の室外機
       { dx: 30, dy: 24, type: 'ac_unit' },
       { dx: 80, dy: 26, type: 'electric_box' },
+      // 中段補完: 入場者の小物
+      { dx: 14, dy: 38, type: 'vending' },
+      { dx: 46, dy: 40, type: 'recycling_bin' },
+      { dx: 60, dy: 38, type: 'newspaper_stand' },
       // 中後層: 搬入用ブルーシート
       { dx: 12, dy: 56, type: 'tarp' },
       { dx: 56, dy: 58, type: 'milk_crate_stack' },
@@ -1247,12 +1376,22 @@ const TOP_SCENES: Scene[] = [
       // 中前層: 鉢植えと噴水
       { dx: 14, dy: 24, type: 'potted_plant' },
       { dx: 50, dy: 24, type: 'potted_plant' },
+      // 中段補完: 屋台周辺の賑わい
+      { dx: 14, dy: 38, type: 'vending' },
+      { dx: 32, dy: 40, type: 'bench' },
+      { dx: 50, dy: 38, type: 'newspaper_stand' },
       // 中後層: 屋台脇の牛乳ケース
       { dx: 50, dy: 56, type: 'milk_crate_stack' },
       // 最奥: 園地を囲む桜 3 本
       { dx: 14, dy: 88, type: 'sakura_tree' },
       { dx: 34, dy: 90, type: 'sakura_tree' },
       { dx: 54, dy: 88, type: 'sakura_tree' },
+    ],
+    // 入場待ちの行列
+    prePlacedHumans: [
+      { dx: 16, dy: 10 },
+      { dx: 24, dy: 10 },
+      { dx: 32, dy: 10 },
     ],
   },
 
@@ -1279,6 +1418,10 @@ const TOP_SCENES: Scene[] = [
       // 中前層: 給水塔の追加設備、マンションの物干し
       { dx:  2, dy: 22, type: 'water_tank' },
       { dx: 42, dy: 22, type: 'laundry_pole' },
+      // 中段補完: 敷地内設備の補填
+      { dx: 18, dy: 36, type: 'vending' },
+      { dx: 34, dy: 38, type: 'recycling_bin' },
+      { dx: 52, dy: 36, type: 'post_box' },
       // 中後層: 室外機 (集合住宅)
       { dx: 42, dy: 56, type: 'ac_unit' },
       // 最奥: 裏路地と街路樹 + 縁側の猫
