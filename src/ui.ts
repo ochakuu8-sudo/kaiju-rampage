@@ -37,11 +37,16 @@ export class UIManager {
     this.elZone.textContent = ZONE_NAMES[chunkId % 3] ?? '';
   }
 
-  /** レースゲーム風スピードメーター */
+  /** レースゲーム風スピードメーター
+   *  グラデーションはメーター全体幅を基準に敷き、fill の width で増分だけ可視化する。
+   *  こうすることで fill の右端の色 = 現在のスピードの色、になる。 */
   setSpeedMeter(speed: number, maxSpeed: number) {
     const pct = maxSpeed > 0 ? Math.min(100, (speed / maxSpeed) * 100) : 0;
     this.elSpeedFill.style.width = `${pct}%`;
-    this.elSpeedFill.classList.toggle('low',  pct <= 15);
+    // background-size を fill の (100/pct) 倍にすることで、グラデーションが
+    // 常にメーター全体幅ぶんのスケールで描画されるようになる。
+    const bgPct = pct > 0.1 ? (10000 / pct) : 100000;
+    this.elSpeedFill.style.backgroundSize = `${bgPct}% 100%`;
     this.elSpeedFill.classList.toggle('high', pct >= 80);
     this.elSpeedNumber.textContent = String(Math.round(speed));
   }
