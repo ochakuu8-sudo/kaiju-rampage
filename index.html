@@ -74,18 +74,22 @@
     #timer-display.low  { color: #ff6; animation: blink 0.5s infinite; }
     #timer-display.crit { color: #f44; animation: blink 0.25s infinite; }
 
-    /* 被害総額: タイマーの下 */
+    /* 被害総額: タイマーの下 (レトロ風) */
     #damage-display {
       position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
-      font-size: 14px; font-weight: 900; color: #fc8;
+      font-size: 15px; font-weight: 900; color: #fc8;
       text-shadow: 0 0 6px #f80, 0 1px 3px #000;
-      letter-spacing: 0.5px;
+      font-family: 'Courier New', 'Consolas', monospace;
+      letter-spacing: 1.5px;
+      image-rendering: pixelated;
     }
 
     /* ── ダメージポップアップ ── */
     .damage-popup {
       position: absolute;
       font-size: 13px; font-weight: 900;
+      font-family: 'Courier New', 'Consolas', monospace;
+      letter-spacing: 1px;
       color: #ff6; white-space: nowrap;
       text-shadow: 0 0 4px #f80, 0 1px 3px #000, 0 0 8px #f40;
       pointer-events: none;
@@ -118,14 +122,14 @@
     }
     #gameover.show { display: flex; }
     #gameover h1  { font-size: 52px; color: #f44; text-shadow: 0 0 20px #f00; margin-bottom: 6px; }
-    #final-wave   { font-size: 28px; font-weight: 900; color: #fc8; text-shadow: 0 0 12px #f80; }
+    #final-wave   { font-size: 28px; font-weight: 900; color: #fc8; text-shadow: 0 0 12px #f80; font-family: 'Courier New', 'Consolas', monospace; letter-spacing: 2px; }
     #final-best   { font-size: 14px; color: #aaa; }
     #final-stats  { font-size: 13px; color: #8cf; margin-top: 4px; }
     #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   </style>
-  <script type="module" crossorigin src="/kaiju-rampage/assets/index-DoT_WxQa.js"></script>
+  <script type="module" crossorigin src="/kaiju-rampage/assets/index-DAezjVpa.js"></script>
 </head>
 <body>
 <div id="wrap">
