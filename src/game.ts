@@ -41,6 +41,10 @@ export class Game {
   private totalHumans  = 0;
   private totalScore   = 0;
 
+  // スコア加算ティッカー用コンボ管理
+  private comboCount = 0;
+  private comboTimer = 0;
+
   private state: GameState = 'playing';
   private stateTimer = 0;
 
@@ -96,6 +100,8 @@ export class Game {
     this.totalDestroys   = 0;
     this.totalHumans     = 0;
     this.totalScore      = 0;
+    this.comboCount      = 0;
+    this.comboTimer      = 0;
     this.state           = 'playing';
     this.stateTimer      = 0;
     this.timeRemaining   = C.TIMER_INITIAL_SEC;
@@ -103,7 +109,7 @@ export class Game {
     this.ui.setZone(0);
     this.ui.setSpeedMeter(0, C.SCROLL_MAX);
     this.ui.setTimer(C.TIMER_INITIAL_SEC);
-    this.ui.setScore(0);
+    this.ui.resetScore();
   }
 
   private loadCity() {
@@ -206,6 +212,13 @@ export class Game {
     }
 
     this.ui.setTimer(this.timeRemaining);
+
+    // HUDスコアのロールアップ追従（hitstop の影響を受けないよう rawDt）
+    this.ui.tickScore(rawDt);
+
+    // コンボタイマー: 一定時間加算が無ければピッチを1.0に戻す
+    this.comboTimer -= rawDt;
+    if (this.comboTimer <= 0) this.comboCount = 0;
   }
 
   private updateBall(dt: number) {
@@ -539,11 +552,22 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
-  /** スコア加算 + 即時ポップアップ */
+  /** スコア加算 + 即時ポップアップ + コンボ連動ティッカー音 */
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
     this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
+
+    // コンボを伸ばす
+    this.comboCount = Math.min(this.comboCount + 1, C.COMBO_MAX);
+    this.comboTimer = C.COMBO_TIMEOUT;
+
+    // ティッカー音: コンボ数に応じてピッチ上昇（マリオのコイン連打風）
+    const pitch = Math.min(
+      1.0 + this.comboCount * C.SCORE_TICK_PITCH_STEP,
+      C.SCORE_TICK_PITCH_MAX,
+    );
+    this.sound.scoreTick(pitch);
   }
 
   private onGameOver() {
