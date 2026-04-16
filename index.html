@@ -86,6 +86,13 @@
       text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
       letter-spacing: 1px;
     }
+    #damage-display.pulse {
+      animation: score-tick 0.15s ease-out;
+    }
+    @keyframes score-tick {
+      0%   { color: #ffff66; transform: translateX(-50%) scale(1.12); }
+      100% { color: #fff;    transform: translateX(-50%) scale(1); }
+    }
 
     /* ── ダメージポップアップ (レトロRPG風 4段階) ── */
     .damage-popup {
@@ -155,7 +162,7 @@
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   </style>
-  <script type="module" crossorigin src="/kaiju-rampage/assets/index-6x2hrDER.js"></script>
+  <script type="module" crossorigin src="/kaiju-rampage/assets/index-Dw_iNkkf.js"></script>
 </head>
 <body>
 <div id="wrap">
