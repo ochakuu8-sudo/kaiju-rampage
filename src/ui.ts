@@ -52,9 +52,9 @@ export class UIManager {
     this.elTimer.classList.toggle('crit', s <= 5);
   }
 
-  /** 被害総額 HUD 更新 */
+  /** 被害総額 HUD 更新 (災害速報風) */
   setScore(score: number) {
-    this.elDamage.textContent = formatYen(score);
+    this.elDamage.textContent = `被害総額 ${formatYen(score)}`;
   }
 
   /** ダメージポップアップ (ワールド座標 → スクリーン座標に変換) */

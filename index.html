@@ -74,37 +74,43 @@
     #timer-display.low  { color: #ff6; animation: blink 0.5s infinite; }
     #timer-display.crit { color: #f44; animation: blink 0.25s infinite; }
 
-    /* 被害総額: タイマーの下 (レトロ風) */
+    /* 被害総額: タイマーの下 (災害速報風) */
     #damage-display {
-      position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
-      font-size: 15px; font-weight: 900; color: #fc8;
-      text-shadow: 0 0 6px #f80, 0 1px 3px #000;
-      font-family: 'Courier New', 'Consolas', monospace;
-      letter-spacing: 1.5px;
-      image-rendering: pixelated;
+      position: absolute; top: 42px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 700; color: #fff;
+      background: rgba(180, 0, 0, 0.85);
+      padding: 2px 10px;
+      border-radius: 2px;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px #000;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+      letter-spacing: 0.5px;
     }
 
     /* ── ダメージポップアップ ── */
     .damage-popup {
       position: absolute;
-      font-size: 13px; font-weight: 900;
-      font-family: 'Courier New', 'Consolas', monospace;
-      letter-spacing: 1px;
-      color: #ff6; white-space: nowrap;
-      text-shadow: 0 0 4px #f80, 0 1px 3px #000, 0 0 8px #f40;
+      font-size: 12px; font-weight: 900;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+      color: #fff; white-space: nowrap;
+      background: rgba(180, 0, 0, 0.8);
+      padding: 1px 6px;
+      border-radius: 2px;
+      text-shadow: 0 1px 2px #000;
       pointer-events: none;
-      transform: translate(-50%, -50%) scale(0.5);
-      animation: popup-rise 1.2s ease-out forwards;
+      transform: translate(-50%, -50%) scale(0.6);
+      animation: popup-rise 1.0s ease-out forwards;
     }
     .damage-popup.big {
-      font-size: 16px;
-      color: #ffa;
-      text-shadow: 0 0 6px #ff0, 0 0 12px #f80, 0 2px 4px #000;
+      font-size: 15px;
+      padding: 2px 8px;
+      background: rgba(200, 0, 0, 0.9);
     }
     .damage-popup.mega {
-      font-size: 22px;
-      color: #fff;
-      text-shadow: 0 0 10px #ff4, 0 0 20px #f80, 0 0 30px #f40, 0 2px 6px #000;
+      font-size: 20px;
+      padding: 3px 12px;
+      background: rgba(220, 0, 0, 0.95);
+      box-shadow: 0 0 12px rgba(255, 60, 0, 0.6);
     }
     @keyframes popup-rise {
       0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
@@ -121,9 +127,10 @@
       gap: 10px; pointer-events: auto; z-index: 10;
     }
     #gameover.show { display: flex; }
-    #gameover h1  { font-size: 52px; color: #f44; text-shadow: 0 0 20px #f00; margin-bottom: 6px; }
-    #final-wave   { font-size: 28px; font-weight: 900; color: #fc8; text-shadow: 0 0 12px #f80; font-family: 'Courier New', 'Consolas', monospace; letter-spacing: 2px; }
-    #final-best   { font-size: 14px; color: #aaa; }
+    #gameover h1  { font-size: 44px; color: #f44; text-shadow: 0 0 20px #f00; margin-bottom: 4px; }
+    #gameover .go-label { font-size: 13px; color: #ccc; margin-bottom: 2px; }
+    #final-wave   { font-size: 30px; font-weight: 900; color: #fff; background: rgba(180,0,0,0.9); padding: 4px 18px; border-radius: 3px; text-shadow: 0 1px 3px #000; }
+    #final-best   { font-size: 14px; color: #aaa; margin-top: 8px; }
     #final-stats  { font-size: 13px; color: #8cf; margin-top: 4px; }
     #go-tap       { font-size: 17px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
@@ -139,10 +146,11 @@
     <div id="life-wrap"><div id="life-fill"></div></div>
     <div id="speed-number">0</div>
     <div id="timer-display">90</div>
-    <div id="damage-display">¥0</div>
+    <div id="damage-display">被害総額 ¥0</div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
+    <div class="go-label">被害総額</div>
     <div id="final-wave">¥0</div>
     <div id="final-best">0 m | 0 破壊</div>
     <div id="final-stats">0 人踏み</div>

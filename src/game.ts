@@ -562,17 +562,17 @@ export class Game {
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
-    // バッチに追加 (ウィンドウ内なら合算、新規ならリセット)
+    // 新規バッチ開始: タイマーをセット (以降の追加ではリセットしない)
     if (this.scoreBatchAmount === 0) {
       this.scoreBatchX = worldX;
       this.scoreBatchY = worldY;
+      this.scoreBatchTimer = C.SCORE_BATCH_WINDOW;
     } else {
       // 重心に寄せる
       this.scoreBatchX = (this.scoreBatchX + worldX) / 2;
       this.scoreBatchY = (this.scoreBatchY + worldY) / 2;
     }
     this.scoreBatchAmount += pts;
-    this.scoreBatchTimer = C.SCORE_BATCH_WINDOW;
   }
 
   private onGameOver() {
