@@ -223,9 +223,9 @@ export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 
 
 // ===== 自動スクロール (レースゲーム風) =====
 export const SCROLL_BASE_SPEED   = 0;    // 初期速度 (0 = 停止状態スタート)
-export const SCROLL_DRAG         = 0.8;  // 指数減衰率 (1/s): dv/dt = -DRAG * v。半減期 ln2/DRAG ≈ 0.87 秒
+export const SCROLL_DRAG         = 0.4;  // 指数減衰率 (1/s): dv/dt = -DRAG * v。半減期 ln2/DRAG ≈ 1.73 秒
 export const SCROLL_MAX          = 200;  // スクロール速度上限 (px/s)
-export const HUMAN_SCROLL_GAIN   = 15;   // 人間 1 体で scrollSpeed に +N px/s
+export const HUMAN_SCROLL_GAIN   = 8;    // 人間 1 体で scrollSpeed に +N px/s
 // ===== ダメージ (ボール速度依存) =====
 export const BALL_DAMAGE_DIVISOR = 3;    // dmg = max(1, floor(ballSpeed / DIV))
 
