@@ -100,7 +100,7 @@ const PLAZA_CENTER: RoadPattern = {
   ],
   cells: [
     [ 'house_trio_garden', 'house_garage', 'house_konbini', 'garden_shed' ],
-    [ 'shop_parasol_row', 'dept_store_plaza', 'merged_right', 'clinic_daycare' ],
+    [ 'shop_parasol_row', 'shopping_mall_plaza', 'merged_right', 'clinic_daycare' ],
   ],
   merges: [ { row: 1, col: 1, spanCols: 2 } ],
 };
@@ -254,6 +254,45 @@ const SUBURBAN_CALM: RoadPattern = {
   ],
 };
 
+const CAMPUS_DISTRICT: RoadPattern = {
+  id: 'campus_district', weight: 2,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 1, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'house_trio_garden', 'cafe_bookstore_row', 'house_konbini', 'garden_shed' ],
+    [ 'university_campus', 'merged_right', 'clock_tower_trio', 'water_tower_apartment' ],
+  ],
+  merges: [ { row: 1, col: 0, spanCols: 2 } ],
+};
+
+const ENTERTAINMENT_BLOCK: RoadPattern = {
+  id: 'entertainment_block', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 1, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 3, startCell: 0, endCell: 1, cls: 'street' },
+  ],
+  cells: [
+    [ 'ramen_izakaya', 'florist_bakery', 'cafe_bookstore', 'house_konbini' ],
+    [ 'amusement_complex', 'merged_right', 'shopping_mall_plaza', 'merged_right' ],
+  ],
+  merges: [
+    { row: 1, col: 0, spanCols: 2 },
+    { row: 1, col: 2, spanCols: 2 },
+  ],
+};
+
 export const CHUNK_PATTERNS: RoadPattern[] = [
   FULL_GRID,
   PLAZA_CENTER,
@@ -265,4 +304,6 @@ export const CHUNK_PATTERNS: RoadPattern[] = [
   PARK_BREAK,
   OFFICE_DISTRICT,
   SUBURBAN_CALM,
+  CAMPUS_DISTRICT,
+  ENTERTAINMENT_BLOCK,
 ];

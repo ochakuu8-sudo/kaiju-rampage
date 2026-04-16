@@ -938,11 +938,13 @@ const TOP_SCENES: Scene[] = [
   // ベンチ・街灯)、中層は広場の植栽帯、奥は搬入エリアで電気設備、
   // 最奥は裏路地の電柱で街区の後端。
   {
-    id: 'dept_store_plaza', tier: 'top', width: 74, ground: 'tile',
+    id: 'dept_store_plaza', tier: 'top', width: 100, ground: 'tile',
     buildings: [
       { dx: 37, dy:  0, size: 'department_store' },
       // 搬入用の業務ガレージ
       { dx: 37, dy: 46, size: 'garage' },
+      // 右サイド: 屋外カフェ棟
+      { dx: 80, dy:  0, size: 'cafe' },
     ],
     furniture: [
       // 前庭広場: 左右対称に街灯と旗幟、中央に噴水
@@ -964,18 +966,28 @@ const TOP_SCENES: Scene[] = [
       { dx: 14, dy: 38, type: 'bicycle_rack' },
       { dx: 37, dy: 38, type: 'bench' },
       { dx: 60, dy: 38, type: 'vending' },
+      // 右サイド: カフェテラスエリア
+      { dx: 78, dy: 24, type: 'parasol' },
+      { dx: 86, dy: 26, type: 'bench' },
+      { dx: 96, dy: 24, type: 'parasol' },
+      { dx: 80, dy: 38, type: 'planter' },
+      { dx: 92, dy: 40, type: 'potted_plant' },
       // 中後層: 室外機 + 電気設備
       { dx:  4, dy: 56, type: 'ac_unit' },
       { dx: 70, dy: 56, type: 'ac_unit' },
+      { dx: 92, dy: 56, type: 'electric_box' },
       // 最奥: 裏路地の電柱で framing
       { dx: -2, dy: 86, type: 'power_pole' },
       { dx: 37, dy: 88, type: 'street_lamp' },
       { dx: 76, dy: 86, type: 'power_pole' },
+      { dx: 98, dy: 88, type: 'tree' },
     ],
-    // 噴水周りの買い物客
+    // 噴水周りの買い物客 + カフェテラスの客
     prePlacedHumans: [
       { dx: 30, dy: 10 },
       { dx: 44, dy: 10 },
+      { dx: 82, dy: 8 },
+      { dx: 92, dy: 8 },
     ],
   },
 
@@ -983,11 +995,14 @@ const TOP_SCENES: Scene[] = [
   // (旗竿・ベンチ・看板・ボラード・消火栓)、救急車入口。
   // 中層は職員駐車場と電気設備、奥は裏庭で街灯と木立。
   {
-    id: 'hospital_scene', tier: 'top', width: 66, ground: 'tile',
+    id: 'hospital_scene', tier: 'top', width: 95, ground: 'tile',
     buildings: [
       { dx: 27, dy:  0, size: 'hospital' },
       // 救急別棟
       { dx:  8, dy: 44, size: 'shed' },
+      // 右サイド: 薬局別棟
+      { dx: 72, dy:  0, size: 'pharmacy' },
+      { dx: 72, dy: 44, size: 'shed' },
     ],
     furniture: [
       // 正面ロータリー: 生垣で囲み、旗竿と看板、消火栓
@@ -998,6 +1013,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 38, dy:  4, type: 'bollard' },
       { dx: 52, dy:  4, type: 'hydrant' },
       { dx: 66, dy:  1, type: 'hedge' },
+      // 右サイド: 薬局の店頭
+      { dx: 72, dy:  5, type: 'sign_board' },
+      { dx: 88, dy:  4, type: 'a_frame_sign' },
+      { dx: 95, dy:  1, type: 'hedge' },
       // 前庭: 中央の花壇 + 鉢植え
       { dx: 16, dy: 24, type: 'potted_plant' },
       { dx: 27, dy: 24, type: 'flower_bed' },
@@ -1008,21 +1027,30 @@ const TOP_SCENES: Scene[] = [
       { dx: 16, dy: 36, type: 'recycling_bin' },
       { dx: 38, dy: 38, type: 'bicycle_rack' },
       { dx: 52, dy: 40, type: 'telephone_booth' },
+      // 右サイド: 薬局エリアの設備
+      { dx: 72, dy: 24, type: 'bicycle_rack' },
+      { dx: 86, dy: 26, type: 'vending' },
+      { dx: 78, dy: 38, type: 'bench' },
+      { dx: 90, dy: 38, type: 'planter' },
       // 中後層: 別棟脇の白衣物干しと洗濯 (療養感)
       { dx:  8, dy: 56, type: 'laundry_pole' },
       { dx: 52, dy: 58, type: 'electric_box' },
+      { dx: 84, dy: 56, type: 'ac_unit' },
       // 最奥: 療養のための静かな木立
       { dx: -2, dy: 86, type: 'power_pole' },
       { dx: 30, dy: 90, type: 'sakura_tree' },
       { dx: 68, dy: 86, type: 'power_pole' },
+      { dx: 90, dy: 88, type: 'tree' },
     ],
     parkedVehicles: [
       { dx: 58, dy: 2, type: 'ambulance' },
     ],
-    // 待合の患者と看護師
+    // 待合の患者と看護師 + 薬局の客
     prePlacedHumans: [
       { dx: 22, dy: 9 },
       { dx: 34, dy: 9 },
+      { dx: 76, dy: 8 },
+      { dx: 86, dy: 8 },
     ],
   },
 
@@ -1030,11 +1058,14 @@ const TOP_SCENES: Scene[] = [
   // に校長名の看板。中層は校庭 (二宮金次郎像・植栽・駐輪)。奥は
   // 裏山 (松林) で、学校の後方が自然に続く風景。
   {
-    id: 'school_grounds', tier: 'top', width: 74, ground: 'dirt',
+    id: 'school_grounds', tier: 'top', width: 100, ground: 'dirt',
     buildings: [
       { dx: 36, dy:  0, size: 'school' },
       // 体育館
       { dx: 36, dy: 44, size: 'garage' },
+      // 右サイド: プール棟
+      { dx: 82, dy:  0, size: 'garage' },
+      { dx: 82, dy: 44, size: 'shed' },
     ],
     furniture: [
       // 校門: 生垣、桜、旗竿、看板
@@ -1045,6 +1076,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 62, dy:  5, type: 'flag_pole' },
       { dx: 72, dy:  4, type: 'sakura_tree' },
       { dx: 74, dy:  1, type: 'hedge' },
+      // 右サイド: プール棟の入口
+      { dx: 82, dy:  5, type: 'sign_board' },
+      { dx: 96, dy:  4, type: 'flag_pole' },
+      { dx: 100, dy:  1, type: 'hedge' },
       // 第 2 列: 校舎前の鉢植えとカーブミラー
       { dx: 18, dy: 14, type: 'potted_plant' },
       { dx: 54, dy: 14, type: 'potted_plant' },
@@ -1054,18 +1089,27 @@ const TOP_SCENES: Scene[] = [
       { dx: 16, dy: 38, type: 'bicycle_rack' },
       { dx: 36, dy: 40, type: 'planter' },
       { dx: 56, dy: 38, type: 'vending' },
+      // 右サイド: プール周辺設備
+      { dx: 80, dy: 24, type: 'bench' },
+      { dx: 92, dy: 26, type: 'vending' },
+      { dx: 86, dy: 38, type: 'traffic_cone' },
+      { dx: 96, dy: 38, type: 'sandbags' },
       // 中後層: 体育倉庫脇の土のうと用具
       { dx: 12, dy: 56, type: 'sandbags' },
       { dx: 60, dy: 56, type: 'sandbags' },
-      // 最奥: 学校裏の松林 (3 本で森を示唆)
+      { dx: 88, dy: 56, type: 'tarp' },
+      // 最奥: 学校裏の松林
       { dx:  4, dy: 86, type: 'pine_tree' },
       { dx: 36, dy: 90, type: 'pine_tree' },
       { dx: 68, dy: 86, type: 'pine_tree' },
+      { dx: 94, dy: 88, type: 'pine_tree' },
     ],
-    // 校門前の生徒たち
+    // 校門前の生徒たち + プール棟前
     prePlacedHumans: [
       { dx: 30, dy: 9 },
       { dx: 42, dy: 9 },
+      { dx: 86, dy: 8 },
+      { dx: 94, dy: 8 },
     ],
   },
 
@@ -1073,11 +1117,13 @@ const TOP_SCENES: Scene[] = [
   // 旗竿 2 本・銅像 2 体・ベンチ・生垣)。中層は広場の植栽帯。
   // 奥は市役所の裏庭で松林の庭園、最奥に街灯。
   {
-    id: 'city_hall', tier: 'top', width: 72, ground: 'stone_pavement',
+    id: 'city_hall', tier: 'top', width: 100, ground: 'stone_pavement',
     buildings: [
       { dx: 32, dy:  0, size: 'city_hall' },
       // 裏庭の茶室 — 市役所の文化的深さ
       { dx: 32, dy: 60, size: 'temple' },
+      // 右サイド: 公民館分館
+      { dx: 80, dy:  0, size: 'townhouse' },
     ],
     furniture: [
       // 前庭: 左右対称の格式ある広場
@@ -1088,6 +1134,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 52, dy:  5, type: 'statue' },
       { dx: 62, dy:  6, type: 'flag_pole' },
       { dx: 72, dy:  1, type: 'hedge' },
+      // 右サイド: 公民館の入口
+      { dx: 80, dy:  5, type: 'sign_board' },
+      { dx: 94, dy:  4, type: 'flag_pole' },
+      { dx: 100, dy:  1, type: 'hedge' },
       // 中前層: 植栽帯 (左右対称) + 盆栽
       { dx: 12, dy: 26, type: 'planter' },
       { dx: 32, dy: 24, type: 'bonsai' },
@@ -1096,15 +1146,22 @@ const TOP_SCENES: Scene[] = [
       { dx:  6, dy: 38, type: 'atm' },
       { dx: 32, dy: 40, type: 'bench' },
       { dx: 58, dy: 38, type: 'post_box' },
+      // 右サイド: 公民館エリア
+      { dx: 78, dy: 24, type: 'bicycle_rack' },
+      { dx: 92, dy: 26, type: 'bench' },
+      { dx: 82, dy: 38, type: 'planter' },
+      { dx: 96, dy: 38, type: 'vending' },
       // 中後層: 茶室前の石灯籠と飛石
       { dx: 16, dy: 50, type: 'stone_lantern' },
       { dx: 32, dy: 52, type: 'stepping_stones' },
       { dx: 48, dy: 50, type: 'stone_lantern' },
+      { dx: 86, dy: 56, type: 'ac_unit' },
       // 奥: 庭園の鯉池
       { dx: 32, dy: 76, type: 'koi_pond' },
-      // 最奥: 裏庭の桜並木 (左右対称)
+      // 最奥: 裏庭の桜並木
       { dx: 14, dy: 90, type: 'sakura_tree' },
       { dx: 50, dy: 90, type: 'sakura_tree' },
+      { dx: 86, dy: 88, type: 'pine_tree' },
     ],
   },
 
@@ -1156,12 +1213,15 @@ const TOP_SCENES: Scene[] = [
   // マンション入口。中層は住民用スペース (植栽・駐輪)。
   // 奥は裏の木立で街区の後端。
   {
-    id: 'clock_tower_trio', tier: 'top', width: 60, ground: 'stone_pavement',
+    id: 'clock_tower_trio', tier: 'top', width: 95, ground: 'stone_pavement',
     buildings: [
       { dx: 10, dy:  0, size: 'clock_tower' },
       { dx: 36, dy:  0, size: 'apartment_tall' },
       // 管理人室
       { dx: 24, dy: 44, size: 'shed' },
+      // 右サイド: 隣接タウンハウス
+      { dx: 68, dy:  0, size: 'townhouse' },
+      { dx: 68, dy: 44, size: 'shed' },
     ],
     furniture: [
       // 前面: 生垣、時計塔前に街灯、マンション入口
@@ -1171,6 +1231,10 @@ const TOP_SCENES: Scene[] = [
       { dx: 36, dy:  5, type: 'mailbox' },
       { dx: 48, dy:  4, type: 'bicycle_rack' },
       { dx: 61, dy:  1, type: 'hedge' },
+      // 右サイド: タウンハウスの入口
+      { dx: 68, dy:  5, type: 'mailbox' },
+      { dx: 82, dy:  4, type: 'potted_plant' },
+      { dx: 95, dy:  1, type: 'hedge' },
       // 第 2 列: 鉢植え
       { dx: 36, dy: 14, type: 'potted_plant' },
       // 中前層: マンション住民の物干し
@@ -1179,13 +1243,20 @@ const TOP_SCENES: Scene[] = [
       { dx: 12, dy: 38, type: 'vending' },
       { dx: 24, dy: 40, type: 'recycling_bin' },
       { dx: 48, dy: 38, type: 'post_box' },
+      // 右サイド: タウンハウスの設備
+      { dx: 68, dy: 24, type: 'bicycle_rack' },
+      { dx: 82, dy: 22, type: 'laundry_pole' },
+      { dx: 74, dy: 38, type: 'gas_canister' },
+      { dx: 88, dy: 38, type: 'planter' },
       // 中後層: 室外機
       { dx: 36, dy: 56, type: 'ac_unit' },
+      { dx: 80, dy: 56, type: 'ac_unit' },
       // 最奥: 住宅地らしい桜並木 + 屋根の上の猫
       { dx: -2, dy: 86, type: 'power_pole' },
       { dx: 12, dy: 88, type: 'cat' },
       { dx: 24, dy: 90, type: 'sakura_tree' },
       { dx: 62, dy: 86, type: 'power_pole' },
+      { dx: 80, dy: 88, type: 'tree' },
     ],
   },
 
@@ -1429,6 +1500,196 @@ const TOP_SCENES: Scene[] = [
       { dx: 30, dy: 90, type: 'tree' },
       { dx: 50, dy: 88, type: 'cat' },
       { dx: 62, dy: 86, type: 'power_pole' },
+    ],
+  },
+
+  // コンセプト: ショッピングモール広場。大型商業施設を中心に、左に駐車場棟、
+  // 右に入口アーチ小屋。前面はバナーとパラソルが並ぶ広場、噴水と植栽帯。
+  // 中層は買い物客のベンチエリア、奥は搬入路と電柱。
+  {
+    id: 'shopping_mall_plaza', tier: 'top', width: 110, ground: 'tile',
+    buildings: [
+      { dx: 40, dy:  0, size: 'department_store' },
+      { dx:  8, dy:  0, size: 'parking' },
+      { dx: 96, dy:  0, size: 'shop' },
+      // 搬入口
+      { dx: 40, dy: 50, size: 'garage' },
+      { dx: 96, dy: 44, size: 'shed' },
+    ],
+    furniture: [
+      // 前面: バナー・パラソル・噴水の広場
+      { dx: -2, dy:  1, type: 'hedge' },
+      { dx:  4, dy:  5, type: 'banner_pole' },
+      { dx: 16, dy:  4, type: 'a_frame_sign' },
+      { dx: 28, dy:  3, type: 'parasol' },
+      { dx: 40, dy:  6, type: 'fountain' },
+      { dx: 56, dy:  3, type: 'parasol' },
+      { dx: 68, dy:  4, type: 'a_frame_sign' },
+      { dx: 80, dy:  5, type: 'banner_pole' },
+      { dx: 96, dy:  5, type: 'sign_board' },
+      { dx: 110, dy:  1, type: 'hedge' },
+      // 第 2 列: 提灯・旗竿
+      { dx: 20, dy: 14, type: 'chouchin' },
+      { dx: 52, dy: 14, type: 'chouchin' },
+      { dx: 80, dy: 14, type: 'flag_pole' },
+      // 中前層: 植栽帯
+      { dx: 12, dy: 24, type: 'planter' },
+      { dx: 30, dy: 26, type: 'bench' },
+      { dx: 52, dy: 26, type: 'bench' },
+      { dx: 68, dy: 24, type: 'planter' },
+      { dx: 96, dy: 24, type: 'bicycle_rack' },
+      // 中段: 買い物客の設備
+      { dx: 10, dy: 38, type: 'vending' },
+      { dx: 30, dy: 40, type: 'bench' },
+      { dx: 52, dy: 38, type: 'recycling_bin' },
+      { dx: 74, dy: 40, type: 'telephone_booth' },
+      { dx: 92, dy: 38, type: 'vending' },
+      // 中後層: 搬入路の設備
+      { dx:  6, dy: 56, type: 'electric_box' },
+      { dx: 68, dy: 58, type: 'ac_unit' },
+      { dx: 104, dy: 56, type: 'ac_unit' },
+      // 最奥: 裏路地
+      { dx: -2, dy: 86, type: 'power_pole' },
+      { dx: 30, dy: 90, type: 'tree' },
+      { dx: 64, dy: 88, type: 'street_lamp' },
+      { dx: 96, dy: 90, type: 'tree' },
+      { dx: 112, dy: 86, type: 'power_pole' },
+    ],
+    // 広場の買い物客
+    prePlacedHumans: [
+      { dx: 24, dy: 8 },
+      { dx: 36, dy: 10 },
+      { dx: 48, dy: 8 },
+      { dx: 62, dy: 10 },
+      { dx: 84, dy: 8 },
+      { dx: 98, dy: 10 },
+      { dx: 34, dy: 30 },
+    ],
+  },
+
+  // コンセプト: 大学キャンパスの一区画。中央にメイン校舎、左に講堂、
+  // 右に研究室棟、体育館。前面は桜並木の並ぶキャンパスモール。
+  // 中層は中庭の像と旗竿、奥は松と桜の混交林。
+  {
+    id: 'university_campus', tier: 'top', width: 105, ground: 'grass',
+    buildings: [
+      { dx: 40, dy:  0, size: 'school' },
+      { dx:  8, dy:  0, size: 'library' },
+      { dx: 86, dy:  0, size: 'townhouse' },
+      // 体育館
+      { dx: 40, dy: 50, size: 'garage' },
+      { dx: 86, dy: 44, size: 'shed' },
+    ],
+    furniture: [
+      // 前面: 桜のキャンパスモール + 旗竿
+      { dx: -2, dy:  1, type: 'hedge' },
+      { dx:  4, dy:  5, type: 'flag_pole' },
+      { dx: 14, dy:  4, type: 'sakura_tree' },
+      { dx: 28, dy:  5, type: 'sign_board' },
+      { dx: 40, dy:  6, type: 'statue' },
+      { dx: 56, dy:  5, type: 'sign_board' },
+      { dx: 70, dy:  4, type: 'sakura_tree' },
+      { dx: 86, dy:  5, type: 'sign_board' },
+      { dx: 100, dy:  5, type: 'flag_pole' },
+      { dx: 105, dy:  1, type: 'hedge' },
+      // 第 2 列: ベンチと植栽
+      { dx: 20, dy: 14, type: 'bench' },
+      { dx: 56, dy: 14, type: 'bench' },
+      { dx: 86, dy: 14, type: 'potted_plant' },
+      // 中前層: 中庭の植栽
+      { dx: 14, dy: 24, type: 'planter' },
+      { dx: 40, dy: 26, type: 'sakura_tree' },
+      { dx: 68, dy: 24, type: 'planter' },
+      { dx: 92, dy: 26, type: 'bicycle_rack' },
+      // 中段: 学生の設備
+      { dx: 10, dy: 38, type: 'bench' },
+      { dx: 28, dy: 40, type: 'vending' },
+      { dx: 52, dy: 38, type: 'bench' },
+      { dx: 74, dy: 40, type: 'vending' },
+      { dx: 96, dy: 38, type: 'recycling_bin' },
+      // 中後層: 体育館脇
+      { dx:  6, dy: 58, type: 'sandbags' },
+      { dx: 68, dy: 56, type: 'ac_unit' },
+      { dx: 100, dy: 56, type: 'electric_box' },
+      // 最奥: 松と桜の混交林
+      { dx: -2, dy: 86, type: 'power_pole' },
+      { dx: 20, dy: 90, type: 'pine_tree' },
+      { dx: 52, dy: 88, type: 'sakura_tree' },
+      { dx: 80, dy: 90, type: 'pine_tree' },
+      { dx: 107, dy: 86, type: 'power_pole' },
+    ],
+    // 学生たち
+    prePlacedHumans: [
+      { dx: 20, dy: 8 },
+      { dx: 34, dy: 10 },
+      { dx: 48, dy: 8 },
+      { dx: 62, dy: 10 },
+      { dx: 78, dy: 8 },
+      { dx: 92, dy: 10 },
+    ],
+  },
+
+  // コンセプト: 遊園地複合施設。中央に観覧車、左右にチケット棟と屋台。
+  // 前面は提灯・バナーの祭り的入口。中層はベンチとパラソルの休憩エリア。
+  // 奥は機材置場と桜並木。
+  {
+    id: 'amusement_complex', tier: 'top', width: 110, ground: 'stone_pavement',
+    buildings: [
+      { dx: 36, dy:  0, size: 'ferris_wheel' },
+      { dx:  6, dy:  0, size: 'karaoke' },
+      { dx: 86, dy:  0, size: 'game_center' },
+      // 屋台・倉庫
+      { dx:  6, dy: 42, size: 'shed' },
+      { dx: 86, dy: 42, size: 'shed' },
+    ],
+    furniture: [
+      // 入口: 提灯・バナーの祭り的演出
+      { dx: -2, dy:  1, type: 'hedge' },
+      { dx:  4, dy:  5, type: 'chouchin' },
+      { dx: 14, dy:  4, type: 'banner_pole' },
+      { dx: 26, dy:  3, type: 'chouchin' },
+      { dx: 36, dy:  6, type: 'sign_board' },
+      { dx: 52, dy:  3, type: 'chouchin' },
+      { dx: 68, dy:  4, type: 'banner_pole' },
+      { dx: 80, dy:  5, type: 'chouchin' },
+      { dx: 96, dy:  4, type: 'a_frame_sign' },
+      { dx: 110, dy:  1, type: 'hedge' },
+      // 第 2 列: パラソルとベンチの待合
+      { dx: 12, dy: 14, type: 'parasol' },
+      { dx: 36, dy: 14, type: 'bench' },
+      { dx: 60, dy: 14, type: 'parasol' },
+      { dx: 96, dy: 14, type: 'bench' },
+      // 中前層: 休憩エリア
+      { dx:  8, dy: 24, type: 'bench' },
+      { dx: 26, dy: 26, type: 'potted_plant' },
+      { dx: 52, dy: 24, type: 'fountain' },
+      { dx: 76, dy: 26, type: 'potted_plant' },
+      { dx: 100, dy: 24, type: 'bench' },
+      // 中段: 屋台周辺の設備
+      { dx: 14, dy: 38, type: 'vending' },
+      { dx: 36, dy: 40, type: 'parasol' },
+      { dx: 58, dy: 38, type: 'vending' },
+      { dx: 80, dy: 40, type: 'parasol' },
+      { dx: 100, dy: 38, type: 'recycling_bin' },
+      // 中後層: 屋台裏の設備
+      { dx:  6, dy: 56, type: 'gas_canister' },
+      { dx: 36, dy: 58, type: 'tarp' },
+      { dx: 68, dy: 56, type: 'electric_box' },
+      { dx: 100, dy: 58, type: 'milk_crate_stack' },
+      // 最奥: 桜並木
+      { dx: -2, dy: 86, type: 'power_pole' },
+      { dx: 22, dy: 90, type: 'sakura_tree' },
+      { dx: 52, dy: 88, type: 'sakura_tree' },
+      { dx: 82, dy: 90, type: 'sakura_tree' },
+      { dx: 112, dy: 86, type: 'power_pole' },
+    ],
+    // 入場待ちの人々
+    prePlacedHumans: [
+      { dx: 18, dy: 8 },
+      { dx: 30, dy: 10 },
+      { dx: 44, dy: 8 },
+      { dx: 58, dy: 10 },
+      { dx: 74, dy: 8 },
     ],
   },
 ];
