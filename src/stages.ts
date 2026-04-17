@@ -848,24 +848,41 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 7: 駅裏飲食 — 上端クロスで次チャンクと十字路
-  {
-    patternId: 's1_shopping_street_cross',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'cafe_bookstore' },
-      { row: 0, col: 1, sceneId: 'shotengai_game' },
-      { row: 0, col: 2, sceneId: 'ramen_izakaya' },
-      { row: 0, col: 3, sceneId: 'florist_bakery' },
-      { row: 1, col: 0, sceneId: 'shotengai_food' },
-      { row: 1, col: 1, sceneId: 'shop_parasol_row' },
-      { row: 1, col: 2, sceneId: 'laundromat_pharmacy' },
-      { row: 1, col: 3, sceneId: 'mansion_shop' },
+  // 7: 駅裏飲食 — パチンコとカラオケの雑踏 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('pachinko',-155,78),_B('karaoke',-120,78),
+      _B('ramen',-55,80),_B('izakaya',-25,79),
+      _B('izakaya',20,79),_B('ramen',50,80),_B('karaoke',75,78),
+      _B('pachinko',115,78),_B('ramen',150,80),_B('izakaya',175,79),
+      _B('izakaya',-165,125),_B('ramen',-140,125),_B('pachinko',-110,127),
+      _B('karaoke',-55,127),_B('ramen',-20,125),
+      _B('ramen',20,125),_B('izakaya',50,125),_B('pachinko',80,127),
+      _B('game_center',115,127),_B('karaoke',155,127),_B('ramen',178,125),
     ],
-    groundGrid: [
-      ['wood_deck', 'asphalt',  'asphalt',  'wood_deck'     ],
-      ['tile',      'concrete', 'concrete', 'stone_pavement'],
+    furniture: [
+      _F('chouchin',-155,92),_F('noren',-120,92),_F('chouchin',-55,92),_F('noren',-25,92),
+      _F('chouchin',20,92),_F('noren',50,92),_F('chouchin',75,92),
+      _F('chouchin',115,92),_F('noren',150,92),_F('chouchin',175,92),
+      _F('chouchin',-165,115),_F('noren',-140,115),_F('chouchin',-110,115),
+      _F('chouchin',-55,115),_F('noren',-20,115),
+      _F('chouchin',20,115),_F('noren',50,115),_F('chouchin',80,115),
+      _F('chouchin',115,115),_F('noren',155,115),_F('chouchin',178,115),
+      _F('garbage',0,50),_F('garbage',0,160),_F('dumpster',-175,40),_F('dumpster',175,170),
+      _F('bicycle',-90,60),_F('bicycle',90,150),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('vending',-90,40),_F('vending',90,170),
     ],
-  },
+    humans: [_H(-135,92),_H(-40,92),_H(35,92),_H(130,92),_H(-140,115),_H(-35,115),_H(35,115),_H(130,115),_H(-170,50),_H(170,50),_H(0,170),_H(170,170)],
+    grounds: [
+      _G('asphalt',0,46.5,360,93),_G('asphalt',0,153.5,360,93),
+      _G('tile',-55,77,30,30),_G('tile',-55,128,30,33),
+      _G('tile',115,77,30,30),_G('tile',115,128,30,33),
+      _G('concrete',0,46.5,20,93),_G('concrete',0,153.5,20,93),
+      _G('stone_pavement',-165,50,30,30),_G('stone_pavement',175,170,30,30),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 8: 町内公園 — 緑地 merged + 散策路 dirt + 入口 stone_pavement
   {
     patternId: 's1_park',
