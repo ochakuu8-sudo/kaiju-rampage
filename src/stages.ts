@@ -1218,17 +1218,39 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 9: 町のシンボル神社 — 神社 + 五重塔 + 鳥居参道 + 上端クロス (raw)
+  // 9: 町のシンボル神社 — 神社 + 五重塔 + 鳥居参道 + 上端クロス 6 列大密度化 (raw)
   { patternId: 's1_raw', raw: {
     buildings: [
+      // 下段 前列 (y=22)
+      _B('kominka',-170,22),_B('chaya',-140,22),_B('kominka',-110,22),
+      _B('chaya',-55,22),_B('kominka',-25,22),
+      _B('kominka',25,22),_B('chaya',55,22),
+      _B('kominka',110,22),_B('chaya',140,22),_B('kominka',170,22),
+      // 下段 中列 (y=55)
+      _B('chaya',-170,55),_B('kominka',-140,55),_B('chaya',-110,55),
+      _B('kominka',-55,55),_B('chaya',-20,55),
+      _B('chaya',20,55),_B('kominka',55,55),
+      _B('chaya',110,55),_B('kominka',140,55),_B('chaya',170,55),
+      // 下段 後列 (y=78)
       _B('temple',-155,77),
       _B('chaya',-55,80),_B('kominka',-20,81),
       _B('shrine',35,78),
       _B('kominka',108,81),_B('chaya',140,80),_B('kominka',175,81),
+      // 上段 前列 (y=125)
       _B('kominka',-165,125),_B('pagoda',-130,145),
       _B('shrine',-55,127),_B('kominka',-20,125),
       _B('ryokan',35,125),
       _B('kominka',108,125),_B('chaya',140,125),_B('kominka',172,125),
+      // 上段 中列 (y=158)
+      _B('chaya',-170,158),_B('kominka',-140,158),
+      _B('chaya',-55,158),_B('kominka',-20,158),
+      _B('kominka',20,158),_B('chaya',55,158),
+      _B('kominka',110,158),_B('chaya',140,158),_B('kominka',170,158),
+      // 上段 後列 (y=184)
+      _B('kominka',-170,184),_B('chaya',-140,184),_B('kominka',-110,184),
+      _B('chaya',-55,184),_B('kominka',-25,184),
+      _B('kominka',25,184),_B('chaya',55,184),
+      _B('kominka',110,184),_B('chaya',140,184),_B('kominka',170,184),
     ],
     furniture: [
       _F('torii',0,30),_F('torii',0,60),_F('torii',0,85),
