@@ -288,12 +288,18 @@ export function placeGridBlock(
   block: GridBlock,
   pattern: RoadPattern,
   blockIdx: number,
-  groundOverride?: GroundType
+  groundOverride?: GroundType,
+  cellOverrides?: Array<{ row: number; col: number; sceneId: string }>
 ): ScenePlacement {
   const out: ScenePlacement = { buildings: [], furniture: [], grounds: [], humans: [] };
   const merges = pattern.merges ?? [];
   const ROAD_HALF = 7; // 縦道路の半幅 (14/2)
   const CLEARANCE = 2; // 道路との追加クリアランス
+
+  // overrides を row-col キーの Map 化
+  const overrideMap = cellOverrides
+    ? new Map(cellOverrides.map(o => [`${o.row}-${o.col}`, o.sceneId]))
+    : null;
 
   // この行の、指定 col 左右に縦道路があるか判定
   const hasVertRoadAt = (gridLine: number, row: number): boolean => {
@@ -326,9 +332,12 @@ export function placeGridBlock(
       // 地面タイル: セル全体 (usable 範囲) を覆う
       const cellCenterY = block.originY + r * block.cellH + block.cellH / 2;
 
+      // overrides が指定されていれば、このセルのシーン ID を差し替える
+      const overrideId = overrideMap?.get(`${r}-${c}`);
+
       if (cell.type === 'scene') {
         // 単一シーン: 建物重心を usable 中心へ
-        const scene = getScene(cell.sceneId);
+        const scene = getScene(overrideId ?? cell.sceneId);
         const groundType = groundOverride ?? scene.ground;
         if (groundType) {
           out.grounds!.push({
@@ -350,7 +359,10 @@ export function placeGridBlock(
         if (p.humans) out.humans!.push(...p.humans);
       } else {
         // 複数シーン: 横並びに配置。全シーン合計幅 + gap を usable 内に等分
-        const scenes = cell.sceneIds.map(id => getScene(id));
+        // override があれば単一シーンとして差し替え (複数 → 単一に縮約)
+        const scenes = overrideId
+          ? [getScene(overrideId)]
+          : cell.sceneIds.map(id => getScene(id));
         // 地面: override があれば強制、無ければ最初のシーンの ground を使用
         const groundType = groundOverride ?? scenes[0]?.ground;
         if (groundType) {
@@ -509,6 +521,8 @@ export interface ChunkSpecialArea {
 export interface ChunkData {
   chunkId: number;
   baseY: number;            // チャンク下端Y（ワールド座標）
+  /** 所属ステージ index (0-4)。TOTAL_CHUNKS 超過時は 0 デフォルト */
+  stageIndex: number;
   /** 互換: 全幅水平道路のみ (vehicle lane 用) */
   roads: ChunkRoad[];
   /** 全水平道路 (部分幅含む) — 描画用 */
@@ -534,6 +548,8 @@ export interface ChunkTemplate {
   patternId: string;           // patterns.ts の id
   groundOverride?: GroundType; // 指定時: セル地面を強制上書き (シーンの ground を無視)
   isGoal?: boolean;            // 最終チャンク
+  /** (row,col) セルのデフォルトシーンを差し替える */
+  overrides?: Array<{ row: number; col: number; sceneId: string }>;
 }
 
 export interface StageDef {
@@ -577,51 +593,311 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 ];
 
 // ─── Stage 3: 和風・古都 (12 チャンク) ────────────────────────
+// 参道 → 茶屋 → 五重塔 → 古民家と進む。shrine_approach は 2 行 4 列、
+// 中央列 (col 1,2) を寺社系に差し替え、外周 (col 0,3) に古民家/茶屋を置く
 const STAGE_3_TEMPLATES: ChunkTemplate[] = [
-  { patternId: 'shrine_approach',    groundOverride: 'stone_pavement' },
-  { patternId: 'full_grid',          groundOverride: 'stone_pavement' },
-  { patternId: 'shrine_approach',    groundOverride: 'gravel' },
-  { patternId: 'suburban_calm',      groundOverride: 'stone_pavement' },
-  { patternId: 'shrine_approach',    groundOverride: 'fallen_leaves' },
-  { patternId: 'staggered',          groundOverride: 'stone_pavement' },
-  { patternId: 'shrine_approach',    groundOverride: 'gravel' },
-  { patternId: 'plaza_center',       groundOverride: 'stone_pavement' },
-  { patternId: 'shrine_approach',    groundOverride: 'wood_deck' },
-  { patternId: 'full_grid',          groundOverride: 'stone_pavement' },
-  { patternId: 'shrine_approach',    groundOverride: 'fallen_leaves' },
-  { patternId: 'shrine_approach',    groundOverride: 'stone_pavement' },
+  // 1: 鳥居で参道の導入
+  { patternId: 'shrine_approach', groundOverride: 'gravel',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'tea_house_garden' },
+      { row: 0, col: 1, sceneId: 'sando_gate' },
+      { row: 0, col: 3, sceneId: 'old_town_alley' },
+      { row: 1, col: 1, sceneId: 'sando_gate' },
+      { row: 1, col: 3, sceneId: 'tea_house_garden' },
+    ] },
+  // 2: 古民家路地
+  { patternId: 'full_grid', groundOverride: 'stone_pavement',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'old_town_alley' },
+      { row: 0, col: 2, sceneId: 'tea_house_garden' },
+      { row: 1, col: 1, sceneId: 'old_town_alley' },
+      { row: 1, col: 3, sceneId: 'tea_house_garden' },
+    ] },
+  // 3: 参道進行
+  { patternId: 'shrine_approach', groundOverride: 'gravel',
+    overrides: [
+      { row: 0, col: 1, sceneId: 'sando_gate' },
+      { row: 0, col: 2, sceneId: 'sando_gate' },
+      { row: 1, col: 1, sceneId: 'sando_gate' },
+      { row: 1, col: 2, sceneId: 'sando_gate' },
+      { row: 0, col: 3, sceneId: 'tea_house_garden' },
+    ] },
+  // 4: 旅館街
+  { patternId: 'suburban_calm', groundOverride: 'stone_pavement',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'ryokan_street' },
+      { row: 0, col: 2, sceneId: 'ryokan_street' },
+      { row: 1, col: 1, sceneId: 'tea_house_garden' },
+    ] },
+  // 5: 寺院の庭 (苔)
+  { patternId: 'shrine_approach', groundOverride: 'moss',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'tea_house_garden' },
+      { row: 0, col: 1, sceneId: 'five_story_pagoda' },
+      { row: 0, col: 3, sceneId: 'old_town_alley' },
+      { row: 1, col: 1, sceneId: 'five_story_pagoda' },
+      { row: 1, col: 3, sceneId: 'tea_house_garden' },
+    ] },
+  // 6: 古民家ずらり
+  { patternId: 'staggered', groundOverride: 'stone_pavement',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'old_town_alley' },
+      { row: 0, col: 2, sceneId: 'old_town_alley' },
+      { row: 1, col: 1, sceneId: 'ryokan_street' },
+      { row: 1, col: 3, sceneId: 'tea_house_garden' },
+    ] },
+  // 7: 参道 + 茶屋
+  { patternId: 'shrine_approach', groundOverride: 'gravel',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'tea_house_garden' },
+      { row: 0, col: 1, sceneId: 'sando_gate' },
+      { row: 0, col: 3, sceneId: 'tea_house_garden' },
+      { row: 1, col: 1, sceneId: 'sando_gate' },
+    ] },
+  // 8: 五重塔の中央広場
+  { patternId: 'plaza_center', groundOverride: 'stone_pavement',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'five_story_pagoda' },
+      { row: 0, col: 3, sceneId: 'five_story_pagoda' },
+      { row: 1, col: 1, sceneId: 'ryokan_street' },
+    ] },
+  // 9: 旅館と茶屋の通り
+  { patternId: 'shrine_approach', groundOverride: 'wood_deck',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'ryokan_street' },
+      { row: 0, col: 1, sceneId: 'sando_gate' },
+      { row: 0, col: 3, sceneId: 'tea_house_garden' },
+      { row: 1, col: 1, sceneId: 'sando_gate' },
+      { row: 1, col: 3, sceneId: 'ryokan_street' },
+    ] },
+  // 10: 古民家街 (落ち葉)
+  { patternId: 'full_grid', groundOverride: 'fallen_leaves',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'old_town_alley' },
+      { row: 0, col: 2, sceneId: 'tea_house_garden' },
+      { row: 1, col: 1, sceneId: 'old_town_alley' },
+      { row: 1, col: 3, sceneId: 'old_town_alley' },
+    ] },
+  // 11: 五重塔 (苔)
+  { patternId: 'shrine_approach', groundOverride: 'moss',
+    overrides: [
+      { row: 0, col: 1, sceneId: 'five_story_pagoda' },
+      { row: 0, col: 3, sceneId: 'tea_house_garden' },
+      { row: 1, col: 1, sceneId: 'five_story_pagoda' },
+      { row: 1, col: 3, sceneId: 'old_town_alley' },
+    ] },
+  // 12: 終盤 参道
+  { patternId: 'shrine_approach', groundOverride: 'gravel',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'tea_house_garden' },
+      { row: 0, col: 1, sceneId: 'sando_gate' },
+      { row: 0, col: 2, sceneId: 'sando_gate' },
+      { row: 1, col: 1, sceneId: 'sando_gate' },
+      { row: 1, col: 3, sceneId: 'ryokan_street' },
+    ] },
 ];
 
 // ─── Stage 4: 港湾・工業地帯 (10 チャンク) ────────────────────
+// harbor_warehouse: rows 2, cols 4, merge(row=1, col=0, span=2)
+// 倉庫 → クレーン → 工場 → コンテナヤードの展開
 const STAGE_4_TEMPLATES: ChunkTemplate[] = [
-  { patternId: 'harbor_warehouse',   groundOverride: 'concrete' },
-  { patternId: 'office_district',    groundOverride: 'concrete' },
-  { patternId: 'harbor_warehouse',   groundOverride: 'asphalt' },
-  { patternId: 'office_district',    groundOverride: 'asphalt' },
-  { patternId: 'harbor_warehouse',   groundOverride: 'concrete' },
-  { patternId: 'full_grid',          groundOverride: 'dirt' },
-  { patternId: 'office_district',    groundOverride: 'concrete' },
-  { patternId: 'harbor_warehouse',   groundOverride: 'asphalt' },
-  { patternId: 'office_district',    groundOverride: 'concrete' },
-  { patternId: 'harbor_warehouse',   groundOverride: 'concrete' },
+  // 1: 倉庫並び導入 (油汚れコンクリ)
+  { patternId: 'harbor_warehouse', groundOverride: 'oil_stained_concrete',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'dock_shack' },
+      { row: 0, col: 1, sceneId: 'port_warehouse_row' },
+      { row: 0, col: 3, sceneId: 'warehouse_district' },
+      { row: 1, col: 0, sceneId: 'warehouse_district' },   // merged
+      { row: 1, col: 2, sceneId: 'port_warehouse_row' },
+      { row: 1, col: 3, sceneId: 'dock_shack' },
+    ] },
+  // 2: 工場煙突と埠頭
+  { patternId: 'office_district', groundOverride: 'steel_plate',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'factory_smokestacks' },
+      { row: 0, col: 2, sceneId: 'dock_shack' },
+      { row: 1, col: 1, sceneId: 'port_warehouse_row' },
+      { row: 1, col: 3, sceneId: 'warehouse_district' },
+    ] },
+  // 3: コンテナヤード + クレーン
+  { patternId: 'harbor_warehouse', groundOverride: 'steel_plate',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'dock_shack' },
+      { row: 0, col: 1, sceneId: 'container_yard' },
+      { row: 0, col: 2, sceneId: 'container_yard' },
+      { row: 0, col: 3, sceneId: 'warehouse_district' },
+      { row: 1, col: 0, sceneId: 'container_yard' },   // merged
+      { row: 1, col: 2, sceneId: 'factory_smokestacks' },
+      { row: 1, col: 3, sceneId: 'dock_shack' },
+    ] },
+  // 4: 倉庫密集
+  { patternId: 'office_district', groundOverride: 'oil_stained_concrete',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'warehouse_district' },
+      { row: 0, col: 2, sceneId: 'port_warehouse_row' },
+      { row: 1, col: 1, sceneId: 'warehouse_district' },
+      { row: 1, col: 3, sceneId: 'port_warehouse_row' },
+    ] },
+  // 5: 工場地帯
+  { patternId: 'harbor_warehouse', groundOverride: 'oil_stained_concrete',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'factory_smokestacks' },
+      { row: 0, col: 1, sceneId: 'port_warehouse_row' },
+      { row: 0, col: 3, sceneId: 'factory_smokestacks' },
+      { row: 1, col: 0, sceneId: 'factory_smokestacks' }, // merged
+      { row: 1, col: 2, sceneId: 'container_yard' },
+      { row: 1, col: 3, sceneId: 'dock_shack' },
+    ] },
+  // 6: 大倉庫地域
+  { patternId: 'full_grid', groundOverride: 'steel_plate',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'warehouse_district' },
+      { row: 0, col: 2, sceneId: 'port_warehouse_row' },
+      { row: 1, col: 1, sceneId: 'port_warehouse_row' },
+      { row: 1, col: 3, sceneId: 'warehouse_district' },
+    ] },
+  // 7: クレーン見本市
+  { patternId: 'office_district', groundOverride: 'steel_plate',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'container_yard' },
+      { row: 0, col: 2, sceneId: 'container_yard' },
+      { row: 1, col: 1, sceneId: 'factory_smokestacks' },
+      { row: 1, col: 3, sceneId: 'port_warehouse_row' },
+    ] },
+  // 8: コンテナずらり
+  { patternId: 'harbor_warehouse', groundOverride: 'oil_stained_concrete',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'dock_shack' },
+      { row: 0, col: 1, sceneId: 'container_yard' },
+      { row: 0, col: 3, sceneId: 'port_warehouse_row' },
+      { row: 1, col: 0, sceneId: 'container_yard' }, // merged
+      { row: 1, col: 2, sceneId: 'container_yard' },
+      { row: 1, col: 3, sceneId: 'factory_smokestacks' },
+    ] },
+  // 9: 工場と倉庫の混成
+  { patternId: 'office_district', groundOverride: 'oil_stained_concrete',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'factory_smokestacks' },
+      { row: 0, col: 2, sceneId: 'warehouse_district' },
+      { row: 1, col: 1, sceneId: 'container_yard' },
+      { row: 1, col: 3, sceneId: 'port_warehouse_row' },
+    ] },
+  // 10: 最終
+  { patternId: 'harbor_warehouse', groundOverride: 'steel_plate',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'dock_shack' },
+      { row: 0, col: 1, sceneId: 'container_yard' },
+      { row: 0, col: 2, sceneId: 'port_warehouse_row' },
+      { row: 0, col: 3, sceneId: 'factory_smokestacks' },
+      { row: 1, col: 0, sceneId: 'warehouse_district' }, // merged
+      { row: 1, col: 2, sceneId: 'container_yard' },
+      { row: 1, col: 3, sceneId: 'dock_shack' },
+    ] },
 ];
 
 // ─── Stage 5: テーマパーク・祭り (フィナーレ 14 チャンク) ─────
+// 屋台通り → メリーゴーランド → ジェットコースター → パレード → GOAL
 const STAGE_5_TEMPLATES: ChunkTemplate[] = [
-  { patternId: 'entertainment_block',groundOverride: 'tile' },
-  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
-  { patternId: 'entertainment_block',groundOverride: 'wood_deck' },
-  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
+  // 1: 入場・屋台通り導入
+  { patternId: 'entertainment_block', groundOverride: 'checker_tile',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 2, sceneId: 'yatai_street' },
+      { row: 1, col: 1, sceneId: 'yatai_small' },
+      { row: 1, col: 3, sceneId: 'yatai_small' },
+    ] },
+  // 2: メリーゴーランド広場
+  { patternId: 'park_plaza_radial', groundOverride: 'checker_tile',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 2, sceneId: 'yatai_street' },
+      { row: 1, col: 0, sceneId: 'carousel_plaza' }, // merged
+      { row: 1, col: 2, sceneId: 'carousel_plaza' }, // merged
+    ] },
+  // 3: 祭り太鼓の広場
+  { patternId: 'entertainment_block', groundOverride: 'red_carpet',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_street' },
+      { row: 0, col: 2, sceneId: 'yatai_small' },
+      { row: 1, col: 1, sceneId: 'parade_tent' },
+      { row: 1, col: 3, sceneId: 'yatai_small' },
+    ] },
+  // 4: ジェットコースター登場
+  { patternId: 'park_plaza_radial', groundOverride: 'checker_tile',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 2, sceneId: 'yatai_street' },
+      { row: 1, col: 0, sceneId: 'coaster_thrill' }, // merged
+      { row: 1, col: 2, sceneId: 'carousel_plaza' }, // merged
+    ] },
+  // 5: 公園休憩
   { patternId: 'park_break' },
-  { patternId: 'entertainment_block',groundOverride: 'tile' },
-  { patternId: 'park_plaza_radial',  groundOverride: 'stone_pavement' },
-  { patternId: 'campus_district',    groundOverride: 'grass' },
-  { patternId: 'entertainment_block',groundOverride: 'tile' },
-  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
+  // 6: 屋台大通り
+  { patternId: 'entertainment_block', groundOverride: 'red_carpet',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_street' },
+      { row: 0, col: 2, sceneId: 'yatai_street' },
+      { row: 1, col: 1, sceneId: 'yatai_small' },
+      { row: 1, col: 3, sceneId: 'yatai_small' },
+    ] },
+  // 7: 大テント
+  { patternId: 'park_plaza_radial', groundOverride: 'red_carpet',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 2, sceneId: 'yatai_small' },
+      { row: 1, col: 0, sceneId: 'parade_tent' }, // merged
+      { row: 1, col: 2, sceneId: 'parade_tent' }, // merged
+    ] },
+  // 8: 第 2 コースター
+  { patternId: 'campus_district', groundOverride: 'checker_tile',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_street' },
+      { row: 0, col: 2, sceneId: 'yatai_small' },
+      { row: 1, col: 1, sceneId: 'coaster_thrill' },
+      { row: 1, col: 3, sceneId: 'carousel_plaza' },
+    ] },
+  // 9: メリーゴーランド × 2
+  { patternId: 'entertainment_block', groundOverride: 'checker_tile',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'carousel_plaza' },
+      { row: 0, col: 2, sceneId: 'yatai_street' },
+      { row: 1, col: 1, sceneId: 'carousel_plaza' },
+      { row: 1, col: 3, sceneId: 'yatai_small' },
+    ] },
+  // 10: パレード
+  { patternId: 'park_plaza_radial', groundOverride: 'red_carpet',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 2, sceneId: 'yatai_small' },
+      { row: 1, col: 0, sceneId: 'parade_tent' }, // merged
+      { row: 1, col: 2, sceneId: 'coaster_thrill' }, // merged
+    ] },
+  // 11: 公園休憩
   { patternId: 'park_break' },
-  { patternId: 'entertainment_block',groundOverride: 'wood_deck' },
-  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
-  { patternId: 'goal_final',         isGoal: true },
+  // 12: クライマックス屋台通り
+  { patternId: 'entertainment_block', groundOverride: 'red_carpet',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_street' },
+      { row: 0, col: 2, sceneId: 'yatai_street' },
+      { row: 1, col: 1, sceneId: 'parade_tent' },
+      { row: 1, col: 3, sceneId: 'yatai_small' },
+    ] },
+  // 13: ラストアトラクション
+  { patternId: 'park_plaza_radial', groundOverride: 'checker_tile',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 2, sceneId: 'yatai_small' },
+      { row: 1, col: 0, sceneId: 'coaster_thrill' }, // merged
+      { row: 1, col: 2, sceneId: 'carousel_plaza' }, // merged
+    ] },
+  // 14: GOAL
+  { patternId: 'goal_final', isGoal: true,
+    overrides: [
+      { row: 0, col: 0, sceneId: 'yatai_small' },
+      { row: 0, col: 3, sceneId: 'yatai_small' },
+      { row: 1, col: 0, sceneId: 'parade_tent' },
+      { row: 1, col: 2, sceneId: 'carousel_plaza' },
+    ] },
 ];
 
 export const STAGES: StageDef[] = [
@@ -785,6 +1061,7 @@ function emptyChunk(chunkId: number): ChunkData {
   const baseY = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
   return {
     chunkId, baseY,
+    stageIndex: 0,
     roads: [],
     horizontalRoads: [],
     verticalRoads: [],
@@ -825,7 +1102,7 @@ export function generateChunk(chunkId: number): ChunkData {
   } else {
     // grid block を生成してシーン配置
     const block = buildBlock(pattern, -180, baseY, C.CELL_W, C.CELL_H);
-    const p = placeGridBlock(block, pattern, chunkId, info.template.groundOverride);
+    const p = placeGridBlock(block, pattern, chunkId, info.template.groundOverride, info.template.overrides);
     buildings.push(...p.buildings);
     furniture.push(...p.furniture);
     if (p.grounds) grounds.push(...p.grounds);
@@ -884,6 +1161,7 @@ export function generateChunk(chunkId: number): ChunkData {
 
   return {
     chunkId, baseY,
+    stageIndex: info.stageIndex,
     roads,
     horizontalRoads,
     verticalRoads,

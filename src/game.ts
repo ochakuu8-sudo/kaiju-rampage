@@ -875,6 +875,89 @@ export class Game {
           0.48, 0.44, 0.38, 0.7, 0, 1);
         break;
       }
+      case 'steel_plate': {
+        // 鉄板: 暗い灰色 + 縞板パターン
+        writeInst(buf, n++, x, y, w, h, 0.38, 0.38, 0.42, 1);
+        for (let i = -2; i <= 2; i++) {
+          writeInst(buf, n++, x + i * w * 0.18, y - h * 0.25, 1.2, 6, 0.48, 0.48, 0.52, 0.75, 0.5);
+          writeInst(buf, n++, x + i * w * 0.18, y + h * 0.15, 1.2, 6, 0.48, 0.48, 0.52, 0.75, 0.5);
+        }
+        // リベット
+        for (let cx of [-0.4, 0, 0.4]) {
+          for (let cy of [-0.4, 0.4]) {
+            writeInst(buf, n++, x + cx * w, y + cy * h, 1.5, 1.5, 0.22, 0.22, 0.25, 0.9, 0, 1);
+          }
+        }
+        // サビ
+        writeInst(buf, n++, x - w * 0.30, y + h * 0.30, w * 0.18, h * 0.12, 0.55, 0.32, 0.20, 0.55, 0, 1);
+        break;
+      }
+      case 'oil_stained_concrete': {
+        // 油汚れコンクリ: 暗いベース + 虹色の油シミ複数
+        writeInst(buf, n++, x, y, w, h, 0.45, 0.44, 0.42, 1);
+        writeInst(buf, n++, x - w * 0.20, y, w * 0.45, h * 0.30, 0.32, 0.28, 0.24, 0.85, 0, 1);
+        writeInst(buf, n++, x + w * 0.25, y - h * 0.10, w * 0.30, h * 0.22, 0.22, 0.22, 0.20, 0.75, 0, 1);
+        // 虹光沢
+        writeInst(buf, n++, x - w * 0.20, y, w * 0.30, h * 0.15, 0.50, 0.35, 0.55, 0.35, 0, 1);
+        writeInst(buf, n++, x + w * 0.25, y - h * 0.10, w * 0.18, h * 0.10, 0.40, 0.50, 0.35, 0.35, 0, 1);
+        // エキスパンションジョイント
+        writeInst(buf, n++, x, y - h * 0.35, w, 0.6, 0.25, 0.22, 0.18, 0.8);
+        writeInst(buf, n++, x, y + h * 0.35, w, 0.6, 0.25, 0.22, 0.18, 0.8);
+        // タイヤ痕
+        writeInst(buf, n++, x - w * 0.05, y, w * 0.75, 1, 0.18, 0.16, 0.14, 0.7);
+        break;
+      }
+      case 'moss': {
+        // 苔地: 深緑ベース + ふわっと明るい斑点
+        writeInst(buf, n++, x, y, w, h, 0.25, 0.42, 0.25, 1);
+        writeInst(buf, n++, x - w * 0.25, y - h * 0.18, w * 0.40, h * 0.32, 0.35, 0.55, 0.30, 0.7, 0, 1);
+        writeInst(buf, n++, x + w * 0.22, y + h * 0.22, w * 0.45, h * 0.35, 0.32, 0.50, 0.28, 0.7, 0, 1);
+        // 濃緑斑点
+        for (let i = 0; i < 5; i++) {
+          const dx = ((i * 97) % 80 - 40) / 100;
+          const dy = ((i * 53) % 80 - 40) / 100;
+          writeInst(buf, n++, x + dx * w, y + dy * h, 3, 2, 0.18, 0.32, 0.18, 0.85, 0, 1);
+        }
+        // 石 or 敷石模様
+        writeInst(buf, n++, x - w * 0.10, y, 6, 4, 0.52, 0.50, 0.46, 0.65, 0, 1);
+        writeInst(buf, n++, x + w * 0.30, y - h * 0.10, 5, 3.5, 0.55, 0.52, 0.48, 0.55, 0, 1);
+        break;
+      }
+      case 'red_carpet': {
+        // 赤絨毯: 濃い赤 + 金のフリンジ
+        writeInst(buf, n++, x, y, w, h, 0.62, 0.15, 0.18, 1);
+        // 中央パターン (菱形っぽいモチーフ)
+        writeInst(buf, n++, x, y, w * 0.75, h * 0.6, 0.72, 0.22, 0.22, 0.85);
+        writeInst(buf, n++, x, y, w * 0.30, h * 0.30, 0.88, 0.70, 0.25, 0.75, 0, 1);
+        // 金の縁取り
+        writeInst(buf, n++, x, y - h * 0.40, w, 1.5, 0.90, 0.72, 0.25, 0.85);
+        writeInst(buf, n++, x, y + h * 0.40, w, 1.5, 0.90, 0.72, 0.25, 0.85);
+        // フリンジ
+        for (let i = -4; i <= 4; i++) {
+          writeInst(buf, n++, x + i * w * 0.1, y - h * 0.46, 0.4, 2, 0.95, 0.80, 0.30, 0.9);
+          writeInst(buf, n++, x + i * w * 0.1, y + h * 0.46, 0.4, 2, 0.95, 0.80, 0.30, 0.9);
+        }
+        break;
+      }
+      case 'checker_tile': {
+        // チェッカータイル: 2x3 の白青マス
+        writeInst(buf, n++, x, y, w, h, 0.92, 0.88, 0.82, 1);
+        const colors: Array<[number, number, number]> = [
+          [0.30, 0.55, 0.85], [0.95, 0.92, 0.88],
+        ];
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 2; c++) {
+            const col = colors[(r + c) % 2];
+            writeInst(buf, n++, x - w * 0.25 + c * w * 0.5, y - h * 0.33 + r * h * 0.33, w * 0.48, h * 0.30, col[0], col[1], col[2], 1);
+          }
+        }
+        // グラウト
+        writeInst(buf, n++, x, y, w * 0.98, 0.5, 0.55, 0.52, 0.48, 0.75);
+        writeInst(buf, n++, x, y - h * 0.17, w * 0.98, 0.5, 0.55, 0.52, 0.48, 0.75);
+        writeInst(buf, n++, x, y + h * 0.17, w * 0.98, 0.5, 0.55, 0.52, 0.48, 0.75);
+        writeInst(buf, n++, x, y, 0.5, h * 0.95, 0.55, 0.52, 0.48, 0.75);
+        break;
+      }
     }
     return n - idx;
   }
@@ -1053,17 +1136,13 @@ export class Game {
     return n - start;
   }
 
-  /** チャンク由来の背景・道路を描画 (grid-based) */
+  /** チャンク由来の背景・道路を描画 (grid-based, ステージ別パレット) */
   private fillChunkRoads(buf: Float32Array, start: number): number {
     let n = start;
     const W = 360;
-    const [rr, rg, rb] = C.ROAD_COLOR;
-    const [sw_r, sw_g, sw_b] = C.SIDEWALK_COLOR;
     const [plR, plG, plB] = C.PLANTING_COLOR;
-    const [cbR, cbG, cbB] = C.CURB_COLOR;
-    const [mhR, mhG, mhB] = C.MANHOLE_COLOR;
     const [pvR, pvG, pvB, pvA] = C.PAVING_COLOR;
-    const [lr2, lg2, lb2] = C.ROAD_LINE_COLOR;
+    const [mhR, mhG, mhB] = C.MANHOLE_COLOR;
 
     const zoneBg: [number,number,number][] = [
       [C.ZONE_RESIDENTIAL[0], C.ZONE_RESIDENTIAL[1], C.ZONE_RESIDENTIAL[2]],
@@ -1071,78 +1150,77 @@ export class Game {
       [C.ZONE_OFFICE_BG[0],   C.ZONE_OFFICE_BG[1],   C.ZONE_OFFICE_BG[2]],
     ];
 
-    // 水平道路セグメント描画 (部分幅対応)
-    const drawH = (cy: number, h: number, xMin: number, xMax: number, cls: 'avenue'|'street') => {
-      const segW = xMax - xMin;
-      const segCX = (xMin + xMax) / 2;
-      const swH = cls === 'avenue' ? 6 : 4;
-      const swTop = cy + h/2 + swH/2;
-      const swBot = cy - h/2 - swH/2;
-      writeInst(buf, n++, segCX, swTop + swH/2 + 1.5, segW, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, segCX, swBot - swH/2 - 1.5, segW, 3, plR, plG, plB, 1);
-      writeInst(buf, n++, segCX, swTop, segW, swH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, segCX, swBot, segW, swH, sw_r, sw_g, sw_b, 1);
-      for (let x = Math.ceil(xMin/12)*12; x <= xMax; x += 12) {
-        writeInst(buf, n++, x, swTop, 1, swH, pvR, pvG, pvB, pvA);
-        writeInst(buf, n++, x, swBot, 1, swH, pvR, pvG, pvB, pvA);
-      }
-      writeInst(buf, n++, segCX, cy + h/2 + 0.5, segW, 1, cbR, cbG, cbB, 1);
-      writeInst(buf, n++, segCX, cy - h/2 - 0.5, segW, 1, cbR, cbG, cbB, 1);
-      writeInst(buf, n++, segCX, cy, segW, h, rr, rg, rb, 1);
-      if (cls === 'avenue') {
-        writeInst(buf, n++, segCX, cy + 2, segW, 1.5, lr2, lg2, lb2, 1);
-        writeInst(buf, n++, segCX, cy - 2, segW, 1.5, lr2, lg2, lb2, 1);
-      } else {
-        for (let x = Math.ceil(xMin/14)*14; x <= xMax - 10; x += 14) {
-          writeInst(buf, n++, x + 5, cy, 8, 1.2, 0.95, 0.95, 0.95, 0.55);
-        }
-      }
-      for (let x = Math.ceil(xMin/55)*55; x <= xMax - 10; x += 55) {
-        writeInst(buf, n++, x, cy, 4, 4, mhR, mhG, mhB, 1, 0, 1);
-      }
-      // 袋小路マーカー (世界壁でない端点)
-      if (xMin > C.WORLD_MIN_X + 1) {
-        writeInst(buf, n++, xMin + 1, cy, 2, h, cbR, cbG, cbB, 1);
-      }
-      if (xMax < C.WORLD_MAX_X - 1) {
-        writeInst(buf, n++, xMax - 1, cy, 2, h, cbR, cbG, cbB, 1);
-      }
-    };
-
-    // 垂直道路セグメント描画 (部分高さ対応)
-    const drawV = (cx: number, w: number, yMin: number, yMax: number, cls: 'avenue'|'street') => {
-      const segH = yMax - yMin;
-      const segCY = (yMin + yMax) / 2;
-      const swW = cls === 'avenue' ? 6 : 4;
-      writeInst(buf, n++, cx - w/2 - swW/2, segCY, swW, segH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, cx + w/2 + swW/2, segCY, swW, segH, sw_r, sw_g, sw_b, 1);
-      writeInst(buf, n++, cx - w/2 - 0.5, segCY, 1, segH, cbR, cbG, cbB, 1);
-      writeInst(buf, n++, cx + w/2 + 0.5, segCY, 1, segH, cbR, cbG, cbB, 1);
-      writeInst(buf, n++, cx, segCY, w, segH, rr, rg, rb, 1);
-      for (let y = Math.ceil(yMin/14)*14; y <= yMax - 10; y += 14) {
-        writeInst(buf, n++, cx, y + 5, 1.2, 8, 0.95, 0.95, 0.95, 0.55);
-      }
-      for (let y = Math.ceil(yMin/55)*55; y <= yMax - 10; y += 55) {
-        writeInst(buf, n++, cx, y, 4, 4, mhR, mhG, mhB, 1, 0, 1);
-      }
-    };
-
     for (const chunk of this.loadedChunks.values()) {
-      const { baseY, chunkId } = chunk;
+      const { baseY, chunkId, stageIndex } = chunk;
+      const pal = C.getStagePalette(stageIndex);
+      const [rr, rg, rb] = pal.road;
+      const [sw_r, sw_g, sw_b] = pal.sidewalk;
+      const [cbR, cbG, cbB] = pal.curb;
+      const [lr2, lg2, lb2] = pal.line;
       const [bgR, bgG, bgB] = zoneBg[chunkId % 3];
+
       // チャンク背景
       writeInst(buf, n++, 0, baseY + C.CHUNK_HEIGHT / 2, W, C.CHUNK_HEIGHT, bgR, bgG, bgB, 1);
       // セル地面 (背景の上、道路の下)
       for (const tile of chunk.grounds) {
         n += this.drawGroundTile(buf, n, tile);
       }
+
       // 水平道路
       for (const r of chunk.horizontalRoads) {
-        drawH(r.cy, r.h, r.xMin, r.xMax, r.cls);
+        const { cy, h, xMin, xMax, cls } = r;
+        const segW = xMax - xMin;
+        const segCX = (xMin + xMax) / 2;
+        const swH = cls === 'avenue' ? 6 : 4;
+        const swTop = cy + h/2 + swH/2;
+        const swBot = cy - h/2 - swH/2;
+        writeInst(buf, n++, segCX, swTop + swH/2 + 1.5, segW, 3, plR, plG, plB, 1);
+        writeInst(buf, n++, segCX, swBot - swH/2 - 1.5, segW, 3, plR, plG, plB, 1);
+        writeInst(buf, n++, segCX, swTop, segW, swH, sw_r, sw_g, sw_b, 1);
+        writeInst(buf, n++, segCX, swBot, segW, swH, sw_r, sw_g, sw_b, 1);
+        for (let x = Math.ceil(xMin/12)*12; x <= xMax; x += 12) {
+          writeInst(buf, n++, x, swTop, 1, swH, pvR, pvG, pvB, pvA);
+          writeInst(buf, n++, x, swBot, 1, swH, pvR, pvG, pvB, pvA);
+        }
+        writeInst(buf, n++, segCX, cy + h/2 + 0.5, segW, 1, cbR, cbG, cbB, 1);
+        writeInst(buf, n++, segCX, cy - h/2 - 0.5, segW, 1, cbR, cbG, cbB, 1);
+        writeInst(buf, n++, segCX, cy, segW, h, rr, rg, rb, 1);
+        if (cls === 'avenue') {
+          writeInst(buf, n++, segCX, cy + 2, segW, 1.5, lr2, lg2, lb2, 1);
+          writeInst(buf, n++, segCX, cy - 2, segW, 1.5, lr2, lg2, lb2, 1);
+        } else {
+          for (let x = Math.ceil(xMin/14)*14; x <= xMax - 10; x += 14) {
+            writeInst(buf, n++, x + 5, cy, 8, 1.2, lr2, lg2, lb2, 0.7);
+          }
+        }
+        for (let x = Math.ceil(xMin/55)*55; x <= xMax - 10; x += 55) {
+          writeInst(buf, n++, x, cy, 4, 4, mhR, mhG, mhB, 1, 0, 1);
+        }
+        if (xMin > C.WORLD_MIN_X + 1) {
+          writeInst(buf, n++, xMin + 1, cy, 2, h, cbR, cbG, cbB, 1);
+        }
+        if (xMax < C.WORLD_MAX_X - 1) {
+          writeInst(buf, n++, xMax - 1, cy, 2, h, cbR, cbG, cbB, 1);
+        }
       }
+
       // 垂直道路
       for (const r of chunk.verticalRoads) {
-        drawV(r.cx, r.w, r.yMin, r.yMax, r.cls);
+        const { cx, w, yMin, yMax, cls } = r;
+        const segH = yMax - yMin;
+        const segCY = (yMin + yMax) / 2;
+        const swW = cls === 'avenue' ? 6 : 4;
+        writeInst(buf, n++, cx - w/2 - swW/2, segCY, swW, segH, sw_r, sw_g, sw_b, 1);
+        writeInst(buf, n++, cx + w/2 + swW/2, segCY, swW, segH, sw_r, sw_g, sw_b, 1);
+        writeInst(buf, n++, cx - w/2 - 0.5, segCY, 1, segH, cbR, cbG, cbB, 1);
+        writeInst(buf, n++, cx + w/2 + 0.5, segCY, 1, segH, cbR, cbG, cbB, 1);
+        writeInst(buf, n++, cx, segCY, w, segH, rr, rg, rb, 1);
+        for (let y = Math.ceil(yMin/14)*14; y <= yMax - 10; y += 14) {
+          writeInst(buf, n++, cx, y + 5, 1.2, 8, lr2, lg2, lb2, 0.7);
+        }
+        for (let y = Math.ceil(yMin/55)*55; y <= yMax - 10; y += 55) {
+          writeInst(buf, n++, cx, y, 4, 4, mhR, mhG, mhB, 1, 0, 1);
+        }
       }
     }
     return n - start;
@@ -1201,29 +1279,29 @@ export class Game {
   /** 交差点描画 (grid-based): 初期都市 + 全チャンクの交差点を描画 */
   private fillIntersections(buf: Float32Array, start: number): number {
     let n = start;
-    const [ixR, ixG, ixB] = C.INTERSECTION_COLOR;
-    const [cwR, cwG, cwB, cwA] = C.CROSSWALK_COLOR;
     const [slR, slG, slB, slA] = C.STOPLINE_COLOR;
 
-    const drawOne = (ix: Intersection) => {
+    const drawOne = (
+      ix: Intersection,
+      ixCol: readonly [number, number, number, number],
+      cwCol: readonly [number, number, number, number],
+    ) => {
       const { x, y, hThickness, vThickness } = ix;
-      // 明るいアスファルト塊
+      const [ixR, ixG, ixB] = ixCol;
+      const [cwR, cwG, cwB, cwA] = cwCol;
       writeInst(buf, n++, x, y, vThickness + 4, hThickness + 2, ixR, ixG, ixB, 1);
-      // 横断歩道 (縦道路側・左右)
       const cwLenV = vThickness;
       for (let i = 0; i < 3; i++) {
         const yOff = hThickness/2 - 2 - i * 2;
         writeInst(buf, n++, x, y + yOff, cwLenV, 1.5, cwR, cwG, cwB, cwA);
         writeInst(buf, n++, x, y - yOff, cwLenV, 1.5, cwR, cwG, cwB, cwA);
       }
-      // 横断歩道 (横道路側・上下)
       const cwLenH = hThickness;
       for (let i = 0; i < 3; i++) {
         const xOff = vThickness/2 - 2 - i * 2;
         writeInst(buf, n++, x + xOff, y, 1.5, cwLenH, cwR, cwG, cwB, cwA);
         writeInst(buf, n++, x - xOff, y, 1.5, cwLenH, cwR, cwG, cwB, cwA);
       }
-      // 停止線 (交差点の 4 方向外側)
       const slOffsetX = vThickness / 2 + 1;
       const slOffsetY = hThickness / 2 + 1;
       writeInst(buf, n++, x - slOffsetX, y, 2, hThickness - 2, slR, slG, slB, slA);
@@ -1232,15 +1310,17 @@ export class Game {
       writeInst(buf, n++, x, y + slOffsetY, vThickness - 2, 2, slR, slG, slB, slA);
     };
 
-    // 初期都市の交差点
+    // 初期都市の交差点 (デフォルト Stage 1 パレット)
     const initialRoadData = getInitialCityRoadData();
+    const defaultPal = C.getStagePalette(0);
     for (const ix of initialRoadData.intersections) {
-      drawOne(ix);
+      drawOne(ix, defaultPal.intersection, defaultPal.crosswalk);
     }
-    // チャンクの交差点
+    // チャンクの交差点 (ステージ別パレット)
     for (const chunk of this.loadedChunks.values()) {
+      const pal = C.getStagePalette(chunk.stageIndex);
       for (const ix of chunk.intersections) {
-        drawOne(ix);
+        drawOne(ix, pal.intersection, pal.crosswalk);
       }
     }
 

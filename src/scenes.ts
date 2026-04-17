@@ -30,7 +30,15 @@ export type GroundType =
   | 'grass'           // 芝 (住宅街・公園)
   | 'dirt'            // 土 (農家・校庭・バックアレイ)
   | 'fallen_leaves'   // 落ち葉 (寺の庭・森)
-  | 'gravel';         // 玉砂利 (神社参道・枯山水)
+  | 'gravel'          // 玉砂利 (神社参道・枯山水)
+  // ── Stage 4 港湾・工業 ──
+  | 'steel_plate'         // 鉄板 (工業エリア・埠頭)
+  | 'oil_stained_concrete' // 油汚れコンクリ (ガソリンスタンド・倉庫前)
+  // ── Stage 3 和風 ──
+  | 'moss'                // 苔 (古い神社・枯山水)
+  // ── Stage 5 祭り ──
+  | 'red_carpet'          // 赤絨毯 (正面参道・パレード)
+  | 'checker_tile';       // チェッカー模様 (遊園地広場)
 
 export interface SceneBuilding {
   dx: number;          // scene 左端からのセンターX
@@ -1695,11 +1703,347 @@ const TOP_SCENES: Scene[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────
+// ★ Stage 4 港湾・工業シーン
+// ─────────────────────────────────────────────────────────────────
+
+const PORT_SCENES: Scene[] = [
+  // コンセプト: 倉庫が横並び。前にフォークリフトとドラム缶、奥にコンテナ
+  {
+    id: 'port_warehouse_row', tier: 'top', width: 90, ground: 'oil_stained_concrete',
+    buildings: [
+      { dx: 26, dy:  0, size: 'warehouse' },
+      { dx: 26, dy: 44, size: 'container_stack' },
+    ],
+    furniture: [
+      { dx:  2, dy:  6, type: 'forklift' },
+      { dx: 16, dy:  8, type: 'pallet_stack' },
+      { dx: 38, dy:  8, type: 'drum_can' },
+      { dx: 46, dy:  8, type: 'drum_can' },
+      { dx: 54, dy:  8, type: 'pallet_stack' },
+      { dx: 72, dy:  6, type: 'barrier' },
+      { dx:  4, dy: 30, type: 'cargo_container' },
+      { dx: 54, dy: 30, type: 'cargo_container' },
+      { dx: 10, dy: 66, type: 'electric_box' },
+      { dx: 44, dy: 68, type: 'power_pole' },
+      { dx: 78, dy: 66, type: 'flag_pole' },
+      { dx: 24, dy: 90, type: 'power_pole' },
+      { dx: 60, dy: 88, type: 'power_pole' },
+    ],
+  },
+  // コンセプト: ガントリークレーンと埠頭・コンテナヤード
+  {
+    id: 'container_yard', tier: 'top', width: 80, ground: 'steel_plate',
+    buildings: [
+      { dx: 40, dy:  8, size: 'crane_gantry' },
+      { dx: 12, dy: 48, size: 'container_stack' },
+      { dx: 56, dy: 48, size: 'container_stack' },
+    ],
+    furniture: [
+      { dx:  8, dy:  6, type: 'buoy' },
+      { dx: 24, dy:  6, type: 'buoy' },
+      { dx: 56, dy:  6, type: 'buoy' },
+      { dx: 72, dy:  6, type: 'buoy' },
+      { dx: 10, dy: 22, type: 'drum_can' },
+      { dx: 70, dy: 22, type: 'drum_can' },
+      { dx: 38, dy: 82, type: 'cargo_container' },
+      { dx: 16, dy: 88, type: 'flag_pole' },
+      { dx: 64, dy: 88, type: 'flag_pole' },
+    ],
+  },
+  // コンセプト: 工場と煙突
+  {
+    id: 'factory_smokestacks', tier: 'top', width: 70, ground: 'oil_stained_concrete',
+    buildings: [
+      { dx: 32, dy:  0, size: 'factory_stack' },
+      { dx: 12, dy: 50, size: 'silo' },
+      { dx: 54, dy: 50, size: 'silo' },
+    ],
+    furniture: [
+      { dx:  4, dy:  8, type: 'drum_can' },
+      { dx: 12, dy:  8, type: 'drum_can' },
+      { dx: 20, dy:  8, type: 'pallet_stack' },
+      { dx: 56, dy:  8, type: 'electric_box' },
+      { dx: 64, dy:  8, type: 'drum_can' },
+      { dx: 32, dy: 32, type: 'cargo_container' },
+      { dx:  4, dy: 78, type: 'power_pole' },
+      { dx: 66, dy: 78, type: 'power_pole' },
+    ],
+  },
+  // コンセプト: フォークリフト走る倉庫敷地 (mid tier, 複数倉庫)
+  {
+    id: 'warehouse_district', tier: 'mid', width: 110, ground: 'oil_stained_concrete',
+    buildings: [
+      { dx: 28, dy:  0, size: 'warehouse' },
+      { dx: 82, dy:  0, size: 'warehouse' },
+    ],
+    furniture: [
+      { dx:  4, dy:  8, type: 'traffic_cone' },
+      { dx: 58, dy:  6, type: 'forklift' },
+      { dx: 104, dy:  8, type: 'barrier' },
+      { dx: 28, dy: 44, type: 'pallet_stack' },
+      { dx: 82, dy: 44, type: 'pallet_stack' },
+      { dx: 12, dy: 58, type: 'drum_can' },
+      { dx: 56, dy: 58, type: 'cargo_container' },
+      { dx: 98, dy: 58, type: 'drum_can' },
+    ],
+  },
+  // コンセプト: 埠頭の小屋 (bot tier, 小物)
+  {
+    id: 'dock_shack', tier: 'bot', width: 56, ground: 'steel_plate',
+    buildings: [
+      { dx: 12, dy:  0, size: 'shed' },
+      { dx: 32, dy:  0, size: 'gas_station' },
+    ],
+    furniture: [
+      { dx:  2, dy:  6, type: 'buoy' },
+      { dx: 48, dy:  6, type: 'buoy' },
+      { dx: 22, dy: 20, type: 'drum_can' },
+      { dx: 32, dy: 20, type: 'drum_can' },
+      { dx: 42, dy: 20, type: 'pallet_stack' },
+      { dx:  4, dy: 48, type: 'power_pole' },
+      { dx: 52, dy: 48, type: 'flag_pole' },
+    ],
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────
+// ★ Stage 3 和風・古都シーン
+// ─────────────────────────────────────────────────────────────────
+
+const WAFU_SCENES: Scene[] = [
+  // 五重塔を中心とした寺院境内
+  {
+    id: 'five_story_pagoda', tier: 'top', width: 60, ground: 'moss',
+    buildings: [
+      { dx: 30, dy: 10, size: 'pagoda' },
+      { dx: 10, dy: 52, size: 'kominka' },
+      { dx: 50, dy: 52, size: 'kominka' },
+    ],
+    furniture: [
+      { dx:  8, dy:  8, type: 'stone_lantern' },
+      { dx: 52, dy:  8, type: 'stone_lantern' },
+      { dx: 22, dy: 32, type: 'temizuya' },
+      { dx: 38, dy: 32, type: 'ema_rack' },
+      { dx:  4, dy: 78, type: 'bamboo_fence' },
+      { dx: 30, dy: 82, type: 'sakura_tree' },
+      { dx: 56, dy: 78, type: 'bamboo_fence' },
+    ],
+    prePlacedHumans: [
+      { dx: 16, dy: 18 }, { dx: 30, dy: 22 }, { dx: 44, dy: 18 },
+    ],
+  },
+  // 旅館の通り
+  {
+    id: 'ryokan_street', tier: 'top', width: 80, ground: 'stone_pavement',
+    buildings: [
+      { dx: 36, dy:  0, size: 'ryokan' },
+      { dx: 16, dy: 48, size: 'chaya' },
+      { dx: 60, dy: 48, size: 'chaya' },
+    ],
+    furniture: [
+      { dx:  4, dy:  6, type: 'stone_lantern' },
+      { dx: 76, dy:  6, type: 'stone_lantern' },
+      { dx: 16, dy: 28, type: 'noren' },
+      { dx: 60, dy: 28, type: 'noren' },
+      { dx: 40, dy: 32, type: 'shinto_rope' },
+      { dx:  6, dy: 78, type: 'bamboo_cluster' },
+      { dx: 38, dy: 80, type: 'sakura_tree' },
+      { dx: 72, dy: 78, type: 'bamboo_cluster' },
+    ],
+    prePlacedHumans: [
+      { dx: 20, dy:  9 }, { dx: 36, dy: 10 }, { dx: 54, dy:  9 },
+    ],
+  },
+  // 古民家路地
+  {
+    id: 'old_town_alley', tier: 'mid', width: 90, ground: 'stone_pavement',
+    buildings: [
+      { dx: 14, dy:  0, size: 'kominka' },
+      { dx: 44, dy:  0, size: 'chaya' },
+      { dx: 74, dy:  0, size: 'kominka' },
+      { dx: 14, dy: 40, size: 'shed' },
+      { dx: 74, dy: 40, size: 'shed' },
+    ],
+    furniture: [
+      { dx:  4, dy:  4, type: 'stone_lantern' },
+      { dx: 28, dy:  6, type: 'chouchin' },
+      { dx: 60, dy:  6, type: 'chouchin' },
+      { dx: 86, dy:  4, type: 'stone_lantern' },
+      { dx: 44, dy: 24, type: 'koi_pond' },
+      { dx:  8, dy: 60, type: 'bamboo_fence' },
+      { dx: 82, dy: 60, type: 'bamboo_fence' },
+      { dx: 44, dy: 82, type: 'sakura_tree' },
+    ],
+  },
+  // 茶屋の庭
+  {
+    id: 'tea_house_garden', tier: 'bot', width: 56, ground: 'gravel',
+    buildings: [
+      { dx: 14, dy:  0, size: 'chaya' },
+      { dx: 40, dy:  0, size: 'chaya' },
+    ],
+    furniture: [
+      { dx:  4, dy:  4, type: 'stone_lantern' },
+      { dx: 52, dy:  4, type: 'stone_lantern' },
+      { dx: 28, dy: 20, type: 'koma_inu' },
+      { dx:  8, dy: 38, type: 'rock' },
+      { dx: 48, dy: 38, type: 'rock' },
+      { dx: 28, dy: 46, type: 'bonsai' },
+      { dx: 12, dy: 70, type: 'sakura_tree' },
+      { dx: 42, dy: 70, type: 'sakura_tree' },
+    ],
+  },
+  // 参道 (鳥居 + 狛犬 + 灯籠)
+  {
+    id: 'sando_gate', tier: 'mid', width: 90, ground: 'gravel',
+    buildings: [
+      { dx: 44, dy:  0, size: 'shrine' },
+      { dx: 14, dy: 40, size: 'kominka' },
+      { dx: 74, dy: 40, size: 'kominka' },
+    ],
+    furniture: [
+      { dx: 44, dy:  8, type: 'torii' },
+      { dx: 30, dy: 18, type: 'koma_inu' },
+      { dx: 58, dy: 18, type: 'koma_inu' },
+      { dx: 18, dy: 26, type: 'stone_lantern' },
+      { dx: 70, dy: 26, type: 'stone_lantern' },
+      { dx:  6, dy: 60, type: 'bamboo_cluster' },
+      { dx: 84, dy: 60, type: 'bamboo_cluster' },
+      { dx: 44, dy: 82, type: 'sakura_tree' },
+    ],
+    prePlacedHumans: [
+      { dx: 36, dy: 14 }, { dx: 52, dy: 14 }, { dx: 44, dy: 24 },
+    ],
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────
+// ★ Stage 5 テーマパーク・祭りシーン
+// ─────────────────────────────────────────────────────────────────
+
+const MATSURI_SCENES: Scene[] = [
+  // メリーゴーランド広場
+  {
+    id: 'carousel_plaza', tier: 'top', width: 60, ground: 'checker_tile',
+    buildings: [
+      { dx: 30, dy:  8, size: 'carousel' },
+    ],
+    furniture: [
+      { dx:  8, dy:  6, type: 'balloon_cluster' },
+      { dx: 52, dy:  6, type: 'balloon_cluster' },
+      { dx: 14, dy: 44, type: 'ticket_booth' },
+      { dx: 46, dy: 44, type: 'popcorn_cart' },
+      { dx:  6, dy: 66, type: 'chouchin' },
+      { dx: 30, dy: 68, type: 'banner_pole' },
+      { dx: 54, dy: 66, type: 'chouchin' },
+      { dx: 12, dy: 86, type: 'balloon_cluster' },
+      { dx: 48, dy: 86, type: 'balloon_cluster' },
+    ],
+    prePlacedHumans: [
+      { dx:  8, dy: 28 }, { dx: 20, dy: 30 }, { dx: 40, dy: 30 }, { dx: 52, dy: 28 },
+    ],
+  },
+  // ジェットコースター
+  {
+    id: 'coaster_thrill', tier: 'top', width: 80, ground: 'red_carpet',
+    buildings: [
+      { dx: 40, dy: 12, size: 'roller_coaster' },
+    ],
+    furniture: [
+      { dx:  4, dy:  6, type: 'flag_pole' },
+      { dx: 76, dy:  6, type: 'flag_pole' },
+      { dx: 10, dy: 44, type: 'ticket_booth' },
+      { dx: 70, dy: 44, type: 'ticket_booth' },
+      { dx: 40, dy: 72, type: 'matsuri_drum' },
+      { dx:  6, dy: 78, type: 'banner_pole' },
+      { dx: 74, dy: 78, type: 'banner_pole' },
+      { dx: 20, dy: 88, type: 'balloon_cluster' },
+      { dx: 60, dy: 88, type: 'balloon_cluster' },
+    ],
+    prePlacedHumans: [
+      { dx: 12, dy: 34 }, { dx: 30, dy: 36 }, { dx: 50, dy: 36 }, { dx: 68, dy: 34 },
+    ],
+  },
+  // 屋台通り
+  {
+    id: 'yatai_street', tier: 'mid', width: 110, ground: 'red_carpet',
+    buildings: [
+      { dx: 14, dy:  0, size: 'yatai' },
+      { dx: 40, dy:  0, size: 'yatai' },
+      { dx: 66, dy:  0, size: 'yatai' },
+      { dx: 92, dy:  0, size: 'yatai' },
+    ],
+    furniture: [
+      { dx:  4, dy:  8, type: 'chouchin' },
+      { dx: 28, dy:  8, type: 'chouchin' },
+      { dx: 52, dy:  8, type: 'chouchin' },
+      { dx: 78, dy:  8, type: 'chouchin' },
+      { dx: 104, dy:  8, type: 'chouchin' },
+      { dx: 14, dy: 30, type: 'popcorn_cart' },
+      { dx: 66, dy: 30, type: 'popcorn_cart' },
+      { dx:  6, dy: 60, type: 'matsuri_drum' },
+      { dx: 104, dy: 60, type: 'matsuri_drum' },
+      { dx: 40, dy: 60, type: 'banner_pole' },
+      { dx: 92, dy: 60, type: 'banner_pole' },
+    ],
+    prePlacedHumans: [
+      { dx: 12, dy: 14 }, { dx: 24, dy: 16 }, { dx: 38, dy: 14 }, { dx: 50, dy: 16 },
+      { dx: 64, dy: 14 }, { dx: 76, dy: 16 }, { dx: 90, dy: 14 }, { dx: 102, dy: 16 },
+    ],
+  },
+  // パレード大テント
+  {
+    id: 'parade_tent', tier: 'top', width: 70, ground: 'red_carpet',
+    buildings: [
+      { dx: 34, dy:  6, size: 'big_tent' },
+      { dx: 14, dy: 50, size: 'yatai' },
+      { dx: 54, dy: 50, size: 'yatai' },
+    ],
+    furniture: [
+      { dx:  4, dy:  8, type: 'matsuri_drum' },
+      { dx: 64, dy:  8, type: 'matsuri_drum' },
+      { dx: 14, dy: 30, type: 'ticket_booth' },
+      { dx: 54, dy: 30, type: 'ticket_booth' },
+      { dx:  6, dy: 72, type: 'chouchin' },
+      { dx: 34, dy: 76, type: 'banner_pole' },
+      { dx: 62, dy: 72, type: 'chouchin' },
+      { dx: 18, dy: 88, type: 'balloon_cluster' },
+      { dx: 50, dy: 88, type: 'balloon_cluster' },
+    ],
+    prePlacedHumans: [
+      { dx: 16, dy: 26 }, { dx: 34, dy: 30 }, { dx: 52, dy: 26 },
+    ],
+  },
+  // 小さな屋台 (bot tier)
+  {
+    id: 'yatai_small', tier: 'bot', width: 56, ground: 'checker_tile',
+    buildings: [
+      { dx: 14, dy:  0, size: 'yatai' },
+      { dx: 40, dy:  0, size: 'yatai' },
+    ],
+    furniture: [
+      { dx:  4, dy:  6, type: 'chouchin' },
+      { dx: 28, dy:  6, type: 'chouchin' },
+      { dx: 52, dy:  6, type: 'chouchin' },
+      { dx: 14, dy: 22, type: 'popcorn_cart' },
+      { dx: 40, dy: 22, type: 'ticket_booth' },
+      { dx:  6, dy: 56, type: 'balloon_cluster' },
+      { dx: 50, dy: 56, type: 'balloon_cluster' },
+      { dx: 28, dy: 70, type: 'matsuri_drum' },
+    ],
+    prePlacedHumans: [
+      { dx: 10, dy: 12 }, { dx: 20, dy: 14 }, { dx: 34, dy: 14 }, { dx: 44, dy: 12 },
+    ],
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────
 // 統合
 // ─────────────────────────────────────────────────────────────────
 
 export const SCENES: Map<string, Scene> = new Map(
-  [...BOT_SCENES, ...MID_SCENES, ...TOP_SCENES].map(s => [s.id, s])
+  [...BOT_SCENES, ...MID_SCENES, ...TOP_SCENES,
+   ...PORT_SCENES, ...WAFU_SCENES, ...MATSURI_SCENES].map(s => [s.id, s])
 );
 
 export function getScene(id: string): Scene {
