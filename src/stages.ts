@@ -741,24 +741,41 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 4: ラーメン横丁 — アスファルトが主体
-  {
-    patternId: 's1_shopping_street',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'ramen_izakaya' },
-      { row: 0, col: 1, sceneId: 'shotengai_game' },
-      { row: 0, col: 2, sceneId: 'ramen_izakaya' },
-      { row: 0, col: 3, sceneId: 'cafe_bookstore_row' },
-      { row: 1, col: 0, sceneId: 'shotengai_food' },
-      { row: 1, col: 1, sceneId: 'shop_parasol_row' },
-      { row: 1, col: 2, sceneId: 'shotengai_game' },
-      { row: 1, col: 3, sceneId: 'mansion_shop' },
+  // 4: ラーメン横丁 — 提灯と暖簾の賑わい (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('ramen',-160,80),_B('izakaya',-135,79),_B('ramen',-110,80),
+      _B('game_center',-55,79),_B('izakaya',-20,80),
+      _B('ramen',20,80),_B('izakaya',50,79),_B('ramen',75,80),
+      _B('karaoke',115,78),_B('ramen',150,80),_B('izakaya',175,79),
+      _B('izakaya',-165,125),_B('ramen',-140,125),_B('ramen',-115,125),
+      _B('izakaya',-55,125),_B('ramen',-20,125),
+      _B('ramen',20,125),_B('izakaya',50,125),_B('ramen',75,125),
+      _B('game_center',115,127),_B('izakaya',155,125),_B('ramen',178,125),
     ],
-    groundGrid: [
-      ['asphalt', 'asphalt', 'asphalt', 'wood_deck'     ],
-      ['tile',    'concrete', 'asphalt', 'stone_pavement'],
+    furniture: [
+      _F('chouchin',-160,92),_F('noren',-135,92),_F('chouchin',-110,92),
+      _F('chouchin',-55,92),_F('noren',-20,92),
+      _F('chouchin',20,92),_F('noren',50,92),_F('chouchin',75,92),
+      _F('chouchin',115,92),_F('noren',150,92),_F('chouchin',175,92),
+      _F('chouchin',-160,115),_F('noren',-140,115),_F('chouchin',-115,115),
+      _F('chouchin',-55,115),_F('noren',-20,115),
+      _F('chouchin',20,115),_F('noren',50,115),_F('chouchin',75,115),
+      _F('chouchin',115,115),_F('noren',155,115),_F('chouchin',178,115),
+      _F('bicycle',0,50),_F('bicycle',0,160),_F('garbage',-90,50),_F('garbage',90,160),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('dumpster',-175,50),_F('dumpster',175,160),
     ],
-  },
+    humans: [_H(-140,92),_H(-35,92),_H(40,92),_H(130,92),_H(-140,115),_H(-35,115),_H(40,115),_H(130,115),_H(-80,50),_H(80,160),_H(-170,140),_H(165,60)],
+    grounds: [
+      _G('asphalt',0,46.5,360,93),_G('asphalt',0,153.5,360,93),
+      _G('tile',-55,75,35,30),_G('tile',115,73,30,35),
+      _G('tile',-55,128,35,33),_G('tile',115,128,30,33),
+      _G('concrete',-175,170,30,30),_G('concrete',175,50,30,30),
+      _G('stone_pavement',175,170,30,30),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 5: 駅前広場 — ランドマーク shopping_mall_plaza (merged)
   {
     patternId: 's1_station_plaza',
