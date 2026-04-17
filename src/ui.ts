@@ -81,7 +81,7 @@ export class UIManager {
     el.className = 'damage-popup';
     el.textContent = formatYen(amount);
 
-    // 金額に応じた4段階演出 + 表示時間
+    // 金額に応じた演出 + 表示時間
     let dur: number;
     if (amount >= 5000) {
       el.classList.add('mega');
@@ -92,6 +92,10 @@ export class UIManager {
     } else if (amount >= 500) {
       el.classList.add('big');
       dur = C.SCORE_POPUP_DUR_BIG;
+    } else if (amount < 50) {
+      // ミニオブジェクト: 極小サイズで画面を汚さない
+      el.classList.add('tiny');
+      dur = C.SCORE_POPUP_DUR_SMALL * 0.6;
     } else {
       dur = C.SCORE_POPUP_DUR_SMALL;
     }
