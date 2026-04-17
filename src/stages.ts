@@ -644,59 +644,103 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       verticalRoads: [..._SPINE_V],
     },
   },
-  // 1: 住宅 + 車庫の並び
-  {
-    patternId: 's1_suburb_row',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'house_trio_garden' },
-      { row: 0, col: 1, sceneId: 'house_konbini' },
-      { row: 0, col: 2, sceneId: 'house_garage' },
-      { row: 0, col: 3, sceneId: 'house_trio_garden' },
-      { row: 1, col: 0, sceneId: 'garden_shed' },
-      { row: 1, col: 1, sceneId: 'house_trio_garden' },
-      { row: 1, col: 2, sceneId: 'house_konbini' },
-      { row: 1, col: 3, sceneId: 'house_garage' },
+  // 1: 住宅 + コンビニ + ランドロマット (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('house',-160,80),_B('convenience',-125,82),_B('house',-108,80),
+      _B('house',-65,80),_B('laundromat',-30,84),
+      _B('house',25,80),_B('garage',60,83),
+      _B('house',108,80),_B('convenience',145,82),_B('house',175,80),
+      _B('house',-160,125),_B('mansion',-120,127),
+      _B('house',-65,125),_B('house',-30,125),
+      _B('townhouse',25,129),_B('house',55,125),
+      _B('convenience',115,127),_B('house',155,125),_B('shed',175,118),
     ],
-    groundGrid: [
-      ['grass',    'concrete', 'dirt',     'grass'],
-      ['dirt',     'grass',    'concrete', 'dirt' ],
+    furniture: [
+      _F('tree',-175,30),_F('tree',-80,30),_F('mailbox',-150,90),
+      _F('vending',-45,85),_F('bicycle_rack',-20,88),_F('tree',15,30),
+      _F('tree',80,30),_F('mailbox',135,90),_F('tree',170,30),
+      _F('tree',-175,170),_F('tree',-85,170),_F('potted_plant',-50,115),
+      _F('tree',15,170),_F('laundry_pole',55,140),_F('tree',80,170),
+      _F('tree',135,170),_F('wood_fence',170,145),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
     ],
-  },
-  // 2: 小学校ゾーンと上端クロス — 次チャンクと十字路
-  {
-    patternId: 's1_suburb_row_cross',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'house_trio_garden' },
-      { row: 0, col: 1, sceneId: 'house_konbini' },
-      { row: 0, col: 2, sceneId: 'clinic_daycare' },
-      { row: 0, col: 3, sceneId: 'house_trio_garden' },
-      // row 1 col 0-1 merged = townhouse_row (pattern default)
-      { row: 1, col: 2, sceneId: 'bank_post' },
-      { row: 1, col: 3, sceneId: 'garden_shed' },
+    humans: [_H(-130,75),_H(-40,92),_H(30,110),_H(120,80),_H(-105,155),_H(75,145),_H(-25,180),_H(140,175)],
+    grounds: [
+      _G('grass',0,46.5,360,93),_G('grass',0,153.5,360,93),
+      _G('concrete',-125,72,30,18),_G('concrete',-30,72,30,18),
+      _G('concrete',60,75,35,18),_G('concrete',145,72,30,18),
+      _G('dirt',-160,60,30,25),_G('dirt',175,165,30,30),
+      _G('concrete',115,118,35,16),
     ],
-    groundGrid: [
-      ['grass',    'concrete', 'tile',     'grass'   ],
-      ['concrete', 'concrete', 'tile',     'dirt'    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+  // 2: 保育園・診療所・銀行 + 上端クロス (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('house',-160,80),_B('daycare',-120,82),
+      _B('clinic',-55,79),
+      _B('post_office',30,80),_B('house',65,80),
+      _B('bank',115,77),_B('house',155,80),_B('shed',178,85),
+      _B('house',-165,125),_B('house',-135,125),_B('townhouse',-108,127),
+      _B('clinic',-50,123),
+      _B('house',25,125),_B('house',55,125),
+      _B('house',110,125),_B('garage',145,128),_B('house',175,125),
     ],
-  },
-  // 3: 商店街入口 — 木デッキのカフェ + タイル床の店舗
-  {
-    patternId: 's1_shopping_street',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'cafe_bookstore_row' },
-      { row: 0, col: 1, sceneId: 'florist_bakery' },
-      { row: 0, col: 2, sceneId: 'laundromat_pharmacy' },
-      { row: 0, col: 3, sceneId: 'cafe_bookstore' },
-      { row: 1, col: 0, sceneId: 'shop_parasol_row' },
-      { row: 1, col: 1, sceneId: 'ramen_izakaya' },
-      { row: 1, col: 2, sceneId: 'shotengai_food' },
-      { row: 1, col: 3, sceneId: 'mansion_shop' },
+    furniture: [
+      _F('tree',-175,30),_F('flag_pole',-120,92),_F('bicycle_rack',-55,92),
+      _F('tree',20,30),_F('post_box',30,92),_F('tree',80,30),
+      _F('tree',100,30),_F('atm',115,92),_F('tree',170,30),
+      _F('tree',-175,170),_F('bench',-108,114),_F('flower_bed',-50,112),
+      _F('tree',15,170),_F('tree',80,170),_F('tree',130,170),_F('mailbox',170,115),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('street_lamp',-90,200),_F('street_lamp',90,200),
+      _F('traffic_light',-90,190),_F('traffic_light',90,190),
     ],
-    groundGrid: [
-      ['wood_deck', 'wood_deck', 'concrete', 'wood_deck'     ],
-      ['concrete',  'asphalt',   'tile',     'stone_pavement'],
+    humans: [_H(-120,90),_H(-55,92),_H(30,92),_H(115,92),_H(-105,140),_H(75,150),_H(140,175),_H(-30,180),_H(0,60),_H(160,60)],
+    grounds: [
+      _G('grass',0,46.5,360,93),_G('concrete',0,153.5,360,93),
+      _G('tile',-120,75,45,30),_G('tile',-55,72,30,35),
+      _G('tile',115,72,35,30),
+      _G('concrete',30,75,30,18),
+      _G('grass',-108,160,30,30),_G('grass',155,160,40,30),
     ],
-  },
+    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
+  } },
+  // 3: 商店街入口 — 木デッキのカフェ + タイル床の店舗 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('cafe',-160,80),_B('bookstore',-135,79),_B('bakery',-110,81),
+      _B('florist',-60,81),_B('pharmacy',-25,80),
+      _B('cafe',25,80),_B('bakery',55,81),
+      _B('bookstore',110,80),_B('cafe',140,80),_B('florist',170,81),
+      _B('cafe',-165,125),_B('ramen',-135,125),_B('izakaya',-110,125),
+      _B('bakery',-60,125),_B('bookstore',-30,125),
+      _B('pharmacy',25,125),_B('florist',55,125),
+      _B('ramen',110,125),_B('izakaya',145,125),_B('cafe',175,125),
+    ],
+    furniture: [
+      _F('a_frame_sign',-160,92),_F('potted_plant',-135,92),_F('parasol',-110,92),
+      _F('shop_awning',-60,92),_F('a_frame_sign',-25,92),
+      _F('parasol',25,92),_F('shop_awning',55,92),_F('potted_plant',110,92),_F('a_frame_sign',140,92),
+      _F('chouchin',-160,115),_F('noren',-135,115),_F('shop_awning',-110,115),
+      _F('parasol',-60,115),_F('a_frame_sign',-30,115),
+      _F('potted_plant',25,115),_F('chouchin',55,115),
+      _F('noren',110,115),_F('chouchin',145,115),_F('shop_awning',175,115),
+      _F('tree',-175,40),_F('tree',175,40),_F('tree',-175,170),_F('tree',175,170),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('bicycle_rack',0,50),_F('bicycle_rack',0,160),
+    ],
+    humans: [_H(-140,92),_H(-50,92),_H(35,92),_H(120,92),_H(-140,115),_H(-50,115),_H(35,115),_H(120,115),_H(-80,140),_H(80,60),_H(140,180),_H(-170,60)],
+    grounds: [
+      _G('wood_deck',0,46.5,360,93),_G('wood_deck',0,153.5,360,93),
+      _G('tile',-60,75,30,30),_G('tile',-25,75,30,30),
+      _G('tile',25,75,30,30),_G('tile',-60,127,30,36),_G('tile',-30,127,30,36),
+      _G('asphalt',0,46.5,16,93),_G('asphalt',0,153.5,16,93),
+      _G('stone_pavement',175,125,30,30),_G('stone_pavement',-165,125,30,30),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 4: ラーメン横丁 — アスファルトが主体
   {
     patternId: 's1_shopping_street',
