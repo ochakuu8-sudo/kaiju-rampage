@@ -21,7 +21,9 @@ export class UIManager {
   private elSpeedFill   = document.getElementById('life-fill')!;
   private elSpeedNumber = document.getElementById('speed-number')!;
   private elTimer       = document.getElementById('timer-display')!;
-  private elDamage      = document.getElementById('damage-display')!;
+  private elDamage         = document.getElementById('damage-display')!;
+  private elDamageCurrent  = document.getElementById('damage-current')!;
+  private elDamagePending  = document.getElementById('damage-pending')!;
   private elGameover    = document.getElementById('gameover')!;
   private elFinalDist   = document.getElementById('final-wave')!;
   private elFinalBest   = document.getElementById('final-best')!;
@@ -29,9 +31,19 @@ export class UIManager {
   private elOverlay     = document.getElementById('overlay')!;
   private elPopupLayer  = document.getElementById('popup-layer')!;
 
-  // HUDスコアのロールアップ演出: displayed が target に徐々に追従する
-  private displayedScore = 0;
-  private targetScore    = 0;
+  // HUDスコアの2段ロールアップ演出
+  // committedTotal: 吸収済みの確定合計 (displayedCurrent のロールアップ先)
+  // displayedCurrent: 画面表示中の現在スコア
+  // pendingBuffer: 直近の加算をプールしておくバッファ (画面右に "+¥XXX" 表示)
+  // absorbTimer: 最後の加算からの経過秒数。SCORE_ABSORB_DELAY 超過で吸収。
+  // previousTotal: setScore(total) から delta を割り出すための前回値
+  private committedTotal   = 0;
+  private displayedCurrent = 0;
+  private pendingBuffer    = 0;
+  private absorbTimer      = 0;
+  private previousTotal    = 0;
+  private lastCurrentText  = '¥0';
+  private lastPendingText  = '';
 
   constructor() {
     // スピードメーターのグラデーションはメーター実幅 (px) で固定する。
@@ -66,38 +78,75 @@ export class UIManager {
     this.elTimer.classList.toggle('crit', s <= 5);
   }
 
-  /** 被害総額 HUD 更新: ロールアップ演出のため target だけ記録する。
-   *  実際の数値描画は tickScore(dt) が毎フレーム追従させる。 */
+  /** 被害総額 HUD 更新: 加算分を pendingBuffer に積むだけ。
+   *  実際のドラムロールは tickScore(dt) が SCORE_ABSORB_DELAY 後に開始する。 */
   setScore(score: number) {
-    this.targetScore = score;
-    // スコア加算の "ピカッ" パルスは即時トリガーで維持
-    this.elDamage.classList.remove('pulse');
-    void this.elDamage.offsetWidth;
-    this.elDamage.classList.add('pulse');
+    const delta = score - this.previousTotal;
+    this.previousTotal = score;
+    if (delta === 0) return;
+    this.pendingBuffer += delta;
+    this.absorbTimer = 0;
+    // pending 側に小パルス (連打中の "ピコッ" フィードバック)
+    this.elDamagePending.classList.remove('pulse-pending');
+    void this.elDamagePending.offsetWidth;
+    this.elDamagePending.classList.add('pulse-pending');
   }
 
-  /** 毎フレーム呼ばれ、displayedScore を targetScore に追従させる。 */
+  /** 毎フレーム: 吸収判定 → ロールアップ → DOM 反映 */
   tickScore(dt: number) {
-    if (this.displayedScore === this.targetScore) return;
-    const diff = this.targetScore - this.displayedScore;
-    const step = Math.max(
-      C.SCORE_ROLLUP_MIN_STEP,
-      Math.ceil(Math.abs(diff) * dt * C.SCORE_ROLLUP_SPEED),
-    );
-    if (diff > 0) {
-      this.displayedScore = Math.min(this.targetScore, this.displayedScore + step);
-    } else {
-      this.displayedScore = Math.max(this.targetScore, this.displayedScore - step);
+    // 1. 加算が途切れて一定時間経ったら pendingBuffer を committedTotal に吸収
+    if (this.pendingBuffer > 0) {
+      this.absorbTimer += dt;
+      if (this.absorbTimer >= C.SCORE_ABSORB_DELAY) {
+        this.committedTotal += this.pendingBuffer;
+        this.pendingBuffer = 0;
+        // 吸収の合図に大パルス (ドラムロール開始)
+        this.elDamage.classList.remove('pulse');
+        void this.elDamage.offsetWidth;
+        this.elDamage.classList.add('pulse');
+      }
     }
-    this.elDamage.textContent = formatYen(this.displayedScore);
+
+    // 2. displayedCurrent を committedTotal に追従 (既存ロジック)
+    if (this.displayedCurrent !== this.committedTotal) {
+      const diff = this.committedTotal - this.displayedCurrent;
+      const step = Math.max(
+        C.SCORE_ROLLUP_MIN_STEP,
+        Math.ceil(Math.abs(diff) * dt * C.SCORE_ROLLUP_SPEED),
+      );
+      if (diff > 0) {
+        this.displayedCurrent = Math.min(this.committedTotal, this.displayedCurrent + step);
+      } else {
+        this.displayedCurrent = Math.max(this.committedTotal, this.displayedCurrent - step);
+      }
+    }
+
+    // 3. DOM 反映 (テキストが変わった時だけ)
+    const curText = formatYen(this.displayedCurrent);
+    if (curText !== this.lastCurrentText) {
+      this.elDamageCurrent.textContent = curText;
+      this.lastCurrentText = curText;
+    }
+    const pendText = this.pendingBuffer > 0 ? `+${formatYen(this.pendingBuffer)}` : '';
+    if (pendText !== this.lastPendingText) {
+      this.elDamagePending.textContent = pendText;
+      this.lastPendingText = pendText;
+    }
   }
 
-  /** リスタート時: ¥0 からの逆ロールダウンを防ぐため即時リセット */
+  /** リスタート時: 全スコア状態を即時リセット */
   resetScore() {
-    this.displayedScore = 0;
-    this.targetScore    = 0;
-    this.elDamage.textContent = formatYen(0);
+    this.committedTotal   = 0;
+    this.displayedCurrent = 0;
+    this.pendingBuffer    = 0;
+    this.absorbTimer      = 0;
+    this.previousTotal    = 0;
+    this.lastCurrentText  = formatYen(0);
+    this.lastPendingText  = '';
+    this.elDamageCurrent.textContent = this.lastCurrentText;
+    this.elDamagePending.textContent = '';
     this.elDamage.classList.remove('pulse');
+    this.elDamagePending.classList.remove('pulse-pending');
   }
 
   /** ダメージポップアップ (ワールド座標に固定、コンテナごとスクロール追従) */

@@ -157,6 +157,9 @@ export const SCORE_ROLLUP_MIN_STEP = 1;
 export const SCORE_TICK_PITCH_STEP = 0.06;
 // ピッチの上限倍率
 export const SCORE_TICK_PITCH_MAX = 2.5;
+// 加算が途切れてからバッファを committedTotal に吸収するまでの待ち時間(秒)
+// この時間経過後にドラムロール式ロールアップが開始する
+export const SCORE_ABSORB_DELAY = 0.5;
 
 // ===== ジュース: シェイク =====
 export const SHAKE_HUMAN_AMP   = 1.5;

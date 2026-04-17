@@ -114,6 +114,20 @@
       0%   { color: #ffff66; transform: translateX(-50%) scale(1.12); }
       100% { color: #fff;    transform: translateX(-50%) scale(1); }
     }
+    /* ── 加算バッファ表示: 現在スコアの右に "+¥XXX" を出す ── */
+    #damage-pending {
+      margin-left: 8px;
+      color: #ffe060;
+      font-size: 9px;
+      text-shadow: 1px 1px 0 #000;
+      display: inline-block;
+    }
+    #damage-pending:empty { display: none; }
+    #damage-pending.pulse-pending { animation: score-pending-pop 0.12s ease-out; }
+    @keyframes score-pending-pop {
+      0%   { transform: scale(1.25); color: #fff; }
+      100% { transform: scale(1);    color: #ffe060; }
+    }
 
     /* ── ダメージポップアップ (レトロRPG風 4段階、ワールド固定) ── */
     .damage-popup {
@@ -181,7 +195,7 @@
     <div id="life-wrap"><div id="life-fill"></div></div>
     <div id="speed-number">0</div>
     <div id="timer-display">90</div>
-    <div id="damage-display">¥0</div>
+    <div id="damage-display"><span id="damage-current">¥0</span><span id="damage-pending"></span></div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
