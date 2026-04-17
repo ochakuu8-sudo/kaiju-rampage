@@ -125,8 +125,25 @@
     #damage-pending:empty { display: none; }
     #damage-pending.pulse-pending { animation: score-pending-pop 0.12s ease-out; }
     @keyframes score-pending-pop {
-      0%   { transform: scale(1.25); color: #fff; }
-      100% { transform: scale(1);    color: #ffe060; }
+      0%   { transform: translateX(-1px) scale(1.22); color: #fff; }
+      35%  { transform: translateX(1px)  scale(1.12); }
+      65%  { transform: translateX(-1px) scale(1.06); }
+      100% { transform: translateX(0)    scale(1);    color: #ffe060; }
+    }
+    /* 加算ヒット回数 "×N" (連打ボリュームの可視化) */
+    #damage-count {
+      margin-left: 4px;
+      color: #ff9a40;
+      font-size: 8px;
+      text-shadow: 1px 1px 0 #000;
+      display: inline-block;
+    }
+    #damage-count:empty { display: none; }
+    #damage-count.pulse-count { animation: score-count-pop 0.12s ease-out; }
+    @keyframes score-count-pop {
+      0%   { transform: translateX(-1px) scale(1.4);  color: #fff; }
+      50%  { transform: translateX(1px)  scale(1.15); }
+      100% { transform: translateX(0)    scale(1);    color: #ff9a40; }
     }
 
     /* ── ダメージポップアップ (レトロRPG風 4段階、ワールド固定) ── */
@@ -195,7 +212,7 @@
     <div id="life-wrap"><div id="life-fill"></div></div>
     <div id="speed-number">0</div>
     <div id="timer-display">90</div>
-    <div id="damage-display"><span id="damage-current">¥0</span><span id="damage-pending"></span></div>
+    <div id="damage-display"><span id="damage-current">¥0</span><span id="damage-pending"></span><span id="damage-count"></span></div>
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>

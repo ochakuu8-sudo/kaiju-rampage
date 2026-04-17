@@ -139,7 +139,7 @@ export const MAX_PARTICLES = 2000;
 
 // ===== バンパー =====
 export const BUMPER_RADIUS = 18;
-export const BUMPER_SCORE = 50;
+export const BUMPER_SCORE = 20;
 export const BUMPER_FORCE = 14;
 
 // ===== コンボ =====
