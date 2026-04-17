@@ -31,8 +31,9 @@ export class Ball {
   reset() {
     this.x = C.BALL_START_X;
     this.y = C.BALL_START_Y;
-    this.vx = 2;    // 右方向（坂を滑り降りてフリッパーへ）
-    this.vy = -1;
+    // 鉄球感: 初速はほぼ 0 にして、重力と坂で自然に転がり出す
+    this.vx = 0.5;
+    this.vy = 0;
     this.active = true;
     this.lastPiercedBld = null;
     for (let i = 0; i < C.TRAIL_LEN; i++) {

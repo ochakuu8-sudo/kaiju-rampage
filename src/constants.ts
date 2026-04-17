@@ -12,11 +12,12 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-// "ずっしり" 寄り: 半径↑ / 重力↑ / 最高速↓ / 壁反発↓ / 貫通減衰↓
+// "鉄球" 寄り: 半径↑ / 重力↑↑ / 最高速↓↓ / 壁反発↓ / 貫通減衰↓
+// 射出時の "シュッ" を抑え、落下と運動量で勝負する設計
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
 export const BALL_MIN_REPEL_SPEED = 4;   // 非破壊時の最小反発速度 (乗り続け防止)
-export const GRAVITY = 0.45;
-export const MAX_BALL_SPEED = 32;
+export const GRAVITY = 0.55;             // 強めの落下感
+export const MAX_BALL_SPEED = 26;        // 射出速度を頭打ちに
 // 建物貫通: ボールは常にすり抜け、与ダメージに比例して速度減衰
 // 重いほど運動量を保つ → dmg あたりの速度ロスは控えめに
 export const BALL_PIERCE_LOSS_PER_DMG = 0.5;  // dmg 1 あたり ball speed -0.5
@@ -37,7 +38,7 @@ export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
 export const FLIPPER_REST_DEG = -30;
 export const FLIPPER_ACTIVE_DEG = 30;
-export const FLIPPER_POWER = 24;     // 重くなった分だけ打ち返し力を強化
+export const FLIPPER_POWER = 17;     // 鉄球を "弾く" のではなく "押し返す" 力感
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 
 // ===== 建物 =====
