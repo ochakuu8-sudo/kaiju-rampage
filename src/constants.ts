@@ -12,12 +12,13 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-// "鉄球" 寄り: 半径↑ / 重力↑↑ / 最高速↓↓ / 壁反発↓ / 貫通減衰↓
-// 射出時の "シュッ" を抑え、落下と運動量で勝負する設計
+// "鉄球" 寄り: 半径↑ / 低初速 / 最高速↓ / 壁反発↓ / 貫通減衰↓
+// 重量感は重力より "低加速 + 運動量保持" で演出する。重力を上げすぎると
+// フリッパーヒットで画面上部まで届かなくなるため控えめに。
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
 export const BALL_MIN_REPEL_SPEED = 4;   // 非破壊時の最小反発速度 (乗り続け防止)
-export const GRAVITY = 0.55;             // 強めの落下感
-export const MAX_BALL_SPEED = 26;        // 射出速度を頭打ちに
+export const GRAVITY = 0.35;             // 下がりすぎを抑制（元 0.3 にやや重みを追加）
+export const MAX_BALL_SPEED = 28;        // 射出の "シュッ" を抑えつつ頂点に届く余地
 // 建物貫通: ボールは常にすり抜け、与ダメージに比例して速度減衰
 // 重いほど運動量を保つ → dmg あたりの速度ロスは控えめに
 export const BALL_PIERCE_LOSS_PER_DMG = 0.5;  // dmg 1 あたり ball speed -0.5
@@ -38,7 +39,7 @@ export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
 export const FLIPPER_REST_DEG = -30;
 export const FLIPPER_ACTIVE_DEG = 30;
-export const FLIPPER_POWER = 17;     // 鉄球を "弾く" のではなく "押し返す" 力感
+export const FLIPPER_POWER = 20;     // 鉄球でも画面上部に届くだけの押し出し
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 
 // ===== 建物 =====
