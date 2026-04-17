@@ -807,17 +807,23 @@ export class BuildingManager {
       // 種類別ファサードディテール
       switch (b.size) {
         case 'house': {
-          // 屋根帯（暗め）
-          writeInst(buf, n++, cx, top - 4, bW + 2, 8,
-            cr * 0.50, cg * 0.46, cb * 0.40, 1);
-          // 左右の窓
+          // T-2: 瓦屋根強化
+          n = this.drawRoofTile(buf, n, cx, top, bW, bH, cr, cg, cb, 1);
+          // 煙突
+          writeInst(buf, n++, cx + bW * 0.28, top + 2, 2, 4, cr * 0.35, cg * 0.30, cb * 0.24, 1);
+          // 左右の窓 + 窓枠
           writeInst(buf, n++, cx - bW * 0.20, bot + bH * 0.52, 4, 5,
             0.78, 0.90, 0.96, 0.90);
+          n = this.drawWindowFrame(buf, n, cx - bW * 0.20, bot + bH * 0.52, 4, 5);
           writeInst(buf, n++, cx + bW * 0.20, bot + bH * 0.52, 4, 5,
             0.78, 0.90, 0.96, 0.90);
-          // ドア
+          n = this.drawWindowFrame(buf, n, cx + bW * 0.20, bot + bH * 0.52, 4, 5);
+          // ドア + 装飾
           writeInst(buf, n++, cx, bot + 5, bW * 0.22, 9,
             cr * 0.42, cg * 0.34, cb * 0.25, 1);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
+          // 門灯 (ドア横)
+          writeInst(buf, n++, cx - bW * 0.18, bot + 7, 1.2, 1.2, 0.95, 0.82, 0.30, 0.85, 0, 1);
           break;
         }
         case 'shop': {
@@ -847,6 +853,16 @@ export class BuildingManager {
           }
           // エントランス
           writeInst(buf, n++, cx, bot + 6, bW * 0.20, 11, 0.60, 0.82, 0.92, 0.85);
+          // T-2: 屋上クラッター + バルコニー手すり + 側面 AC
+          const apSeed = Math.abs(Math.floor(cx * 13.7 + bot * 7.3));
+          n = this.drawFlatRoofClutter(buf, n, cx, top, bW, apSeed);
+          for (let i = 1; i <= 3; i++) {
+            n = this.drawBalconyRailing(buf, n, cx, bot + flH * i + 1.5, bW);
+          }
+          // 側面 AC (3 階相当)
+          for (let i = 0; i < 3; i++) {
+            n = this.drawACUnit(buf, n, cx + bW * 0.42, bot + flH * (i + 0.5));
+          }
           break;
         }
         case 'office': {
@@ -951,35 +967,46 @@ export class BuildingManager {
         }
         // ── 1-A 住宅系 ────────────────────────────────────────────
         case 'townhouse': {
-          // 屋根帯（急勾配）
-          writeInst(buf, n++, cx, top - 5, bW + 2, 9, cr * 0.45, cg * 0.40, cb * 0.35, 1);
-          // 窓×2
+          // T-2: 瓦屋根強化
+          n = this.drawRoofTile(buf, n, cx, top, bW, bH, cr, cg, cb, 0);
+          // 窓×2 (枠付)
           writeInst(buf, n++, cx - bW * 0.22, bot + bH * 0.52, 4, 5, 0.78, 0.90, 0.96, 0.88);
+          n = this.drawWindowFrame(buf, n, cx - bW * 0.22, bot + bH * 0.52, 4, 5);
           writeInst(buf, n++, cx + bW * 0.22, bot + bH * 0.52, 4, 5, 0.78, 0.90, 0.96, 0.88);
-          // ドア
+          n = this.drawWindowFrame(buf, n, cx + bW * 0.22, bot + bH * 0.52, 4, 5);
+          // ドア + 装飾
           writeInst(buf, n++, cx, bot + 5, bW * 0.20, 9, cr * 0.40, cg * 0.32, cb * 0.24, 1);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
           break;
         }
         case 'mansion': {
-          // 中央ポルティコ（列柱）
-          writeInst(buf, n++, cx, bot + bH * 0.55, bW * 0.42, bH * 0.52, 0.95, 0.95, 0.92, 0.85);
           // 屋根コーニス
           writeInst(buf, n++, cx, top - 3, bW + 6, 6, cr * 0.72, cg * 0.68, cb * 0.58, 1);
+          // T-2: 正面キャノピー
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
           // 左右対称窓
           for (const xOff of [-bW * 0.33, bW * 0.33]) {
             writeInst(buf, n++, cx + xOff, bot + bH * 0.55, 5, 7, 0.68, 0.88, 0.96, 0.85);
+            n = this.drawWindowFrame(buf, n, cx + xOff, bot + bH * 0.55, 5, 7);
           }
+          // 屋根のアンテナ
+          writeInst(buf, n++, cx + bW * 0.35, top + 5, 0.6, 8, 0.25, 0.22, 0.18, 1);
           break;
         }
         case 'garage': {
-          // 大型シャッタードア
-          writeInst(buf, n++, cx, bot + bH * 0.50, bW * 0.72, bH * 0.72, 0.50, 0.52, 0.55, 0.9);
-          writeInst(buf, n++, cx, bot + bH * 0.52, bW * 0.70, 1.5, cr * 0.60, cg * 0.60, cb * 0.60, 1);
+          // T-2: シャッター強化
+          n = this.drawShutterSlats(buf, n, cx, bot + bH * 0.50, bW * 0.72, bH * 0.72,
+            0.55, 0.57, 0.60);
+          // 上部の換気窓
+          writeInst(buf, n++, cx, top - 2, bW * 0.40, 2.5, 0.68, 0.82, 0.92, 0.80);
           break;
         }
         case 'shed': {
-          // 屋根のみ（小屋）
-          writeInst(buf, n++, cx, top - 4, bW + 3, 7, cr * 0.48, cg * 0.42, cb * 0.36, 1);
+          // T-2: 瓦屋根
+          n = this.drawRoofTile(buf, n, cx, top, bW, bH, cr, cg, cb, 0);
+          // ドア
+          writeInst(buf, n++, cx, bot + 4, bW * 0.35, 7, cr * 0.38, cg * 0.30, cb * 0.22, 1);
+          writeInst(buf, n++, cx + bW * 0.08, bot + 4, 0.5, 0.5, 0.85, 0.75, 0.25, 1, 0, 1); // ノブ
           break;
         }
         case 'greenhouse': {
@@ -988,6 +1015,12 @@ export class BuildingManager {
           // フレーム（縦×2）
           writeInst(buf, n++, cx - bW * 0.25, cy, 1.5, bH, cr * 0.55, cg * 0.62, cb * 0.58, 0.9);
           writeInst(buf, n++, cx + bW * 0.25, cy, 1.5, bH, cr * 0.55, cg * 0.62, cb * 0.58, 0.9);
+          // T-2: 中の植物葉
+          writeInst(buf, n++, cx - bW * 0.10, bot + bH * 0.35, 3, 3, 0.32, 0.72, 0.38, 0.85, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.12, bot + bH * 0.40, 2.5, 2.5, 0.28, 0.68, 0.35, 0.85, 0, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.25, 2, 2, 0.85, 0.55, 0.25, 0.9, 0, 1); // 果実
+          // 屋根の反り
+          writeInst(buf, n++, cx, top - 1, bW + 2, 1.2, cr * 0.62, cg * 0.68, cb * 0.64, 0.9);
           break;
         }
         case 'daycare': {
@@ -996,6 +1029,17 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - 8, bW, 3, 0.95, 0.90, 0.20, 1);
           // 玄関（丸みある）
           writeInst(buf, n++, cx, bot + 6, bW * 0.28, 11, 0.55, 0.88, 0.96, 0.85);
+          // T-2: 砂場 + 風船飾り
+          writeInst(buf, n++, cx - bW * 0.30, bot + 2, 4, 1.5, 0.95, 0.82, 0.38, 0.9); // 砂場
+          writeInst(buf, n++, cx + bW * 0.30, bot + 2, 4, 1.5, 0.95, 0.82, 0.38, 0.9);
+          // 鉄棒
+          writeInst(buf, n++, cx + bW * 0.25, bot + 5, 3.5, 0.4, 0.42, 0.42, 0.45, 1);
+          writeInst(buf, n++, cx + bW * 0.15, bot + 4, 0.4, 3, 0.42, 0.42, 0.45, 1);
+          writeInst(buf, n++, cx + bW * 0.35, bot + 4, 0.4, 3, 0.42, 0.42, 0.45, 1);
+          // 風船飾り 3 個
+          writeInst(buf, n++, cx - bW * 0.35, top - 12, 1.5, 1.5, 0.92, 0.35, 0.45, 0.9, 0, 1);
+          writeInst(buf, n++, cx - bW * 0.22, top - 13, 1.5, 1.5, 0.35, 0.72, 0.92, 0.9, 0, 1);
+          writeInst(buf, n++, cx - bW * 0.08, top - 12, 1.5, 1.5, 0.92, 0.82, 0.35, 0.9, 0, 1);
           break;
         }
         case 'clinic': {
@@ -1004,6 +1048,11 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - bH * 0.22, bW * 0.26, 4, 0.15, 0.72, 0.35, 1);
           // 玄関ガラス
           writeInst(buf, n++, cx, bot + 6, bW * 0.34, 11, 0.65, 0.88, 0.96, 0.82);
+          // T-2: 救急車駐車マーク (白十字)
+          writeInst(buf, n++, cx - bW * 0.30, bot + 1.5, 4, 0.5, 0.95, 0.95, 0.92, 0.9);
+          writeInst(buf, n++, cx - bW * 0.30, bot + 1.5, 0.5, 4, 0.95, 0.95, 0.92, 0.9);
+          // 室外機
+          n = this.drawACUnit(buf, n, cx + bW * 0.40, bot + bH * 0.35);
           break;
         }
         case 'shrine': {
@@ -1015,6 +1064,11 @@ export class BuildingManager {
           // 柱×2
           writeInst(buf, n++, cx - bW * 0.32, bot + bH * 0.45, 3, bH * 0.50, cr * 0.55, cg * 0.28, cb * 0.20, 1);
           writeInst(buf, n++, cx + bW * 0.32, bot + bH * 0.45, 3, bH * 0.50, cr * 0.55, cg * 0.28, cb * 0.20, 1);
+          // T-2: 鬼瓦反り + 提灯列
+          n = this.drawTileRoofCurl(buf, n, cx, top, bW + 10, false);
+          n = this.drawChouchinRow(buf, n, cx, top - 8, bW * 0.6, 3);
+          // 注連縄
+          writeInst(buf, n++, cx, top - 2, bW + 8, 1, 0.92, 0.85, 0.65, 0.85);
           break;
         }
         case 'apartment_tall': {
@@ -1027,6 +1081,18 @@ export class BuildingManager {
               Math.max(0, cr - 0.15), Math.max(0, cg - 0.15), Math.max(0, cb - 0.12), 1);
           }
           writeInst(buf, n++, cx, bot + 7, bW * 0.22, 13, 0.58, 0.82, 0.92, 0.85);
+          // T-2: 屋上クラッター + 各階バルコニー手すり + 端階段 + 側面 AC
+          const atSeed = Math.abs(Math.floor(cx * 13.7 + bot * 7.3));
+          n = this.drawFlatRoofClutter(buf, n, cx, top, bW, atSeed);
+          for (let i = 1; i <= 4; i++) {
+            n = this.drawBalconyRailing(buf, n, cx, bot + atFlH * i + 1.5, bW);
+          }
+          // 外階段 (右端)
+          n = this.drawStairs(buf, n, cx + bW * 0.45, bot + 2, bH * 0.7);
+          // 側面 AC (各階 1 個)
+          for (let i = 0; i < 4; i++) {
+            n = this.drawACUnit(buf, n, cx - bW * 0.42, bot + atFlH * (i + 0.5));
+          }
           break;
         }
         // ── 1-B 商業系 ────────────────────────────────────────────
