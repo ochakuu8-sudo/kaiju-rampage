@@ -293,6 +293,116 @@ const ENTERTAINMENT_BLOCK: RoadPattern = {
   ],
 };
 
+// ─────────────────────────────────────────────────────────────────
+// ステージ別テーマパターン (コンセプト色の強いレイアウト)
+// ─────────────────────────────────────────────────────────────────
+
+// 参道 (ステージ 3 和風): 縦 1 本の太い直線 (鳥居→山門→本堂)、左右は静か
+const SHRINE_APPROACH: RoadPattern = {
+  id: 'shrine_approach', weight: 2,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    // 中央の参道だけ avenue、他は路地なし
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+  ],
+  cells: [
+    [ 'house_trio_garden', 'shrine_complex', 'temple_garden', 'garden_shed' ],
+    [ 'mansion_shop',      'shrine_complex', 'temple_garden', 'house_trio_garden' ],
+  ],
+};
+
+// 港湾・工業 (ステージ 4): 広い産業道路の碁盤目、大型施設ベース
+const HARBOR_WAREHOUSE: RoadPattern = {
+  id: 'harbor_warehouse', weight: 2,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'gas_station_corner', 'laundromat_pharmacy', 'garden_shed',   'house_garage' ],
+    [ 'water_tower_apartment', 'merged_right',      'supermarket_front', 'office_tower_group' ],
+  ],
+  merges: [ { row: 1, col: 0, spanCols: 2 } ],
+};
+
+// 夜の繁華街 (ステージ 2): 狭い路地密集 + 中央アーケードの看板店並び
+const NEON_ALLEY: RoadPattern = {
+  id: 'neon_alley', weight: 2,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'ramen_izakaya',  'konbini_corner', 'ramen_izakaya', 'cafe_bookstore' ],
+    [ 'shotengai_game', 'shotengai_food', 'shotengai_game', 'shotengai_food' ],
+  ],
+};
+
+// テーマパーク広場 (ステージ 5): 中央 2-cell 広場に大型アトラクション、放射状
+const PARK_PLAZA_RADIAL: RoadPattern = {
+  id: 'park_plaza_radial', weight: 2,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    // 中央 gridLine 2 は省略 (中央広場)
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'ramen_izakaya', 'florist_bakery', 'cafe_bookstore', 'konbini_corner' ],
+    [ 'ferris_wheel_zone', 'merged_right', 'stadium_radio',  'merged_right' ],
+  ],
+  merges: [
+    { row: 1, col: 0, spanCols: 2 },
+    { row: 1, col: 2, spanCols: 2 },
+  ],
+};
+
+// GOAL フィナーレ (ステージ 5 最終): 中央に 4-cell の大広場、左右に見送りのアーチ
+const GOAL_FINAL: RoadPattern = {
+  id: 'goal_final', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [],  // 道路なし (ゴール広場)
+  verticalRoads: [],
+  cells: [
+    [ null, null, null, null ],
+    [ null, null, null, null ],
+  ],
+};
+
+// 住宅街ミックス (ステージ 1): 生活感のある混在、中央メインストリート
+const RESIDENTIAL_MIX: RoadPattern = {
+  id: 'residential_mix', weight: 3,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'house_trio_garden', 'house_konbini', 'house_garage', 'house_trio_garden' ],
+    [ 'shopping_mall_plaza', 'merged_right', 'clinic_daycare', 'shop_parasol_row' ],
+  ],
+  merges: [ { row: 1, col: 0, spanCols: 2 } ],
+};
+
 export const CHUNK_PATTERNS: RoadPattern[] = [
   FULL_GRID,
   PLAZA_CENTER,
@@ -306,4 +416,15 @@ export const CHUNK_PATTERNS: RoadPattern[] = [
   SUBURBAN_CALM,
   CAMPUS_DISTRICT,
   ENTERTAINMENT_BLOCK,
+  RESIDENTIAL_MIX,
+  NEON_ALLEY,
+  SHRINE_APPROACH,
+  HARBOR_WAREHOUSE,
+  PARK_PLAZA_RADIAL,
+  GOAL_FINAL,
 ];
+
+/** id → RoadPattern の lookup */
+export const PATTERN_BY_ID: Record<string, RoadPattern> = Object.fromEntries(
+  CHUNK_PATTERNS.map(p => [p.id, p])
+);

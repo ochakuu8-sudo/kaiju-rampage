@@ -1,14 +1,8 @@
 /**
- * ui.ts — DOM UI 更新（被害総額スコアアタック + スピードメーター）
+ * ui.ts — DOM UI 更新 (被害総額スコアアタック + スピードメーター + 燃料ゲージ + ステージ + CLEAR)
  */
 
 import * as C from './constants';
-
-const ZONE_NAMES: Record<number, string> = {
-  0: '住宅街',
-  1: '商業区',
-  2: 'オフィス街',
-};
 
 /** ¥ 表記フォーマット (例: ¥1,250,000) */
 function formatYen(amount: number): string {
@@ -20,19 +14,22 @@ export class UIManager {
   private elZone        = document.getElementById('zone-display')!;
   private elSpeedFill   = document.getElementById('life-fill')!;
   private elSpeedNumber = document.getElementById('speed-number')!;
-  private elTimer       = document.getElementById('timer-display')!;
+  private elFuelWrap    = document.getElementById('fuel-wrap')!;
+  private elFuelFill    = document.getElementById('fuel-fill')!;
   private elDamage      = document.getElementById('damage-display')!;
   private elGameover    = document.getElementById('gameover')!;
   private elFinalDist   = document.getElementById('final-wave')!;
   private elFinalBest   = document.getElementById('final-best')!;
   private elFinalStats  = document.getElementById('final-stats')!;
+  private elClear       = document.getElementById('clear')!;
+  private elClearScore  = document.getElementById('clear-score')!;
+  private elClearDist   = document.getElementById('clear-dist')!;
+  private elClearStats  = document.getElementById('clear-stats')!;
   private elOverlay     = document.getElementById('overlay')!;
   private elPopupLayer  = document.getElementById('popup-layer')!;
 
   constructor() {
     // スピードメーターのグラデーションはメーター実幅 (px) で固定する。
-    // こうしないと background-size を % で指定した場合、fill の width に
-    // 連動して色の縮尺も動いてしまい、現在速度が読み取れなくなる。
     const wrap = document.getElementById('life-wrap')!;
     this.elSpeedFill.style.backgroundSize = `${wrap.clientWidth}px 100%`;
   }
@@ -41,13 +38,12 @@ export class UIManager {
     this.elDistance.textContent = `${meters.toLocaleString()} m`;
   }
 
-  setZone(chunkId: number) {
-    this.elZone.textContent = ZONE_NAMES[chunkId % 3] ?? '';
+  /** ステージ表示: "Stage N — 名称" */
+  setZone(stageIndex: number, stageName: string) {
+    this.elZone.textContent = `Stage ${stageIndex + 1} — ${stageName}`;
   }
 
-  /** レースゲーム風スピードメーター
-   *  グラデーションはメーター実幅 (constructor で px 固定) で描画されるので、
-   *  fill の width を変えるだけで右端の色 = 現在のスピードの色になる。 */
+  /** レースゲーム風スピードメーター */
   setSpeedMeter(speed: number, maxSpeed: number) {
     const pct = maxSpeed > 0 ? Math.min(100, (speed / maxSpeed) * 100) : 0;
     this.elSpeedFill.style.width = `${pct}%`;
@@ -55,11 +51,14 @@ export class UIManager {
     this.elSpeedNumber.textContent = String(Math.round(speed));
   }
 
-  setTimer(seconds: number) {
-    const s = Math.max(0, Math.ceil(seconds));
-    this.elTimer.textContent = String(s);
-    this.elTimer.classList.toggle('low',  s <= 10 && s > 5);
-    this.elTimer.classList.toggle('crit', s <= 5);
+  /** 燃料ゲージ (0-FUEL_MAX): バーの width を % にマップ + 閾値で色を切り替え */
+  setFuel(fuel: number) {
+    const pct = Math.max(0, Math.min(100, (fuel / C.FUEL_MAX) * 100));
+    this.elFuelFill.style.width = `${pct}%`;
+    const low  = fuel <= C.FUEL_LOW_THRESHOLD && fuel > C.FUEL_LOW_THRESHOLD / 2;
+    const crit = fuel <= C.FUEL_LOW_THRESHOLD / 2;
+    this.elFuelWrap.classList.toggle('low',  low);
+    this.elFuelWrap.classList.toggle('crit', crit);
   }
 
   /** 被害総額 HUD 更新: 即時反映 + 小パルスのみ。 */
@@ -81,7 +80,6 @@ export class UIManager {
     el.className = 'damage-popup';
     el.textContent = formatYen(amount);
 
-    // 金額に応じた演出 + 表示時間
     let dur: number;
     if (amount >= 5000) {
       el.classList.add('mega');
@@ -93,17 +91,13 @@ export class UIManager {
       el.classList.add('big');
       dur = C.SCORE_POPUP_DUR_BIG;
     } else if (amount < 50) {
-      // ミニオブジェクト: 極小サイズで画面を汚さない
       el.classList.add('tiny');
       dur = C.SCORE_POPUP_DUR_SMALL;
     } else {
       dur = C.SCORE_POPUP_DUR_SMALL;
     }
 
-    // CSSアニメーション時間を金額に合わせる
     el.style.animationDuration = `${dur}s`;
-
-    // ワールド座標で配置 (コンテナの translateY がカメラ追従)
     el.style.left = `${180 + worldX}px`;
     el.style.top  = `${290 - worldY}px`;
 
@@ -125,5 +119,16 @@ export class UIManager {
 
   hideGameOver() {
     this.elGameover.classList.remove('show');
+  }
+
+  showClear(score: number, distanceM: number, destroys: number, humans: number) {
+    this.elClearScore.textContent = formatYen(score);
+    this.elClearDist.textContent  = `${distanceM.toLocaleString()} m | ${destroys} 破壊`;
+    this.elClearStats.textContent = `${humans.toLocaleString()} 人踏み`;
+    this.elClear.classList.add('show');
+  }
+
+  hideClear() {
+    this.elClear.classList.remove('show');
   }
 }

@@ -12,7 +12,7 @@ import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
 import { Camera } from './camera';
-import { getStage, generateChunk, getInitialCityRoadData } from './stages';
+import { getStage, generateChunk, getInitialCityRoadData, chunkInfoFor, TOTAL_CHUNKS, STAGES } from './stages';
 import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad, GroundTile } from './stages';
 import type { Intersection } from './grid';
 import { resolveCircleOBB, clampSpeed, rand, randInt, circleAABB } from './physics';
@@ -20,7 +20,7 @@ import type { BuildingData } from './entities';
 
 const SHARED_BUF = new Float32Array(20000 * INST_F);
 
-type GameState = 'playing' | 'ball_lost' | 'game_over';
+type GameState = 'playing' | 'ball_lost' | 'game_over' | 'clear';
 
 export class Game {
   private renderer:  Renderer;
@@ -48,8 +48,12 @@ export class Game {
   private state: GameState = 'playing';
   private stateTimer = 0;
 
-  // タイマー
-  private timeRemaining = C.TIMER_INITIAL_SEC;
+  // 燃料 (時間で減少、人間を踏むと回復)
+  private fuel = C.FUEL_INITIAL;
+
+  // 現在のステージ (HUD 表示・CLEAR 検出用)
+  private currentStageIndex = 0;
+  private clearTriggered = false;
 
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
@@ -89,6 +93,7 @@ export class Game {
     this.flippers  = [new Flipper(true), new Flipper(false)];
 
     this.input.registerRestartTap(document.getElementById('gameover')!);
+    this.input.registerRestartTap(document.getElementById('clear')!);
     this.input.onRestart(() => this.restart());
 
     this.initRun();
@@ -97,18 +102,20 @@ export class Game {
   }
 
   private initRun() {
-    this.totalDestroys   = 0;
-    this.totalHumans     = 0;
-    this.totalScore      = 0;
-    this.comboCount      = 0;
-    this.comboTimer      = 0;
-    this.state           = 'playing';
-    this.stateTimer      = 0;
-    this.timeRemaining   = C.TIMER_INITIAL_SEC;
+    this.totalDestroys    = 0;
+    this.totalHumans      = 0;
+    this.totalScore       = 0;
+    this.comboCount       = 0;
+    this.comboTimer       = 0;
+    this.state            = 'playing';
+    this.stateTimer       = 0;
+    this.fuel             = C.FUEL_INITIAL;
+    this.currentStageIndex = 0;
+    this.clearTriggered   = false;
     this.ui.setDistance(0);
-    this.ui.setZone(0);
+    this.ui.setZone(0, STAGES[0].name);
     this.ui.setSpeedMeter(0, C.SCROLL_MAX);
-    this.ui.setTimer(C.TIMER_INITIAL_SEC);
+    this.ui.setFuel(C.FUEL_INITIAL);
     this.ui.resetScore();
   }
 
@@ -137,6 +144,7 @@ export class Game {
 
   private restart() {
     this.ui.hideGameOver();
+    this.ui.hideClear();
     this.initRun();
     this.loadCity();
   }
@@ -156,7 +164,7 @@ export class Game {
   private update(rawDt: number) {
     this.juice.update(rawDt);
 
-    if (this.state === 'game_over') return;
+    if (this.state === 'game_over' || this.state === 'clear') return;
 
     if (this.state === 'ball_lost') {
       this.stateTimer -= rawDt;
@@ -195,27 +203,60 @@ export class Game {
     // スクロール速度・距離 表示を更新
     this.ui.setSpeedMeter(this.camera.scrollSpeed, C.SCROLL_MAX);
     this.ui.setDistance(this.camera.distanceMeters);
-    this.ui.setZone(this.nextChunkId);
+
+    // 現在ステージを追跡して HUD / 背景を更新
+    this.updateCurrentStage();
 
     // ポップアップレイヤーをカメラ追従 (コンテナ1つだけ更新)
     this.ui.updatePopupLayer(this.camera.y);
 
-    // タイマー更新 (hitstop で止まらないよう rawDt を使用)
-    this.timeRemaining -= rawDt;
+    // 燃料ドレイン (hitstop で止まらないよう rawDt を使用)
+    this.fuel = Math.max(0, this.fuel - rawDt * C.FUEL_DRAIN_PER_SEC);
+    this.ui.setFuel(this.fuel);
 
-    // タイマー切れ → ゲームオーバー
-    if (this.timeRemaining <= 0) {
-      this.timeRemaining = 0;
-      this.ui.setTimer(0);
+    // 燃料切れ → ゲームオーバー
+    if (this.fuel <= 0) {
       this.onGameOver();
       return;
     }
 
-    this.ui.setTimer(this.timeRemaining);
+    // CLEAR 判定: 最終チャンクの上端をカメラが超えたら
+    if (!this.clearTriggered && this.nextChunkId >= TOTAL_CHUNKS) {
+      const finalTop = C.WORLD_MAX_Y + TOTAL_CHUNKS * C.CHUNK_HEIGHT;
+      if (this.camera.top >= finalTop) {
+        this.clearTriggered = true;
+        this.onClear();
+        return;
+      }
+    }
 
     // コンボタイマー: 一定時間加算が無ければピッチを1.0に戻す
     this.comboTimer -= rawDt;
     if (this.comboTimer <= 0) this.comboCount = 0;
+  }
+
+  /** 現在のチャンクから所属ステージを判定して HUD / 背景を更新 */
+  private updateCurrentStage() {
+    // 画面中央が属するチャンクを現在ステージとする
+    const cameraCenterY = this.camera.y;
+    const chunkIdx = Math.floor((cameraCenterY - C.WORLD_MAX_Y) / C.CHUNK_HEIGHT);
+    const clamped  = Math.max(0, Math.min(TOTAL_CHUNKS - 1, chunkIdx));
+    const info = chunkInfoFor(clamped);
+    if (info.finished) return;
+    if (info.stageIndex !== this.currentStageIndex) {
+      this.currentStageIndex = info.stageIndex;
+      this.ui.setZone(info.stageIndex, info.stage.name);
+      if (info.stage.bgTop) {
+        this.bgTopR = info.stage.bgTop[0];
+        this.bgTopG = info.stage.bgTop[1];
+        this.bgTopB = info.stage.bgTop[2];
+      }
+      if (info.stage.bgBottom) {
+        this.bgBottomR = info.stage.bgBottom[0];
+        this.bgBottomG = info.stage.bgBottom[1];
+        this.bgBottomB = info.stage.bgBottom[2];
+      }
+    }
   }
 
   private updateBall(dt: number) {
@@ -341,7 +382,8 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
-      // 人間は燃料: スコアには加算せず、スクロール速度だけを加速させる
+      // 人間は燃料: スコアには加算せず、燃料を回復しつつスクロールも加速
+      this.fuel = Math.min(C.FUEL_MAX, this.fuel + crushed.length * C.FUEL_GAIN_PER_HUMAN);
       this.camera.addScrollSpeed(crushed.length * C.HUMAN_SCROLL_GAIN);
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
@@ -477,8 +519,8 @@ export class Game {
     const spawnThreshold = this.camera.top + spawnAhead;
     const despawnThreshold = this.camera.bottom - despawnBehind;
 
-    // 上方向に新チャンクを先読みスポーン
-    while (true) {
+    // 上方向に新チャンクを先読みスポーン (TOTAL_CHUNKS を超えたら停止)
+    while (this.nextChunkId < TOTAL_CHUNKS) {
       const nextTop = C.WORLD_MAX_Y + (this.nextChunkId + 1) * C.CHUNK_HEIGHT;
       if (nextTop > spawnThreshold) break;
       this._spawnChunk(this.nextChunkId);
@@ -548,6 +590,14 @@ export class Game {
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
       this.ui.showGameOver(this.totalScore, this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+    }, 800);
+  }
+
+  private onClear() {
+    this.state = 'clear';
+    this.juice.flash(1, 0.9, 0.5, 0.7);
+    setTimeout(() => {
+      this.ui.showClear(this.totalScore, this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 

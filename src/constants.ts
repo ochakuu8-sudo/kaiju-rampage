@@ -230,8 +230,17 @@ export const SCROLL_MAX          = 200;  // スクロール速度上限 (px/s)
 export const HUMAN_SCROLL_GAIN   = 8;    // 人間 1 体の基礎ゲイン (px/s)
 export const SCROLL_GAIN_DECAY   = 3;    // ゲイン指数減衰: gain = base * exp(-speed / (MAX / DECAY))
 
-// ===== タイマー =====
-export const TIMER_INITIAL_SEC     = 90;  // 固定制限時間 (秒)
+// ===== 燃料ゲージ (タイマーの代替) =====
+// 時間経過で減少し、人間を踏むと回復する。0 でゲームオーバー。
+export const FUEL_MAX             = 100;
+export const FUEL_INITIAL         = 70;
+export const FUEL_DRAIN_PER_SEC   = 1.8;
+export const FUEL_GAIN_PER_HUMAN  = 2.5;
+export const FUEL_LOW_THRESHOLD   = 20;   // この値を下回ると赤く点滅
+
+// ===== ステージ (完走型) =====
+// チャンク数合計 = 各ステージの templates.length 合計 (stages.ts で定義)
+export const STAGE_COUNT          = 5;
 
 // ===== スコアポップアップ =====
 export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)

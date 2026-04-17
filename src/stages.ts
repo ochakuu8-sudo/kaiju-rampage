@@ -19,7 +19,7 @@ import {
   type RoadPattern,
   type Intersection,
 } from './grid';
-import { INITIAL_CITY_PATTERN, CHUNK_PATTERNS } from './patterns';
+import { INITIAL_CITY_PATTERN, PATTERN_BY_ID } from './patterns';
 
 export interface BuildingDef {
   x: number;      // 建物中心X
@@ -37,27 +37,6 @@ export interface VehicleDef {
   interval: number;
 }
 
-// ===== ウェイト付きプール =====
-export class WeightedPool<T> {
-  private items: T[];
-  private weights: number[];
-  private total: number;
-
-  constructor(entries: ReadonlyArray<readonly [T, number]>) {
-    this.items   = entries.map(e => e[0]);
-    this.weights = entries.map(e => e[1]);
-    this.total   = this.weights.reduce((a, b) => a + b, 0);
-  }
-
-  pick(): T {
-    let r = Math.random() * this.total;
-    for (let i = 0; i < this.items.length; i++) {
-      r -= this.weights[i];
-      if (r <= 0) return this.items[i];
-    }
-    return this.items[this.items.length - 1];
-  }
-}
 export interface StageConfig {
   level: number;
   buildings: BuildingDef[];
@@ -308,7 +287,8 @@ function sceneBuildingBounds(scene: Scene): { left: number; right: number } {
 export function placeGridBlock(
   block: GridBlock,
   pattern: RoadPattern,
-  blockIdx: number
+  blockIdx: number,
+  groundOverride?: GroundType
 ): ScenePlacement {
   const out: ScenePlacement = { buildings: [], furniture: [], grounds: [], humans: [] };
   const merges = pattern.merges ?? [];
@@ -349,9 +329,10 @@ export function placeGridBlock(
       if (cell.type === 'scene') {
         // 単一シーン: 建物重心を usable 中心へ
         const scene = getScene(cell.sceneId);
-        if (scene.ground) {
+        const groundType = groundOverride ?? scene.ground;
+        if (groundType) {
           out.grounds!.push({
-            type: scene.ground,
+            type: groundType,
             x: usableCenterX,
             y: cellCenterY,
             w: usableW,
@@ -370,11 +351,11 @@ export function placeGridBlock(
       } else {
         // 複数シーン: 横並びに配置。全シーン合計幅 + gap を usable 内に等分
         const scenes = cell.sceneIds.map(id => getScene(id));
-        // 地面: 最初のシーンの ground を使用 (混在セルは前半の雰囲気で)
-        const firstGround = scenes[0]?.ground;
-        if (firstGround) {
+        // 地面: override があれば強制、無ければ最初のシーンの ground を使用
+        const groundType = groundOverride ?? scenes[0]?.ground;
+        if (groundType) {
           out.grounds!.push({
-            type: firstGround,
+            type: groundType,
             x: usableCenterX,
             y: cellCenterY,
             w: usableW,
@@ -545,50 +526,173 @@ export interface ChunkData {
   prePlacedHumans: Array<{ x: number; y: number }>;
 }
 
-// ===== ゾーン別建物プール =====
-// 各ゾーンは初期都市に合わせて3段階のプールを持つ
-interface ZoneDef {
-  bot: C.BuildingSize[];  // 下段 (max h ≤ 22)
-  mid: C.BuildingSize[];  // 中段 (max h ≤ 32)
-  top: C.BuildingSize[];  // 上段 (max h ≤ 90)
+// ===== 完走型ステージ定義 =====
+// 5 つの視覚コンセプトに分かれた手書き固定チャンク。
+// 各ステージは patternId + groundOverride (+ isGoal) で構成される ChunkTemplate 配列を持つ。
+
+export interface ChunkTemplate {
+  patternId: string;           // patterns.ts の id
+  groundOverride?: GroundType; // 指定時: セル地面を強制上書き (シーンの ground を無視)
+  isGoal?: boolean;            // 最終チャンク
 }
 
-const ZONES: ZoneDef[] = [
-  // Zone 0: 住宅街
-  {
-    bot: ['house', 'house', 'townhouse', 'convenience', 'shed', 'garage', 'house'],
-    mid: ['house', 'townhouse', 'shop', 'restaurant', 'convenience', 'daycare', 'clinic', 'cafe', 'bakery', 'florist', 'ramen'],
-    top: ['apartment', 'apartment_tall', 'shop', 'temple', 'shrine', 'parking', 'mansion', 'library'],
-  },
-  // Zone 1: 商業区
-  {
-    bot: ['convenience', 'house', 'shop', 'bakery', 'florist', 'laundromat'],
-    mid: ['shop', 'restaurant', 'apartment', 'parking', 'temple', 'cafe', 'pharmacy', 'bookstore',
-          'karaoke', 'izakaya', 'game_center', 'ramen', 'pachinko'],
-    top: ['apartment', 'apartment_tall', 'school', 'hospital', 'parking', 'supermarket',
-          'bank', 'post_office', 'movie_theater', 'museum', 'fire_station', 'police_station',
-          'department_store'],
-  },
-  // Zone 2: オフィス街・ランドマーク
-  {
-    bot: ['house', 'convenience', 'gas_station', 'shed'],
-    mid: ['apartment', 'office', 'parking', 'shop', 'bank', 'pharmacy', 'post_office'],
-    top: ['office', 'tower', 'skyscraper', 'hospital', 'school', 'apartment_tall',
-          'city_hall', 'train_station', 'clock_tower', 'radio_tower',
-          'ferris_wheel', 'stadium', 'water_tower'],
-  },
+export interface StageDef {
+  id: number;
+  name: string;
+  templates: ChunkTemplate[];
+  sidewalkZone: number;
+  /** 背景色 (夜景など暗めにシフトしたい場合) */
+  bgTop?: readonly [number, number, number];
+  bgBottom?: readonly [number, number, number];
+}
+
+// ─── Stage 1: 住宅街ミックス都市 (12 チャンク) ───────────────
+const STAGE_1_TEMPLATES: ChunkTemplate[] = [
+  { patternId: 'residential_mix',    groundOverride: 'grass' },
+  { patternId: 'suburban_calm',      groundOverride: 'grass' },
+  { patternId: 'full_grid',          groundOverride: 'grass' },
+  { patternId: 'staggered',          groundOverride: 'grass' },
+  { patternId: 'park_break' }, // 公園ブレイク (groundOverride 無しで特殊 park 地面)
+  { patternId: 'plaza_center',       groundOverride: 'concrete' },
+  { patternId: 'residential_mix',    groundOverride: 'grass' },
+  { patternId: 'suburban_calm',      groundOverride: 'grass' },
+  { patternId: 'diagonal_split',     groundOverride: 'concrete' },
+  { patternId: 'full_grid',          groundOverride: 'grass' },
+  { patternId: 'staggered',          groundOverride: 'grass' },
+  { patternId: 'residential_mix',    groundOverride: 'grass' },
 ];
+
+// ─── Stage 2: 繁華街・夜の街 (10 チャンク) ────────────────────
+const STAGE_2_TEMPLATES: ChunkTemplate[] = [
+  { patternId: 'neon_alley',         groundOverride: 'asphalt' },
+  { patternId: 'dense_alley',        groundOverride: 'asphalt' },
+  { patternId: 'entertainment_block',groundOverride: 'asphalt' },
+  { patternId: 't_junction_west',    groundOverride: 'asphalt' },
+  { patternId: 'neon_alley',         groundOverride: 'asphalt' },
+  { patternId: 'dense_alley',        groundOverride: 'tile' },
+  { patternId: 't_junction_east',    groundOverride: 'asphalt' },
+  { patternId: 'entertainment_block',groundOverride: 'tile' },
+  { patternId: 'neon_alley',         groundOverride: 'asphalt' },
+  { patternId: 'dense_alley',        groundOverride: 'asphalt' },
+];
+
+// ─── Stage 3: 和風・古都 (12 チャンク) ────────────────────────
+const STAGE_3_TEMPLATES: ChunkTemplate[] = [
+  { patternId: 'shrine_approach',    groundOverride: 'stone_pavement' },
+  { patternId: 'full_grid',          groundOverride: 'stone_pavement' },
+  { patternId: 'shrine_approach',    groundOverride: 'gravel' },
+  { patternId: 'suburban_calm',      groundOverride: 'stone_pavement' },
+  { patternId: 'shrine_approach',    groundOverride: 'fallen_leaves' },
+  { patternId: 'staggered',          groundOverride: 'stone_pavement' },
+  { patternId: 'shrine_approach',    groundOverride: 'gravel' },
+  { patternId: 'plaza_center',       groundOverride: 'stone_pavement' },
+  { patternId: 'shrine_approach',    groundOverride: 'wood_deck' },
+  { patternId: 'full_grid',          groundOverride: 'stone_pavement' },
+  { patternId: 'shrine_approach',    groundOverride: 'fallen_leaves' },
+  { patternId: 'shrine_approach',    groundOverride: 'stone_pavement' },
+];
+
+// ─── Stage 4: 港湾・工業地帯 (10 チャンク) ────────────────────
+const STAGE_4_TEMPLATES: ChunkTemplate[] = [
+  { patternId: 'harbor_warehouse',   groundOverride: 'concrete' },
+  { patternId: 'office_district',    groundOverride: 'concrete' },
+  { patternId: 'harbor_warehouse',   groundOverride: 'asphalt' },
+  { patternId: 'office_district',    groundOverride: 'asphalt' },
+  { patternId: 'harbor_warehouse',   groundOverride: 'concrete' },
+  { patternId: 'full_grid',          groundOverride: 'dirt' },
+  { patternId: 'office_district',    groundOverride: 'concrete' },
+  { patternId: 'harbor_warehouse',   groundOverride: 'asphalt' },
+  { patternId: 'office_district',    groundOverride: 'concrete' },
+  { patternId: 'harbor_warehouse',   groundOverride: 'concrete' },
+];
+
+// ─── Stage 5: テーマパーク・祭り (フィナーレ 14 チャンク) ─────
+const STAGE_5_TEMPLATES: ChunkTemplate[] = [
+  { patternId: 'entertainment_block',groundOverride: 'tile' },
+  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
+  { patternId: 'entertainment_block',groundOverride: 'wood_deck' },
+  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
+  { patternId: 'park_break' },
+  { patternId: 'entertainment_block',groundOverride: 'tile' },
+  { patternId: 'park_plaza_radial',  groundOverride: 'stone_pavement' },
+  { patternId: 'campus_district',    groundOverride: 'grass' },
+  { patternId: 'entertainment_block',groundOverride: 'tile' },
+  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
+  { patternId: 'park_break' },
+  { patternId: 'entertainment_block',groundOverride: 'wood_deck' },
+  { patternId: 'park_plaza_radial',  groundOverride: 'tile' },
+  { patternId: 'goal_final',         isGoal: true },
+];
+
+export const STAGES: StageDef[] = [
+  { id: 0, name: '住宅街ミックス都市', templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
+    bgTop: [0.52, 0.74, 0.96], bgBottom: [0.38, 0.50, 0.38] },
+  { id: 1, name: '繁華街・夜の街',     templates: STAGE_2_TEMPLATES, sidewalkZone: 2,
+    bgTop: [0.10, 0.08, 0.25], bgBottom: [0.22, 0.14, 0.32] },
+  { id: 2, name: '和風・古都',        templates: STAGE_3_TEMPLATES, sidewalkZone: 3,
+    bgTop: [0.92, 0.78, 0.82], bgBottom: [0.62, 0.52, 0.44] },
+  { id: 3, name: '港湾・工業地帯',     templates: STAGE_4_TEMPLATES, sidewalkZone: 2,
+    bgTop: [0.58, 0.62, 0.70], bgBottom: [0.40, 0.42, 0.48] },
+  { id: 4, name: 'テーマパーク・祭り', templates: STAGE_5_TEMPLATES, sidewalkZone: 4,
+    bgTop: [0.96, 0.72, 0.50], bgBottom: [0.66, 0.48, 0.62] },
+];
+
+/** 総チャンク数 (全ステージの templates 合計) */
+export const TOTAL_CHUNKS = STAGES.reduce((n, s) => n + s.templates.length, 0);
+
+/** ステージ開始チャンク ID の累積配列 (prefix sum) */
+const STAGE_OFFSETS: number[] = (() => {
+  const out: number[] = [0];
+  for (const s of STAGES) out.push(out[out.length - 1] + s.templates.length);
+  return out;
+})();
+
+export type ChunkInfo =
+  | { finished: true }
+  | { finished: false; stage: StageDef; stageIndex: number; template: ChunkTemplate;
+      inStageIndex: number; isGoal: boolean };
+
+/** chunkId から所属ステージ・テンプレートを解決 */
+export function chunkInfoFor(chunkId: number): ChunkInfo {
+  if (chunkId < 0 || chunkId >= TOTAL_CHUNKS) return { finished: true };
+  for (let si = 0; si < STAGES.length; si++) {
+    if (chunkId < STAGE_OFFSETS[si + 1]) {
+      const inStageIndex = chunkId - STAGE_OFFSETS[si];
+      const template = STAGES[si].templates[inStageIndex];
+      return {
+        finished: false,
+        stage: STAGES[si],
+        stageIndex: si,
+        template,
+        inStageIndex,
+        isGoal: !!template.isGoal,
+      };
+    }
+  }
+  return { finished: true };
+}
 
 // 歩道家具のプール (ゾーン別)
 const SIDEWALK_FURNITURE: Record<number, Array<FurnitureType>> = {
+  // Zone 0: 住宅街 — 緑と生活感
   0: ['tree', 'tree', 'bench', 'tree', 'power_pole', 'flower_bed', 'bench',
       'bush', 'sakura_tree', 'planter', 'street_lamp', 'bicycle_rack'],
+  // Zone 1: 商業区 — 看板・自販機密集
   1: ['sign_board', 'vending', 'garbage', 'bench', 'traffic_light', 'parasol',
       'vending', 'sign_board', 'atm', 'post_box', 'newspaper_stand', 'bus_stop',
       'street_lamp', 'bollard', 'dumpster', 'recycling_bin'],
+  // Zone 2: オフィス・工業 — 金属・コンクリ
   2: ['power_pole', 'vending', 'bench', 'garbage', 'sign_board', 'bench', 'vending',
       'street_lamp', 'electric_box', 'fire_extinguisher', 'flag_pole', 'statue',
       'pine_tree', 'palm_tree', 'bamboo_cluster', 'hedge'],
+  // Zone 3: 和風 — 石灯籠・鳥居・桜・竹
+  3: ['stone_lantern', 'sakura_tree', 'pine_tree', 'bamboo_cluster', 'planter',
+      'stone_lantern', 'bonsai', 'sakura_tree', 'bush', 'rock', 'shinto_rope',
+      'stone_lantern', 'pine_tree', 'potted_plant'],
+  // Zone 4: 祭り・テーマパーク — 提灯・幟・屋台飾り
+  4: ['chouchin', 'flag_pole', 'banner_pole', 'sign_board', 'chouchin', 'parasol',
+      'noren', 'vending', 'chouchin', 'a_frame_sign', 'flag_pole', 'parasol',
+      'bench', 'street_lamp'],
 };
 
 /** 歩道に沿って家具を均等配置する */
@@ -674,105 +778,36 @@ function generateParkingLotFurniture(centerY: number, chunkId: number): Furnitur
   return items;
 }
 
-// ===== チャンクアーキタイプ =====
-// 各アーキタイプは 3 レイヤー × 3 列で構成される。
-// 各セルには 1 つ以上のシーン id が入り、左から順に placeRecipe で配置される。
-// 'PARK' / 'PARKING_LOT' の特殊値は建物のない特殊エリアを表す。
-// null は「そのセルを空ける」意味。
-
-interface ChunkArchetype {
-  id: string;
-  weight: number;
-  mid1: (string[] | null)[];  // baseY+58 に bot tier シーン
-  mid2: (string[] | null)[];  // baseY+86 に mid/midB tier シーン
-  top:  (string[] | null)[];  // baseY+162 に top tier シーン
-  specialArea?: 'park' | 'parking_lot';
-}
-
-const CHUNK_ARCHETYPES: ChunkArchetype[] = [
-  // 1. 閑静な住宅街
-  {
-    id: 'suburban_quiet', weight: 3,
-    mid1: [['house_trio_garden'],       ['house_konbini'],         ['house_garage']],
-    mid2: [['townhouse_row'],           ['clinic_daycare'],        ['mansion_shop']],
-    top:  [['school_grounds'],          ['hospital_scene'],        ['city_hall']],
-  },
-  // 2. 商店街アーケード
-  {
-    id: 'shotengai_arcade', weight: 3,
-    mid1: [['ramen_izakaya', 'konbini_corner'], ['cafe_bookstore'], ['florist_bakery']],
-    mid2: [['shotengai_food'],          ['shotengai_game'],        ['cafe_bookstore_row']],
-    top:  [['dept_store_plaza'],        ['movie_library'],         ['museum_complex']],
-  },
-  // 3. 神社・寺の文化区
-  {
-    id: 'shrine_district', weight: 2,
-    mid1: [['garden_shed'],             ['house_trio_garden'],     ['konbini_corner']],
-    mid2: [['temple_garden'],           ['shrine_complex'],        ['mansion_shop']],
-    top:  [['museum_complex'],          ['ferris_wheel_zone'],     ['train_station_plaza']],
-  },
-  // 4. オフィス街
-  {
-    id: 'office_district', weight: 2,
-    mid1: [['konbini_corner'],          ['cafe_bookstore'],        ['laundromat_pharmacy']],
-    mid2: [['bank_post'],               ['shop_parasol_row'],      ['cafe_bookstore_row']],
-    top:  [['office_tower_group'],      ['clock_tower_trio'],      ['water_tower_apartment']],
-  },
-  // 5. 駅前ハブ
-  {
-    id: 'station_hub', weight: 1,
-    mid1: [['ramen_izakaya'],           ['florist_bakery', 'konbini_corner'], ['cafe_bookstore']],
-    mid2: [['shotengai_food'],          ['bank_post'],             ['shop_parasol_row']],
-    top:  [['train_station_plaza'],     ['dept_store_plaza'],      ['hospital_scene']],
-  },
-  // 6. 娯楽街
-  {
-    id: 'entertainment_zone', weight: 2,
-    mid1: [['ramen_izakaya'],           ['konbini_corner'],        ['cafe_bookstore']],
-    mid2: [['shotengai_game'],          ['shotengai_food'],        ['shrine_complex']],
-    top:  [['ferris_wheel_zone'],       ['stadium_radio'],         ['movie_library']],
-  },
-  // 7. 工業・郊外
-  {
-    id: 'industrial_suburb', weight: 1,
-    mid1: [['gas_station_corner'],      ['garden_shed', 'house_garage'], ['house_trio_garden']],
-    mid2: [['townhouse_row'],           ['mansion_shop'],          ['clinic_daycare']],
-    top:  [['water_tower_apartment'],   ['supermarket_front'],     ['stadium_radio']],
-  },
-  // 8. 公園チャンク (中段は特殊エリアに)
-  {
-    id: 'park_break', weight: 1,
-    mid1: [null, null, null],
-    mid2: [null, null, null],
-    top:  [['museum_complex'],          ['city_hall'],             ['hospital_scene']],
-    specialArea: 'park',
-  },
-];
-
 // ===== Grid-based chunk generation =====
 
-const PATTERN_POOL = new WeightedPool<RoadPattern>(
-  CHUNK_PATTERNS.map(p => [p, p.weight] as const)
-);
-let lastPatternId: string | null = null;
-
-function pickPattern(): RoadPattern {
-  for (let tries = 0; tries < 6; tries++) {
-    const p = PATTERN_POOL.pick();
-    if (p.id !== lastPatternId) {
-      lastPatternId = p.id;
-      return p;
-    }
-  }
-  const p = PATTERN_POOL.pick();
-  lastPatternId = p.id;
-  return p;
+/** 空のチャンクデータ (TOTAL_CHUNKS 超過時の安全弁) */
+function emptyChunk(chunkId: number): ChunkData {
+  const baseY = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
+  return {
+    chunkId, baseY,
+    roads: [],
+    horizontalRoads: [],
+    verticalRoads: [],
+    intersections: [],
+    buildings: [],
+    furniture: [],
+    specialAreas: [],
+    grounds: [],
+    prePlacedHumans: [],
+  };
 }
 
-/** 1 チャンク分のコンテンツを grid pattern から生成する */
+/** 1 チャンク分のコンテンツを手書きステージテンプレートから生成する */
 export function generateChunk(chunkId: number): ChunkData {
+  const info = chunkInfoFor(chunkId);
+  if (info.finished) return emptyChunk(chunkId);
+
   const baseY = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
-  const pattern = pickPattern();
+  const pattern = PATTERN_BY_ID[info.template.patternId];
+  if (!pattern) {
+    console.warn(`[stages] unknown patternId "${info.template.patternId}" @ chunk ${chunkId}`);
+    return emptyChunk(chunkId);
+  }
 
   const buildings: BuildingDef[] = [];
   const furniture: FurnitureDef[] = [];
@@ -790,7 +825,7 @@ export function generateChunk(chunkId: number): ChunkData {
   } else {
     // grid block を生成してシーン配置
     const block = buildBlock(pattern, -180, baseY, C.CELL_W, C.CELL_H);
-    const p = placeGridBlock(block, pattern, chunkId);
+    const p = placeGridBlock(block, pattern, chunkId, info.template.groundOverride);
     buildings.push(...p.buildings);
     furniture.push(...p.furniture);
     if (p.grounds) grounds.push(...p.grounds);
@@ -840,12 +875,10 @@ export function generateChunk(chunkId: number): ChunkData {
     .filter(r => r.xMin <= -179 && r.xMax >= 179)
     .map(r => ({ y: r.cy, h: r.h }));
 
-  // 歩道家具: 水平道路のみ対象 (全幅のみ)
+  // 歩道家具: 水平道路のみ対象 (全幅のみ) — ステージ別ゾーン
   for (const r of horizontalRoads) {
     if (r.xMin <= -179 && r.xMax >= 179) {
-      const zoneType = pattern.id === 'office_district' ? 2 :
-                       pattern.id === 'suburban_calm' ? 0 : 1;
-      furniture.push(...generateSidewalkFurniture(r.cy, zoneType, chunkId));
+      furniture.push(...generateSidewalkFurniture(r.cy, info.stage.sidewalkZone, chunkId));
     }
   }
 
