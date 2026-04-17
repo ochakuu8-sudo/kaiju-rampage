@@ -127,6 +127,13 @@
       transform: translate(-50%, -50%);
       animation: popup-stay 1.2s ease-out forwards;
     }
+    /* < ¥50 — 超小サイズ、邪魔にならない程度 */
+    .damage-popup.tiny {
+      font-size: 5px;
+      color: #cfcfcf;
+      letter-spacing: 0;
+      text-shadow: 1px 1px 0 #000;
+    }
     /* ¥500+ — 黄色 */
     .damage-popup.big {
       font-size: 13px;
@@ -169,7 +176,7 @@
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   </style>
-  <script type="module" crossorigin src="/kaiju-rampage/assets/index--rG0qZBs.js"></script>
+  <script type="module" crossorigin src="/kaiju-rampage/assets/index-DfvypiIU.js"></script>
 </head>
 <body>
 <div id="wrap">
