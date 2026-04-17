@@ -1323,7 +1323,7 @@ export class FurnitureManager {
     for (const d of defs) {
       this.items.push({
         type: d.type, x: d.x, y: d.y,
-        hp: 2, active: true, score: 1,
+        hp: 1, active: true, score: 1,
         lightTimer: LIGHT_DURATIONS[0], lightState: 0,
         chunkId,
       });
@@ -1904,14 +1904,14 @@ interface VehicleDef {
 }
 
 const VEHICLE_DEFS_DATA: Record<VehicleType, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
-  car:        { w: 20, h: 10, maxHp: 2, score:  3, speedMin: 50,  speedMax: 70  },
-  bus:        { w: 28, h: 12, maxHp: 3, score:  8, speedMin: 35,  speedMax: 50  },
-  truck:      { w: 24, h: 12, maxHp: 3, score:  5, speedMin: 30,  speedMax: 45  },
-  ambulance:  { w: 22, h: 10, maxHp: 2, score: 50, speedMin: 100, speedMax: 120 },
-  taxi:       { w: 20, h: 10, maxHp: 2, score:  3, speedMin: 55,  speedMax: 75  },
-  motorcycle: { w: 12, h:  7, maxHp: 2, score:  2, speedMin: 70,  speedMax: 100 },
-  delivery:   { w: 22, h: 11, maxHp: 2, score:  3, speedMin: 40,  speedMax: 60  },
-  van:        { w: 22, h: 11, maxHp: 3, score:  4, speedMin: 35,  speedMax: 55  },
+  car:        { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 50,  speedMax: 70  },
+  bus:        { w: 28, h: 12, maxHp: 1, score:  8, speedMin: 35,  speedMax: 50  },
+  truck:      { w: 24, h: 12, maxHp: 1, score:  5, speedMin: 30,  speedMax: 45  },
+  ambulance:  { w: 22, h: 10, maxHp: 1, score: 50, speedMin: 100, speedMax: 120 },
+  taxi:       { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 55,  speedMax: 75  },
+  motorcycle: { w: 12, h:  7, maxHp: 1, score:  2, speedMin: 70,  speedMax: 100 },
+  delivery:   { w: 22, h: 11, maxHp: 1, score:  3, speedMin: 40,  speedMax: 60  },
+  van:        { w: 22, h: 11, maxHp: 1, score:  4, speedMin: 35,  speedMax: 55  },
 };
 
 // Car color palette (deterministic by position)

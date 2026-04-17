@@ -272,39 +272,22 @@ export class Game {
     if (flipperSoundNeeded) { this.sound.flipper(); this.juice.ballHitFlash(); }
     else if (wallSoundNeeded) { this.sound.wallHit(); }
 
-    // ダメージはボール速度だけに依存: dmg = max(1, floor(ballSpeed / DIV))
-    const ballSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-    const dmg = Math.max(1, Math.floor(ballSpd / C.BALL_DAMAGE_DIVISOR));
-
+    // ダメージは常に 1 (HP 単位 = ヒット回数管理)
     if (bldResult) {
       const { bld } = bldResult;
-      const hpBefore = bld.hp;
-      // 小・中型 (HP ≤ 10) は強制 1 撃破壊。大型のみ通常ダメージで反射あり
-      const forceDestroy = hpBefore <= 10;
-      const dmgToApply = forceDestroy ? hpBefore : dmg;
-      const destroyed = this.buildings.damage(bld, dmgToApply);
+      const destroyed = this.buildings.damage(bld, 1);
 
       if (destroyed) {
-        // 破壊貫通: ボール速度を破壊前 HP に比例して減速 (方向は維持)
-        const curSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
-        const newSpd = Math.max(
-          C.BALL_MIN_PIERCE_SPEED,
-          curSpd - hpBefore * C.BALL_PIERCE_LOSS_PER_DMG
-        );
-        const k = newSpd / curSpd;
-        b.vx *= k; b.vy *= k;
-        // 貫通中フラグで destroyTimer 中の再衝突を防ぐ
+        // 貫通: 速度そのまま通過 (減速なし)
         b.lastPiercedBld = bld;
         this.onBuildingDestroyed(bld);
       } else {
-        // 非破壊: 反射 (ピンボール挙動)
-        // 底面ヒット(反射後 vy < 0 = 下向き)は軽く弾くだけにして、頭上で強く突き上げられないように
-        const rSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2);
-        const isBottomHit = bldResult.newVy < 0;
-        const minRepel = isBottomHit ? C.BALL_MIN_REPEL_SPEED_BOTTOM : C.BALL_MIN_REPEL_SPEED;
-        const scale = Math.max(1, minRepel / Math.max(rSpd, 0.01));
-        b.vx = bldResult.newVx * scale;
-        b.vy = bldResult.newVy * scale;
+        // 反射: 向きだけ変えて速度の大きさは維持 (減速なし)
+        const preSpd  = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
+        const postSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2) || 0.001;
+        const k = preSpd / postSpd;
+        b.vx = bldResult.newVx * k;
+        b.vy = bldResult.newVy * k;
         b.lastPiercedBld = null;
         this.sound.buildingHit();
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
@@ -325,12 +308,8 @@ export class Game {
 
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
-      const destroyed = this.furniture.damage(furnitureHit, dmg);
-      if (!destroyed) {
-        // 非破壊: 最小反発
-        const rsp = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
-        if(rsp < C.BALL_MIN_REPEL_SPEED){const s=C.BALL_MIN_REPEL_SPEED/Math.max(rsp,0.01);b.vx*=s;b.vy*=s;}
-      } else {
+      const destroyed = this.furniture.damage(furnitureHit, 1);
+      if (destroyed) {
         this.addScore(furnitureHit.score, b.x, b.y);
       }
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
@@ -345,18 +324,12 @@ export class Game {
 
     const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, r);
     if (vehicleHit) {
-      const destroyed = this.vehicles.damage(vehicleHit, dmg);
+      const destroyed = this.vehicles.damage(vehicleHit, 1);
       if (destroyed) {
         this.addScore(vehicleHit.score, b.x, b.y);
         this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
         this.particles.spawnSpark(b.x, b.y, 6);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
-      } else {
-        // 非破壊: 最小反発
-        const rsp = Math.sqrt(b.vx*b.vx+b.vy*b.vy);
-        if(rsp < C.BALL_MIN_REPEL_SPEED){const s=C.BALL_MIN_REPEL_SPEED/Math.max(rsp,0.01);b.vx*=s;b.vy*=s;}
-        this.particles.spawnSpark(b.x, b.y, 3);
-        this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
       }
       this.juice.ballHitFlash();
     }
