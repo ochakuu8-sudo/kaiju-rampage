@@ -921,22 +921,47 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 9: 町のシンボル神社 — shrine_complex (merged) + 参道 stone_pavement + 上端クロス
-  {
-    patternId: 's1_shrine_corner',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'temple_garden' },
-      // row 0 col 1-2 merged = shrine_complex (pattern default)
-      { row: 0, col: 3, sceneId: 'house_trio_garden' },
-      // row 1 col 0-1 merged = townhouse_row (pattern default)
-      { row: 1, col: 2, sceneId: 'ramen_izakaya' },
-      { row: 1, col: 3, sceneId: 'cafe_bookstore' },
+  // 9: 町のシンボル神社 — 神社 + 五重塔 + 鳥居参道 + 上端クロス (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('temple',-155,77),
+      _B('chaya',-55,80),_B('kominka',-20,81),
+      _B('shrine',35,78),
+      _B('kominka',108,81),_B('chaya',140,80),_B('kominka',175,81),
+      _B('kominka',-165,125),_B('pagoda',-130,145),
+      _B('shrine',-55,127),_B('kominka',-20,125),
+      _B('ryokan',35,125),
+      _B('kominka',108,125),_B('chaya',140,125),_B('kominka',172,125),
     ],
-    groundGrid: [
-      ['grass',          'stone_pavement', 'stone_pavement', 'grass'    ],
-      ['stone_pavement', 'stone_pavement', 'concrete',       'wood_deck'],
+    furniture: [
+      _F('torii',0,30),_F('torii',0,60),_F('torii',0,85),
+      _F('stone_lantern',-20,45),_F('stone_lantern',20,45),
+      _F('stone_lantern',-20,80),_F('stone_lantern',20,80),
+      _F('koma_inu',-15,60),_F('koma_inu',15,60),
+      _F('sakura_tree',-90,45),_F('sakura_tree',90,45),
+      _F('pine_tree',-175,50),_F('pine_tree',175,50),
+      _F('offering_box',-55,92),_F('shinto_rope',35,60),
+      _F('ema_rack',-55,115),_F('temizuya',-90,150),
+      _F('torii',0,175),_F('stone_lantern',-20,170),_F('stone_lantern',20,170),
+      _F('sakura_tree',-90,170),_F('sakura_tree',90,170),
+      _F('bonsai',-30,115),_F('bonsai',110,115),
+      _F('bamboo_fence',-175,120),_F('bamboo_fence',-175,130),
+      _F('bamboo_fence',175,120),_F('bamboo_fence',175,130),
+      _F('stone_lantern',35,108),_F('stone_lantern',-55,108),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('street_lamp',-90,195),_F('street_lamp',90,195),
+      _F('traffic_light',-90,190),_F('traffic_light',90,190),
     ],
-  },
+    humans: [_H(-155,92),_H(-55,92),_H(0,70),_H(35,92),_H(130,92),_H(-130,115),_H(-55,115),_H(35,115),_H(130,115),_H(0,175),_H(-170,60),_H(170,60)],
+    grounds: [
+      _G('grass',0,46.5,360,93),_G('stone_pavement',0,46.5,80,93),
+      _G('gravel',0,46.5,40,93),
+      _G('dirt',-130,140,40,50),
+      _G('stone_pavement',0,153.5,360,93),_G('gravel',0,153.5,40,93),
+      _G('grass',-175,153.5,30,93),_G('grass',175,153.5,30,93),
+    ],
+    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 10: 町家密集 — townhouse_row merged + クリニック (実質上端クロスは無し、町屋連続)
   {
     patternId: 's1_suburb_row_cross',
