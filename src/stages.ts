@@ -962,23 +962,43 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 10: 町家密集 — townhouse_row merged + クリニック (実質上端クロスは無し、町屋連続)
-  {
-    patternId: 's1_suburb_row_cross',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'house_trio_garden' },
-      { row: 0, col: 1, sceneId: 'house_konbini' },
-      { row: 0, col: 2, sceneId: 'house_garage' },
-      { row: 0, col: 3, sceneId: 'house_trio_garden' },
-      // row 1 col 0-1 merged = townhouse_row (pattern default)
-      { row: 1, col: 2, sceneId: 'clinic_daycare' },
-      { row: 1, col: 3, sceneId: 'garden_shed' },
+  // 10: 町家密集 — 消防署と警察署 + 町家連続 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('townhouse',-165,82),_B('townhouse',-140,82),_B('townhouse',-115,82),
+      _B('fire_station',-45,78),
+      _B('mansion',35,79),
+      _B('police_station',115,77),_B('townhouse',155,82),_B('townhouse',178,82),
+      _B('townhouse',-165,125),_B('townhouse',-140,125),_B('townhouse',-115,125),
+      _B('kominka',-60,124),_B('townhouse',-25,125),
+      _B('mansion',35,127),
+      _B('townhouse',105,125),_B('townhouse',130,125),_B('townhouse',155,125),_B('townhouse',178,125),
     ],
-    groundGrid: [
-      ['grass',    'concrete', 'dirt',     'grass'   ],
-      ['concrete', 'concrete', 'tile',     'dirt'    ],
+    furniture: [
+      _F('wood_fence',-130,92),_F('wood_fence',-100,92),_F('potted_plant',-165,92),
+      _F('post_box',-45,92),_F('flag_pole',-45,60),
+      _F('chouchin',35,92),_F('noren',35,95),
+      _F('post_box',115,92),_F('flag_pole',115,60),_F('bench',115,90),
+      _F('wood_fence',155,92),_F('wood_fence',178,92),
+      _F('potted_plant',-165,115),_F('potted_plant',-140,115),_F('potted_plant',-115,115),
+      _F('chouchin',-60,115),_F('noren',-25,115),
+      _F('banner_pole',35,145),
+      _F('potted_plant',105,115),_F('potted_plant',130,115),_F('potted_plant',155,115),_F('potted_plant',178,115),
+      _F('tree',-90,45),_F('tree',90,45),_F('tree',-90,170),_F('tree',90,170),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('fire_extinguisher',-45,95),_F('bicycle_rack',115,92),
     ],
-  },
+    humans: [_H(-130,92),_H(-45,85),_H(35,92),_H(115,85),_H(-130,115),_H(-60,115),_H(-25,115),_H(35,115),_H(120,115),_H(160,115),_H(0,50),_H(0,170)],
+    grounds: [
+      _G('concrete',0,46.5,360,93),_G('grass',0,153.5,360,93),
+      _G('concrete',-45,80,40,25),_G('concrete',115,80,40,25),
+      _G('concrete',35,78,40,25),
+      _G('concrete',0,153.5,360,20),_G('concrete',0,153.5,360,93),
+      _G('dirt',-150,170,50,30),_G('dirt',160,170,40,30),
+      _G('grass',-60,180,30,25),_G('grass',60,180,30,25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 11: Stage 2 への橋渡し — 夜の営業店舗 + ガソスタでネオン予感
   {
     patternId: 's1_suburb_row',
