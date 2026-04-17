@@ -600,50 +600,79 @@ const _TOP_HR = _HR(200, -180, 180);       // 上端クロス街路 (クロス�
 // 座標指定して "超絶ハイクオリティミニチュア" を構成する。
 // 縦スパイン (x=-90/0/+90) は全チャンクで連続、道路は決して途切れない。
 const STAGE_1_TEMPLATES: ChunkTemplate[] = [
-  // 0: 閑静な住宅街入口 — 芝生の庭 + 土の小径 + コンクリ駐車 (raw 配置)
-  {
-    patternId: 's1_raw',
-    raw: {
-      buildings: [
-        _B('house', -160, 80), _B('house', -130, 80), _B('shed', -108, 85),
-        _B('house',  -65, 80), _B('greenhouse', -30, 82),
-        _B('shed',    20, 85), _B('house',      55, 80),
-        _B('house',  115, 80), _B('garage',    150, 83), _B('shed', 175, 85),
-        _B('house', -165, 125), _B('house',    -135, 125), _B('house',   -108, 125),
-        _B('house',  -65, 125), _B('greenhouse', -30, 127),
-        _B('townhouse', 25, 129), _B('townhouse', 55, 129),
-        _B('house',  115, 125), _B('house',    145, 125), _B('shed',    175, 118),
-      ],
-      furniture: [
-        _F('tree', -175, 30), _F('tree', -145, 30), _F('flower_bed', -170, 60),
-        _F('mailbox', -150, 92), _F('wood_fence', -90, 40), _F('wood_fence', -90, 55),
-        _F('tree', -50, 35), _F('bicycle', -25, 90), _F('potted_plant', -15, 88),
-        _F('tree', 15, 35), _F('tree', 45, 35), _F('flower_bed', 30, 55),
-        _F('tree', 105, 30), _F('mailbox', 130, 90), _F('car', 158, 72),
-        _F('tree', -170, 170), _F('laundry_pole', -150, 140), _F('tree', -115, 170),
-        _F('tree', -50, 170), _F('wood_fence', -10, 145), _F('potted_plant', -35, 115),
-        _F('tree', 15, 170), _F('bicycle', 50, 115), _F('tree', 80, 170),
-        _F('tree', 110, 170), _F('mailbox', 130, 115), _F('tree', 145, 170),
-        _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      ],
-      humans: [
-        _H(-120, 75), _H(-50, 92), _H(40, 110), _H(130, 80),
-        _H(-100, 150), _H(80, 140), _H(-30, 180), _H(140, 175), _H(0, 60), _H(0, 160),
-      ],
-      grounds: [
-        _G('grass', 0, 46.5, 360, 93),
-        _G('grass', 0, 153.5, 360, 93),
-        _G('dirt',     -130, 55, 50, 25),
-        _G('concrete',   60, 70, 40, 15),
-        _G('concrete',  150, 75, 30, 20),
-        _G('dirt',     -110, 140, 30, 20),
-        _G('concrete',   30, 170, 40, 20),
-        _G('dirt',      140, 165, 40, 25),
-      ],
-      horizontalRoads: [_MID_HR],
-      verticalRoads: [..._SPINE_V],
-    },
-  },
+  // 0: 閑静な住宅街入口 — 前後列 + 密な緑化 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      // 下段 前列 (y=25-35 小物)
+      _B('shed',-170,20),_B('shed',-145,20),_B('greenhouse',-115,22),
+      _B('shed',-55,20),_B('greenhouse',-25,22),
+      _B('shed',20,20),_B('greenhouse',55,22),
+      _B('shed',105,20),_B('greenhouse',135,22),_B('shed',170,20),
+      // 下段 中列 (y=55 中物)
+      _B('garage',-155,58),_B('greenhouse',-115,57),
+      _B('garage',-55,58),_B('shed',-20,60),
+      _B('garage',25,58),_B('shed',60,60),
+      _B('garage',110,58),_B('greenhouse',145,57),
+      // 下段 後列 (y=80-85 家)
+      _B('house',-170,82),_B('house',-140,82),_B('house',-110,82),
+      _B('house',-60,82),_B('house',-25,82),
+      _B('house',20,82),_B('townhouse',55,80),
+      _B('house',108,82),_B('house',140,82),_B('house',170,82),
+      // 上段 前列 (y=125 家)
+      _B('house',-170,125),_B('house',-140,125),_B('house',-110,125),
+      _B('house',-60,125),_B('house',-25,125),
+      _B('townhouse',22,129),_B('townhouse',52,129),
+      _B('house',108,125),_B('house',140,125),_B('house',170,125),
+      // 上段 中列 (y=155)
+      _B('garage',-155,155),_B('shed',-120,158),
+      _B('garage',-55,155),_B('greenhouse',-20,155),
+      _B('garage',25,155),_B('shed',60,158),
+      _B('garage',110,155),_B('shed',145,158),
+      // 上段 後列 (y=185 小物)
+      _B('shed',-170,185),_B('greenhouse',-140,184),_B('shed',-110,185),
+      _B('greenhouse',-55,184),_B('shed',-20,185),
+      _B('shed',25,185),_B('greenhouse',55,184),
+      _B('shed',108,185),_B('greenhouse',140,184),_B('shed',170,185),
+    ],
+    furniture: [
+      _F('tree',-175,8),_F('tree',-145,8),_F('tree',-115,8),
+      _F('tree',-55,8),_F('tree',-25,8),_F('tree',20,8),_F('tree',55,8),
+      _F('tree',105,8),_F('tree',135,8),_F('tree',170,8),
+      _F('hedge',-90,8),_F('hedge',90,8),
+      _F('flower_bed',-170,40),_F('flower_bed',-25,40),_F('flower_bed',145,40),
+      _F('wood_fence',-90,30),_F('wood_fence',-90,45),_F('wood_fence',90,30),_F('wood_fence',90,45),
+      _F('potted_plant',-140,70),_F('potted_plant',-110,70),_F('potted_plant',-60,70),
+      _F('potted_plant',20,70),_F('potted_plant',108,70),_F('potted_plant',140,70),
+      _F('mailbox',-170,92),_F('mailbox',-25,92),_F('mailbox',170,92),
+      _F('bicycle',-140,92),_F('bicycle',60,92),_F('bicycle',140,92),
+      _F('tree',-175,118),_F('tree',108,118),_F('tree',170,118),
+      _F('potted_plant',-140,115),_F('potted_plant',-60,115),_F('potted_plant',22,115),
+      _F('wood_fence',-90,140),_F('wood_fence',-90,155),_F('wood_fence',90,140),_F('wood_fence',90,155),
+      _F('laundry_pole',-170,140),_F('laundry_pole',140,140),
+      _F('flower_bed',-55,175),_F('flower_bed',108,175),
+      _F('tree',-175,195),_F('tree',-145,195),_F('tree',-115,195),
+      _F('tree',-55,195),_F('tree',-20,195),_F('tree',22,195),_F('tree',55,195),
+      _F('tree',108,195),_F('tree',140,195),_F('tree',170,195),
+      _F('hedge',-90,195),_F('hedge',90,195),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('car',-130,92),_F('car',30,92),_F('car',115,92),
+    ],
+    humans: [
+      _H(-140,45),_H(-25,45),_H(55,45),_H(140,45),
+      _H(-120,75),_H(-50,92),_H(40,75),_H(130,80),
+      _H(-100,150),_H(80,140),_H(-30,180),_H(140,175),
+      _H(0,60),_H(0,160),_H(-170,8),_H(170,8),_H(-170,195),_H(170,195),
+    ],
+    grounds: [
+      _G('grass', 0, 46.5, 360, 93), _G('grass', 0, 153.5, 360, 93),
+      _G('dirt',  -130, 55, 60, 30), _G('dirt', -110, 140, 40, 30),
+      _G('concrete', 60, 70, 40, 15), _G('concrete', 150, 75, 30, 20),
+      _G('concrete', 30, 170, 50, 20), _G('dirt', 140, 165, 50, 30),
+      _G('dirt', 0, 15, 60, 25), _G('dirt', 0, 185, 60, 25),
+      _G('concrete', -170, 55, 30, 20), _G('concrete', 170, 155, 30, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 1: 住宅 + コンビニ + ランドロマット (raw)
   { patternId: 's1_raw', raw: {
     buildings: [
