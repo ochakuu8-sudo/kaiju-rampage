@@ -301,8 +301,11 @@ export class Game {
         this.onBuildingDestroyed(bld);
       } else {
         // 非破壊: 反射 (ピンボール挙動)
+        // 底面ヒット(反射後 vy < 0 = 下向き)は軽く弾くだけにして、頭上で強く突き上げられないように
         const rSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2);
-        const scale = Math.max(1, C.BALL_MIN_REPEL_SPEED / Math.max(rSpd, 0.01));
+        const isBottomHit = bldResult.newVy < 0;
+        const minRepel = isBottomHit ? C.BALL_MIN_REPEL_SPEED_BOTTOM : C.BALL_MIN_REPEL_SPEED;
+        const scale = Math.max(1, minRepel / Math.max(rSpd, 0.01));
         b.vx = bldResult.newVx * scale;
         b.vy = bldResult.newVy * scale;
         b.lastPiercedBld = null;

@@ -17,6 +17,7 @@ export const FALLOFF_Y = -285;       // これ以下でボールロスト
 // フリッパーヒットで画面上部まで届かなくなるため控えめに。
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
 export const BALL_MIN_REPEL_SPEED = 4;   // 非破壊時の最小反発速度 (乗り続け防止)
+export const BALL_MIN_REPEL_SPEED_BOTTOM = 1; // 底面ヒット時は軽くバウンドのみ
 export const GRAVITY = 0.35;             // 下がりすぎを抑制（元 0.3 にやや重みを追加）
 export const MAX_BALL_SPEED = 28;        // 射出の "シュッ" を抑えつつ頂点に届く余地
 // 建物貫通: ボールは常にすり抜け、与ダメージに比例して速度減衰
