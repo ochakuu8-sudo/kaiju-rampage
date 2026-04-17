@@ -828,18 +828,20 @@ export class BuildingManager {
         }
         case 'shop': {
           // 看板帯（建物ごとに色変え）
-          const si = Math.abs(Math.floor(b.x * 3 + b.y)) % 3;
-          const [sgR, sgG, sgB] = si === 0 ? [0.92, 0.20, 0.18] :
-                                   si === 1 ? [0.18, 0.48, 0.90] : [0.20, 0.72, 0.28];
-          writeInst(buf, n++, cx, top - 3.5, bW, 7, sgR, sgG, sgB, 1);
+          const si = Math.abs(Math.floor(b.x * 3 + b.y)) % 5;
+          // T-3: drawShopSign で看板強化
+          n = this.drawShopSign(buf, n, cx, top, bW, si, false);
+          // T-3: ストライプ庇
+          n = this.drawAwningStripe(buf, n, cx, bot, bW, bH, si);
           // ショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.72, bH * 0.38,
             0.72, 0.88, 0.96, 0.85);
-          // 庇
-          writeInst(buf, n++, cx, bot + bH * 0.38, bW + 4, 4,
-            sgR * 0.68, sgG * 0.68, sgB * 0.68, 0.90);
-          // ドア
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.42, bW * 0.72, bH * 0.38);
+          // ドア + 装飾
           writeInst(buf, n++, cx, bot + 5, bW * 0.18, 9, 0.32, 0.24, 0.18, 1);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
+          // T-3: 壁面自販機
+          n = this.drawVendingMachineInset(buf, n, cx + bW * 0.40, bot + bH * 0.30);
           break;
         }
         case 'apartment': {
@@ -905,8 +907,16 @@ export class BuildingManager {
           // ショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.70, bH * 0.36,
             0.70, 0.88, 0.96, 0.85);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.40, bW * 0.70, bH * 0.36);
           // ドア
           writeInst(buf, n++, cx, bot + 5, bW * 0.18, 9, 0.28, 0.22, 0.20, 1);
+          // T-3: 壁面自販機 + ポスター
+          n = this.drawVendingMachineInset(buf, n, cx - bW * 0.40, bot + bH * 0.30);
+          n = this.drawVendingMachineInset(buf, n, cx + bW * 0.40, bot + bH * 0.30);
+          writeInst(buf, n++, cx - bW * 0.15, bot + bH * 0.58, 3, 4, 0.92, 0.35, 0.35, 0.85); // ポスター
+          writeInst(buf, n++, cx + bW * 0.15, bot + bH * 0.58, 3, 4, 0.35, 0.72, 0.92, 0.85);
+          // ATM スロット
+          writeInst(buf, n++, cx, bot + bH * 0.70, bW * 0.15, 2, 0.25, 0.22, 0.18, 0.95);
           break;
         }
         case 'restaurant': {
@@ -917,8 +927,14 @@ export class BuildingManager {
           // 窓
           writeInst(buf, n++, cx, bot + bH * 0.36, bW * 0.58, bH * 0.28,
             0.78, 0.90, 0.82, 0.82);
-          // ドア
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.36, bW * 0.58, bH * 0.28);
+          // ドア + 装飾
           writeInst(buf, n++, cx, bot + 5, bW * 0.20, 9, 0.28, 0.18, 0.14, 1);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
+          // T-3: 提灯列 + メニュー看板
+          n = this.drawChouchinRow(buf, n, cx, bot + bH * 0.78, bW * 0.70, 3);
+          writeInst(buf, n++, cx - bW * 0.30, bot + bH * 0.20, 2, 3, 0.25, 0.22, 0.18, 0.95); // メニュー看板 L
+          writeInst(buf, n++, cx + bW * 0.30, bot + bH * 0.20, 2, 3, 0.25, 0.22, 0.18, 0.95); // メニュー看板 R
           break;
         }
         case 'school': {
@@ -1099,25 +1115,43 @@ export class BuildingManager {
         case 'cafe': {
           // 暖色テント
           writeInst(buf, n++, cx, bot + bH * 0.52, bW + 5, 4, 0.72, 0.38, 0.18, 0.90);
-          // 看板帯
-          writeInst(buf, n++, cx, top - 3, bW, 6, cr * 1.15, cg * 0.85, cb * 0.55, 1);
+          // T-3: 看板強化 + ストライプ庇
+          n = this.drawShopSign(buf, n, cx, top, bW, 1, false);
+          n = this.drawAwningStripe(buf, n, cx, bot, bW, bH, 1);
           // 窓
           writeInst(buf, n++, cx, bot + bH * 0.35, bW * 0.68, bH * 0.32, 0.78, 0.90, 0.82, 0.80);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.35, bW * 0.68, bH * 0.32);
+          // テラス席 (ドア脇小机)
+          writeInst(buf, n++, cx + bW * 0.40, bot + 2, 2.5, 1.5, 0.65, 0.45, 0.25, 0.9);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 2);
           break;
         }
         case 'bakery': {
           // 看板（暖色）
           writeInst(buf, n++, cx, top - 3, bW, 6, 0.90, 0.70, 0.30, 1);
+          n = this.drawShopSign(buf, n, cx, top, bW, 1, false);
           // 丸窓（フランス扉風）
           writeInst(buf, n++, cx, bot + bH * 0.52, bW * 0.50, bH * 0.50, 0.80, 0.90, 0.96, 0.80);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.52, bW * 0.50, bH * 0.50);
+          // T-3: パン棚 (水平線 3 本)
+          for (let i = 0; i < 3; i++) {
+            writeInst(buf, n++, cx, bot + bH * 0.30 + i * 2, bW * 0.48, 0.5, 0.55, 0.35, 0.20, 0.85);
+          }
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
           break;
         }
         case 'bookstore': {
           // 看板帯（茶）
-          writeInst(buf, n++, cx, top - 3, bW, 6, 0.52, 0.38, 0.22, 1);
+          n = this.drawShopSign(buf, n, cx, top, bW, 4, false);
           // ショーウィンドウ（本棚イメージ）
           writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.72, bH * 0.38, 0.75, 0.88, 0.96, 0.80);
           writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.70, 2, 0.52, 0.38, 0.22, 0.6);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.40, bW * 0.72, bH * 0.38);
+          // T-3: 本棚 (水平線 4 本)
+          for (let i = 0; i < 4; i++) {
+            writeInst(buf, n++, cx, bot + bH * 0.28 + i * 2, bW * 0.68, 0.4, 0.42, 0.28, 0.18, 0.85);
+          }
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
           break;
         }
         case 'pharmacy': {
@@ -1126,6 +1160,11 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - bH * 0.20, bW * 0.28, 5, 0.10, 0.72, 0.30, 1);
           // ショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.38, bW * 0.68, bH * 0.34, 0.72, 0.92, 0.96, 0.80);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.38, bW * 0.68, bH * 0.34);
+          // T-3: シャッターの基礎 + ロゴ円
+          writeInst(buf, n++, cx, bot + 2, bW + 2, 2.5, 0.55, 0.55, 0.52, 1);
+          writeInst(buf, n++, cx - bW * 0.28, top - bH * 0.32, 3, 3, 0.95, 0.95, 0.92, 0.9, 0, 1); // 薬
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
           break;
         }
         case 'supermarket': {
@@ -1134,14 +1173,33 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - 9, bW, 3, 0.95, 0.95, 0.95, 0.9);
           // 大きなショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.82, bH * 0.40, 0.70, 0.90, 0.96, 0.82);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.42, bW * 0.82, bH * 0.40);
           // 入り口
           writeInst(buf, n++, cx, bot + 6, bW * 0.14, 11, 0.28, 0.22, 0.20, 1);
+          // T-3: ストライプ庇 + ショッピングカート列 + ロゴ
+          n = this.drawAwningStripe(buf, n, cx, bot, bW, bH, 2);
+          for (let i = 0; i < 4; i++) {
+            writeInst(buf, n++, cx - bW * 0.35 + i * 2.2, bot + 1, 1.5, 1.2, 0.82, 0.82, 0.82, 0.9);
+          }
+          writeInst(buf, n++, cx - bW * 0.40, top - 4, 4, 4, 0.92, 0.82, 0.35, 0.9, 0, 1); // ロゴ
           break;
         }
         case 'karaoke': {
           // ネオン帯×2
           writeInst(buf, n++, cx, top - 3.5, bW, 7, 0.92, 0.22, 0.80, 1);
           writeInst(buf, n++, cx, top - 9, bW, 3, 0.35, 0.22, 0.80, 0.9);
+          // T-3: 縦看板 + ネオン輪郭 + LED 3x3
+          n = this.drawShopSign(buf, n, cx, top, bW, 3, true);
+          // ネオン輪郭 (縦線 2 本)
+          writeInst(buf, n++, cx - bW * 0.48, cy, 0.6, bH * 0.85, 0.92, 0.22, 0.80, 0.75);
+          writeInst(buf, n++, cx + bW * 0.48, cy, 0.6, bH * 0.85, 0.35, 0.22, 0.80, 0.75);
+          // LED 3x3
+          for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+              writeInst(buf, n++, cx + i * 3, bot + bH * 0.40 + j * 3, 0.8, 0.8,
+                0.92, 0.82, 0.20, 0.85, 0, 1);
+            }
+          }
           // ドア
           writeInst(buf, n++, cx, bot + 6, bW * 0.18, 11, 0.28, 0.22, 0.18, 1);
           break;
@@ -1152,6 +1210,14 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - 8, bW, 3, 0.25, 0.25, 0.80, 0.9);
           // ショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.45, bW * 0.80, bH * 0.42, 0.75, 0.88, 0.96, 0.75);
+          // T-3: 縦看板 + ネオン輪郭 + 玉箱スタック
+          n = this.drawShopSign(buf, n, cx, top, bW, 1, true);
+          writeInst(buf, n++, cx - bW * 0.48, cy, 0.6, bH * 0.85, 0.95, 0.75, 0.05, 0.75);
+          writeInst(buf, n++, cx + bW * 0.48, cy, 0.6, bH * 0.85, 0.25, 0.25, 0.80, 0.75);
+          // 玉箱 3 段
+          for (let i = 0; i < 3; i++) {
+            writeInst(buf, n++, cx + bW * 0.40, bot + 2 + i * 2, 3, 1.7, 0.82, 0.22, 0.28, 1);
+          }
           break;
         }
         case 'laundromat': {
@@ -1159,7 +1225,10 @@ export class BuildingManager {
           writeInst(buf, n++, cx - bW * 0.22, bot + bH * 0.45, 7, 7, 0.62, 0.85, 0.96, 0.85, 0, 1);
           writeInst(buf, n++, cx + bW * 0.22, bot + bH * 0.45, 7, 7, 0.62, 0.85, 0.96, 0.85, 0, 1);
           // 看板帯
-          writeInst(buf, n++, cx, top - 3, bW, 6, 0.25, 0.55, 0.85, 1);
+          n = this.drawShopSign(buf, n, cx, top, bW, 2, false);
+          // T-3: 壁面自販機
+          n = this.drawVendingMachineInset(buf, n, cx + bW * 0.45, bot + bH * 0.25);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 1);
           break;
         }
         case 'florist': {
@@ -1169,6 +1238,14 @@ export class BuildingManager {
           writeInst(buf, n++, cx + bW * 0.25, top - 3, 5, 5, 0.25, 0.80, 0.42, 0.9, 0, 1);
           // ショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.38, bW * 0.70, bH * 0.34, 0.78, 0.95, 0.80, 0.80);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.38, bW * 0.70, bH * 0.34);
+          // T-3: ストライプ庇 + 花スタンド
+          n = this.drawAwningStripe(buf, n, cx, bot, bW, bH, 4);
+          for (let i = 0; i < 3; i++) {
+            writeInst(buf, n++, cx - bW * 0.35 + i * 4, bot + 2, 2.5, 3, 0.42, 0.28, 0.18, 0.95); // 鉢
+            writeInst(buf, n++, cx - bW * 0.35 + i * 4, bot + 4, 2.8, 1.5,
+              [0.92, 0.45, 0.72][i], [0.45, 0.85, 0.52][i], [0.62, 0.35, 0.82][i], 0.95); // 花
+          }
           break;
         }
         case 'ramen': {
@@ -1178,6 +1255,16 @@ export class BuildingManager {
           writeInst(buf, n++, cx, bot + bH * 0.65, bW * 0.60, 4, 0.68, 0.18, 0.10, 0.85);
           // 窓
           writeInst(buf, n++, cx, bot + bH * 0.35, bW * 0.55, bH * 0.26, 0.80, 0.88, 0.82, 0.78);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.35, bW * 0.55, bH * 0.26);
+          // T-3: 提灯列 + 縦看板 + 蒸気
+          n = this.drawChouchinRow(buf, n, cx, bot + bH * 0.85, bW * 0.70, 4);
+          n = this.drawShopSign(buf, n, cx, top, bW, 0, true);
+          // カウンターの人影点 (窓の中)
+          writeInst(buf, n++, cx - bW * 0.15, bot + bH * 0.32, 1.2, 1.5, 0.15, 0.12, 0.08, 0.85);
+          writeInst(buf, n++, cx + bW * 0.10, bot + bH * 0.32, 1.2, 1.5, 0.15, 0.12, 0.08, 0.85);
+          // 煙突の蒸気 (円)
+          writeInst(buf, n++, cx - bW * 0.35, top + 4, 5, 4, 0.82, 0.82, 0.80, 0.45, 0, 1);
+          writeInst(buf, n++, cx - bW * 0.38, top + 7, 6, 5, 0.85, 0.85, 0.82, 0.35, 0, 1);
           break;
         }
         case 'izakaya': {
@@ -1187,6 +1274,10 @@ export class BuildingManager {
           writeInst(buf, n++, cx - bW * 0.35, cy, 3, bH * 0.55, 0.75, 0.28, 0.12, 1);
           // のれん
           writeInst(buf, n++, cx, bot + bH * 0.62, bW * 0.55, 4, 0.62, 0.30, 0.12, 0.85);
+          // T-3: 提灯列多数 + 階段 + 縦看板強化
+          n = this.drawChouchinRow(buf, n, cx, bot + bH * 0.82, bW * 0.75, 5);
+          n = this.drawShopSign(buf, n, cx, top, bW, 0, true);
+          n = this.drawStairs(buf, n, cx + bW * 0.42, bot + 1, 5);
           break;
         }
         case 'game_center': {
@@ -1195,6 +1286,15 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - 8.5, bW, 3, 0.55, 0.22, 0.88, 0.9);
           // ショーウィンドウ
           writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.75, bH * 0.40, 0.65, 0.85, 0.96, 0.78);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.42, bW * 0.75, bH * 0.40);
+          // T-3: 縦看板 + ネオン輪郭 + LED
+          n = this.drawShopSign(buf, n, cx, top, bW, 2, true);
+          writeInst(buf, n++, cx - bW * 0.48, cy, 0.6, bH * 0.85, 0.18, 0.48, 0.90, 0.80);
+          writeInst(buf, n++, cx + bW * 0.48, cy, 0.6, bH * 0.85, 0.55, 0.22, 0.88, 0.80);
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + i * 3, bot + bH * 0.25, 1, 1,
+              0.92, 0.82, 0.20, 0.85, 0, 1);
+          }
           break;
         }
         // ── 1-C 公共系 ────────────────────────────────────────────
