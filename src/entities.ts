@@ -1976,6 +1976,71 @@ export class BuildingManager {
           n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
           break;
         }
+        // ── Stage 1 ミニチュア追加 ────────────────────────────────
+        case 'shotengai_arcade': {
+          // 商店街アーケード (薄い屋根帯)。高さ bH=6 を軒屋根として描く
+          // 透明アクリルパネル調 (薄青)
+          writeInst(buf, n++, cx, cy, bW, bH - 0.8, 0.72, 0.85, 0.95, 0.62);
+          // 骨組み (水平梁)
+          writeInst(buf, n++, cx, top - 0.5, bW, 1, 0.35, 0.38, 0.42, 1);
+          writeInst(buf, n++, cx, bot + 0.5, bW, 1, 0.35, 0.38, 0.42, 1);
+          // 縦リブ (10 本)
+          for (let i = 0; i < 10; i++) {
+            const rx = cx - bW * 0.48 + (bW * 0.96) * (i / 9);
+            writeInst(buf, n++, rx, cy, 0.4, bH, 0.45, 0.48, 0.52, 0.85);
+          }
+          // ぶら下げ看板/提灯
+          for (let i = -3; i <= 3; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.13, bot - 2, 3, 3, 0.92, 0.35, 0.18, 1, 0, 1);
+          }
+          // 上端の店名幕
+          writeInst(buf, n++, cx, top + 2, bW * 0.88, 2, 0.88, 0.22, 0.18, 1);
+          writeInst(buf, n++, cx, top + 2, bW * 0.82, 1, 0.98, 0.92, 0.65, 0.92);
+          break;
+        }
+        case 'bus_terminal_shelter': {
+          // バスターミナル屋根 (長大庇)
+          writeInst(buf, n++, cx, top - 2, bW + 8, 4, 0.52, 0.55, 0.60, 1);
+          writeInst(buf, n++, cx, top - 4, bW + 10, 1.4, 0.40, 0.42, 0.48, 1);
+          // 支柱 4 本
+          for (const xOff of [-bW * 0.42, -bW * 0.14, bW * 0.14, bW * 0.42]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.42, 1.6, bH * 0.82, 0.65, 0.65, 0.68, 1);
+          }
+          // 背面壁 (広告)
+          writeInst(buf, n++, cx, bot + bH * 0.40, bW * 0.80, bH * 0.55, 0.92, 0.92, 0.88, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.50, bW * 0.72, bH * 0.25, 0.25, 0.55, 0.85, 0.92);
+          // ベンチ
+          writeInst(buf, n++, cx, bot + 1.5, bW * 0.75, 1.2, 0.45, 0.32, 0.22, 1);
+          writeInst(buf, n++, cx - bW * 0.34, bot + 0.5, 1.5, 1.5, 0.40, 0.28, 0.18, 1);
+          writeInst(buf, n++, cx + bW * 0.34, bot + 0.5, 1.5, 1.5, 0.40, 0.28, 0.18, 1);
+          // 路線表示板 (左端支柱)
+          writeInst(buf, n++, cx - bW * 0.48, top - 6, 4, 6, 0.20, 0.35, 0.68, 1);
+          writeInst(buf, n++, cx - bW * 0.48, top - 6, 3, 5, 0.95, 0.92, 0.88, 0.92);
+          break;
+        }
+        case 'fountain_pavilion': {
+          // 噴水パビリオン (中央の円形ドーム)
+          // 基壇 (八角形簡略=大きな円)
+          writeInst(buf, n++, cx, bot + 1.2, bW, 2, 0.65, 0.62, 0.58, 1, 0, 1);
+          writeInst(buf, n++, cx, bot + 2.5, bW * 0.78, 2, 0.78, 0.75, 0.70, 1, 0, 1);
+          // 水盤
+          writeInst(buf, n++, cx, bot + 4, bW * 0.62, 3, 0.45, 0.72, 0.92, 0.88, 0, 1);
+          writeInst(buf, n++, cx, bot + 4, bW * 0.52, 2, 0.65, 0.85, 0.98, 0.82, 0, 1);
+          // 中央柱+噴水
+          writeInst(buf, n++, cx, bot + 7, 2, 8, 0.72, 0.68, 0.58, 1);
+          writeInst(buf, n++, cx, bot + 11, 3, 3, 0.88, 0.85, 0.75, 1, 0, 1);
+          // 吹き上がる水 (3 本)
+          for (const xOff of [-2, 0, 2]) {
+            writeInst(buf, n++, cx + xOff, bot + 13, 0.8, 5, 0.72, 0.90, 0.98, 0.75);
+          }
+          // ドーム屋根 (4 本柱で支える)
+          for (const xOff of [-bW * 0.35, -bW * 0.12, bW * 0.12, bW * 0.35]) {
+            writeInst(buf, n++, cx + xOff, top - bH * 0.25, 1.4, bH * 0.55, 0.75, 0.72, 0.65, 1);
+          }
+          writeInst(buf, n++, cx, top - 2, bW + 2, 3, 0.55, 0.42, 0.28, 1, 0, 1);
+          writeInst(buf, n++, cx, top + 1, 3, 4, 0.85, 0.72, 0.28, 1);
+          break;
+        }
       }
     }
     return n - startIdx;

@@ -59,7 +59,9 @@ export type BuildingSize =
   // ── 和風・古都 (Stage 3) ──
   'pagoda' | 'ryokan' | 'kominka' | 'chaya' |
   // ── テーマパーク・祭り (Stage 5) ──
-  'carousel' | 'roller_coaster' | 'yatai' | 'big_tent';
+  'carousel' | 'roller_coaster' | 'yatai' | 'big_tent' |
+  // ── Stage 1 ミニチュア追加 ──
+  'shotengai_arcade' | 'bus_terminal_shelter' | 'fountain_pavilion';
 
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
@@ -136,6 +138,10 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   roller_coaster:  { w: 60, h: 60, hp: 3, score: 2200, humanMin: 40,  humanMax: 90  },
   yatai:           { w: 20, h: 16, hp: 1, score:  180, humanMin: 12,  humanMax: 25  },
   big_tent:        { w: 48, h: 36, hp: 2, score:  900, humanMin: 60,  humanMax: 130 },
+  // ===== Stage 1 ミニチュア追加 =====
+  shotengai_arcade:     { w: 40, h:  6, hp: 1, score: 200, humanMin:  0,  humanMax:  3 },
+  bus_terminal_shelter: { w: 32, h: 10, hp: 1, score: 250, humanMin: 15,  humanMax: 30 },
+  fountain_pavilion:    { w: 28, h: 14, hp: 2, score: 400, humanMin:  5,  humanMax: 15 },
 };
 
 // ===== 人間 =====
