@@ -556,6 +556,18 @@ export interface ChunkTemplate {
   overrides?: Array<{ row: number; col: number; sceneId: string }>;
   /** セル毎の地面上書き [row][col]。null/undef は groundOverride または scene.ground にフォールバック */
   groundGrid?: (GroundType | null | undefined)[][];
+  /** 指定時: grid/pattern/scene を一切使わず raw オブジェクトで直接チャンクを構築 */
+  raw?: RawChunkBody;
+}
+
+/** オブジェクト単位でチャンク内容を直接記述する型。座標は全てチャンクローカル (dy ∈ [0, CHUNK_HEIGHT]) */
+export interface RawChunkBody {
+  buildings: Array<{ size: C.BuildingSize; dx: number; dy: number }>;
+  furniture: Array<{ type: FurnitureType; dx: number; dy: number }>;
+  humans: Array<{ dx: number; dy: number }>;
+  grounds: Array<{ type: GroundType; dx: number; dy: number; w: number; h: number }>;
+  horizontalRoads: Array<{ dy: number; h: number; xMin: number; xMax: number; cls: 'avenue' | 'street' }>;
+  verticalRoads: Array<{ dx: number; w: number; yMinLocal: number; yMaxLocal: number; cls: 'avenue' | 'street' }>;
 }
 
 export interface StageDef {
@@ -568,10 +580,25 @@ export interface StageDef {
   bgBottom?: readonly [number, number, number];
 }
 
-// ─── Stage 1: 住宅街ミックス都市 (12 チャンク) ───────────────
-// 縦スパイン: 全チャンクで x=-90 (street), x=0 (avenue), x=+90 (street) が貫通し
-// 道路が途切れない。各チャンクは住宅→商店街→駅前→公園→神社→Stage2 への橋渡しという
-// 物語の 1 コマ。groundGrid でセル毎に 2-3 色の地面を組み合わせる。
+// ─── Stage 1 raw チャンク用ヘルパー ─────────────────────────
+// dx: ワールド座標 (X は -180〜+180)。dy: チャンクローカル (0〜CHUNK_HEIGHT=200)。
+const _B = (size: C.BuildingSize, dx: number, dy: number) => ({ size, dx, dy });
+const _F = (type: FurnitureType, dx: number, dy: number) => ({ type, dx, dy });
+const _H = (dx: number, dy: number) => ({ dx, dy });
+const _G = (type: GroundType, dx: number, dy: number, w: number, h: number) => ({ type, dx, dy, w, h });
+const _HR = (dy: number, xMin: number, xMax: number, cls: 'street' | 'avenue' = 'street') =>
+  ({ dy, h: cls === 'avenue' ? 18 : 14, xMin, xMax, cls });
+const _VR = (dx: number, yMinLocal: number, yMaxLocal: number, cls: 'street' | 'avenue' = 'street') =>
+  ({ dx, w: cls === 'avenue' ? 18 : 14, yMinLocal, yMaxLocal, cls });
+// 全チャンク共通の縦スパイン: x=-90 street, x=0 avenue, x=+90 street
+const _SPINE_V = [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(+90, 0, 200)];
+const _MID_HR = _HR(100, -180, 180);       // 中央クロス街路 (全チャンク)
+const _TOP_HR = _HR(200, -180, 180);       // 上端クロス街路 (クロスポイントのみ)
+
+// ─── Stage 1: 住宅街ミックス都市 (12 チャンク, 完全手書き raw 配置) ───
+// scene/grid/pattern を一切使わず、建物・ファニチャ・人・地面・道路を 1 つ 1 つ
+// 座標指定して "超絶ハイクオリティミニチュア" を構成する。
+// 縦スパイン (x=-90/0/+90) は全チャンクで連続、道路は決して途切れない。
 const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   // 0: 住宅街入口 — 芝生の庭が並ぶ閑静な郊外
   {
@@ -1281,11 +1308,76 @@ function emptyChunk(chunkId: number): ChunkData {
 }
 
 /** 1 チャンク分のコンテンツを手書きステージテンプレートから生成する */
+/** raw チャンクを ChunkData に変換 */
+function buildRawChunk(
+  chunkId: number,
+  baseY: number,
+  stageIndex: number,
+  sidewalkZone: number,
+  raw: RawChunkBody
+): ChunkData {
+  const buildings: BuildingDef[] = raw.buildings.map(b => ({
+    size: b.size, x: b.dx, y: baseY + b.dy, blockIdx: chunkId,
+  }));
+  const furniture: FurnitureDef[] = raw.furniture.map(f => ({
+    type: f.type, x: f.dx, y: baseY + f.dy,
+  }));
+  const prePlacedHumans = raw.humans.map(h => ({ x: h.dx, y: baseY + h.dy }));
+  const grounds: GroundTile[] = raw.grounds.map(g => ({
+    type: g.type, x: g.dx, y: baseY + g.dy, w: g.w, h: g.h,
+  }));
+  const horizontalRoads: ResolvedHorizontalRoad[] = raw.horizontalRoads.map(r => ({
+    cy: baseY + r.dy, h: r.h, xMin: r.xMin, xMax: r.xMax, cls: r.cls,
+  }));
+  const verticalRoads: ResolvedVerticalRoad[] = raw.verticalRoads.map(r => ({
+    cx: r.dx, w: r.w,
+    yMin: baseY + r.yMinLocal, yMax: baseY + r.yMaxLocal, cls: r.cls,
+  }));
+
+  const intersections: Intersection[] = [];
+  for (const h of horizontalRoads) {
+    for (const v of verticalRoads) {
+      if (v.cx >= h.xMin && v.cx <= h.xMax && h.cy >= v.yMin && h.cy <= v.yMax) {
+        intersections.push({ x: v.cx, y: h.cy, hThickness: h.h, vThickness: v.w });
+      }
+    }
+  }
+  const roads: ChunkRoad[] = horizontalRoads
+    .filter(r => r.xMin <= -179 && r.xMax >= 179)
+    .map(r => ({ y: r.cy, h: r.h }));
+  // 歩道ファニチャ (全幅水平道路のみ)
+  for (const r of horizontalRoads) {
+    if (r.xMin <= -179 && r.xMax >= 179) {
+      furniture.push(...generateSidewalkFurniture(r.cy, sidewalkZone, chunkId));
+    }
+  }
+
+  return {
+    chunkId, baseY,
+    stageIndex,
+    roads,
+    horizontalRoads,
+    verticalRoads,
+    intersections,
+    buildings,
+    furniture,
+    specialAreas: [],
+    grounds,
+    prePlacedHumans,
+  };
+}
+
 export function generateChunk(chunkId: number): ChunkData {
   const info = chunkInfoFor(chunkId);
   if (info.finished) return emptyChunk(chunkId);
 
   const baseY = C.WORLD_MAX_Y + chunkId * C.CHUNK_HEIGHT;
+
+  // raw チャンク: grid/pattern/scene を使わず直接オブジェクト配置
+  if (info.template.raw) {
+    return buildRawChunk(chunkId, baseY, info.stageIndex, info.stage.sidewalkZone, info.template.raw);
+  }
+
   const pattern = PATTERN_BY_ID[info.template.patternId];
   if (!pattern) {
     console.warn(`[stages] unknown patternId "${info.template.patternId}" @ chunk ${chunkId}`);
