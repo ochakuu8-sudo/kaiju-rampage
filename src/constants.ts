@@ -12,11 +12,11 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-// "鉄球" 寄り: 半径↑ / 低初速 / 最高速↓
+// リアルピンボール寄り: 穏やかな打ち出し + 緩い重力で滞空時間を確保
 // 建物ヒットでの減速は一切なし (HP > 0 なら反射、HP ≤ 0 なら貫通=破壊、速度そのまま)
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
-export const GRAVITY = 0.35;             // 下がりすぎを抑制（元 0.3 にやや重みを追加）
-export const MAX_BALL_SPEED = 28;        // 射出の "シュッ" を抑えつつ頂点に届く余地
+export const GRAVITY = 0.28;             // やや控えめにしてホールドタイムを確保
+export const MAX_BALL_SPEED = 22;        // クランプ上限 (ビル通過・降下時に頭打ちしない程度)
 export const WALL_DAMPING = 0.66;        // 壁での反発 (世界端のみ)
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
 export const BALL_START_X = -150;
@@ -33,7 +33,7 @@ export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
 export const FLIPPER_REST_DEG = -30;
 export const FLIPPER_ACTIVE_DEG = 30;
-export const FLIPPER_POWER = 20;     // 鉄球でも画面上部に届くだけの押し出し
+export const FLIPPER_POWER = 14;     // リアルピンボール寄りの穏やかな蹴り出し
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 
 // ===== 建物 =====
