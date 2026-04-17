@@ -289,7 +289,8 @@ export function placeGridBlock(
   pattern: RoadPattern,
   blockIdx: number,
   groundOverride?: GroundType,
-  cellOverrides?: Array<{ row: number; col: number; sceneId: string }>
+  cellOverrides?: Array<{ row: number; col: number; sceneId: string }>,
+  groundGrid?: (GroundType | null | undefined)[][]
 ): ScenePlacement {
   const out: ScenePlacement = { buildings: [], furniture: [], grounds: [], humans: [] };
   const merges = pattern.merges ?? [];
@@ -335,10 +336,13 @@ export function placeGridBlock(
       // overrides が指定されていれば、このセルのシーン ID を差し替える
       const overrideId = overrideMap?.get(`${r}-${c}`);
 
+      // セル毎の ground 優先: groundGrid[r][c] > groundOverride > scene.ground
+      const perCellGround = groundGrid?.[r]?.[c] ?? undefined;
+
       if (cell.type === 'scene') {
         // 単一シーン: 建物重心を usable 中心へ
         const scene = getScene(overrideId ?? cell.sceneId);
-        const groundType = groundOverride ?? scene.ground;
+        const groundType = perCellGround ?? groundOverride ?? scene.ground;
         if (groundType) {
           out.grounds!.push({
             type: groundType,
@@ -363,8 +367,8 @@ export function placeGridBlock(
         const scenes = overrideId
           ? [getScene(overrideId)]
           : cell.sceneIds.map(id => getScene(id));
-        // 地面: override があれば強制、無ければ最初のシーンの ground を使用
-        const groundType = groundOverride ?? scenes[0]?.ground;
+        // 地面: セル毎 > groundOverride > 最初のシーンの ground
+        const groundType = perCellGround ?? groundOverride ?? scenes[0]?.ground;
         if (groundType) {
           out.grounds!.push({
             type: groundType,
@@ -550,6 +554,8 @@ export interface ChunkTemplate {
   isGoal?: boolean;            // 最終チャンク
   /** (row,col) セルのデフォルトシーンを差し替える */
   overrides?: Array<{ row: number; col: number; sceneId: string }>;
+  /** セル毎の地面上書き [row][col]。null/undef は groundOverride または scene.ground にフォールバック */
+  groundGrid?: (GroundType | null | undefined)[][];
 }
 
 export interface StageDef {
@@ -563,19 +569,219 @@ export interface StageDef {
 }
 
 // ─── Stage 1: 住宅街ミックス都市 (12 チャンク) ───────────────
+// 縦スパイン: 全チャンクで x=-90 (street), x=0 (avenue), x=+90 (street) が貫通し
+// 道路が途切れない。各チャンクは住宅→商店街→駅前→公園→神社→Stage2 への橋渡しという
+// 物語の 1 コマ。groundGrid でセル毎に 2-3 色の地面を組み合わせる。
 const STAGE_1_TEMPLATES: ChunkTemplate[] = [
-  { patternId: 'residential_mix',    groundOverride: 'grass' },
-  { patternId: 'suburban_calm',      groundOverride: 'grass' },
-  { patternId: 'full_grid',          groundOverride: 'grass' },
-  { patternId: 'staggered',          groundOverride: 'grass' },
-  { patternId: 'park_break' }, // 公園ブレイク (groundOverride 無しで特殊 park 地面)
-  { patternId: 'plaza_center',       groundOverride: 'concrete' },
-  { patternId: 'residential_mix',    groundOverride: 'grass' },
-  { patternId: 'suburban_calm',      groundOverride: 'grass' },
-  { patternId: 'diagonal_split',     groundOverride: 'concrete' },
-  { patternId: 'full_grid',          groundOverride: 'grass' },
-  { patternId: 'staggered',          groundOverride: 'grass' },
-  { patternId: 'residential_mix',    groundOverride: 'grass' },
+  // 0: 住宅街入口 — 芝生の庭が並ぶ閑静な郊外
+  {
+    patternId: 's1_suburb_row',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'house_trio_garden' },
+      { row: 0, col: 1, sceneId: 'house_trio_garden' },
+      { row: 0, col: 2, sceneId: 'house_konbini' },
+      { row: 0, col: 3, sceneId: 'garden_shed' },
+      { row: 1, col: 0, sceneId: 'house_trio_garden' },
+      { row: 1, col: 1, sceneId: 'house_garage' },
+      { row: 1, col: 2, sceneId: 'house_trio_garden' },
+      { row: 1, col: 3, sceneId: 'garden_shed' },
+    ],
+    groundGrid: [
+      ['grass', 'grass', 'concrete', 'dirt'],
+      ['grass', 'dirt',  'grass',    'dirt'],
+    ],
+  },
+  // 1: 住宅 + 車庫の並び
+  {
+    patternId: 's1_suburb_row',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'house_trio_garden' },
+      { row: 0, col: 1, sceneId: 'house_konbini' },
+      { row: 0, col: 2, sceneId: 'house_garage' },
+      { row: 0, col: 3, sceneId: 'house_trio_garden' },
+      { row: 1, col: 0, sceneId: 'garden_shed' },
+      { row: 1, col: 1, sceneId: 'house_trio_garden' },
+      { row: 1, col: 2, sceneId: 'house_konbini' },
+      { row: 1, col: 3, sceneId: 'house_garage' },
+    ],
+    groundGrid: [
+      ['grass',    'concrete', 'dirt',     'grass'],
+      ['dirt',     'grass',    'concrete', 'dirt' ],
+    ],
+  },
+  // 2: 小学校ゾーンと上端クロス — 次チャンクと十字路
+  {
+    patternId: 's1_suburb_row_cross',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'house_trio_garden' },
+      { row: 0, col: 1, sceneId: 'house_konbini' },
+      { row: 0, col: 2, sceneId: 'clinic_daycare' },
+      { row: 0, col: 3, sceneId: 'house_trio_garden' },
+      // row 1 col 0-1 merged = townhouse_row (pattern default)
+      { row: 1, col: 2, sceneId: 'bank_post' },
+      { row: 1, col: 3, sceneId: 'garden_shed' },
+    ],
+    groundGrid: [
+      ['grass',    'concrete', 'tile',     'grass'   ],
+      ['concrete', 'concrete', 'tile',     'dirt'    ],
+    ],
+  },
+  // 3: 商店街入口 — 木デッキのカフェ + タイル床の店舗
+  {
+    patternId: 's1_shopping_street',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'cafe_bookstore_row' },
+      { row: 0, col: 1, sceneId: 'florist_bakery' },
+      { row: 0, col: 2, sceneId: 'laundromat_pharmacy' },
+      { row: 0, col: 3, sceneId: 'cafe_bookstore' },
+      { row: 1, col: 0, sceneId: 'shop_parasol_row' },
+      { row: 1, col: 1, sceneId: 'ramen_izakaya' },
+      { row: 1, col: 2, sceneId: 'shotengai_food' },
+      { row: 1, col: 3, sceneId: 'mansion_shop' },
+    ],
+    groundGrid: [
+      ['wood_deck', 'wood_deck', 'concrete', 'wood_deck'     ],
+      ['concrete',  'asphalt',   'tile',     'stone_pavement'],
+    ],
+  },
+  // 4: ラーメン横丁 — アスファルトが主体
+  {
+    patternId: 's1_shopping_street',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'ramen_izakaya' },
+      { row: 0, col: 1, sceneId: 'shotengai_game' },
+      { row: 0, col: 2, sceneId: 'ramen_izakaya' },
+      { row: 0, col: 3, sceneId: 'cafe_bookstore_row' },
+      { row: 1, col: 0, sceneId: 'shotengai_food' },
+      { row: 1, col: 1, sceneId: 'shop_parasol_row' },
+      { row: 1, col: 2, sceneId: 'shotengai_game' },
+      { row: 1, col: 3, sceneId: 'mansion_shop' },
+    ],
+    groundGrid: [
+      ['asphalt', 'asphalt', 'asphalt', 'wood_deck'     ],
+      ['tile',    'concrete', 'asphalt', 'stone_pavement'],
+    ],
+  },
+  // 5: 駅前広場 — ランドマーク shopping_mall_plaza (merged)
+  {
+    patternId: 's1_station_plaza',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'gas_station_corner' },
+      { row: 0, col: 1, sceneId: 'house_konbini' },
+      { row: 0, col: 2, sceneId: 'laundromat_pharmacy' },
+      { row: 0, col: 3, sceneId: 'cafe_bookstore' },
+      { row: 1, col: 0, sceneId: 'shop_parasol_row' },
+      // row 1 col 1-2 merged = shopping_mall_plaza (pattern default)
+      { row: 1, col: 3, sceneId: 'clinic_daycare' },
+    ],
+    groundGrid: [
+      ['asphalt',  'concrete', 'concrete', 'tile' ],
+      ['concrete', 'tile',     'tile',     'tile' ],
+    ],
+  },
+  // 6: 商店街後半 — 駅前を過ぎて再び店舗
+  {
+    patternId: 's1_shopping_street',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'cafe_bookstore' },
+      { row: 0, col: 1, sceneId: 'florist_bakery' },
+      { row: 0, col: 2, sceneId: 'ramen_izakaya' },
+      { row: 0, col: 3, sceneId: 'florist_bakery' },
+      { row: 1, col: 0, sceneId: 'mansion_shop' },
+      { row: 1, col: 1, sceneId: 'shotengai_food' },
+      { row: 1, col: 2, sceneId: 'shop_parasol_row' },
+      { row: 1, col: 3, sceneId: 'cafe_bookstore_row' },
+    ],
+    groundGrid: [
+      ['wood_deck',      'wood_deck', 'asphalt',  'wood_deck'],
+      ['stone_pavement', 'tile',      'concrete', 'wood_deck'],
+    ],
+  },
+  // 7: 駅裏飲食 — 上端クロスで次チャンクと十字路
+  {
+    patternId: 's1_shopping_street_cross',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'cafe_bookstore' },
+      { row: 0, col: 1, sceneId: 'shotengai_game' },
+      { row: 0, col: 2, sceneId: 'ramen_izakaya' },
+      { row: 0, col: 3, sceneId: 'florist_bakery' },
+      { row: 1, col: 0, sceneId: 'shotengai_food' },
+      { row: 1, col: 1, sceneId: 'shop_parasol_row' },
+      { row: 1, col: 2, sceneId: 'laundromat_pharmacy' },
+      { row: 1, col: 3, sceneId: 'mansion_shop' },
+    ],
+    groundGrid: [
+      ['wood_deck', 'asphalt',  'asphalt',  'wood_deck'     ],
+      ['tile',      'concrete', 'concrete', 'stone_pavement'],
+    ],
+  },
+  // 8: 町内公園 — 緑地 merged + 散策路 dirt + 入口 stone_pavement
+  {
+    patternId: 's1_park',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'garden_shed' },
+      // row 0 col 1-2 merged = temple_garden (pattern default)
+      { row: 0, col: 3, sceneId: 'garden_shed' },
+      { row: 1, col: 0, sceneId: 'house_trio_garden' },
+      // row 1 col 1-2 merged = temple_garden (pattern default)
+      { row: 1, col: 3, sceneId: 'house_trio_garden' },
+    ],
+    groundGrid: [
+      ['dirt',            'grass', 'grass', 'dirt'           ],
+      ['stone_pavement',  'grass', 'grass', 'stone_pavement' ],
+    ],
+  },
+  // 9: 町のシンボル神社 — shrine_complex (merged) + 参道 stone_pavement + 上端クロス
+  {
+    patternId: 's1_shrine_corner',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'temple_garden' },
+      // row 0 col 1-2 merged = shrine_complex (pattern default)
+      { row: 0, col: 3, sceneId: 'house_trio_garden' },
+      // row 1 col 0-1 merged = townhouse_row (pattern default)
+      { row: 1, col: 2, sceneId: 'ramen_izakaya' },
+      { row: 1, col: 3, sceneId: 'cafe_bookstore' },
+    ],
+    groundGrid: [
+      ['grass',          'stone_pavement', 'stone_pavement', 'grass'    ],
+      ['stone_pavement', 'stone_pavement', 'concrete',       'wood_deck'],
+    ],
+  },
+  // 10: 町家密集 — townhouse_row merged + クリニック (実質上端クロスは無し、町屋連続)
+  {
+    patternId: 's1_suburb_row_cross',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'house_trio_garden' },
+      { row: 0, col: 1, sceneId: 'house_konbini' },
+      { row: 0, col: 2, sceneId: 'house_garage' },
+      { row: 0, col: 3, sceneId: 'house_trio_garden' },
+      // row 1 col 0-1 merged = townhouse_row (pattern default)
+      { row: 1, col: 2, sceneId: 'clinic_daycare' },
+      { row: 1, col: 3, sceneId: 'garden_shed' },
+    ],
+    groundGrid: [
+      ['grass',    'concrete', 'dirt',     'grass'   ],
+      ['concrete', 'concrete', 'tile',     'dirt'    ],
+    ],
+  },
+  // 11: Stage 2 への橋渡し — 夜の営業店舗 + ガソスタでネオン予感
+  {
+    patternId: 's1_suburb_row',
+    overrides: [
+      { row: 0, col: 0, sceneId: 'ramen_izakaya' },
+      { row: 0, col: 1, sceneId: 'gas_station_corner' },
+      { row: 0, col: 2, sceneId: 'laundromat_pharmacy' },
+      { row: 0, col: 3, sceneId: 'konbini_corner' },
+      { row: 1, col: 0, sceneId: 'house_konbini' },
+      { row: 1, col: 1, sceneId: 'cafe_bookstore' },
+      { row: 1, col: 2, sceneId: 'ramen_izakaya' },
+      { row: 1, col: 3, sceneId: 'gas_station_corner' },
+    ],
+    groundGrid: [
+      ['asphalt',  'asphalt',   'concrete', 'asphalt'],
+      ['concrete', 'wood_deck', 'asphalt',  'asphalt'],
+    ],
+  },
 ];
 
 // ─── Stage 2: 繁華街・夜の街 (10 チャンク) ────────────────────
@@ -1102,7 +1308,7 @@ export function generateChunk(chunkId: number): ChunkData {
   } else {
     // grid block を生成してシーン配置
     const block = buildBlock(pattern, -180, baseY, C.CELL_W, C.CELL_H);
-    const p = placeGridBlock(block, pattern, chunkId, info.template.groundOverride, info.template.overrides);
+    const p = placeGridBlock(block, pattern, chunkId, info.template.groundOverride, info.template.overrides, info.template.groundGrid);
     buildings.push(...p.buildings);
     furniture.push(...p.furniture);
     if (p.grounds) grounds.push(...p.grounds);

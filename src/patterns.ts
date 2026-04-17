@@ -403,6 +403,153 @@ const RESIDENTIAL_MIX: RoadPattern = {
   merges: [ { row: 1, col: 0, spanCols: 2 } ],
 };
 
+// ─────────────────────────────────────────────────────────────────
+// Stage 1 専用パターン — 縦道路 x 座標 (-90, 0, +90) を全 12 チャンクで統一し、
+// スクロール中の縦道路が途切れないよう設計する。
+// ─────────────────────────────────────────────────────────────────
+
+// s1_suburb_row: 住宅路地。全 3 縦道路を通し、中央だけ avenue。水平は gridLine 1 全幅 street。
+const S1_SUBURB_ROW: RoadPattern = {
+  id: 's1_suburb_row', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'house_trio_garden', 'house_konbini', 'house_garage', 'house_trio_garden' ],
+    [ 'house_trio_garden', 'garden_shed', 'house_konbini', 'house_garage' ],
+  ],
+};
+
+// s1_suburb_row_cross: s1_suburb_row に上端クロス (gridLine 2 全幅) を追加。
+// 次チャンク下端 (gridLine 0) と繋ぎ十字路を作る。
+const S1_SUBURB_ROW_CROSS: RoadPattern = {
+  id: 's1_suburb_row_cross', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'house_trio_garden', 'house_konbini', 'house_garage', 'house_trio_garden' ],
+    [ 'townhouse_row', 'merged_right', 'clinic_daycare', 'garden_shed' ],
+  ],
+  merges: [ { row: 1, col: 0, spanCols: 2 } ],
+};
+
+// s1_shopping_street: 商店街。中央 avenue + 脇 street。
+const S1_SHOPPING_STREET: RoadPattern = {
+  id: 's1_shopping_street', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'cafe_bookstore_row', 'florist_bakery', 'laundromat_pharmacy', 'cafe_bookstore' ],
+    [ 'shop_parasol_row', 'ramen_izakaya', 'shotengai_food', 'mansion_shop' ],
+  ],
+};
+
+// s1_shopping_street_cross: 商店街 + 上端クロス。
+const S1_SHOPPING_STREET_CROSS: RoadPattern = {
+  id: 's1_shopping_street_cross', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
+    { gridLine: 2, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'cafe_bookstore', 'shotengai_game', 'ramen_izakaya', 'florist_bakery' ],
+    [ 'shotengai_food', 'shop_parasol_row', 'laundromat_pharmacy', 'mansion_shop' ],
+  ],
+};
+
+// s1_station_plaza: 駅前広場。row1 中央 2 セル merged で大型モール。
+// 両脇 (gridLine 1, 3) の縦道路は row1 の merged 部分だけ外す (row 0 は通す)。
+const S1_STATION_PLAZA: RoadPattern = {
+  id: 's1_station_plaza', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'avenue' },
+  ],
+  verticalRoads: [
+    // 脇道は row 0 のみ (row 1 の merge を避ける)
+    { gridLine: 1, startCell: 0, endCell: 1, cls: 'street' },
+    // 中央 avenue は row 1 の merge 境界なので全行通す
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 1, cls: 'street' },
+  ],
+  cells: [
+    [ 'gas_station_corner', 'house_konbini', 'laundromat_pharmacy', 'cafe_bookstore' ],
+    [ 'shop_parasol_row', 'shopping_mall_plaza', 'merged_right', 'clinic_daycare' ],
+  ],
+  merges: [ { row: 1, col: 1, spanCols: 2 } ],
+};
+
+// s1_park: 町内公園。中央 avenue のみ通し、両脇は park 用の装飾セル。
+// row 1 の中央 2 セルは merged で緑地扱い、両脇のセルに遊具/木を overrides で入れる。
+const S1_PARK: RoadPattern = {
+  id: 's1_park', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+  ],
+  cells: [
+    [ 'garden_shed', 'temple_garden', 'merged_right', 'garden_shed' ],
+    [ 'house_trio_garden', 'temple_garden', 'merged_right', 'house_trio_garden' ],
+  ],
+  merges: [
+    { row: 0, col: 1, spanCols: 2 },
+    { row: 1, col: 1, spanCols: 2 },
+  ],
+};
+
+// s1_shrine_corner: 神社ブロック。shrine を merged、上端クロスで次チャンクと繋ぐ。
+const S1_SHRINE_CORNER: RoadPattern = {
+  id: 's1_shrine_corner', weight: 1,
+  rows: 2, cols: 4,
+  horizontalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 4, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 4, cls: 'street' },
+  ],
+  verticalRoads: [
+    { gridLine: 1, startCell: 0, endCell: 2, cls: 'street' },
+    { gridLine: 2, startCell: 0, endCell: 2, cls: 'avenue' },
+    { gridLine: 3, startCell: 0, endCell: 2, cls: 'street' },
+  ],
+  cells: [
+    [ 'temple_garden', 'shrine_complex', 'merged_right', 'house_trio_garden' ],
+    [ 'townhouse_row', 'merged_right', 'ramen_izakaya', 'cafe_bookstore' ],
+  ],
+  merges: [
+    { row: 0, col: 1, spanCols: 2 },
+    { row: 1, col: 0, spanCols: 2 },
+  ],
+};
+
 export const CHUNK_PATTERNS: RoadPattern[] = [
   FULL_GRID,
   PLAZA_CENTER,
@@ -422,6 +569,14 @@ export const CHUNK_PATTERNS: RoadPattern[] = [
   HARBOR_WAREHOUSE,
   PARK_PLAZA_RADIAL,
   GOAL_FINAL,
+  // Stage 1 専用
+  S1_SUBURB_ROW,
+  S1_SUBURB_ROW_CROSS,
+  S1_SHOPPING_STREET,
+  S1_SHOPPING_STREET_CROSS,
+  S1_STATION_PLAZA,
+  S1_PARK,
+  S1_SHRINE_CORNER,
 ];
 
 /** id → RoadPattern の lookup */
