@@ -235,6 +235,7 @@ export const TIMER_INITIAL_SEC     = 90;  // 固定制限時間 (秒)
 
 // ===== スコアポップアップ =====
 export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)
+export const SCORE_POPUP_MIN       = 50;  // この金額未満はポップアップを出さない (画面の賑やかし防止)
 export const SCORE_POPUP_DUR_SMALL = 0.5; // < ¥500 (家具・人間等)
 export const SCORE_POPUP_DUR_BIG   = 0.8; // ≥ ¥500
 export const SCORE_POPUP_DUR_LARGE = 1.0; // ≥ ¥2000

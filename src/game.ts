@@ -529,7 +529,10 @@ export class Game {
   private addScore(pts: number, worldX: number, worldY: number) {
     this.totalScore += pts;
     this.ui.setScore(this.totalScore);
-    this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
+    // 少額はポップアップを出さない (ミニオブジェクト連打で画面が埋まるのを防ぐ)
+    if (pts >= C.SCORE_POPUP_MIN) {
+      this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
+    }
 
     // コンボを伸ばす
     this.comboCount = Math.min(this.comboCount + 1, C.COMBO_MAX);
