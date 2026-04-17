@@ -812,24 +812,42 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 6: 商店街後半 — 駅前を過ぎて再び店舗
-  {
-    patternId: 's1_shopping_street',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'cafe_bookstore' },
-      { row: 0, col: 1, sceneId: 'florist_bakery' },
-      { row: 0, col: 2, sceneId: 'ramen_izakaya' },
-      { row: 0, col: 3, sceneId: 'florist_bakery' },
-      { row: 1, col: 0, sceneId: 'mansion_shop' },
-      { row: 1, col: 1, sceneId: 'shotengai_food' },
-      { row: 1, col: 2, sceneId: 'shop_parasol_row' },
-      { row: 1, col: 3, sceneId: 'cafe_bookstore_row' },
+  // 6: 商店街後半 — 映画館と書店 + 上端クロス (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('cafe',-160,80),_B('bookstore',-135,79),_B('bakery',-110,81),
+      _B('florist',-60,81),_B('pharmacy',-25,80),
+      _B('bookstore',25,80),_B('cafe',55,80),
+      _B('ramen',110,80),_B('izakaya',140,79),_B('cafe',170,80),
+      _B('mansion',-150,125),_B('apartment',-110,125),
+      _B('cafe',-60,125),_B('bookstore',-30,125),
+      _B('movie_theater',35,125),
+      _B('bakery',108,125),_B('florist',138,125),_B('cafe',170,125),
     ],
-    groundGrid: [
-      ['wood_deck',      'wood_deck', 'asphalt',  'wood_deck'],
-      ['stone_pavement', 'tile',      'concrete', 'wood_deck'],
+    furniture: [
+      _F('a_frame_sign',-160,92),_F('shop_awning',-135,92),_F('potted_plant',-110,92),
+      _F('noren',-60,92),_F('a_frame_sign',-25,92),
+      _F('shop_awning',25,92),_F('parasol',55,92),
+      _F('chouchin',110,92),_F('noren',140,92),_F('a_frame_sign',170,92),
+      _F('potted_plant',-60,115),_F('shop_awning',-30,115),
+      _F('banner_pole',35,140),_F('banner_pole',35,145),
+      _F('a_frame_sign',108,115),_F('parasol',138,115),_F('shop_awning',170,115),
+      _F('tree',-175,40),_F('tree',175,40),_F('tree',-175,170),_F('tree',175,170),
+      _F('bicycle_rack',0,50),_F('bicycle_rack',0,160),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('street_lamp',-90,195),_F('street_lamp',90,195),
+      _F('traffic_light',-90,188),_F('traffic_light',90,188),
     ],
-  },
+    humans: [_H(-140,92),_H(-50,92),_H(35,92),_H(125,92),_H(-50,115),_H(-30,115),_H(35,115),_H(125,115),_H(-170,60),_H(170,60),_H(0,170),_H(-170,170)],
+    grounds: [
+      _G('wood_deck',0,46.5,360,93),_G('tile',0,153.5,360,93),
+      _G('concrete',0,46.5,16,93),_G('concrete',0,153.5,16,93),
+      _G('asphalt',-90,46.5,30,93),_G('asphalt',90,153.5,30,93),
+      _G('stone_pavement',-150,125,30,35),_G('stone_pavement',170,125,30,35),
+      _G('wood_deck',-60,125,40,30),_G('wood_deck',170,125,30,30),
+    ],
+    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 7: 駅裏飲食 — 上端クロスで次チャンクと十字路
   {
     patternId: 's1_shopping_street_cross',
