@@ -95,7 +95,7 @@ export class UIManager {
     } else if (amount < 50) {
       // ミニオブジェクト: 極小サイズで画面を汚さない
       el.classList.add('tiny');
-      dur = C.SCORE_POPUP_DUR_SMALL * 0.6;
+      dur = C.SCORE_POPUP_DUR_SMALL;
     } else {
       dur = C.SCORE_POPUP_DUR_SMALL;
     }
