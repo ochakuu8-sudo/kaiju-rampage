@@ -484,6 +484,275 @@ export class BuildingManager {
     return n;
   }
 
+  // ===== Miniature detail helpers (T-1) =====
+  // 全てインスタンス数を返し、writeInst 経由で1プリミティブずつ積む。
+  // 同じ建物で同じ出力になるよう、決定論的シードは呼び出し側 (cx/bot) から引く。
+
+  /** 瓦屋根: 反り帯 + 等間隔筋。variant で棟飾りの有無を切替。 */
+  private drawRoofTile(
+    buf: Float32Array, n: number,
+    cx: number, top: number, bW: number, bH: number,
+    cr: number, cg: number, cb: number,
+    variant: number = 0
+  ): number {
+    // 本体 (暗めの瓦)
+    writeInst(buf, n++, cx, top - 3, bW + 3, 7,
+      cr * 0.42, cg * 0.38, cb * 0.32, 1);
+    // 反り帯 (少し明るく)
+    writeInst(buf, n++, cx, top - 1, bW + 4, 1.8,
+      cr * 0.55, cg * 0.48, cb * 0.40, 1);
+    // 等間隔筋 (縦筋 6 本) — 瓦の縦溝
+    const cols = 6;
+    const stepX = (bW + 1) / cols;
+    const startX = cx - (bW + 1) / 2 + stepX / 2;
+    for (let c = 0; c < cols; c++) {
+      writeInst(buf, n++, startX + c * stepX, top - 3, 0.6, 6,
+        cr * 0.30, cg * 0.26, cb * 0.22, 0.85);
+    }
+    // 棟飾り (variant > 0)
+    if (variant > 0) {
+      writeInst(buf, n++, cx, top + 0.5, 3, 2,
+        cr * 0.28, cg * 0.24, cb * 0.20, 1);
+    }
+    // バリ (ignore bH to keep signature stable)
+    void bH;
+    return n;
+  }
+
+  /** 陸屋根の屋上クラッター: 室外機 2 基 + 貯水塔 + 鉄柵。 */
+  private drawFlatRoofClutter(
+    buf: Float32Array, n: number,
+    cx: number, top: number, bW: number, seed: number
+  ): number {
+    // 鉄柵 (屋上の縁取り)
+    writeInst(buf, n++, cx, top - 0.5, bW, 1, 0.42, 0.42, 0.44, 0.75);
+    // 室外機 2 基
+    const unitW = 4.5, unitH = 3;
+    writeInst(buf, n++, cx - bW * 0.25, top + unitH * 0.5, unitW, unitH, 0.72, 0.72, 0.70, 1);
+    writeInst(buf, n++, cx - bW * 0.25, top + unitH * 0.5, unitW * 0.8, 0.6, 0.50, 0.50, 0.50, 1);
+    writeInst(buf, n++, cx + bW * 0.15, top + unitH * 0.5, unitW, unitH, 0.70, 0.70, 0.68, 1);
+    writeInst(buf, n++, cx + bW * 0.15, top + unitH * 0.5, unitW * 0.8, 0.6, 0.48, 0.48, 0.48, 1);
+    // 貯水塔 (seed % 2 で有り無し)
+    if ((seed & 1) === 0) {
+      writeInst(buf, n++, cx + bW * 0.34, top + 4, 5, 5.5, 0.60, 0.58, 0.52, 1, 0, 1);
+      writeInst(buf, n++, cx + bW * 0.34, top + 1.5, 1.2, 3, 0.40, 0.40, 0.38, 1);
+    }
+    return n;
+  }
+
+  /** 庇: 赤白/青白/緑白のストライプ。hueIdx で色を選択。 */
+  private drawAwningStripe(
+    buf: Float32Array, n: number,
+    cx: number, bot: number, bW: number, bH: number,
+    hueIdx: number
+  ): number {
+    const palette: [number, number, number][] = [
+      [0.92, 0.20, 0.18], [0.18, 0.48, 0.90],
+      [0.20, 0.72, 0.28], [0.90, 0.65, 0.15], [0.72, 0.28, 0.68],
+    ];
+    const [hr, hg, hb] = palette[hueIdx % palette.length];
+    const y = bot + bH * 0.46;
+    // ベース庇
+    writeInst(buf, n++, cx, y, bW + 4, 3.5, 0.95, 0.95, 0.92, 0.95);
+    // ストライプ 4 本
+    const stripes = 4;
+    const stepX = (bW + 3) / stripes;
+    const startX = cx - (bW + 3) / 2 + stepX / 2;
+    for (let i = 0; i < stripes; i++) {
+      if ((i & 1) === 0) {
+        writeInst(buf, n++, startX + i * stepX, y, stepX * 0.9, 3.2, hr, hg, hb, 0.92);
+      }
+    }
+    return n;
+  }
+
+  /** 店舗看板: 角袖 (縦看板) / 水平帯。stacked=true で 2 段積み。 */
+  private drawShopSign(
+    buf: Float32Array, n: number,
+    cx: number, top: number, bW: number,
+    hueIdx: number, stacked: boolean = false
+  ): number {
+    const palette: [number, number, number][] = [
+      [0.92, 0.20, 0.18], [0.90, 0.65, 0.15],
+      [0.20, 0.62, 0.82], [0.72, 0.28, 0.68], [0.18, 0.62, 0.32],
+    ];
+    const [sr, sg, sb] = palette[hueIdx % palette.length];
+    // 水平看板
+    writeInst(buf, n++, cx, top - 2, bW + 1, 4.5, sr, sg, sb, 1);
+    // 文字帯 (ロゴの明色線)
+    writeInst(buf, n++, cx, top - 2, bW * 0.72, 1.2, 0.98, 0.96, 0.88, 0.92);
+    if (stacked) {
+      // 角袖 (縦看板) 右端
+      writeInst(buf, n++, cx + bW * 0.42, top - 8, 3.5, 10, sr * 0.85, sg * 0.85, sb * 0.85, 1);
+      writeInst(buf, n++, cx + bW * 0.42, top - 8, 2.2, 7, 0.98, 0.96, 0.88, 0.85);
+    }
+    return n;
+  }
+
+  /** 室外機 1 個 (壁面用)。 */
+  private drawACUnit(
+    buf: Float32Array, n: number,
+    x: number, y: number
+  ): number {
+    writeInst(buf, n++, x, y, 3.5, 2.5, 0.70, 0.70, 0.68, 1);
+    // 横スリット 2 本
+    writeInst(buf, n++, x, y + 0.5, 3.0, 0.4, 0.45, 0.45, 0.45, 0.9);
+    writeInst(buf, n++, x, y - 0.5, 3.0, 0.4, 0.45, 0.45, 0.45, 0.9);
+    return n;
+  }
+
+  /** バルコニー手すり: 縦格子 + プランター。 */
+  private drawBalconyRailing(
+    buf: Float32Array, n: number,
+    cx: number, yBand: number, bW: number
+  ): number {
+    // 手すり (横線)
+    writeInst(buf, n++, cx, yBand, bW * 0.92, 0.6, 0.85, 0.85, 0.82, 0.9);
+    writeInst(buf, n++, cx, yBand - 1.8, bW * 0.92, 0.4, 0.75, 0.75, 0.72, 0.85);
+    // 縦格子 (5 本)
+    const bars = 5;
+    const stepX = (bW * 0.85) / bars;
+    const startX = cx - (bW * 0.85) / 2 + stepX / 2;
+    for (let i = 0; i < bars; i++) {
+      writeInst(buf, n++, startX + i * stepX, yBand - 1, 0.4, 2.5, 0.80, 0.80, 0.78, 0.88);
+    }
+    // プランター (左端)
+    writeInst(buf, n++, cx - bW * 0.34, yBand + 0.8, 2.5, 1.5, 0.55, 0.32, 0.20, 1);
+    writeInst(buf, n++, cx - bW * 0.34, yBand + 1.8, 2.2, 1.2, 0.32, 0.68, 0.38, 0.95);
+    return n;
+  }
+
+  /** 外階段: 段々 4 段。 */
+  private drawStairs(
+    buf: Float32Array, n: number,
+    x: number, bot: number, h: number
+  ): number {
+    const steps = 4;
+    const stepH = h / steps;
+    for (let i = 0; i < steps; i++) {
+      writeInst(buf, n++, x, bot + stepH * (i + 0.5), 4 + i * 0.3, stepH * 0.9,
+        0.48, 0.48, 0.50, 1);
+    }
+    return n;
+  }
+
+  /** 軒下の提灯列: 2-5 個の小丸。 */
+  private drawChouchinRow(
+    buf: Float32Array, n: number,
+    cx: number, y: number, bW: number, count: number
+  ): number {
+    count = Math.max(2, Math.min(5, count));
+    const stepX = bW / count;
+    const startX = cx - bW / 2 + stepX / 2;
+    for (let i = 0; i < count; i++) {
+      const px = startX + i * stepX;
+      // 吊り紐
+      writeInst(buf, n++, px, y + 1.5, 0.3, 2, 0.20, 0.15, 0.10, 0.8);
+      // 提灯本体 (円)
+      writeInst(buf, n++, px, y - 0.5, 3, 3.5, 0.92, 0.28, 0.18, 1, 0, 1);
+      // 中央帯
+      writeInst(buf, n++, px, y - 0.5, 2.5, 0.4, 0.10, 0.08, 0.05, 0.85);
+    }
+    return n;
+  }
+
+  /** シャッター: 溝 8 本 + 取手。 */
+  private drawShutterSlats(
+    buf: Float32Array, n: number,
+    cx: number, y: number, bW: number, bH: number,
+    cr: number, cg: number, cb: number
+  ): number {
+    // ベース
+    writeInst(buf, n++, cx, y, bW, bH, cr * 0.72, cg * 0.72, cb * 0.72, 1);
+    // 溝 (8 本)
+    const slats = 8;
+    const stepY = bH / slats;
+    const startY = y - bH / 2 + stepY / 2;
+    for (let i = 0; i < slats; i++) {
+      writeInst(buf, n++, cx, startY + i * stepY, bW * 0.95, 0.3,
+        cr * 0.45, cg * 0.45, cb * 0.45, 0.9);
+    }
+    // 取手
+    writeInst(buf, n++, cx, y - bH * 0.42, bW * 0.18, 0.8, 0.30, 0.30, 0.30, 1);
+    return n;
+  }
+
+  /** ドア装飾: ノブ + マット + 表札。type=0 片開き / 1 引き戸 / 2 ガラス */
+  private drawDoorDetail(
+    buf: Float32Array, n: number,
+    cx: number, bot: number, bW: number, type: number
+  ): number {
+    // マット (玄関前)
+    writeInst(buf, n++, cx, bot + 0.5, bW * 0.28, 1, 0.55, 0.32, 0.22, 0.85);
+    // ノブ (type 0/2 のみ)
+    if (type !== 1) {
+      writeInst(buf, n++, cx + bW * 0.05, bot + 4.5, 0.6, 0.6, 0.92, 0.82, 0.30, 1, 0, 1);
+    }
+    // 表札 (小)
+    writeInst(buf, n++, cx - bW * 0.12, bot + 9, 1.8, 0.8, 0.95, 0.92, 0.82, 0.95);
+    return n;
+  }
+
+  /** 窓枠: 既存窓を縁取る。w/h は窓サイズ。 */
+  private drawWindowFrame(
+    buf: Float32Array, n: number,
+    x: number, y: number, w: number, h: number
+  ): number {
+    // 上枠
+    writeInst(buf, n++, x, y + h * 0.5, w + 0.6, 0.4, 0.32, 0.28, 0.22, 1);
+    // 下枠
+    writeInst(buf, n++, x, y - h * 0.5, w + 0.6, 0.4, 0.32, 0.28, 0.22, 1);
+    // 縦桟
+    writeInst(buf, n++, x, y, 0.3, h, 0.32, 0.28, 0.22, 0.95);
+    return n;
+  }
+
+  /** 瓦屋根の反り (鬼瓦): 両端の上向きカール。 */
+  private drawTileRoofCurl(
+    buf: Float32Array, n: number,
+    cx: number, top: number, bW: number, reverse: boolean = false
+  ): number {
+    const yOff = reverse ? -1.5 : 1.5;
+    // 左端の反り
+    writeInst(buf, n++, cx - bW * 0.5 - 1, top + yOff, 2.5, 2.5, 0.22, 0.18, 0.14, 1);
+    // 右端の反り
+    writeInst(buf, n++, cx + bW * 0.5 + 1, top + yOff, 2.5, 2.5, 0.22, 0.18, 0.14, 1);
+    // 中央の棟飾り
+    writeInst(buf, n++, cx, top + yOff + 0.8, 3, 1.5, 0.28, 0.22, 0.18, 1);
+    return n;
+  }
+
+  /** 正面キャノピー + 柱 2 本。 */
+  private drawEntranceCanopy(
+    buf: Float32Array, n: number,
+    cx: number, bot: number, bW: number
+  ): number {
+    // 屋根帯
+    writeInst(buf, n++, cx, bot + 13, bW * 0.72, 2, 0.72, 0.68, 0.60, 0.95);
+    // 柱 2 本
+    writeInst(buf, n++, cx - bW * 0.30, bot + 7, 1.5, 12, 0.82, 0.78, 0.70, 1);
+    writeInst(buf, n++, cx + bW * 0.30, bot + 7, 1.5, 12, 0.82, 0.78, 0.70, 1);
+    // キャノピー前面
+    writeInst(buf, n++, cx, bot + 12.2, bW * 0.74, 0.6, 0.55, 0.52, 0.45, 1);
+    return n;
+  }
+
+  /** 壁付け自販機 (青/赤 2 種)。 */
+  private drawVendingMachineInset(
+    buf: Float32Array, n: number,
+    x: number, y: number
+  ): number {
+    // 本体
+    const isRed = ((Math.abs(Math.floor(x * 3 + y * 5))) & 1) === 0;
+    const [cr, cg, cb] = isRed ? [0.85, 0.18, 0.18] : [0.18, 0.52, 0.85];
+    writeInst(buf, n++, x, y, 3.5, 8, cr, cg, cb, 1);
+    // 飲料口 (明色)
+    writeInst(buf, n++, x, y + 1.5, 3.0, 3, 0.95, 0.92, 0.82, 0.92);
+    // 取出口 (下)
+    writeInst(buf, n++, x, y - 2.8, 3.0, 1.2, 0.20, 0.18, 0.16, 1);
+    return n;
+  }
+
   fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
     const camBot = cameraY + C.WORLD_MIN_Y - 100;
