@@ -1340,17 +1340,39 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 11: Stage 2 への橋渡し — 夜営業のガソスタ・パチンコでネオン予感 (raw)
+  // 11: Stage 2 への橋渡し — 夜営業のガソスタ・パチンコでネオン予感 6 列大密度化 (raw)
   { patternId: 's1_raw', raw: {
     buildings: [
+      // 下段 前列 (y=22)
+      _B('ramen',-170,22),_B('izakaya',-140,22),_B('ramen',-110,22),
+      _B('izakaya',-55,22),_B('ramen',-25,22),
+      _B('ramen',25,22),_B('izakaya',55,22),
+      _B('izakaya',110,22),_B('ramen',140,22),_B('izakaya',170,22),
+      // 下段 中列 (y=55)
+      _B('ramen',-170,55),_B('izakaya',-140,55),_B('convenience',-110,55),
+      _B('karaoke',-55,55),_B('ramen',-20,55),
+      _B('ramen',20,55),_B('karaoke',55,55),
+      _B('convenience',110,55),_B('izakaya',140,55),_B('ramen',170,55),
+      // 下段 後列 (y=80)
       _B('ramen',-165,80),_B('izakaya',-140,79),_B('gas_station',-115,83),
       _B('pachinko',-50,78),
       _B('karaoke',30,78),_B('convenience',75,82),
       _B('izakaya',108,79),_B('gas_station',145,83),_B('convenience',175,82),
+      // 上段 前列 (y=125)
       _B('izakaya',-165,125),_B('ramen',-140,125),_B('convenience',-110,127),
       _B('karaoke',-55,127),_B('ramen',-20,125),
       _B('pachinko',35,127),
       _B('ramen',108,125),_B('izakaya',140,125),_B('convenience',175,127),
+      // 上段 中列 (y=158)
+      _B('ramen',-170,158),_B('izakaya',-140,158),_B('ramen',-110,158),
+      _B('izakaya',-55,158),_B('karaoke',-20,158),
+      _B('karaoke',20,158),_B('izakaya',55,158),
+      _B('ramen',110,158),_B('izakaya',140,158),_B('ramen',170,158),
+      // 上段 後列 (y=184)
+      _B('izakaya',-170,184),_B('ramen',-140,184),_B('izakaya',-110,184),
+      _B('ramen',-55,184),_B('izakaya',-25,184),
+      _B('izakaya',25,184),_B('ramen',55,184),
+      _B('izakaya',110,184),_B('ramen',140,184),_B('izakaya',170,184),
     ],
     furniture: [
       _F('chouchin',-165,92),_F('noren',-140,92),_F('sign_board',-115,92),
