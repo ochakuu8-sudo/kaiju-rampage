@@ -1098,6 +1098,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('bakery',-55,184),_B('florist',-20,184),
       _B('bakery',25,184),_B('florist',55,184),
       _B('florist',108,184),_B('bakery',140,184),_B('florist',170,184),
+      // T-12: 商店街アーケード 2 枚
+      _B('shotengai_arcade',-45,105),_B('shotengai_arcade',45,105),
     ],
     furniture: [
       _F('a_frame_sign',-170,40),_F('parasol',-140,40),_F('a_frame_sign',-110,40),
@@ -1125,6 +1127,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('street_lamp',-90,193),_F('street_lamp',90,193),
       _F('traffic_light',-90,185),_F('traffic_light',90,185),
+      // T-12: 商店街後半の追加ディテール
+      _F('bicycle_row',-60,95),_F('bicycle_row',35,95),_F('bicycle_row',138,95),
+      _F('flower_planter_row',-150,40),_F('flower_planter_row',25,170),_F('flower_planter_row',108,140),
+      _F('puddle_reflection',-30,100),_F('puddle_reflection',60,100),
+      _F('manhole_cover',-45,100),_F('manhole_cover',45,100),
     ],
     humans: [_H(-140,40),_H(-20,40),_H(55,40),_H(140,40),_H(-140,92),_H(-50,92),_H(35,92),_H(125,92),_H(-50,115),_H(-25,115),_H(35,115),_H(125,115),_H(-140,170),_H(55,170),_H(140,170),_H(-170,60),_H(170,60),_H(0,60),_H(0,160)],
     grounds: [
@@ -1189,6 +1196,16 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bicycle',-90,60),_F('bicycle',90,150),_F('bicycle',-30,160),_F('bicycle',30,60),
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('vending',-175,90),_F('vending',175,90),_F('vending',-175,110),_F('vending',175,110),
+      // T-12: 駅裏飲食の配線・路地ディテール
+      _F('ac_outdoor_cluster',-155,92),_F('ac_outdoor_cluster',-55,92),_F('ac_outdoor_cluster',20,92),
+      _F('ac_outdoor_cluster',110,92),_F('ac_outdoor_cluster',-140,140),_F('ac_outdoor_cluster',55,140),
+      _F('ac_outdoor_cluster',140,140),_F('ac_outdoor_cluster',-20,140),
+      _F('cable_junction_box',-170,45),_F('cable_junction_box',170,45),
+      _F('cable_junction_box',-170,155),_F('cable_junction_box',170,155),_F('cable_junction_box',0,45),
+      _F('puddle_reflection',-45,100),_F('puddle_reflection',45,100),_F('puddle_reflection',0,100),
+      _F('puddle_reflection',-90,140),_F('puddle_reflection',90,140),
+      _F('power_line',-90,35),_F('power_line',-90,90),_F('power_line',90,90),_F('power_line',90,150),
+      _F('manhole_cover',-30,100),_F('manhole_cover',30,100),
     ],
     humans: [_H(-135,10),_H(-40,10),_H(35,10),_H(130,10),_H(-135,40),_H(-40,40),_H(35,40),_H(130,40),_H(-135,70),_H(-40,70),_H(35,70),_H(130,70),_H(-135,140),_H(-40,140),_H(35,140),_H(130,140),_H(-135,170),_H(-40,170),_H(35,170),_H(130,170)],
     grounds: [
