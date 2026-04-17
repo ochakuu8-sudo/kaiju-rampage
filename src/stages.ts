@@ -1017,6 +1017,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('yatai',-55,184),_B('shed',-20,184),
       _B('shed',22,184),_B('yatai',55,184),
       _B('yatai',108,184),_B('shed',140,184),_B('yatai',170,184),
+      // T-11: 駅前ランドマーク — バスターミナル屋根 + 噴水パビリオン
+      _B('bus_terminal_shelter',-110,45),_B('bus_terminal_shelter',120,45),
+      _B('fountain_pavilion',0,62),
     ],
     furniture: [
       _F('banner_pole',-170,40),_F('banner_pole',-140,40),_F('banner_pole',-55,40),
@@ -1036,6 +1039,18 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('banner_pole',-170,195),_F('banner_pole',-110,195),_F('banner_pole',-55,195),
       _F('banner_pole',22,195),_F('banner_pole',108,195),_F('banner_pole',170,195),
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      // T-11: 駅前ランドマーク家具 — 駅舎周辺の線路/信号塔/歩道橋 + 広場タイル
+      _F('railway_track',-80,75),_F('railway_track',0,75),_F('railway_track',80,75),
+      _F('platform_edge',45,68),
+      _F('pedestrian_bridge',0,100),
+      _F('signal_tower',-150,75),_F('signal_tower',150,75),
+      _F('fountain_large',0,60),
+      _F('plaza_tile_circle',0,60),
+      _F('taxi_rank_sign',-50,95),_F('taxi_rank_sign',45,95),
+      _F('bicycle_row',-130,95),_F('bicycle_row',135,95),
+      _F('puddle_reflection',-30,100),_F('puddle_reflection',30,100),
+      _F('manhole_cover',-60,100),_F('manhole_cover',60,100),
+      _F('cable_junction_box',-170,100),_F('cable_junction_box',170,100),
     ],
     humans: [_H(-120,90),_H(-50,92),_H(0,92),_H(45,90),_H(80,92),_H(130,92),_H(170,92),_H(-120,115),_H(-30,115),_H(50,115),_H(125,115),_H(170,115),_H(0,60),_H(45,50),_H(-80,170),_H(80,170),_H(-140,40),_H(55,40),_H(140,40),_H(-30,175),_H(50,175)],
     grounds: [
