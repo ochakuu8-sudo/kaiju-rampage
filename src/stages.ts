@@ -883,22 +883,44 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 8: 町内公園 — 緑地 merged + 散策路 dirt + 入口 stone_pavement
-  {
-    patternId: 's1_park',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'garden_shed' },
-      // row 0 col 1-2 merged = temple_garden (pattern default)
-      { row: 0, col: 3, sceneId: 'garden_shed' },
-      { row: 1, col: 0, sceneId: 'house_trio_garden' },
-      // row 1 col 1-2 merged = temple_garden (pattern default)
-      { row: 1, col: 3, sceneId: 'house_trio_garden' },
+  // 8: 町内公園 — 小学校と噴水 + 鯉池 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('shed',-170,85),_B('greenhouse',-130,84),
+      _B('house',-65,80),_B('greenhouse',-25,84),
+      _B('greenhouse',25,84),_B('house',65,80),
+      _B('shed',108,85),_B('greenhouse',145,84),_B('shed',178,85),
+      _B('school',-130,128),
+      _B('house',-25,125),
+      _B('daycare',25,125),_B('house',65,125),
+      _B('house',110,125),_B('house',145,125),_B('shed',178,120),
     ],
-    groundGrid: [
-      ['dirt',            'grass', 'grass', 'dirt'           ],
-      ['stone_pavement',  'grass', 'grass', 'stone_pavement' ],
+    furniture: [
+      _F('tree',-175,30),_F('tree',-150,45),_F('tree',-105,30),_F('tree',-80,45),
+      _F('tree',-55,30),_F('tree',0,35),_F('tree',55,30),
+      _F('tree',80,45),_F('tree',125,30),_F('tree',160,45),
+      _F('fountain',-55,60),_F('fountain',65,60),
+      _F('koi_pond',0,60),_F('stone_lantern',-25,45),_F('stone_lantern',25,45),
+      _F('bench',-80,80),_F('bench',80,80),_F('bench',-30,85),_F('bench',30,85),
+      _F('flower_bed',-110,55),_F('flower_bed',110,55),
+      _F('tree',-170,170),_F('tree',-80,170),_F('tree',-30,175),
+      _F('flag_pole',-130,115),_F('flower_bed',-130,140),
+      _F('tree',60,175),_F('tree',110,175),_F('tree',175,170),
+      _F('sakura_tree',-90,55),_F('sakura_tree',90,55),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('bicycle_rack',-30,115),_F('bicycle_rack',30,115),
     ],
-  },
+    humans: [_H(-120,55),_H(-55,85),_H(0,80),_H(55,85),_H(120,55),_H(-130,115),_H(-30,140),_H(30,140),_H(120,170),_H(0,175),_H(-160,60),_H(160,60)],
+    grounds: [
+      _G('grass',0,46.5,360,93),_G('grass',0,153.5,360,93),
+      _G('dirt',-55,60,30,35),_G('dirt',55,60,30,35),_G('dirt',0,55,25,40),
+      _G('stone_pavement',0,93,360,6),_G('stone_pavement',0,107,360,6),
+      _G('dirt',-130,140,40,40),_G('dirt',30,145,40,40),
+      _G('stone_pavement',-170,50,20,90),_G('stone_pavement',170,50,20,90),
+      _G('stone_pavement',-130,175,30,30),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 9: 町のシンボル神社 — shrine_complex (merged) + 参道 stone_pavement + 上端クロス
   {
     patternId: 's1_shrine_corner',
