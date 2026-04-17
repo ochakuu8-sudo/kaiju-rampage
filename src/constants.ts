@@ -341,6 +341,48 @@ export function getStagePalette(stageIndex: number): StageRoadPalette {
   return STAGE_ROAD_PALETTE[stageIndex] ?? STAGE_ROAD_PALETTE[0];
 }
 
+/**
+ * Stage 1 マイクロパレット: 12 チャンクを「朝の住宅街 → 駅前の昼 → 神社の夕 → 橋渡しの薄暮」
+ * という全体グラデで演出する。各チャンク固有のアクセント色を家具の看板/花/屋根などに反映。
+ */
+export interface MicroPalette {
+  accent:    readonly [number, number, number];  // メインのアクセント色 (看板等)
+  secondary: readonly [number, number, number];  // サブの色 (提灯・屋根)
+  ambient:   readonly [number, number, number];  // 空気感 (霞の色)
+}
+
+export const STAGE_1_MICRO_PALETTE: Record<number, MicroPalette> = {
+  // Chunk 0 朝の住宅街: 淡いパステルピーチ
+  0:  { accent: [0.98, 0.82, 0.72], secondary: [0.92, 0.88, 0.78], ambient: [0.96, 0.92, 0.85] },
+  // Chunk 1 住宅+コンビニ: 朝のレモンイエロー
+  1:  { accent: [0.98, 0.90, 0.55], secondary: [0.85, 0.92, 0.72], ambient: [0.95, 0.94, 0.82] },
+  // Chunk 2 保育園/診療所: ミントグリーン
+  2:  { accent: [0.72, 0.92, 0.80], secondary: [0.88, 0.95, 0.82], ambient: [0.90, 0.95, 0.88] },
+  // Chunk 3 商店街入口: 暖色チェリー
+  3:  { accent: [0.95, 0.45, 0.38], secondary: [0.92, 0.72, 0.35], ambient: [0.95, 0.85, 0.72] },
+  // Chunk 4 ラーメン横丁: 提灯赤
+  4:  { accent: [0.92, 0.25, 0.22], secondary: [0.95, 0.72, 0.15], ambient: [0.85, 0.70, 0.50] },
+  // Chunk 5 駅前広場: 真昼の駅ブルー
+  5:  { accent: [0.25, 0.55, 0.92], secondary: [0.95, 0.92, 0.88], ambient: [0.85, 0.92, 0.98] },
+  // Chunk 6 商店街後半: 秋色オレンジ
+  6:  { accent: [0.95, 0.62, 0.25], secondary: [0.88, 0.72, 0.38], ambient: [0.92, 0.82, 0.65] },
+  // Chunk 7 駅裏飲食: 夕暮れマゼンタ
+  7:  { accent: [0.88, 0.35, 0.68], secondary: [0.72, 0.45, 0.82], ambient: [0.72, 0.58, 0.70] },
+  // Chunk 8 町内公園: 緑の芝
+  8:  { accent: [0.45, 0.78, 0.42], secondary: [0.68, 0.88, 0.55], ambient: [0.78, 0.88, 0.72] },
+  // Chunk 9 神社: 朱赤
+  9:  { accent: [0.85, 0.22, 0.18], secondary: [0.95, 0.82, 0.35], ambient: [0.78, 0.55, 0.42] },
+  // Chunk 10 町家密集: 渋い黒茶
+  10: { accent: [0.55, 0.35, 0.25], secondary: [0.72, 0.55, 0.35], ambient: [0.62, 0.55, 0.45] },
+  // Chunk 11 Stage 2 橋渡し: 薄暮パープル
+  11: { accent: [0.55, 0.45, 0.78], secondary: [0.72, 0.58, 0.82], ambient: [0.52, 0.48, 0.62] },
+};
+
+/** チャンクインデックスからマイクロパレットを取得 (Stage 1 範囲外は null) */
+export function getStage1MicroPalette(chunkIdx: number): MicroPalette | null {
+  return STAGE_1_MICRO_PALETTE[chunkIdx] ?? null;
+}
+
 // ===== スコアポップアップ =====
 export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)
 export const SCORE_POPUP_DUR_SMALL = 0.7; // < ¥500 (家具・人間等)
