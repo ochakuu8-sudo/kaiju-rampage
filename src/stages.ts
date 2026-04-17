@@ -1275,6 +1275,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('bicycle_rack',-30,115),_F('bicycle_rack',30,115),
       _F('bench',-80,170),_F('bench',80,170),
+      // T-13: 町内公園の大噴水 + 花壇列 + 竹筧
+      _F('fountain_large',0,60),
+      _F('flower_planter_row',-110,40),_F('flower_planter_row',110,40),
+      _F('flower_planter_row',-25,170),_F('flower_planter_row',60,170),
+      _F('bamboo_water_fountain',-65,62),_F('bamboo_water_fountain',65,62),
+      _F('plaza_tile_circle',0,60),
     ],
     humans: [_H(-120,10),_H(-30,10),_H(30,10),_H(120,10),_H(-120,55),_H(-55,85),_H(0,80),_H(55,85),_H(120,55),_H(-130,115),_H(-30,140),_H(30,140),_H(120,170),_H(0,175),_H(-160,60),_H(160,60),_H(-120,155),_H(120,155),_H(-120,195),_H(120,195)],
     grounds: [
@@ -1341,6 +1347,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('street_lamp',-90,195),_F('street_lamp',90,195),
       _F('traffic_light',-90,190),_F('traffic_light',90,190),
+      // T-13: 神社ランドマーク — 参道石柱 + 絵馬壁 + お御籤 + 朱色玉垣 + 竹筧
+      _F('sando_stone_pillar',-12,50),_F('sando_stone_pillar',12,50),
+      _F('sando_stone_pillar',-12,90),_F('sando_stone_pillar',12,90),
+      _F('ema_wall',-55,140),
+      _F('omikuji_stand',35,150),
+      _F('shrine_fence_red',-145,145),_F('shrine_fence_red',-115,145),
+      _F('shrine_fence_red',-145,170),_F('shrine_fence_red',-115,170),
+      _F('shrine_fence_red',110,145),_F('shrine_fence_red',140,145),
+      _F('bamboo_water_fountain',-90,135),
     ],
     humans: [_H(-155,92),_H(-55,92),_H(0,70),_H(35,92),_H(130,92),_H(-130,115),_H(-55,115),_H(35,115),_H(130,115),_H(0,175),_H(-170,60),_H(170,60)],
     grounds: [
