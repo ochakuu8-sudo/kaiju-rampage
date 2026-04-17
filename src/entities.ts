@@ -944,6 +944,16 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - 3, bW, 5, cr * 0.82, cg * 0.78, cb * 0.55, 1);
           // 玄関ガラス
           writeInst(buf, n++, cx, bot + 6, bW * 0.24, bH * 0.25, 0.62, 0.82, 0.94, 0.82);
+          // T-4: 校旗ポール + 時計 + 屋上クラッター (プール含む)
+          writeInst(buf, n++, cx - bW * 0.40, top + 8, 0.8, 16, 0.72, 0.72, 0.72, 1); // 旗竿
+          writeInst(buf, n++, cx - bW * 0.40 + 3, top + 13, 5, 3, 0.85, 0.18, 0.18, 1); // 旗
+          writeInst(buf, n++, cx, top - 7, 4, 4, 0.95, 0.92, 0.80, 1, 0, 1); // 時計
+          writeInst(buf, n++, cx, top - 7, 2.5, 0.4, 0.15, 0.12, 0.10, 0.9);
+          writeInst(buf, n++, cx, top - 7, 0.4, 2.5, 0.15, 0.12, 0.10, 0.9);
+          // 屋上プール (青矩形)
+          writeInst(buf, n++, cx + bW * 0.30, top + 1, bW * 0.35, 3, 0.35, 0.62, 0.82, 0.85);
+          const schSeed = Math.abs(Math.floor(cx * 13.7 + bot * 7.3));
+          n = this.drawFlatRoofClutter(buf, n, cx - bW * 0.20, top, bW * 0.35, schSeed);
           break;
         }
         case 'hospital': {
@@ -954,6 +964,17 @@ export class BuildingManager {
           writeInst(buf, n++, cx, bot + bH * 0.68, bW * 0.28, 4, 0.85, 0.12, 0.12, 1);
           // 玄関ガラス
           writeInst(buf, n++, cx, bot + 7, bW * 0.35, 13, 0.68, 0.88, 0.96, 0.82);
+          // T-4: 正面キャノピー + 屋上クラッター + ヘリポート + 救急搬送口
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
+          const hspSeed = Math.abs(Math.floor(cx * 13.7 + bot * 7.3));
+          n = this.drawFlatRoofClutter(buf, n, cx - bW * 0.25, top, bW * 0.35, hspSeed);
+          // ヘリポート (白円)
+          writeInst(buf, n++, cx + bW * 0.25, top + 2, 7, 7, 0.92, 0.92, 0.88, 0.92, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.25, top + 2, 3.5, 1, 0.30, 0.25, 0.20, 0.9);
+          writeInst(buf, n++, cx + bW * 0.25, top + 2, 1, 3.5, 0.30, 0.25, 0.20, 0.9);
+          // 救急搬送口 (左下の屋根付き入口)
+          writeInst(buf, n++, cx - bW * 0.45, bot + 9, 4, 1.5, 0.42, 0.38, 0.32, 0.95);
+          writeInst(buf, n++, cx - bW * 0.45, bot + 5, 3, 7, 0.65, 0.85, 0.95, 0.82);
           break;
         }
         case 'temple': {
@@ -1303,6 +1324,17 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top - 4, bW + 4, 7, cr * 0.88, cg * 0.82, cb * 0.68, 1);
           writeInst(buf, n++, cx, bot + 2, bW + 4, 4, cr * 0.82, cg * 0.76, cb * 0.62, 1);
           writeInst(buf, n++, cx, bot + 7, bW * 0.42, bH * 0.55, 0.68, 0.88, 0.96, 0.78);
+          // T-4: 神殿風列柱 4 本 + キャノピー + ATM + ドア詳細
+          for (const xOff of [-bW * 0.40, -bW * 0.14, bW * 0.14, bW * 0.40]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.44, 2.4, bH * 0.62, cr * 0.95, cg * 0.90, cb * 0.78, 1);
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.75, 3.2, 1.2, cr * 0.75, cg * 0.70, cb * 0.58, 1);
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.13, 3.2, 1.2, cr * 0.75, cg * 0.70, cb * 0.58, 1);
+          }
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
+          // ATM (右端)
+          writeInst(buf, n++, cx + bW * 0.42, bot + 7, 3, 7, 0.30, 0.32, 0.36, 1);
+          writeInst(buf, n++, cx + bW * 0.42, bot + 9, 2.2, 1.2, 0.55, 0.85, 0.95, 0.92);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 2);
           break;
         }
         case 'post_office': {
@@ -1312,6 +1344,16 @@ export class BuildingManager {
           writeInst(buf, n++, cx + bW * 0.30, top - bH * 0.35, 6, 6, 0.92, 0.62, 0.12, 1, 0, 1);
           // 玄関
           writeInst(buf, n++, cx, bot + 6, bW * 0.30, 11, 0.68, 0.88, 0.96, 0.80);
+          // T-4: 縦看板 + バイク駐車 + 郵便ポスト + 窓枠
+          n = this.drawShopSign(buf, n, cx, top, bW, 1, false);
+          // バイク駐車 (赤)
+          writeInst(buf, n++, cx - bW * 0.38, bot + 2, 5, 2, 0.82, 0.22, 0.18, 1);
+          writeInst(buf, n++, cx - bW * 0.38 - 1, bot + 1, 1.5, 1.5, 0.15, 0.15, 0.18, 1, 0, 1);
+          writeInst(buf, n++, cx - bW * 0.38 + 1, bot + 1, 1.5, 1.5, 0.15, 0.15, 0.18, 1, 0, 1);
+          // 郵便ポスト
+          writeInst(buf, n++, cx + bW * 0.44, bot + 5, 3, 8, 0.88, 0.28, 0.15, 1);
+          writeInst(buf, n++, cx + bW * 0.44, bot + 7, 2.2, 0.8, 0.18, 0.12, 0.10, 0.95);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 0);
           break;
         }
         case 'library': {
@@ -1320,6 +1362,18 @@ export class BuildingManager {
           // アーチ窓×2
           writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.50, 8, bH * 0.40, 0.68, 0.88, 0.96, 0.78);
           writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.50, 8, bH * 0.40, 0.68, 0.88, 0.96, 0.78);
+          // T-4: 柱 + キャノピー + 左右石段
+          for (const xOff of [-bW * 0.42, -bW * 0.05, bW * 0.05, bW * 0.42]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.45, 1.8, bH * 0.60, cr * 0.92, cg * 0.85, cb * 0.70, 1);
+          }
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
+          // 石段 (3段)
+          for (let i = 0; i < 3; i++) {
+            writeInst(buf, n++, cx, bot - 0.5 - i * 1.0, bW * 0.5 - i * 2, 1.0, cr * 0.70, cg * 0.68, cb * 0.62, 0.95);
+          }
+          // 窓枠
+          n = this.drawWindowFrame(buf, n, cx - bW * 0.25, bot + bH * 0.50, 8, bH * 0.40);
+          n = this.drawWindowFrame(buf, n, cx + bW * 0.25, bot + bH * 0.50, 8, bH * 0.40);
           break;
         }
         case 'museum': {
@@ -1330,6 +1384,17 @@ export class BuildingManager {
             writeInst(buf, n++, cx + xOff, bot + bH * 0.40, 3, bH * 0.75, cr * 0.90, cg * 0.85, cb * 0.72, 1);
           }
           writeInst(buf, n++, cx, top - 4, bW + 6, 8, cr * 0.85, cg * 0.80, cb * 0.68, 1);
+          // T-4: 前面石段 + 左右ブロンズ像 + ペディメント装飾
+          for (let i = 0; i < 4; i++) {
+            writeInst(buf, n++, cx, bot - 0.5 - i * 1.0, bW * 0.65 - i * 2.4, 1.0, cr * 0.72, cg * 0.68, cb * 0.60, 0.95);
+          }
+          // ブロンズ像 (左右)
+          writeInst(buf, n++, cx - bW * 0.48, bot + 5, 2.2, 8, 0.45, 0.38, 0.22, 1);
+          writeInst(buf, n++, cx - bW * 0.48, bot + 9.5, 2, 2, 0.50, 0.42, 0.25, 1, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.48, bot + 5, 2.2, 8, 0.45, 0.38, 0.22, 1);
+          writeInst(buf, n++, cx + bW * 0.48, bot + 9.5, 2, 2, 0.50, 0.42, 0.25, 1, 0, 1);
+          // ペディメント (三角装飾帯)
+          writeInst(buf, n++, cx, top - 8.5, bW + 4, 2, cr * 0.62, cg * 0.58, cb * 0.50, 0.9);
           break;
         }
         case 'city_hall': {
@@ -1342,6 +1407,16 @@ export class BuildingManager {
           writeInst(buf, n++, cx + 4, top + 12, 8, 4, 0.85, 0.15, 0.15, 1);
           // コーニス
           writeInst(buf, n++, cx, top - 3, bW + 6, 5, cr * 0.80, cg * 0.76, cb * 0.65, 1);
+          // T-4: 中央時計 + 正面キャノピー + 市章 + 屋上アンテナ
+          writeInst(buf, n++, cx, cy - bH * 0.05, 5.5, 5.5, 0.95, 0.92, 0.80, 1, 0, 1);
+          writeInst(buf, n++, cx, cy - bH * 0.05, 3.5, 0.5, 0.15, 0.12, 0.10, 1);
+          writeInst(buf, n++, cx, cy - bH * 0.05, 0.5, 3.5, 0.15, 0.12, 0.10, 1);
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
+          // 市章 (キャノピー下)
+          writeInst(buf, n++, cx, bot + bH * 0.88, 3, 3, 0.92, 0.78, 0.22, 1, 0, 1);
+          // 屋上アンテナ
+          writeInst(buf, n++, cx - bW * 0.30, top + 6, 1, 10, 0.55, 0.55, 0.55, 1);
+          writeInst(buf, n++, cx + bW * 0.30, top + 6, 1, 10, 0.55, 0.55, 0.55, 1);
           break;
         }
         case 'fire_station': {
@@ -1350,6 +1425,17 @@ export class BuildingManager {
           writeInst(buf, n++, cx + bW * 0.22, bot + bH * 0.42, bW * 0.38, bH * 0.56, 0.68, 0.18, 0.15, 1);
           // 上帯
           writeInst(buf, n++, cx, top - 3, bW, 6, 0.80, 0.22, 0.18, 1);
+          // T-4: シャッター横筋 + 消防ホース盤 + サイレン + 署名表札
+          n = this.drawShutterSlats(buf, n, cx - bW * 0.22, bot + bH * 0.42, bW * 0.38, bH * 0.56, 0.82, 0.30, 0.25);
+          n = this.drawShutterSlats(buf, n, cx + bW * 0.22, bot + bH * 0.42, bW * 0.38, bH * 0.56, 0.82, 0.30, 0.25);
+          // サイレン (上帯の上)
+          writeInst(buf, n++, cx - bW * 0.30, top + 2, 3, 3, 0.92, 0.22, 0.18, 1, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.30, top + 2, 3, 3, 0.92, 0.22, 0.18, 1, 0, 1);
+          // 消防ホース盤 (扉の間)
+          writeInst(buf, n++, cx, bot + bH * 0.35, 2.2, bH * 0.38, 0.92, 0.82, 0.20, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.35, 1.4, 1.4, 0.40, 0.30, 0.20, 1, 0, 1);
+          // 署名 (白い小看板)
+          writeInst(buf, n++, cx, top + 2, bW * 0.30, 3, 0.95, 0.92, 0.88, 1);
           break;
         }
         case 'police_station': {
@@ -1359,6 +1445,18 @@ export class BuildingManager {
           writeInst(buf, n++, cx, bot + 7, bW * 0.36, 13, 0.68, 0.88, 0.96, 0.80);
           // 基礎帯
           writeInst(buf, n++, cx, bot + 2, bW, 3, cr * 0.65, cg * 0.65, cb * 0.65, 1);
+          // T-4: 回転灯 + 警察紋章 + ドア + 左右の窓
+          writeInst(buf, n++, cx, top + 5, 3.2, 4, 0.95, 0.22, 0.18, 1, 0, 1);
+          writeInst(buf, n++, cx, top + 3, 1.4, 2, 0.40, 0.32, 0.25, 1);
+          // 警察紋章 (金の丸)
+          writeInst(buf, n++, cx, top - 4, 5, 5, 0.95, 0.82, 0.32, 1, 0, 1);
+          writeInst(buf, n++, cx, top - 4, 3.2, 3.2, 0.25, 0.35, 0.68, 1, 0, 1);
+          // 左右の窓
+          writeInst(buf, n++, cx - bW * 0.32, bot + bH * 0.48, 5, bH * 0.35, 0.62, 0.82, 0.94, 0.80);
+          writeInst(buf, n++, cx + bW * 0.32, bot + bH * 0.48, 5, bH * 0.35, 0.62, 0.82, 0.94, 0.80);
+          n = this.drawWindowFrame(buf, n, cx - bW * 0.32, bot + bH * 0.48, 5, bH * 0.35);
+          n = this.drawWindowFrame(buf, n, cx + bW * 0.32, bot + bH * 0.48, 5, bH * 0.35);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 1);
           break;
         }
         case 'train_station': {
@@ -1370,6 +1468,21 @@ export class BuildingManager {
           for (const xOff of [-bW * 0.35, 0, bW * 0.35]) {
             writeInst(buf, n++, cx + xOff, bot + bH * 0.28, 3, bH * 0.56, cr * 0.72, cg * 0.68, cb * 0.58, 1);
           }
+          // T-4: 駅名標 + 時刻表 + エントランスキャノピー + 時計
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
+          // 駅名標 (青地白文字風の白帯)
+          writeInst(buf, n++, cx, top + 3, bW * 0.65, 4.5, 0.22, 0.38, 0.72, 1);
+          writeInst(buf, n++, cx, top + 3, bW * 0.55, 2.5, 0.95, 0.95, 0.95, 0.95);
+          // 時計 (駅名標の上)
+          writeInst(buf, n++, cx, top + 9, 4.5, 4.5, 0.95, 0.92, 0.80, 1, 0, 1);
+          writeInst(buf, n++, cx, top + 9, 3, 0.5, 0.15, 0.12, 0.10, 1);
+          writeInst(buf, n++, cx, top + 9, 0.5, 3, 0.15, 0.12, 0.10, 1);
+          // 時刻表 (右側)
+          writeInst(buf, n++, cx + bW * 0.42, bot + bH * 0.25, 5, 7, 0.30, 0.32, 0.36, 1);
+          writeInst(buf, n++, cx + bW * 0.42, bot + bH * 0.25, 4.2, 6.2, 0.95, 0.92, 0.78, 0.92);
+          for (let r = 0; r < 3; r++) {
+            writeInst(buf, n++, cx + bW * 0.42, bot + bH * 0.25 + 2 - r * 1.5, 3.6, 0.4, 0.15, 0.18, 0.30, 0.85);
+          }
           break;
         }
         case 'movie_theater': {
@@ -1379,6 +1492,18 @@ export class BuildingManager {
           // エントランス（大きなアーチ）
           writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.52, bH * 0.52, 0.22, 0.18, 0.15, 1);
           writeInst(buf, n++, cx, bot + bH * 0.42, bW * 0.46, bH * 0.48, 0.68, 0.58, 0.48, 0.85);
+          // T-4: マーキー電球輪郭 + 電光ポスター×2 + 縦看板
+          // マーキー電球 (水平)
+          for (let i = -3; i <= 3; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.13, top - 8.5, 1, 1, 0.98, 0.92, 0.35, 0.95, 0, 1);
+          }
+          // 電光ポスター 2 枚 (左右)
+          writeInst(buf, n++, cx - bW * 0.42, bot + bH * 0.40, 5, bH * 0.50, 0.25, 0.20, 0.28, 1);
+          writeInst(buf, n++, cx - bW * 0.42, bot + bH * 0.45, 4.2, bH * 0.42, 0.92, 0.32, 0.48, 0.88);
+          writeInst(buf, n++, cx + bW * 0.42, bot + bH * 0.40, 5, bH * 0.50, 0.25, 0.20, 0.28, 1);
+          writeInst(buf, n++, cx + bW * 0.42, bot + bH * 0.45, 4.2, bH * 0.42, 0.35, 0.65, 0.92, 0.88);
+          // 縦看板 (映画題)
+          n = this.drawShopSign(buf, n, cx, top, bW, 3, true);
           break;
         }
         case 'gas_station': {
@@ -1387,6 +1512,21 @@ export class BuildingManager {
           // 給油機（縦棒×2）
           writeInst(buf, n++, cx - bW * 0.28, bot + bH * 0.45, 4, bH * 0.60, 0.55, 0.55, 0.58, 1);
           writeInst(buf, n++, cx + bW * 0.28, bot + bH * 0.45, 4, bH * 0.60, 0.55, 0.55, 0.58, 1);
+          // T-4: 価格看板 + 給油機ホース + 壁面自販機 + 屋根裏灯
+          // 価格看板 (ポール上)
+          writeInst(buf, n++, cx - bW * 0.48, top + 10, 1.5, 18, 0.62, 0.62, 0.65, 1);
+          writeInst(buf, n++, cx - bW * 0.48, top + 16, 8, 6, 0.95, 0.92, 0.80, 1);
+          writeInst(buf, n++, cx - bW * 0.48, top + 17, 6, 1, 0.85, 0.22, 0.22, 0.92);
+          writeInst(buf, n++, cx - bW * 0.48, top + 15, 6, 1, 0.18, 0.25, 0.45, 0.92);
+          // 給油ホース
+          writeInst(buf, n++, cx - bW * 0.28 + 1, bot + bH * 0.25, 0.5, 6, 0.20, 0.20, 0.22, 0.9);
+          writeInst(buf, n++, cx + bW * 0.28 - 1, bot + bH * 0.25, 0.5, 6, 0.20, 0.20, 0.22, 0.9);
+          // 屋根裏灯 (黄色)
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.35, top + 0.5, 3, 1, 0.98, 0.92, 0.45, 0.92);
+          }
+          // 壁面自販機
+          n = this.drawVendingMachineInset(buf, n, cx + bW * 0.48, bot + 5);
           break;
         }
         // ── 1-D ランドマーク ───────────────────────────────────────
@@ -1401,6 +1541,16 @@ export class BuildingManager {
           writeInst(buf, n++, cx, bot + bH * 0.30, bW - 2, bH * 0.60, cr * 0.88, cg * 0.82, cb * 0.68, 1);
           // ピナクル（尖頭）
           writeInst(buf, n++, cx, top + 6, 3, 12, cr * 0.72, cg * 0.68, cb * 0.54, 1);
+          // T-4: 時計文字盤マーク (12/3/6/9) + 分針 + 四隅の小装飾
+          // 文字盤マーク
+          writeInst(buf, n++, cx, top - bH * 0.15 - bW * 0.38, 1.4, 1.4, 0.15, 0.12, 0.10, 1);
+          writeInst(buf, n++, cx, top - bH * 0.15 + bW * 0.38, 1.4, 1.4, 0.15, 0.12, 0.10, 1);
+          writeInst(buf, n++, cx - bW * 0.38, top - bH * 0.15, 1.4, 1.4, 0.15, 0.12, 0.10, 1);
+          writeInst(buf, n++, cx + bW * 0.38, top - bH * 0.15, 1.4, 1.4, 0.15, 0.12, 0.10, 1);
+          // 分針 (縦)
+          writeInst(buf, n++, cx, top - bH * 0.15 - bW * 0.18, 1, bW * 0.42, 0.18, 0.15, 0.15, 1);
+          // ベランダ (時計面の下)
+          writeInst(buf, n++, cx, cy - bH * 0.05, bW + 1, 1.2, cr * 0.62, cg * 0.58, cb * 0.48, 1);
           break;
         }
         case 'radio_tower': {
@@ -1750,6 +1900,27 @@ export class BuildingManager {
           writeInst(buf, n++, cx + bW * 0.38, top + 5, 1.5, 10, cr * 0.65, cg * 0.55, cb * 0.35, 1);
           writeInst(buf, n++, cx - bW * 0.38 + 5, top + 9, 8, 4, 0.88, 0.18, 0.18, 1);
           writeInst(buf, n++, cx + bW * 0.38 + 5, top + 9, 8, 4, 0.20, 0.38, 0.88, 1);
+          // T-4: 垂れ幕×3 + 屋上広告塔 + 屋上クラッター + エントランスキャノピー
+          // 垂れ幕 (SALE/OPEN/NEW)
+          const banColors: Array<[number, number, number]> = [[0.92, 0.22, 0.22], [0.20, 0.55, 0.82], [0.92, 0.72, 0.15]];
+          for (let i = 0; i < 3; i++) {
+            const bcx = cx - bW * 0.30 + i * (bW * 0.30);
+            const [br, bg, bb] = banColors[i];
+            writeInst(buf, n++, bcx, bot + dsFlH * 2.2, 5, dsFlH * 1.8, br, bg, bb, 0.95);
+            writeInst(buf, n++, bcx, bot + dsFlH * 2.2, 4.2, dsFlH * 1.6, 0.98, 0.95, 0.88, 0.85);
+            // 垂れ幕下端のフリル
+            writeInst(buf, n++, bcx, bot + dsFlH * 2.2 - dsFlH * 0.88, 5, 1.2, br * 0.82, bg * 0.82, bb * 0.82, 1);
+          }
+          // 屋上広告塔
+          writeInst(buf, n++, cx, top + 12, 4, 18, cr * 0.52, cg * 0.42, cb * 0.22, 1);
+          writeInst(buf, n++, cx, top + 20, 16, 6, 0.95, 0.22, 0.22, 1);
+          writeInst(buf, n++, cx, top + 20, 14, 4, 0.98, 0.95, 0.88, 0.92);
+          // 屋上クラッター
+          const dsSeed = Math.abs(Math.floor(cx * 13.7 + bot * 7.3));
+          n = this.drawFlatRoofClutter(buf, n, cx - bW * 0.30, top, bW * 0.35, dsSeed);
+          n = this.drawFlatRoofClutter(buf, n, cx + bW * 0.30, top, bW * 0.35, dsSeed + 7);
+          // エントランスキャノピー
+          n = this.drawEntranceCanopy(buf, n, cx, bot, bW);
           break;
         }
       }
