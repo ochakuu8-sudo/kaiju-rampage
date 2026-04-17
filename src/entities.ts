@@ -986,6 +986,17 @@ export class BuildingManager {
           // 山門
           writeInst(buf, n++, cx, bot + 6, bW * 0.30, 11,
             cr * 0.38, cg * 0.28, cb * 0.20, 1);
+          // T-5: 瓦筋 + 鬼瓦 + 提灯列 + 石段 + 柱
+          n = this.drawRoofTile(buf, n, cx, top - 5, bW + 8, 10, cr * 0.50, cg * 0.45, cb * 0.35, 1);
+          n = this.drawTileRoofCurl(buf, n, cx, top - 5, bW + 8, false);
+          n = this.drawChouchinRow(buf, n, cx, bot + bH * 0.78, bW * 0.75, 5);
+          // 石段
+          for (let i = 0; i < 4; i++) {
+            writeInst(buf, n++, cx, bot - 0.5 - i * 1.0, bW * 0.55 - i * 2.2, 1.0, 0.72, 0.68, 0.60, 0.95);
+          }
+          // 左右の朱塗り柱
+          writeInst(buf, n++, cx - bW * 0.20, bot + 8, 1.8, 14, 0.75, 0.28, 0.18, 1);
+          writeInst(buf, n++, cx + bW * 0.20, bot + 8, 1.8, 14, 0.75, 0.28, 0.18, 1);
           break;
         }
         case 'parking': {
@@ -1719,6 +1730,16 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top + 3, 1.5, 8, 0.85, 0.70, 0.30, 1);
           writeInst(buf, n++, cx, top + 1, 4, 1.5, 0.88, 0.75, 0.35, 1);
           writeInst(buf, n++, cx, top + 4, 4, 1.5, 0.88, 0.75, 0.35, 1);
+          // T-5: 風鐸 (各層の四隅の小装飾) + 下層基壇
+          for (let i = 0; i < 5; i++) {
+            const ly = bot + (bH / 5.5) * 0.5 + i * (bH / 5.5);
+            const lw = bW - i * (bW * 0.12);
+            writeInst(buf, n++, cx - lw * 0.5 - 0.5, ly + (bH / 5.5) * 0.42, 1, 2.2, 0.85, 0.70, 0.25, 1);
+            writeInst(buf, n++, cx + lw * 0.5 + 0.5, ly + (bH / 5.5) * 0.42, 1, 2.2, 0.85, 0.70, 0.25, 1);
+          }
+          // 基壇
+          writeInst(buf, n++, cx, bot - 0.8, bW + 4, 1.8, 0.72, 0.68, 0.60, 1);
+          writeInst(buf, n++, cx, bot - 2.2, bW + 6, 1.4, 0.62, 0.58, 0.52, 1);
           break;
         }
         case 'ryokan': {
@@ -1744,6 +1765,13 @@ export class BuildingManager {
           // 暖簾玄関
           writeInst(buf, n++, cx, bot + 5, bW * 0.18, 10, 0.20, 0.30, 0.55, 1);
           writeInst(buf, n++, cx, bot + 2, bW * 0.22, 2, 0.35, 0.28, 0.20, 1);
+          // T-5: 鬼瓦 + 提灯列 + 縦看板 + 右端の庭石
+          n = this.drawTileRoofCurl(buf, n, cx, top - 4, bW + 6, false);
+          n = this.drawChouchinRow(buf, n, cx, bot + bH * 0.88, bW * 0.70, 4);
+          n = this.drawShopSign(buf, n, cx, top, bW, 1, true);
+          // 庭石 (右)
+          writeInst(buf, n++, cx + bW * 0.46, bot + 2, 3, 3, 0.45, 0.42, 0.38, 1, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.46, bot + 4, 1.8, 1.8, 0.32, 0.30, 0.26, 1, 0, 1);
           break;
         }
         case 'kominka': {
@@ -1760,6 +1788,18 @@ export class BuildingManager {
           writeInst(buf, n++, cx, bot + bH * 0.40, 3, bH * 0.40, 0.35, 0.22, 0.14, 0.9);
           writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.55, 4, 4, 0.60, 0.78, 0.82, 0.85);
           writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.55, 4, 4, 0.60, 0.78, 0.82, 0.85);
+          // T-5: 鬼瓦 + 煙突 + 窓枠 + 外階段 + 屋根棟の茅束
+          n = this.drawTileRoofCurl(buf, n, cx, top - 4, bW + 4, false);
+          // 煙突
+          writeInst(buf, n++, cx - bW * 0.25, top + 2, 2, 6, 0.40, 0.32, 0.22, 1);
+          writeInst(buf, n++, cx - bW * 0.25, top + 5, 2.8, 1, 0.22, 0.18, 0.12, 1);
+          // 茅束 (屋根の棟)
+          for (let i = -2; i <= 2; i++) {
+            writeInst(buf, n++, cx + i * 4, top - 1, 2.4, 1.4, 0.42, 0.32, 0.18, 0.85);
+          }
+          n = this.drawWindowFrame(buf, n, cx - bW * 0.25, bot + bH * 0.55, 4, 4);
+          n = this.drawWindowFrame(buf, n, cx + bW * 0.25, bot + bH * 0.55, 4, 4);
+          n = this.drawStairs(buf, n, cx + bW * 0.42, bot + 1, 4);
           break;
         }
         case 'chaya': {
@@ -1775,6 +1815,19 @@ export class BuildingManager {
           writeInst(buf, n++, cx, bot + 4, bW * 0.82, 3, 0.45, 0.30, 0.18, 1);
           writeInst(buf, n++, cx - bW * 0.30, bot + 1, 2, 4, 0.35, 0.22, 0.12, 1);
           writeInst(buf, n++, cx + bW * 0.30, bot + 1, 2, 4, 0.35, 0.22, 0.12, 1);
+          // T-5: 鬼瓦 + 提灯列 + 軒下看板 + 湯呑のお茶装飾
+          n = this.drawTileRoofCurl(buf, n, cx, top - 2, bW + 4, false);
+          n = this.drawChouchinRow(buf, n, cx, bot + bH * 0.82, bW * 0.80, 3);
+          // 軒下の縦看板 (「茶」)
+          writeInst(buf, n++, cx - bW * 0.42, cy + bH * 0.05, 3.5, bH * 0.40, 0.25, 0.18, 0.12, 1);
+          writeInst(buf, n++, cx - bW * 0.42, cy + bH * 0.05, 2.8, bH * 0.34, 0.85, 0.75, 0.55, 0.92);
+          // 縁台の上の湯呑 (小さな円)
+          writeInst(buf, n++, cx - bW * 0.20, bot + 6, 1.5, 1.5, 0.88, 0.82, 0.72, 1, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.20, bot + 6, 1.5, 1.5, 0.88, 0.82, 0.72, 1, 0, 1);
+          // 暖簾下端のフリル (既存 3 枚の下)
+          for (const xOff of [-bW * 0.28, 0, bW * 0.28]) {
+            writeInst(buf, n++, cx + xOff, bot + bH * 0.37, bW * 0.23, 0.8, 0.70, 0.20, 0.15, 1);
+          }
           break;
         }
         // ── テーマパーク・祭り (Stage 5) ──────────────────────────
