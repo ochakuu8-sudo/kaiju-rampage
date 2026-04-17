@@ -139,7 +139,7 @@ export const MAX_PARTICLES = 2000;
 
 // ===== バンパー =====
 export const BUMPER_RADIUS = 18;
-export const BUMPER_SCORE = 20;
+export const BUMPER_SCORE = 1;
 export const BUMPER_FORCE = 14;
 
 // ===== コンボ =====
@@ -147,19 +147,11 @@ export const COMBO_TIMEOUT = 1.0;
 export const COMBO_SLOW_THRESHOLD = 5;
 export const COMBO_MAX = 10;
 
-// ===== スコア演出（HUDロールアップ + ティッカー音） =====
-// displayedScore が targetScore に追従する速度係数
-// （差分 × dt × この値 を毎フレーム加算）
-export const SCORE_ROLLUP_SPEED = 8;
-// 差分が小さくても止まらないよう、1フレーム最低この量は動かす
-export const SCORE_ROLLUP_MIN_STEP = 1;
+// ===== スコア演出（ティッカー音） =====
 // コンボ1回ごとにティッカー音のピッチを何倍上げるか
 export const SCORE_TICK_PITCH_STEP = 0.06;
 // ピッチの上限倍率
 export const SCORE_TICK_PITCH_MAX = 2.5;
-// 加算が途切れてからバッファを committedTotal に吸収するまでの待ち時間(秒)
-// この時間経過後にドラムロール式ロールアップが開始する
-export const SCORE_ABSORB_DELAY = 0.5;
 
 // ===== ジュース: シェイク =====
 export const SHAKE_HUMAN_AMP   = 1.5;

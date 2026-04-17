@@ -213,9 +213,6 @@ export class Game {
 
     this.ui.setTimer(this.timeRemaining);
 
-    // HUDスコアのロールアップ追従（hitstop の影響を受けないよう rawDt）
-    this.ui.tickScore(rawDt);
-
     // コンボタイマー: 一定時間加算が無ければピッチを1.0に戻す
     this.comboTimer -= rawDt;
     if (this.comboTimer <= 0) this.comboCount = 0;
