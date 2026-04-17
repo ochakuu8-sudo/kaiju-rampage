@@ -656,6 +656,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('hedge',-90,195),_F('hedge',90,195),
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('car',-130,92),_F('car',30,92),_F('car',115,92),
+      // T-9: 朝の住宅街ディテール追加
+      _F('post_letter_box',-170,92),_F('post_letter_box',170,92),
+      _F('laundry_balcony',-140,125),_F('laundry_balcony',55,125),_F('laundry_balcony',140,125),
+      _F('flower_planter_row',-60,42),_F('flower_planter_row',22,42),_F('flower_planter_row',140,158),
+      _F('ac_outdoor_cluster',-108,115),_F('ac_outdoor_cluster',108,158),
+      _F('power_line',-90,45),_F('power_line',-90,155),_F('power_line',90,45),_F('power_line',90,155),
+      _F('manhole_cover',-45,100),_F('manhole_cover',45,100),
     ],
     humans: [
       _H(-140,45),_H(-25,45),_H(55,45),_H(140,45),
@@ -729,6 +736,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('hedge',-90,195),_F('hedge',90,195),
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('car',-140,92),_F('car',60,92),_F('car',155,92),
+      // T-9: コンビニ周辺の都市ディテール
+      _F('kerbside_vending_pair',-130,92),_F('kerbside_vending_pair',55,92),_F('kerbside_vending_pair',145,92),
+      _F('bicycle_row',-108,95),_F('bicycle_row',20,95),_F('bicycle_row',115,95),
+      _F('puddle_reflection',-60,100),_F('puddle_reflection',80,100),
+      _F('manhole_cover',-30,100),_F('manhole_cover',30,100),_F('manhole_cover',115,100),
+      _F('cable_junction_box',-170,100),_F('cable_junction_box',170,100),
+      _F('power_line',-90,45),_F('power_line',90,155),
     ],
     humans: [_H(-130,75),_H(-40,92),_H(30,92),_H(120,92),_H(-105,155),_H(75,145),_H(-25,180),_H(140,175),_H(-140,45),_H(30,45),_H(0,60),_H(0,160),_H(-170,8),_H(170,195)],
     grounds: [
@@ -793,6 +807,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp',-90,193),_F('street_lamp',90,193),
       _F('traffic_light',-90,185),_F('traffic_light',90,185),
       _F('car',-130,92),_F('car',65,92),_F('car',155,92),
+      // T-9: 保育園/診療所周辺の歩道橋 + 緑化
+      _F('pedestrian_bridge',0,145),
+      _F('bicycle_row',-125,95),_F('bicycle_row',-55,95),_F('bicycle_row',115,95),
+      _F('flower_planter_row',-20,42),_F('flower_planter_row',30,105),_F('flower_planter_row',108,140),
+      _F('guardrail_short',-50,100),_F('guardrail_short',50,100),
+      _F('manhole_cover',-90,100),_F('manhole_cover',90,100),
+      _F('taxi_rank_sign',115,100),
     ],
     humans: [_H(-125,90),_H(-55,92),_H(30,92),_H(115,92),_H(-105,140),_H(75,150),_H(140,175),_H(-30,180),_H(0,60),_H(160,60),_H(-170,8),_H(170,8)],
     grounds: [
