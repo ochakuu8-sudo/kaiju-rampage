@@ -1323,7 +1323,7 @@ export class FurnitureManager {
     for (const d of defs) {
       this.items.push({
         type: d.type, x: d.x, y: d.y,
-        hp: 1, active: true, score: 1,
+        hp: 1, active: true, score: 5,
         lightTimer: LIGHT_DURATIONS[0], lightState: 0,
         chunkId,
       });
