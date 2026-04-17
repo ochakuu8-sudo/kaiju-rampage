@@ -600,23 +600,49 @@ const _TOP_HR = _HR(200, -180, 180);       // 上端クロス街路 (クロス�
 // 座標指定して "超絶ハイクオリティミニチュア" を構成する。
 // 縦スパイン (x=-90/0/+90) は全チャンクで連続、道路は決して途切れない。
 const STAGE_1_TEMPLATES: ChunkTemplate[] = [
-  // 0: 住宅街入口 — 芝生の庭が並ぶ閑静な郊外
+  // 0: 閑静な住宅街入口 — 芝生の庭 + 土の小径 + コンクリ駐車 (raw 配置)
   {
-    patternId: 's1_suburb_row',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'house_trio_garden' },
-      { row: 0, col: 1, sceneId: 'house_trio_garden' },
-      { row: 0, col: 2, sceneId: 'house_konbini' },
-      { row: 0, col: 3, sceneId: 'garden_shed' },
-      { row: 1, col: 0, sceneId: 'house_trio_garden' },
-      { row: 1, col: 1, sceneId: 'house_garage' },
-      { row: 1, col: 2, sceneId: 'house_trio_garden' },
-      { row: 1, col: 3, sceneId: 'garden_shed' },
-    ],
-    groundGrid: [
-      ['grass', 'grass', 'concrete', 'dirt'],
-      ['grass', 'dirt',  'grass',    'dirt'],
-    ],
+    patternId: 's1_raw',
+    raw: {
+      buildings: [
+        _B('house', -160, 80), _B('house', -130, 80), _B('shed', -108, 85),
+        _B('house',  -65, 80), _B('greenhouse', -30, 82),
+        _B('shed',    20, 85), _B('house',      55, 80),
+        _B('house',  115, 80), _B('garage',    150, 83), _B('shed', 175, 85),
+        _B('house', -165, 125), _B('house',    -135, 125), _B('house',   -108, 125),
+        _B('house',  -65, 125), _B('greenhouse', -30, 127),
+        _B('townhouse', 25, 129), _B('townhouse', 55, 129),
+        _B('house',  115, 125), _B('house',    145, 125), _B('shed',    175, 118),
+      ],
+      furniture: [
+        _F('tree', -175, 30), _F('tree', -145, 30), _F('flower_bed', -170, 60),
+        _F('mailbox', -150, 92), _F('wood_fence', -90, 40), _F('wood_fence', -90, 55),
+        _F('tree', -50, 35), _F('bicycle', -25, 90), _F('potted_plant', -15, 88),
+        _F('tree', 15, 35), _F('tree', 45, 35), _F('flower_bed', 30, 55),
+        _F('tree', 105, 30), _F('mailbox', 130, 90), _F('car', 158, 72),
+        _F('tree', -170, 170), _F('laundry_pole', -150, 140), _F('tree', -115, 170),
+        _F('tree', -50, 170), _F('wood_fence', -10, 145), _F('potted_plant', -35, 115),
+        _F('tree', 15, 170), _F('bicycle', 50, 115), _F('tree', 80, 170),
+        _F('tree', 110, 170), _F('mailbox', 130, 115), _F('tree', 145, 170),
+        _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      ],
+      humans: [
+        _H(-120, 75), _H(-50, 92), _H(40, 110), _H(130, 80),
+        _H(-100, 150), _H(80, 140), _H(-30, 180), _H(140, 175), _H(0, 60), _H(0, 160),
+      ],
+      grounds: [
+        _G('grass', 0, 46.5, 360, 93),
+        _G('grass', 0, 153.5, 360, 93),
+        _G('dirt',     -130, 55, 50, 25),
+        _G('concrete',   60, 70, 40, 15),
+        _G('concrete',  150, 75, 30, 20),
+        _G('dirt',     -110, 140, 30, 20),
+        _G('concrete',   30, 170, 40, 20),
+        _G('dirt',      140, 165, 40, 25),
+      ],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [..._SPINE_V],
+    },
   },
   // 1: 住宅 + 車庫の並び
   {
