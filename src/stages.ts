@@ -776,23 +776,42 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 5: 駅前広場 — ランドマーク shopping_mall_plaza (merged)
-  {
-    patternId: 's1_station_plaza',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'gas_station_corner' },
-      { row: 0, col: 1, sceneId: 'house_konbini' },
-      { row: 0, col: 2, sceneId: 'laundromat_pharmacy' },
-      { row: 0, col: 3, sceneId: 'cafe_bookstore' },
-      { row: 1, col: 0, sceneId: 'shop_parasol_row' },
-      // row 1 col 1-2 merged = shopping_mall_plaza (pattern default)
-      { row: 1, col: 3, sceneId: 'clinic_daycare' },
+  // 5: 駅前広場ランドマーク — 駅舎 + 百貨店 + 時計塔 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('gas_station',-160,83),_B('convenience',-125,82),_B('pharmacy',-100,80),
+      _B('post_office',-50,80),_B('bank',-25,77),
+      _B('train_station',45,75),
+      _B('cafe',110,80),_B('bookstore',140,80),_B('florist',170,81),
+      _B('clock_tower',-150,135),_B('apartment',-120,125),
+      _B('department_store',-30,125),
+      _B('movie_theater',50,125),
+      _B('hospital',125,128),_B('convenience',170,127),
     ],
-    groundGrid: [
-      ['asphalt',  'concrete', 'concrete', 'tile' ],
-      ['concrete', 'tile',     'tile',     'tile' ],
+    furniture: [
+      _F('sign_board',-160,95),_F('traffic_light',-90,92),_F('traffic_light',90,92),
+      _F('bus_stop',-50,92),_F('post_box',-25,92),_F('atm',-25,87),
+      _F('bus_stop',45,92),_F('bench',25,90),_F('bench',65,90),
+      _F('flag_pole',45,60),_F('statue',45,50),_F('fountain',0,45),
+      _F('tree',-175,40),_F('tree',105,40),_F('tree',170,40),_F('tree',-170,60),
+      _F('flag_pole',-150,110),
+      _F('flower_bed',-30,115),_F('flower_bed',50,115),
+      _F('tree',-175,170),_F('tree',175,170),_F('bench',-80,170),_F('bench',80,170),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('newspaper_stand',30,92),_F('telephone_booth',-55,115),
+      _F('banner_pole',-30,140),_F('banner_pole',50,140),
     ],
-  },
+    humans: [_H(-120,90),_H(-50,92),_H(0,92),_H(45,90),_H(80,92),_H(130,92),_H(170,92),_H(-120,115),_H(-30,115),_H(50,115),_H(125,115),_H(170,115),_H(0,60),_H(45,50),_H(-80,170),_H(80,170)],
+    grounds: [
+      _G('concrete',0,46.5,360,93),_G('tile',0,153.5,360,93),
+      _G('asphalt',-160,80,40,25),
+      _G('tile',-25,78,50,30),_G('tile',45,75,80,45),
+      _G('concrete',-90,46.5,40,93),_G('concrete',90,46.5,40,93),
+      _G('tile',-30,125,90,50),_G('tile',50,125,70,50),_G('tile',125,128,60,50),
+      _G('stone_pavement',0,130,18,50),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 6: 商店街後半 — 駅前を過ぎて再び店舗
   {
     patternId: 's1_shopping_street',
