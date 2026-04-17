@@ -999,24 +999,43 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 11: Stage 2 への橋渡し — 夜の営業店舗 + ガソスタでネオン予感
-  {
-    patternId: 's1_suburb_row',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'ramen_izakaya' },
-      { row: 0, col: 1, sceneId: 'gas_station_corner' },
-      { row: 0, col: 2, sceneId: 'laundromat_pharmacy' },
-      { row: 0, col: 3, sceneId: 'konbini_corner' },
-      { row: 1, col: 0, sceneId: 'house_konbini' },
-      { row: 1, col: 1, sceneId: 'cafe_bookstore' },
-      { row: 1, col: 2, sceneId: 'ramen_izakaya' },
-      { row: 1, col: 3, sceneId: 'gas_station_corner' },
+  // 11: Stage 2 への橋渡し — 夜営業のガソスタ・パチンコでネオン予感 (raw)
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      _B('ramen',-165,80),_B('izakaya',-140,79),_B('gas_station',-115,83),
+      _B('pachinko',-50,78),
+      _B('karaoke',30,78),_B('convenience',75,82),
+      _B('izakaya',108,79),_B('gas_station',145,83),_B('convenience',175,82),
+      _B('izakaya',-165,125),_B('ramen',-140,125),_B('convenience',-110,127),
+      _B('karaoke',-55,127),_B('ramen',-20,125),
+      _B('pachinko',35,127),
+      _B('ramen',108,125),_B('izakaya',140,125),_B('convenience',175,127),
     ],
-    groundGrid: [
-      ['asphalt',  'asphalt',   'concrete', 'asphalt'],
-      ['concrete', 'wood_deck', 'asphalt',  'asphalt'],
+    furniture: [
+      _F('chouchin',-165,92),_F('noren',-140,92),_F('sign_board',-115,92),
+      _F('chouchin',-50,92),_F('vending',-85,90),
+      _F('chouchin',30,92),_F('sign_board',75,92),
+      _F('chouchin',108,92),_F('sign_board',145,92),_F('vending',175,90),
+      _F('chouchin',-165,115),_F('noren',-140,115),_F('sign_board',-110,115),
+      _F('chouchin',-55,115),_F('noren',-20,115),
+      _F('chouchin',35,115),_F('banner_pole',35,145),
+      _F('chouchin',108,115),_F('noren',140,115),_F('sign_board',175,115),
+      _F('traffic_cone',-115,95),_F('traffic_cone',145,95),
+      _F('dumpster',0,50),_F('dumpster',0,160),
+      _F('street_lamp',-90,100),_F('street_lamp',90,100),
+      _F('telephone_booth',-85,155),_F('telephone_booth',85,50),
+      _F('garbage',-170,170),_F('garbage',170,170),
     ],
-  },
+    humans: [_H(-145,92),_H(-50,92),_H(30,92),_H(120,92),_H(-140,115),_H(-55,115),_H(-20,115),_H(35,115),_H(120,115),_H(170,115),_H(0,60),_H(0,170)],
+    grounds: [
+      _G('asphalt',0,46.5,360,93),_G('asphalt',0,153.5,360,93),
+      _G('concrete',-115,80,40,25),_G('concrete',145,80,40,25),
+      _G('tile',-50,77,35,30),_G('tile',30,77,30,30),
+      _G('tile',-55,128,35,33),_G('tile',35,128,35,33),
+      _G('concrete',75,82,30,20),_G('concrete',175,127,30,30),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
 ];
 
 // ─── Stage 2: 繁華街・夜の街 (10 チャンク) ────────────────────
