@@ -1414,6 +1414,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('tree',-90,45),_F('tree',90,45),_F('tree',-90,170),_F('tree',90,170),
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('fire_extinguisher',-45,95),_F('bicycle_rack',115,92),
+      // T-14: 町家密集 — 物干し + 小物 + マンホール
+      _F('laundry_balcony',-140,125),_F('laundry_balcony',-55,125),
+      _F('laundry_balcony',105,125),_F('laundry_balcony',155,125),
+      _F('manhole_cover',-90,100),_F('manhole_cover',0,100),_F('manhole_cover',90,100),
+      _F('post_letter_box',-45,92),_F('post_letter_box',115,92),
+      _F('potted_plant',-115,60),_F('potted_plant',55,60),_F('potted_plant',-55,55),
+      _F('flower_planter_row',-140,170),_F('flower_planter_row',55,170),
     ],
     humans: [_H(-130,92),_H(-45,85),_H(35,92),_H(115,85),_H(-130,115),_H(-60,115),_H(-25,115),_H(35,115),_H(120,115),_H(160,115),_H(0,50),_H(0,170)],
     grounds: [
@@ -1474,6 +1481,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp',-90,100),_F('street_lamp',90,100),
       _F('telephone_booth',-85,155),_F('telephone_booth',85,50),
       _F('garbage',-170,170),_F('garbage',170,170),
+      // T-14: Stage 2 への橋渡し — 踏切 + 信号塔 + 反射水たまり + 電線
+      _F('railroad_crossing',0,95),
+      _F('signal_tower',-150,95),_F('signal_tower',150,95),
+      _F('puddle_reflection',-45,100),_F('puddle_reflection',45,100),
+      _F('puddle_reflection',-90,160),_F('puddle_reflection',90,160),
+      _F('cable_junction_box',-170,45),_F('cable_junction_box',170,45),
+      _F('cable_junction_box',-170,155),_F('cable_junction_box',170,155),
+      _F('power_line',-90,45),_F('power_line',-90,155),
+      _F('power_line',90,45),_F('power_line',90,155),
     ],
     humans: [_H(-145,92),_H(-50,92),_H(30,92),_H(120,92),_H(-140,115),_H(-55,115),_H(-20,115),_H(35,115),_H(120,115),_H(170,115),_H(0,60),_H(0,170)],
     grounds: [
