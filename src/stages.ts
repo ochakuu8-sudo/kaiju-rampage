@@ -1281,17 +1281,39 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 10: 町家密集 — 消防署と警察署 + 町家連続 (raw)
+  // 10: 町家密集 — 消防署と警察署 + 町家連続 6 列大密度化 (raw)
   { patternId: 's1_raw', raw: {
     buildings: [
+      // 下段 前列 (y=22)
+      _B('townhouse',-170,22),_B('townhouse',-145,22),_B('townhouse',-120,22),
+      _B('townhouse',-55,22),_B('kominka',-25,22),
+      _B('kominka',25,22),_B('townhouse',55,22),
+      _B('townhouse',105,22),_B('townhouse',130,22),_B('townhouse',155,22),_B('townhouse',178,22),
+      // 下段 中列 (y=55)
+      _B('kominka',-170,55),_B('townhouse',-140,55),_B('townhouse',-115,55),
+      _B('townhouse',-55,55),_B('kominka',-20,55),
+      _B('kominka',20,55),_B('townhouse',55,55),
+      _B('townhouse',110,55),_B('townhouse',135,55),_B('kominka',170,55),
+      // 下段 後列 (y=82)
       _B('townhouse',-165,82),_B('townhouse',-140,82),_B('townhouse',-115,82),
       _B('fire_station',-45,78),
       _B('mansion',35,79),
       _B('police_station',115,77),_B('townhouse',155,82),_B('townhouse',178,82),
+      // 上段 前列 (y=125)
       _B('townhouse',-165,125),_B('townhouse',-140,125),_B('townhouse',-115,125),
       _B('kominka',-60,124),_B('townhouse',-25,125),
       _B('mansion',35,127),
       _B('townhouse',105,125),_B('townhouse',130,125),_B('townhouse',155,125),_B('townhouse',178,125),
+      // 上段 中列 (y=158)
+      _B('kominka',-170,158),_B('townhouse',-140,158),_B('townhouse',-115,158),
+      _B('townhouse',-55,158),_B('kominka',-20,158),
+      _B('kominka',20,158),_B('townhouse',55,158),
+      _B('townhouse',110,158),_B('townhouse',135,158),_B('kominka',170,158),
+      // 上段 後列 (y=184)
+      _B('townhouse',-170,184),_B('townhouse',-145,184),_B('townhouse',-120,184),
+      _B('townhouse',-55,184),_B('kominka',-25,184),
+      _B('kominka',25,184),_B('townhouse',55,184),
+      _B('townhouse',105,184),_B('townhouse',130,184),_B('townhouse',155,184),_B('townhouse',178,184),
     ],
     furniture: [
       _F('wood_fence',-130,92),_F('wood_fence',-100,92),_F('potted_plant',-165,92),
