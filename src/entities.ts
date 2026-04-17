@@ -1697,7 +1697,19 @@ export type FurnitureType =
   // テーマパーク・祭り (Stage 5)
   'balloon_cluster' | 'ticket_booth' | 'matsuri_drum' | 'popcorn_cart' |
   // キャラクター
-  'cat';
+  'cat' |
+  // ── Stage 1 ミニチュア強化 (T-6) ──
+  // 住宅・路地
+  'ac_outdoor_cluster' | 'power_line' | 'laundry_balcony' | 'kerbside_vending_pair' |
+  'post_letter_box' | 'flower_planter_row' | 'guardrail_short' |
+  // 駅前・交通
+  'railway_track' | 'platform_edge' | 'railroad_crossing' | 'pedestrian_bridge' |
+  'signal_tower' | 'plaza_tile_circle' | 'fountain_large' | 'taxi_rank_sign' |
+  // 神社強化
+  'sando_stone_pillar' | 'ema_wall' | 'omikuji_stand' | 'shrine_fence_red' |
+  'bamboo_water_fountain' |
+  // 路面ディテール
+  'puddle_reflection' | 'manhole_cover' | 'cable_junction_box' | 'bicycle_row';
 
 export interface FurnitureItem {
   type: FurnitureType;
@@ -1795,6 +1807,31 @@ const FURNITURE_HW: Record<FurnitureType, number> = {
   matsuri_drum:     6,
   popcorn_cart:     5,
   cat:              3,
+  // ── Stage 1 ミニチュア強化 (T-6) ──
+  ac_outdoor_cluster:   5,
+  power_line:           20,
+  laundry_balcony:      5,
+  kerbside_vending_pair: 6,
+  post_letter_box:      1.5,
+  flower_planter_row:   8,
+  guardrail_short:      6,
+  railway_track:        10,
+  platform_edge:        15,
+  railroad_crossing:    5,
+  pedestrian_bridge:    10,
+  signal_tower:         2.5,
+  plaza_tile_circle:    20,
+  fountain_large:       12,
+  taxi_rank_sign:       2,
+  sando_stone_pillar:   2,
+  ema_wall:             9,
+  omikuji_stand:        4,
+  shrine_fence_red:     8,
+  bamboo_water_fountain: 2.5,
+  puddle_reflection:    4,
+  manhole_cover:        2.5,
+  cable_junction_box:   2.5,
+  bicycle_row:          12,
 };
 const FURNITURE_HH: Record<FurnitureType, number> = {
   tree:             C.TREE_H / 2,
@@ -1878,6 +1915,31 @@ const FURNITURE_HH: Record<FurnitureType, number> = {
   matsuri_drum:     5,
   popcorn_cart:     6,
   cat:              2,
+  // ── Stage 1 ミニチュア強化 (T-6) ──
+  ac_outdoor_cluster:   2,
+  power_line:           0.3,
+  laundry_balcony:      2.5,
+  kerbside_vending_pair: 5,
+  post_letter_box:      3,
+  flower_planter_row:   2,
+  guardrail_short:      1,
+  railway_track:        1.5,
+  platform_edge:        1,
+  railroad_crossing:    5,
+  pedestrian_bridge:    4,
+  signal_tower:         7.5,
+  plaza_tile_circle:    20,
+  fountain_large:       12,
+  taxi_rank_sign:       5,
+  sando_stone_pillar:   5,
+  ema_wall:             3,
+  omikuji_stand:        3,
+  shrine_fence_red:     1.5,
+  bamboo_water_fountain: 4,
+  puddle_reflection:    2,
+  manhole_cover:        2.5,
+  cable_junction_box:   3,
+  bicycle_row:          3,
 };
 
 // Traffic light cycle durations per state (seconds)
@@ -2573,6 +2635,246 @@ export class FurnitureManager {
           // タイヤ
           writeInst(buf, n++, item.x - 3, item.y + 5, 2.5, 2, 0.12, 0.10, 0.10, 1, 0, 1);
           writeInst(buf, n++, item.x + 3, item.y + 5, 2.5, 2, 0.12, 0.10, 0.10, 1, 0, 1);
+          break;
+        }
+        // ── Stage 1 ミニチュア強化 (T-6) ───────────────────────────
+        case 'ac_outdoor_cluster': {
+          // 路地の壁際に並ぶ室外機 3 基
+          writeInst(buf, n++, item.x + 1, item.y - 1, 11, 5, 0, 0, 0, 0.20);
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, item.x + i * 3.2, item.y, 2.8, 3.5, 0.72, 0.72, 0.70, 1);
+            writeInst(buf, n++, item.x + i * 3.2, item.y, 2.4, 0.5, 0.48, 0.48, 0.48, 0.9);
+          }
+          // 配管 (上部の横帯)
+          writeInst(buf, n++, item.x, item.y - 2, 9, 0.6, 0.40, 0.40, 0.38, 0.85);
+          break;
+        }
+        case 'power_line': {
+          // 電線: 2 本の水平線 (半透明)
+          writeInst(buf, n++, item.x, item.y - 0.3, 40, 0.25, 0.15, 0.12, 0.08, 0.75);
+          writeInst(buf, n++, item.x, item.y + 0.3, 40, 0.25, 0.15, 0.12, 0.08, 0.75);
+          // 中央のたるみ
+          writeInst(buf, n++, item.x, item.y, 12, 0.35, 0.18, 0.14, 0.10, 0.60);
+          break;
+        }
+        case 'laundry_balcony': {
+          // 物干し竿 + 4 着の洗濯物
+          writeInst(buf, n++, item.x, item.y - 2, 10, 0.5, 0.55, 0.52, 0.48, 1); // 竿
+          const palette: [number, number, number][] = [
+            [0.95, 0.95, 0.92], [0.72, 0.82, 0.92], [0.92, 0.70, 0.28], [0.85, 0.35, 0.35],
+          ];
+          for (let i = 0; i < 4; i++) {
+            const [r, g, b] = palette[i];
+            writeInst(buf, n++, item.x - 3.5 + i * 2.3, item.y + 0.3, 1.8, 3, r, g, b, 0.95);
+          }
+          break;
+        }
+        case 'kerbside_vending_pair': {
+          // 自販機 2 台並び (青+赤)
+          writeInst(buf, n++, item.x + 1, item.y + 1, 13, 11, 0, 0, 0, 0.20);
+          writeInst(buf, n++, item.x - 3, item.y, 5, 9, 0.18, 0.52, 0.85, 1);
+          writeInst(buf, n++, item.x - 3, item.y - 2, 4.2, 3.5, 0.95, 0.92, 0.82, 0.92);
+          writeInst(buf, n++, item.x + 3, item.y, 5, 9, 0.85, 0.18, 0.18, 1);
+          writeInst(buf, n++, item.x + 3, item.y - 2, 4.2, 3.5, 0.95, 0.92, 0.82, 0.92);
+          break;
+        }
+        case 'post_letter_box': {
+          // 住宅用ポスト + 新聞
+          writeInst(buf, n++, item.x, item.y + 2, 1, 3, 0.42, 0.38, 0.32, 1); // 柱
+          writeInst(buf, n++, item.x, item.y, 3, 2.5, 0.70, 0.32, 0.22, 1); // 箱
+          writeInst(buf, n++, item.x, item.y, 2.2, 0.4, 0.20, 0.14, 0.10, 0.85); // 投入口
+          writeInst(buf, n++, item.x + 1, item.y + 0.5, 1.5, 0.8, 0.95, 0.92, 0.85, 0.9); // 新聞
+          break;
+        }
+        case 'flower_planter_row': {
+          // 花壇列 3 個 (色違い)
+          writeInst(buf, n++, item.x, item.y + 1, 16, 4, 0, 0, 0, 0.15);
+          const flowers: [number, number, number][] = [
+            [0.92, 0.45, 0.65], [0.92, 0.85, 0.35], [0.68, 0.42, 0.85],
+          ];
+          for (let i = 0; i < 3; i++) {
+            const cx = item.x - 5 + i * 5;
+            writeInst(buf, n++, cx, item.y, 4.5, 3, 0.55, 0.35, 0.22, 1); // プランター
+            const [r, g, b] = flowers[i];
+            writeInst(buf, n++, cx, item.y - 0.5, 3.5, 1.8, r, g, b, 0.95); // 花
+            writeInst(buf, n++, cx, item.y + 0.5, 3, 0.8, 0.32, 0.62, 0.32, 0.9); // 葉
+          }
+          break;
+        }
+        case 'guardrail_short': {
+          // 短いガードレール
+          writeInst(buf, n++, item.x, item.y, 12, 1.2, 0.85, 0.85, 0.82, 1);
+          writeInst(buf, n++, item.x - 4, item.y + 0.2, 0.8, 2, 0.55, 0.55, 0.52, 1);
+          writeInst(buf, n++, item.x, item.y + 0.2, 0.8, 2, 0.55, 0.55, 0.52, 1);
+          writeInst(buf, n++, item.x + 4, item.y + 0.2, 0.8, 2, 0.55, 0.55, 0.52, 1);
+          break;
+        }
+        case 'railway_track': {
+          // 線路: 2 本レール + 枕木 3 本
+          writeInst(buf, n++, item.x, item.y, 20, 3, 0.32, 0.28, 0.22, 1); // 砂利
+          writeInst(buf, n++, item.x, item.y - 0.8, 20, 0.5, 0.72, 0.72, 0.70, 1); // レール上
+          writeInst(buf, n++, item.x, item.y + 0.8, 20, 0.5, 0.72, 0.72, 0.70, 1); // レール下
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, item.x + i * 6, item.y, 1.5, 2.5, 0.42, 0.32, 0.24, 0.95); // 枕木
+          }
+          break;
+        }
+        case 'platform_edge': {
+          // 駅ホームエッジ (黄色警告線)
+          writeInst(buf, n++, item.x, item.y, 30, 2, 0.72, 0.68, 0.62, 1); // ホーム面
+          writeInst(buf, n++, item.x, item.y - 0.5, 30, 0.6, 0.92, 0.82, 0.20, 1); // 黄色線
+          // 黒い点線
+          for (let i = -3; i <= 3; i++) {
+            writeInst(buf, n++, item.x + i * 4, item.y - 0.5, 1.5, 0.3, 0.15, 0.12, 0.08, 0.9);
+          }
+          break;
+        }
+        case 'railroad_crossing': {
+          // 踏切 X 標識 + 赤白遮断機
+          writeInst(buf, n++, item.x, item.y + 1, 10, 8, 0.32, 0.28, 0.22, 1); // 地面
+          writeInst(buf, n++, item.x, item.y, 9, 1, 0.92, 0.20, 0.18, 1); // 遮断棒
+          writeInst(buf, n++, item.x, item.y, 3, 1, 0.95, 0.95, 0.92, 0.9); // 白帯
+          writeInst(buf, n++, item.x - 4.5, item.y, 1.5, 2.5, 0.32, 0.28, 0.22, 1); // 支柱
+          writeInst(buf, n++, item.x - 4.5, item.y - 2, 3, 3, 0.92, 0.85, 0.20, 1); // X 標識
+          break;
+        }
+        case 'pedestrian_bridge': {
+          // 歩道橋 (脚 + デッキ)
+          writeInst(buf, n++, item.x + 1, item.y + 1, 22, 10, 0, 0, 0, 0.22);
+          writeInst(buf, n++, item.x - 8, item.y, 2, 9, 0.55, 0.52, 0.48, 1); // 脚 L
+          writeInst(buf, n++, item.x + 8, item.y, 2, 9, 0.55, 0.52, 0.48, 1); // 脚 R
+          writeInst(buf, n++, item.x, item.y - 2, 20, 2.5, 0.68, 0.65, 0.58, 1); // デッキ
+          writeInst(buf, n++, item.x, item.y - 3.2, 20, 0.5, 0.42, 0.40, 0.36, 0.9); // 手すり
+          break;
+        }
+        case 'signal_tower': {
+          // 信号塔 (縦棒 + 3 ランプ)
+          writeInst(buf, n++, item.x, item.y, 1.8, 15, 0.38, 0.35, 0.32, 1); // 柱
+          writeInst(buf, n++, item.x, item.y - 5, 3, 3, 0.18, 0.18, 0.20, 1); // ハウジング
+          writeInst(buf, n++, item.x, item.y - 6, 1.8, 1.8, 0.92, 0.22, 0.18, 1, 0, 1); // 赤
+          writeInst(buf, n++, item.x, item.y - 4.5, 1.8, 1.8, 0.92, 0.82, 0.20, 0.7, 0, 1); // 黄
+          writeInst(buf, n++, item.x, item.y - 3, 1.8, 1.8, 0.25, 0.85, 0.35, 0.7, 0, 1); // 緑
+          break;
+        }
+        case 'plaza_tile_circle': {
+          // 広場の円形タイル模様
+          writeInst(buf, n++, item.x, item.y, 40, 40, 0.78, 0.72, 0.62, 1, 0, 1); // 外輪
+          writeInst(buf, n++, item.x, item.y, 30, 30, 0.82, 0.76, 0.65, 0.95, 0, 1); // 中輪
+          writeInst(buf, n++, item.x, item.y, 18, 18, 0.72, 0.65, 0.55, 0.9, 0, 1); // 内輪
+          writeInst(buf, n++, item.x, item.y, 6, 6, 0.55, 0.48, 0.38, 0.85, 0, 1); // 中心
+          // 放射状の線 4 本
+          writeInst(buf, n++, item.x, item.y, 38, 0.8, 0.62, 0.55, 0.45, 0.7);
+          writeInst(buf, n++, item.x, item.y, 0.8, 38, 0.62, 0.55, 0.45, 0.7);
+          break;
+        }
+        case 'fountain_large': {
+          // 大噴水
+          writeInst(buf, n++, item.x, item.y, 24, 24, 0.55, 0.55, 0.52, 1, 0, 1); // 外輪石
+          writeInst(buf, n++, item.x, item.y, 20, 20, 0.35, 0.58, 0.75, 1, 0, 1); // 水面
+          writeInst(buf, n++, item.x, item.y, 14, 14, 0.45, 0.68, 0.82, 0.85, 0, 1); // 明部
+          writeInst(buf, n++, item.x, item.y, 5, 5, 0.60, 0.58, 0.52, 1, 0, 1); // 中央像台
+          writeInst(buf, n++, item.x, item.y - 1, 2.5, 5, 0.82, 0.78, 0.70, 1); // 像
+          // 噴射 4 方向
+          writeInst(buf, n++, item.x, item.y - 6, 1, 4, 0.85, 0.92, 0.98, 0.75);
+          writeInst(buf, n++, item.x, item.y + 6, 1, 4, 0.85, 0.92, 0.98, 0.75);
+          writeInst(buf, n++, item.x - 6, item.y, 4, 1, 0.85, 0.92, 0.98, 0.75);
+          writeInst(buf, n++, item.x + 6, item.y, 4, 1, 0.85, 0.92, 0.98, 0.75);
+          break;
+        }
+        case 'taxi_rank_sign': {
+          // タクシー乗り場 (黄色看板)
+          writeInst(buf, n++, item.x, item.y + 3, 1, 4, 0.38, 0.35, 0.32, 1); // 柱
+          writeInst(buf, n++, item.x, item.y - 1.5, 3.2, 3, 0.95, 0.82, 0.20, 1); // 看板
+          writeInst(buf, n++, item.x, item.y - 1.5, 2.5, 0.6, 0.15, 0.12, 0.08, 0.95); // 文字帯
+          break;
+        }
+        case 'sando_stone_pillar': {
+          // 参道の石柱
+          writeInst(buf, n++, item.x, item.y + 4, 3, 1.2, 0.55, 0.52, 0.48, 1); // 台座
+          writeInst(buf, n++, item.x, item.y - 0.5, 2, 9, 0.70, 0.68, 0.62, 1); // 柱本体
+          writeInst(buf, n++, item.x, item.y - 4.5, 2.5, 1, 0.62, 0.58, 0.52, 1); // 上面キャップ
+          break;
+        }
+        case 'ema_wall': {
+          // 絵馬の壁
+          writeInst(buf, n++, item.x, item.y + 2, 18, 2, 0.42, 0.28, 0.18, 1); // 柵下
+          writeInst(buf, n++, item.x, item.y - 1.5, 18, 0.6, 0.55, 0.35, 0.22, 1); // 柵上
+          // 絵馬 6 枚 (色違い)
+          const emaColors: [number, number, number][] = [
+            [0.95, 0.82, 0.55], [0.92, 0.72, 0.55], [0.98, 0.88, 0.62],
+            [0.88, 0.65, 0.45], [0.95, 0.78, 0.50], [0.92, 0.85, 0.58],
+          ];
+          for (let i = 0; i < 6; i++) {
+            const [r, g, b] = emaColors[i];
+            writeInst(buf, n++, item.x - 7 + i * 2.8, item.y + 0.3, 2.2, 2.2, r, g, b, 0.95);
+          }
+          break;
+        }
+        case 'omikuji_stand': {
+          // おみくじ結び所
+          writeInst(buf, n++, item.x, item.y + 1, 7, 2, 0.42, 0.28, 0.18, 1); // 骨組下
+          writeInst(buf, n++, item.x, item.y - 1.5, 7, 0.6, 0.42, 0.28, 0.18, 1); // 骨組上
+          writeInst(buf, n++, item.x - 2, item.y + 1, 0.6, 4, 0.35, 0.22, 0.14, 1); // 柱 L
+          writeInst(buf, n++, item.x + 2, item.y + 1, 0.6, 4, 0.35, 0.22, 0.14, 1); // 柱 R
+          // 紙の房 (白い小矩形多数)
+          for (let i = -2; i <= 2; i++) {
+            writeInst(buf, n++, item.x + i * 1.5, item.y, 1, 1.8, 0.95, 0.95, 0.92, 0.9);
+          }
+          break;
+        }
+        case 'shrine_fence_red': {
+          // 朱色の玉垣
+          writeInst(buf, n++, item.x, item.y, 16, 2.8, 0.72, 0.22, 0.18, 1); // 横木
+          // 柱 4 本
+          for (let i = -1.5; i <= 1.5; i++) {
+            writeInst(buf, n++, item.x + i * 4, item.y, 1, 2.8, 0.85, 0.28, 0.22, 1);
+          }
+          writeInst(buf, n++, item.x, item.y - 1, 16, 0.4, 0.95, 0.92, 0.85, 0.85); // 帯
+          break;
+        }
+        case 'bamboo_water_fountain': {
+          // 鹿威し
+          writeInst(buf, n++, item.x, item.y + 2.5, 4, 1.5, 0.45, 0.55, 0.32, 1); // 石皿
+          writeInst(buf, n++, item.x - 0.5, item.y, 3.5, 0.8, 0.62, 0.85, 0.52, 1, 20, 0); // 竹筒
+          writeInst(buf, n++, item.x, item.y - 1.5, 0.8, 2.5, 0.55, 0.75, 0.45, 1); // 支柱
+          writeInst(buf, n++, item.x + 1, item.y + 2.5, 1.5, 0.5, 0.35, 0.55, 0.82, 0.85); // 水
+          break;
+        }
+        case 'puddle_reflection': {
+          // 路面の水たまり
+          writeInst(buf, n++, item.x, item.y, 8, 4, 0.25, 0.42, 0.62, 0.55, 0, 1); // 水面
+          writeInst(buf, n++, item.x - 1, item.y - 0.5, 4, 1.5, 0.55, 0.72, 0.85, 0.70, 0, 1); // ハイライト
+          break;
+        }
+        case 'manhole_cover': {
+          // マンホール
+          writeInst(buf, n++, item.x, item.y, 5, 5, 0.28, 0.26, 0.22, 1, 0, 1); // 外円
+          writeInst(buf, n++, item.x, item.y, 3.5, 3.5, 0.35, 0.32, 0.28, 1, 0, 1); // 内円
+          writeInst(buf, n++, item.x, item.y, 3.5, 0.4, 0.22, 0.20, 0.18, 0.9); // 十字 H
+          writeInst(buf, n++, item.x, item.y, 0.4, 3.5, 0.22, 0.20, 0.18, 0.9); // 十字 V
+          break;
+        }
+        case 'cable_junction_box': {
+          // 路地の配電ボックス
+          writeInst(buf, n++, item.x + 0.5, item.y + 0.5, 5.5, 6.5, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 5, 6, 0.62, 0.60, 0.55, 1); // 灰箱
+          writeInst(buf, n++, item.x, item.y - 1.5, 4, 1, 0.92, 0.82, 0.20, 0.95); // 黄警告ラベル
+          writeInst(buf, n++, item.x + 1.5, item.y + 1.5, 0.8, 0.8, 0.25, 0.22, 0.18, 1); // 鍵
+          break;
+        }
+        case 'bicycle_row': {
+          // 駐輪列 4 台 + 屋根
+          writeInst(buf, n++, item.x, item.y - 2, 24, 1.5, 0.55, 0.52, 0.48, 0.85); // 屋根
+          const colors: [number, number, number][] = [
+            [0.35, 0.55, 0.75], [0.72, 0.42, 0.35], [0.35, 0.62, 0.45], [0.62, 0.52, 0.68],
+          ];
+          for (let i = 0; i < 4; i++) {
+            const [r, g, b] = colors[i];
+            const cx = item.x - 9 + i * 6;
+            writeInst(buf, n++, cx, item.y + 0.5, 5, 2, r, g, b, 1); // フレーム
+            writeInst(buf, n++, cx - 1.5, item.y + 1.5, 1.3, 1.3, 0.15, 0.12, 0.10, 1, 0, 1); // 前輪
+            writeInst(buf, n++, cx + 1.5, item.y + 1.5, 1.3, 1.3, 0.15, 0.12, 0.10, 1, 0, 1); // 後輪
+          }
           break;
         }
       }
