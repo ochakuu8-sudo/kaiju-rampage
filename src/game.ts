@@ -65,8 +65,10 @@ export class Game {
   private bgBottomR = 0.38; private bgBottomG = 0.36; private bgBottomB = 0.33;
 
   // 坂のカメラ相対オフセット (スクリーン固定)
-  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -155, hw: 73, hh: 6, angle: -0.856 };
-  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -155, hw: 73, hh: 6, angle:  0.856 };
+  // ★ フリッパー rest 角度 (-30°) と平行にして、ボールが滑らかにフリッパーへ流れるよう調整
+  // ★ hw=55, 坂の左上端=(-180, camera.y-149.8), 右下端=(-85, camera.y-210) でフリッパーピボット直結
+  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -182.5, hw: 55, hh: 6, angle: -0.5236 }; // -π/6 rad = -30°
+  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -182.5, hw: 55, hh: 6, angle:  0.5236 };
 
   private getSlopeL() {
     const b = this.SLOPE_L_BASE;
@@ -640,6 +642,7 @@ export class Game {
 
     n = 0;
     n += this.humans.fillInstances(SHARED_BUF, n, this.camera.y);
+    n += this.fillSlopes(SHARED_BUF, n);
     n += this.fillFlippers(SHARED_BUF, n);
     n += this.fillBall(SHARED_BUF, n);
     n += this.particles.fillInstances(SHARED_BUF, n, this.camera.y);
@@ -1089,12 +1092,8 @@ export class Game {
       n += this.drawGroundTile(buf, n, tile);
     }
 
-    const sL = this.getSlopeL(), sR = this.getSlopeR();
-    writeInst(buf, n++, sL.cx, sL.cy, sL.hw*2, sL.hh*2, 0.38, 0.58, 0.30, 1, sL.angle);
-    writeInst(buf, n++, sL.cx, sL.cy - sL.hh - 0.5, sL.hw*2, 2, 0.85, 0.85, 0.85, 0.5, sL.angle);
-    writeInst(buf, n++, sR.cx, sR.cy, sR.hw*2, sR.hh*2, 0.38, 0.58, 0.30, 1, sR.angle);
-    writeInst(buf, n++, sR.cx, sR.cy - sR.hh - 0.5, sR.hw*2, 2, 0.85, 0.85, 0.85, 0.5, sR.angle);
-
+    // 坂とフリッパー柱は fillSlopes / fillFlippers で第 2 パスに描画する
+    // (道路・建物に覆われないよう最前面に出す)
     const pivY = this.camera.y + C.FLIPPER_PIVOT_Y;
     writeInst(buf, n++, -C.FLIPPER_PIVOT_X, pivY - 20, 6, 40, 0.4, 0.4, 0.55, 1);
     writeInst(buf, n++,  C.FLIPPER_PIVOT_X, pivY - 20, 6, 40, 0.4, 0.4, 0.55, 1);
@@ -1430,6 +1429,22 @@ export class Game {
       const bcy = base + C.STREETLIGHT_POLE_H + C.STREETLIGHT_BULB_R * 0.5;
       writeInst(buf, n++, x, bcy, d, d, br, bg, bb, ba, 0, 1);
     }
+    return n - start;
+  }
+
+  /** 坂 (左右) を最前面レイヤで描画。建物・道路に覆われないよう第 2 パスで呼ぶ */
+  private fillSlopes(buf: Float32Array, start: number): number {
+    let n = start;
+    const sL = this.getSlopeL(), sR = this.getSlopeR();
+    // 本体 (緑)
+    writeInst(buf, n++, sL.cx, sL.cy, sL.hw * 2, sL.hh * 2, 0.38, 0.58, 0.30, 1, sL.angle);
+    writeInst(buf, n++, sR.cx, sR.cy, sR.hw * 2, sR.hh * 2, 0.38, 0.58, 0.30, 1, sR.angle);
+    // 上辺ハイライト (ボールが滑る面を示す、白ライン)
+    writeInst(buf, n++, sL.cx, sL.cy + sL.hh - 0.5, sL.hw * 2, 1.2, 0.92, 0.92, 0.88, 0.85, sL.angle);
+    writeInst(buf, n++, sR.cx, sR.cy + sR.hh - 0.5, sR.hw * 2, 1.2, 0.92, 0.92, 0.88, 0.85, sR.angle);
+    // 下辺の影 (立体感、暗)
+    writeInst(buf, n++, sL.cx, sL.cy - sL.hh + 0.5, sL.hw * 2, 1.0, 0.22, 0.34, 0.18, 0.85, sL.angle);
+    writeInst(buf, n++, sR.cx, sR.cy - sR.hh + 0.5, sR.hw * 2, 1.0, 0.22, 0.34, 0.18, 0.85, sR.angle);
     return n - start;
   }
 
