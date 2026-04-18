@@ -34,6 +34,9 @@ export type GroundType =
   // ── Stage 4 港湾・工業 ──
   | 'steel_plate'         // 鉄板 (工業エリア・埠頭)
   | 'oil_stained_concrete' // 油汚れコンクリ (ガソリンスタンド・倉庫前)
+  | 'harbor_water'        // 港の海水 (紺色 + 波紋)
+  | 'rust_deck'           // 錆びた金属デッキ (古い埠頭・船着場)
+  | 'hazard_stripe'       // 黄黒警告ストライプ (工場出入口・危険区域)
   // ── Stage 3 和風 ──
   | 'moss'                // 苔 (古い神社・枯山水)
   // ── Stage 5 祭り ──

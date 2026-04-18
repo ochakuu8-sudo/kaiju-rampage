@@ -958,6 +958,80 @@ export class Game {
         writeInst(buf, n++, x, y, 0.5, h * 0.95, 0.55, 0.52, 0.48, 0.75);
         break;
       }
+      case 'harbor_water': {
+        // 港の海: 深い紺のベース + 層状の色ムラ + 波紋 + ハイライト
+        writeInst(buf, n++, x, y, w, h, 0.10, 0.22, 0.36, 1);
+        // 明暗の横縞 (深浅の層)
+        writeInst(buf, n++, x, y - h * 0.30, w, h * 0.22, 0.14, 0.28, 0.42, 0.7);
+        writeInst(buf, n++, x, y + h * 0.18, w, h * 0.26, 0.08, 0.18, 0.30, 0.75);
+        // 緑青のパッチ (苔・藻)
+        writeInst(buf, n++, x - w * 0.28, y + h * 0.10, w * 0.32, h * 0.22, 0.14, 0.34, 0.38, 0.55, 0, 1);
+        writeInst(buf, n++, x + w * 0.22, y - h * 0.18, w * 0.28, h * 0.18, 0.18, 0.38, 0.44, 0.55, 0, 1);
+        // 波紋 (横に伸びる細いハイライト 5 本)
+        for (let i = 0; i < 5; i++) {
+          const ry = y + (hash(i * 11) - 0.5) * h * 0.85;
+          const rx = x + (hash(i * 11 + 3) - 0.5) * w * 0.4;
+          writeInst(buf, n++, rx, ry, w * (0.22 + hash(i * 11 + 5) * 0.25), 0.6, 0.58, 0.76, 0.88, 0.72);
+        }
+        // 細かい白波 (7 個)
+        for (let i = 0; i < 7; i++) {
+          const bx = x + (hash(i * 7) - 0.5) * w * 0.9;
+          const by = y + (hash(i * 7 + 1) - 0.5) * h * 0.88;
+          writeInst(buf, n++, bx, by, 1.8 + hash(i * 7 + 2) * 1.4, 0.5, 0.85, 0.92, 0.98, 0.85);
+        }
+        break;
+      }
+      case 'rust_deck': {
+        // 錆びた金属デッキ: 茶褐色ベース + 縦板目 + 錆の斑
+        writeInst(buf, n++, x, y, w, h, 0.42, 0.26, 0.16, 1);
+        // 4 枚の縦板 (明暗)
+        const plankCount = 4;
+        const plankW = w / plankCount;
+        for (let i = 0; i < plankCount; i++) {
+          const px = x - w / 2 + (i + 0.5) * plankW;
+          const shade = i % 2 === 0 ? 1.0 : 0.85;
+          writeInst(buf, n++, px, y, plankW * 0.92, h * 0.94,
+            0.48 * shade, 0.30 * shade, 0.18 * shade, 1);
+          // 板目 (縦 1 本)
+          writeInst(buf, n++, px - plankW * 0.15, y, 0.3, h * 0.9,
+            0.30 * shade, 0.18 * shade, 0.08 * shade, 0.6);
+          // 端のリベット
+          writeInst(buf, n++, px, y - h * 0.40, 0.9, 0.9, 0.20, 0.14, 0.08, 1, 0, 1);
+          writeInst(buf, n++, px, y + h * 0.40, 0.9, 0.9, 0.20, 0.14, 0.08, 1, 0, 1);
+        }
+        // 錆斑 (6 つ、橙赤の不規則な大きさ)
+        for (let i = 0; i < 6; i++) {
+          const rx = x + (hash(i * 3) - 0.5) * w * 0.82;
+          const ry = y + (hash(i * 3 + 1) - 0.5) * h * 0.82;
+          const sz = 2.2 + hash(i * 3 + 2) * 2.6;
+          writeInst(buf, n++, rx, ry, sz, sz * 0.7, 0.60, 0.32, 0.14, 0.78, 0, 1);
+        }
+        // 濃い油シミ 1 つ
+        writeInst(buf, n++, x - w * 0.22, y + h * 0.12, w * 0.18, h * 0.12, 0.18, 0.12, 0.08, 0.7, 0, 1);
+        break;
+      }
+      case 'hazard_stripe': {
+        // 警告ストライプ: 黄ベース + 黒の斜めストライプ
+        writeInst(buf, n++, x, y, w, h, 0.92, 0.78, 0.12, 1);
+        // 斜めストライプを 6 本、角度 0.6rad (~34°)
+        const stripeAngle = 0.6;
+        const stripeW = Math.max(w, h) * 1.6;
+        const stripeH = 3.2;
+        const step = 6.5;
+        const count = Math.ceil(Math.max(w, h) / step) + 2;
+        for (let i = -count; i <= count; i++) {
+          const ox = (i * step);
+          writeInst(buf, n++, x + ox * Math.cos(stripeAngle), y + ox * Math.sin(stripeAngle),
+            stripeW, stripeH, 0.14, 0.12, 0.10, 0.95, stripeAngle);
+        }
+        // 上辺の濃いライン (枠)
+        writeInst(buf, n++, x, y - h * 0.45, w * 0.98, 0.7, 0.14, 0.12, 0.10, 0.9);
+        writeInst(buf, n++, x, y + h * 0.45, w * 0.98, 0.7, 0.14, 0.12, 0.10, 0.9);
+        // 摩耗 (明るい擦れ 2 つ)
+        writeInst(buf, n++, x - w * 0.12, y, w * 0.2, 1.0, 0.98, 0.88, 0.40, 0.55);
+        writeInst(buf, n++, x + w * 0.22, y + h * 0.08, w * 0.15, 1.0, 0.98, 0.88, 0.40, 0.55);
+        break;
+      }
     }
     return n - idx;
   }

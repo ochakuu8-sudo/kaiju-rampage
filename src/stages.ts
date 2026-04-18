@@ -4800,102 +4800,1049 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
-// ─── Stage 4: 港湾・工業地帯 (10 チャンク) ────────────────────
-// harbor_warehouse: rows 2, cols 4, merge(row=1, col=0, span=2)
-// 倉庫 → クレーン → 工場 → コンテナヤードの展開
+// ─── Stage 4: 港湾・工業地帯 (10 チャンク, raw 配置) ────────────
+// 【全体の物語】: Stage 3 の古都の外れ (蔵 + 浮標) から潮風が届き、港町に至る。
+//   Act I  (C0-C2): 漁港        — 港の海、漁船(木造倉庫の見立て)、魚網、浮標、市場
+//   Act II (C3-C5): コンテナヤード — カラフルコンテナ山、ガントリークレーン、ゲート
+//   Act III(C6-C8): 重工業地帯  — 製鉄所、石油タンク、化学工場、煙突群
+//   Act IV (C9):    出荷場      — トラックターミナル、Stage 5 (祭) への提灯予兆
+// 【連続軸】: ① 鉄柵 (guardrail) を全チャンク端に / ② 電線+電柱を奥層 (y≈190) /
+//           ③ ドラム缶/パレット/コンテナの工業リズム / ④ 警告黄ライン (hazard_stripe) /
+//           ⑤ 海 (harbor_water) は Act I に集中、Act II→steel_plate、Act III→油汚れ
+// 【設計原則】: scene-like 物語グルーピング / 左右非対称 / 工業地帯らしく人は控えめ /
+//           Act ごとに地面色とアクセント色を緩やかにシフト
 const STAGE_4_TEMPLATES: ChunkTemplate[] = [
-  // 1: 倉庫並び導入 (油汚れコンクリ)
-  { patternId: 'harbor_warehouse', groundOverride: 'oil_stained_concrete',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'dock_shack' },
-      { row: 0, col: 1, sceneId: 'port_warehouse_row' },
-      { row: 0, col: 3, sceneId: 'warehouse_district' },
-      { row: 1, col: 0, sceneId: 'warehouse_district' },   // merged
-      { row: 1, col: 2, sceneId: 'port_warehouse_row' },
-      { row: 1, col: 3, sceneId: 'dock_shack' },
-    ] },
-  // 2: 工場煙突と埠頭
-  { patternId: 'office_district', groundOverride: 'steel_plate',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'factory_smokestacks' },
-      { row: 0, col: 2, sceneId: 'dock_shack' },
-      { row: 1, col: 1, sceneId: 'port_warehouse_row' },
-      { row: 1, col: 3, sceneId: 'warehouse_district' },
-    ] },
-  // 3: コンテナヤード + クレーン
-  { patternId: 'harbor_warehouse', groundOverride: 'steel_plate',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'dock_shack' },
-      { row: 0, col: 1, sceneId: 'container_yard' },
-      { row: 0, col: 2, sceneId: 'container_yard' },
-      { row: 0, col: 3, sceneId: 'warehouse_district' },
-      { row: 1, col: 0, sceneId: 'container_yard' },   // merged
-      { row: 1, col: 2, sceneId: 'factory_smokestacks' },
-      { row: 1, col: 3, sceneId: 'dock_shack' },
-    ] },
-  // 4: 倉庫密集
-  { patternId: 'office_district', groundOverride: 'oil_stained_concrete',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'warehouse_district' },
-      { row: 0, col: 2, sceneId: 'port_warehouse_row' },
-      { row: 1, col: 1, sceneId: 'warehouse_district' },
-      { row: 1, col: 3, sceneId: 'port_warehouse_row' },
-    ] },
-  // 5: 工場地帯
-  { patternId: 'harbor_warehouse', groundOverride: 'oil_stained_concrete',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'factory_smokestacks' },
-      { row: 0, col: 1, sceneId: 'port_warehouse_row' },
-      { row: 0, col: 3, sceneId: 'factory_smokestacks' },
-      { row: 1, col: 0, sceneId: 'factory_smokestacks' }, // merged
-      { row: 1, col: 2, sceneId: 'container_yard' },
-      { row: 1, col: 3, sceneId: 'dock_shack' },
-    ] },
-  // 6: 大倉庫地域
-  { patternId: 'full_grid', groundOverride: 'steel_plate',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'warehouse_district' },
-      { row: 0, col: 2, sceneId: 'port_warehouse_row' },
-      { row: 1, col: 1, sceneId: 'port_warehouse_row' },
-      { row: 1, col: 3, sceneId: 'warehouse_district' },
-    ] },
-  // 7: クレーン見本市
-  { patternId: 'office_district', groundOverride: 'steel_plate',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'container_yard' },
-      { row: 0, col: 2, sceneId: 'container_yard' },
-      { row: 1, col: 1, sceneId: 'factory_smokestacks' },
-      { row: 1, col: 3, sceneId: 'port_warehouse_row' },
-    ] },
-  // 8: コンテナずらり
-  { patternId: 'harbor_warehouse', groundOverride: 'oil_stained_concrete',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'dock_shack' },
-      { row: 0, col: 1, sceneId: 'container_yard' },
-      { row: 0, col: 3, sceneId: 'port_warehouse_row' },
-      { row: 1, col: 0, sceneId: 'container_yard' }, // merged
-      { row: 1, col: 2, sceneId: 'container_yard' },
-      { row: 1, col: 3, sceneId: 'factory_smokestacks' },
-    ] },
-  // 9: 工場と倉庫の混成
-  { patternId: 'office_district', groundOverride: 'oil_stained_concrete',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'factory_smokestacks' },
-      { row: 0, col: 2, sceneId: 'warehouse_district' },
-      { row: 1, col: 1, sceneId: 'container_yard' },
-      { row: 1, col: 3, sceneId: 'port_warehouse_row' },
-    ] },
-  // 10: 最終
-  { patternId: 'harbor_warehouse', groundOverride: 'steel_plate',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'dock_shack' },
-      { row: 0, col: 1, sceneId: 'container_yard' },
-      { row: 0, col: 2, sceneId: 'port_warehouse_row' },
-      { row: 0, col: 3, sceneId: 'factory_smokestacks' },
-      { row: 1, col: 0, sceneId: 'warehouse_district' }, // merged
-      { row: 1, col: 2, sceneId: 'container_yard' },
-      { row: 1, col: 3, sceneId: 'dock_shack' },
-    ] },
+
+  // ═══ Act I: 漁港 (C0-C2) ═══════════════════════════════════════════
+  // コンセプト: Stage 3 の蔵から続く海風の中、小さな漁港が始まる。
+  // 上段に「海と桟橋」、下段に「魚市場と倉庫」の二段構成で港の暮らしを描く。
+
+  // ── C0: 朝の漁港 (★★ Stage 3 → Stage 4 handoff: 古い港神社・桟橋・浮標) ──
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 海岸線沿いの古い港 (奥に置いて海を広く見せる) ===
+      _B('shrine', -150, 70),                                   // ★ 港神社 (Stage 3 余韻)
+      _B('shed', -110, 75),
+      _B('kura', -80, 70),                                      // ★ 蔵 (Stage 3 handoff)
+      _B('shed', -50, 78),
+      _B('garage', 30, 75),                                     // 漁協の物置
+      _B('shed', 60, 78),
+      _B('warehouse', 130, 70),                                 // ★ 港の冷蔵倉庫 (大)
+      _B('shed', 175, 78),
+      // === 下段: 漁師町の家並び + 魚市場 ===
+      _B('kominka', -160, 132), _B('house', -130, 135),
+      _B('shed', -100, 175),
+      _B('chaya', -50, 132),                                    // 港の茶屋 (漁師の朝食)
+      _B('ramen', -15, 135),                                    // 早朝ラーメン
+      _B('shed', -45, 175),
+      _B('warehouse', 50, 138),                                 // 魚市場の倉庫
+      _B('shed', 90, 178),
+      _B('garage', 130, 138),
+      _B('kominka', 165, 132), _B('shed', 175, 178),
+    ],
+    furniture: [
+      // ─── ★★ C0 固有: 港神社 (Stage 3 torii の余韻、港版) ★★ ───
+      _F('torii', -150, 50),
+      _F('koma_inu', -163, 88), _F('koma_inu', -137, 88),
+      _F('offering_box', -150, 88),
+      _F('shinto_rope', -150, 56), _F('stone_lantern', -150, 30),
+      // ─── ★★ 海岸線: 桟橋 + 浮標群 (Act I シグネチャ) ★★ ───
+      _F('buoy', -25, 12), _F('buoy', 5, 18), _F('buoy', 35, 14),
+      _F('buoy', 90, 16), _F('buoy', 115, 10),
+      _F('rock', -20, 28), _F('rock', 50, 32), _F('rock', 105, 28),
+      _F('cargo_container', 75, 30),                            // 桟橋の小型コンテナ
+      _F('drum_can', 22, 38), _F('drum_can', 48, 36),
+      _F('pallet_stack', -10, 42),
+      // ─── 港神社まわり ───
+      _F('bamboo_cluster', -125, 48),
+      _F('rock', -135, 60), _F('rock', -165, 60),
+      _F('potted_plant', -110, 55),
+      // ─── 蔵まわり (Stage 3 handoff) ───
+      _F('wood_fence', -65, 50), _F('bonsai', -78, 52),
+      _F('sakura_tree', -55, 58),                               // 最後の桜
+      // ─── 冷蔵倉庫まわり ───
+      _F('sign_board', 105, 52),
+      _F('forklift', 100, 78), _F('forklift', 158, 78),
+      _F('pallet_stack', 90, 82), _F('pallet_stack', 165, 82),
+      _F('drum_can', 170, 75),
+      _F('cargo_container', 145, 85),
+      // ─── 下段ファサード ───
+      _F('mailbox', -160, 118), _F('potted_plant', -130, 122),
+      _F('noren', -50, 128), _F('chouchin', -50, 122),
+      _F('noren', -15, 128), _F('chouchin', -15, 122),
+      _F('mailbox', 165, 118), _F('potted_plant', 130, 122),
+      _F('sign_board', 50, 118),
+      // ─── 下段: 魚干し場 (タープを魚網に見立て) + 漁具 ───
+      _F('tarp', -130, 165), _F('tarp', -85, 168),
+      _F('buoy', -118, 178), _F('buoy', -75, 175),
+      _F('rock', -90, 195),
+      _F('drum_can', -105, 168), _F('drum_can', -68, 165),
+      _F('pallet_stack', 85, 168), _F('pallet_stack', 110, 175),
+      _F('drum_can', 70, 175), _F('drum_can', 115, 168),
+      _F('cargo_container', 95, 158),
+      _F('forklift', 130, 168),
+      _F('cat', -120, 195),
+      // ─── 軸: guardrail (海岸線の柵) ───
+      _F('guardrail_short', -30, 50), _F('guardrail_short', 30, 50),
+      _F('guardrail_short', 90, 50),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── 中央通り (avenue) ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('bollard', -60, 100), _F('bollard', 60, 100),
+    ],
+    humans: [
+      _H(-150, 88),                                             // 港神社の参拝者
+      _H(0, 28),                                                // 桟橋で浮標点検
+      _H(105, 80),                                              // 倉庫前作業員
+      _H(-50, 152),                                             // 港の茶屋客
+      _H(-100, 175),                                            // 魚干し作業
+      _H(95, 168),                                              // 魚市場裏
+      _H(155, 152),                                             // 漁師の家
+    ],
+    grounds: [
+      _G('harbor_water', 0, 30, 360, 60),                       // ★★ 海面
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('stone_pavement', -150, 80, 32, 36),                   // 神社参道
+      _G('moss', -150, 90, 24, 16),
+      _G('dirt', -78, 65, 26, 22),                              // 蔵まわり
+      _G('rust_deck', -10, 38, 120, 28),                        // ★ 桟橋本体
+      _G('rust_deck', 95, 38, 70, 28),                          // ★ 第二桟橋
+      _G('wood_deck', 60, 32, 30, 18),                          // 木の桟橋
+      _G('steel_plate', 130, 78, 80, 30),
+      _G('tile', -50, 152, 32, 38),
+      _G('tile', -15, 152, 24, 38),
+      _G('gravel', -100, 178, 80, 38),
+      _G('steel_plate', 95, 168, 60, 50),
+      _G('oil_stained_concrete', 130, 168, 60, 50),
+      _G('dirt', -160, 152, 28, 36), _G('dirt', 165, 152, 28, 36),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C1: 魚市場通り — 冷蔵倉庫が並び、フォークリフトと搬入トラックが行き交う ──
+  // 上段: 桟橋から海はさらに広く、巡視艇のような小型コンテナと浮標
+  // 下段: 魚市場の倉庫帯、軒先のドラム缶、セリの旗、漁師の作業場
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 海から続く岸壁 + 倉庫の入口 ===
+      _B('warehouse', -130, 70),                                // 第一冷蔵倉庫
+      _B('shed', -90, 78),
+      _B('garage', -55, 75),                                    // 漁協事務所
+      _B('warehouse', 30, 70),                                  // 第二冷蔵倉庫
+      _B('shed', 70, 78),
+      _B('kura', 110, 72),                                      // 古い氷蔵
+      _B('shed', 145, 78),
+      _B('garage', 175, 75),
+      // === 下段: 市場通り (セリ場 + 茶屋 + 漁師の家) ===
+      _B('warehouse', -135, 138),                               // ★ セリ場 (市場本館)
+      _B('shed', -90, 178),
+      _B('chaya', -45, 132),                                    // 市場の茶屋
+      _B('ramen', -15, 135),                                    // 漁師ラーメン
+      _B('sushi_ya', 18, 132),                                  // ★ 港寿司
+      _B('shed', -10, 178),
+      _B('warehouse', 90, 138),                                 // 物流倉庫
+      _B('shed', 135, 178),
+      _B('garage', 170, 138),
+    ],
+    furniture: [
+      // ─── 上段: 海面に浮かぶ浮標 + コンテナ ───
+      _F('buoy', -160, 14), _F('buoy', -135, 22), _F('buoy', -100, 18),
+      _F('buoy', 0, 16), _F('buoy', 35, 12), _F('buoy', 70, 22),
+      _F('cargo_container', -65, 32),                           // 桟橋に置かれた赤コンテナ
+      _F('cargo_container', 55, 30),                            // 青コンテナ
+      _F('rock', -30, 32), _F('rock', 100, 30),
+      _F('drum_can', -45, 42), _F('drum_can', 80, 38),
+      _F('pallet_stack', 5, 42),
+      // ─── 上段: 倉庫前の作業帯 ───
+      _F('forklift', -125, 56), _F('forklift', 35, 56),
+      _F('pallet_stack', -160, 60), _F('pallet_stack', -90, 60),
+      _F('pallet_stack', 70, 60), _F('pallet_stack', 145, 60),
+      _F('drum_can', -55, 60), _F('drum_can', -35, 62),
+      _F('drum_can', 110, 62), _F('drum_can', 175, 62),
+      _F('cargo_container', -100, 80),                          // 倉庫裏の青コンテナ
+      _F('cargo_container', 120, 80),
+      _F('sign_board', -130, 52), _F('sign_board', 30, 52),     // 「冷蔵」看板
+      _F('flag_pole', -55, 52),                                 // 漁協の旗
+      // ─── 下段: 市場通りファサード ───
+      _F('sign_board', -135, 118), _F('flag_pole', -160, 118),  // セリ場ののぼり
+      _F('a_frame_sign', -90, 118),
+      _F('noren', -45, 128), _F('chouchin', -45, 122),          // 市場茶屋
+      _F('noren', -15, 128), _F('chouchin', -15, 122),          // 漁師ラーメン
+      _F('noren', 18, 128), _F('chouchin', 18, 122),            // 港寿司
+      _F('sign_board', 90, 118), _F('a_frame_sign', 135, 118),
+      // ─── 下段: 市場裏の漁具 + 作業場 ───
+      _F('tarp', -110, 165),                                    // 大きな魚網
+      _F('tarp', -75, 172),
+      _F('drum_can', -125, 168), _F('drum_can', -160, 175),
+      _F('pallet_stack', -90, 168), _F('pallet_stack', 85, 168),
+      _F('cargo_container', -65, 158),                          // セリ場裏の黄コンテナ
+      _F('cargo_container', 110, 158),                          // 物流倉庫裏の緑コンテナ
+      _F('forklift', -95, 168), _F('forklift', 130, 168),
+      _F('drum_can', 70, 165), _F('drum_can', 150, 168),
+      _F('buoy', 175, 178),
+      _F('cat', -35, 195),                                      // 市場の野良猫
+      // ─── 軸: guardrail + 鉄柵 ───
+      _F('guardrail_short', -30, 50), _F('guardrail_short', 30, 50),
+      _F('guardrail_short', 90, 50),
+      _F('guardrail_short', -120, 100), _F('guardrail_short', 120, 100),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── 中央通り ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
+      _F('bollard', -30, 100), _F('bollard', 30, 100),
+      _F('puddle_reflection', 0, 100),                          // 港の水たまり
+    ],
+    humans: [
+      _H(-65, 32),                                              // 桟橋でセリ準備
+      _H(-130, 80),                                             // 倉庫前作業員
+      _H(35, 80),                                               // フォークリフト操縦
+      _H(-135, 152),                                            // セリ場の競り人
+      _H(-45, 152), _H(18, 152),                                // 茶屋客 + 寿司客
+      _H(95, 168),                                              // 物流倉庫
+      _H(-95, 175),                                             // 漁網作業
+    ],
+    grounds: [
+      _G('harbor_water', 0, 30, 360, 60),                       // 海面 (続く)
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('rust_deck', -130, 38, 90, 30),                        // 第一桟橋
+      _G('rust_deck', 25, 38, 90, 30),                          // 第二桟橋
+      _G('wood_deck', -65, 32, 22, 18),                         // 古い木の桟橋
+      _G('steel_plate', -130, 78, 70, 30),
+      _G('steel_plate', 30, 78, 70, 30),
+      _G('hazard_stripe', -55, 60, 22, 18),                     // ★ 漁協前 警告線
+      _G('tile', -45, 152, 28, 38),
+      _G('tile', -15, 152, 24, 38),
+      _G('tile', 18, 152, 28, 38),
+      _G('steel_plate', -135, 168, 70, 50),                     // セリ場前
+      _G('steel_plate', 90, 168, 60, 50),                       // 物流倉庫前
+      _G('hazard_stripe', -160, 168, 18, 18),                   // セリ場前 警告線
+      _G('hazard_stripe', 150, 168, 18, 18),
+      _G('gravel', -75, 178, 30, 30),                           // 漁具置き場の砂利
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C2: 造船所 — 漁港の終端、海の上には組み立て中の船と巨大ブロック ──
+  // ★ Act I → Act II の橋渡し: 海の比率が減り、はじめてクレーン (silo で代用) が登場
+  // 上段: 海と造船ドック (大型コンテナと crane の予兆 silo)
+  // 下段: 造船工 + ガス溶接小屋 + 部品倉庫
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 造船ドック + 部品ヤード ===
+      _B('silo', -150, 50),                                     // ★ 造船所の最初のサイロ (ガス)
+      _B('warehouse', -100, 70),                                // 部品倉庫 (大)
+      _B('shed', -50, 78),
+      _B('container_stack', -10, 60),                           // ★ 初めてのコンテナ山
+      _B('shed', 30, 78),
+      _B('warehouse', 80, 70),                                  // 組み立て倉庫
+      _B('silo', 130, 50),                                      // ★ 第二サイロ
+      _B('shed', 168, 78),
+      // === 下段: 造船工の小屋 + ガス溶接 + 工員寮 ===
+      _B('garage', -160, 138),                                  // 部品ガレージ
+      _B('shed', -135, 178),
+      _B('warehouse', -90, 138),                                // 修理倉庫
+      _B('shed', -50, 178),
+      _B('factory_stack', 0, 132),                              // ★ 初めての factory (船舶エンジン工場、煙突つき)
+      _B('garage', 60, 138),                                    // ガス溶接ガレージ
+      _B('shed', 90, 178),
+      _B('warehouse', 135, 138),                                // 工員寮兼倉庫
+      _B('shed', 175, 178),
+    ],
+    furniture: [
+      // ─── 上段: 造船ドック (海上に浮かぶ船体ブロック) ───
+      _F('cargo_container', -55, 30),                           // 船体ブロック見立て (赤)
+      _F('cargo_container', 35, 32),                            // (青)
+      _F('cargo_container', 100, 28),                           // (緑)
+      _F('buoy', -30, 18), _F('buoy', 12, 16), _F('buoy', 70, 22),
+      _F('rock', -75, 38),
+      _F('drum_can', -130, 32), _F('drum_can', 145, 32),        // ガスドラム
+      _F('pallet_stack', -10, 38), _F('pallet_stack', 60, 40),
+      // ─── 上段: 倉庫前 ───
+      _F('forklift', -100, 56), _F('forklift', 80, 56),
+      _F('drum_can', -85, 60), _F('drum_can', -115, 62),
+      _F('drum_can', 65, 62), _F('drum_can', 95, 60),
+      _F('pallet_stack', -50, 60), _F('pallet_stack', 30, 60),
+      _F('cargo_container', -130, 82),                          // サイロ裏のコンテナ
+      _F('cargo_container', 168, 82),
+      _F('sign_board', -100, 52), _F('sign_board', 80, 52),
+      _F('flag_pole', -150, 32),                                // サイロ上部の旗
+      // ─── 下段: 工場ファサード (作業の音が聞こえる帯) ───
+      _F('sign_board', -160, 118), _F('sign_board', -90, 118),
+      _F('sign_board', 0, 118),                                 // 「船舶エンジン工場」看板
+      _F('sign_board', 60, 118),
+      _F('sign_board', 135, 118),
+      _F('a_frame_sign', -130, 118),
+      // ─── 下段: 修理倉庫 + 溶接ガレージ周辺 ───
+      _F('forklift', -90, 168), _F('forklift', 60, 168),
+      _F('drum_can', -110, 165), _F('drum_can', -70, 168),
+      _F('drum_can', 35, 168), _F('drum_can', 85, 165),
+      _F('pallet_stack', -40, 168), _F('pallet_stack', 110, 168),
+      _F('cargo_container', -50, 158),                          // 修理待ちのコンテナ
+      _F('cargo_container', 105, 158),
+      _F('tarp', -150, 168),                                    // 工員の作業布
+      _F('tarp', 165, 168),
+      _F('water_tank', 30, 152),                                // 工場の冷却水タンク
+      _F('water_tank', 90, 152),
+      _F('drum_can', 135, 168), _F('drum_can', 175, 168),
+      _F('cat', 175, 195),
+      // ─── 軸: guardrail (港側) + hazard 案内 ───
+      _F('guardrail_short', -60, 50), _F('guardrail_short', 60, 50),
+      _F('guardrail_short', 120, 50),
+      _F('guardrail_short', -120, 100), _F('guardrail_short', 120, 100),
+      _F('traffic_cone', -30, 100), _F('traffic_cone', 30, 100),
+      _F('barrier', 0, 50),                                     // ★ ドック入口の閉鎖バリア
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── 中央通り ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
+      _F('puddle_reflection', -30, 100),
+      _F('bollard', 30, 100),
+    ],
+    humans: [
+      _H(-130, 88),                                             // サイロ点検
+      _H(-100, 80),                                             // 部品搬入
+      _H(80, 80),                                               // 組み立て倉庫前
+      _H(-90, 152),                                             // 修理倉庫
+      _H(0, 152),                                               // 工場の責任者
+      _H(60, 165),                                              // 溶接工
+      _H(135, 152),                                             // 工員寮前
+    ],
+    grounds: [
+      _G('harbor_water', 0, 28, 240, 56),                       // ★ 海面 (狭く)
+      _G('oil_stained_concrete', -150, 28, 60, 56),             // ドック岸壁
+      _G('oil_stained_concrete', 150, 28, 60, 56),
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('rust_deck', -55, 38, 60, 26),                         // 造船桟橋
+      _G('rust_deck', 70, 38, 60, 26),
+      _G('steel_plate', -100, 78, 70, 30),
+      _G('steel_plate', 80, 78, 70, 30),
+      _G('hazard_stripe', 0, 50, 30, 22),                       // ★ ドック入口の警告
+      _G('hazard_stripe', -150, 78, 22, 18), _G('hazard_stripe', 130, 78, 22, 18),
+      _G('steel_plate', -90, 168, 70, 50),                      // 修理倉庫前
+      _G('steel_plate', 60, 168, 70, 50),                       // 溶接ガレージ前
+      _G('steel_plate', 135, 168, 60, 50),
+      _G('hazard_stripe', 0, 152, 30, 18),                      // ★ 工場入口
+      _G('hazard_stripe', -50, 168, 18, 18), _G('hazard_stripe', 100, 168, 18, 18),
+      _G('concrete', -160, 152, 28, 36),                        // ガレージ前
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ═══ Act II: コンテナヤード (C3-C5) ════════════════════════════════
+  // コンセプト: 海の比率を完全になくし、カラフルなコンテナと巨大クレーンの世界へ。
+  // 上段 = 倉庫 + コンテナ、下段 = ヤード + ガントリー。色は赤/青/黄/緑。
+
+  // ── C3: コンテナゲート — ヤード入口、ゲートハウス、警告線、forklift 行進 ──
+  // 上段: ゲート + 案内塔 (signal_tower) + 入庫待ちコンテナ
+  // 下段: 検査ヤード + ガントリー予兆 (silo + container_stack)
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: ゲートハウス + 入庫倉庫 ===
+      _B('garage', -160, 70),                                   // ゲートハウス西
+      _B('warehouse', -110, 70),                                // 検査倉庫
+      _B('container_stack', -55, 60),                           // ★ 入庫待ちコンテナ
+      _B('container_stack', 0, 60),
+      _B('container_stack', 50, 60),
+      _B('warehouse', 110, 70),                                 // 出荷倉庫
+      _B('garage', 160, 70),                                    // ゲートハウス東
+      // === 下段: 大型ヤード ===
+      _B('container_stack', -140, 132),                         // ★ 大型ヤード (赤)
+      _B('container_stack', -90, 132),                          // (青)
+      _B('container_stack', -40, 132),                          // (黄)
+      _B('container_stack', 30, 132),                           // (緑)
+      _B('container_stack', 80, 132),                           // (赤)
+      _B('container_stack', 130, 132),                          // (青)
+      _B('warehouse', 170, 138),
+      _B('shed', -160, 178),
+      _B('shed', 60, 178),
+    ],
+    furniture: [
+      // ─── 上段: ゲート構造 (案内塔 + 旗) ───
+      _F('signal_tower', -90, 50), _F('signal_tower', 90, 50),  // ★ 案内塔 (左右対の予兆)
+      _F('flag_pole', -160, 52), _F('flag_pole', 160, 52),
+      _F('sign_board', -160, 52), _F('sign_board', 160, 52),    // 「Container Gate」
+      _F('barrier', -90, 100), _F('barrier', 90, 100),          // ゲートバー
+      _F('barrier', 0, 50),                                     // 検査停止バリア
+      _F('traffic_cone', -120, 100), _F('traffic_cone', -60, 100),
+      _F('traffic_cone', 60, 100), _F('traffic_cone', 120, 100),
+      // ─── 上段: 入庫コンテナ周辺 ───
+      _F('forklift', -75, 78), _F('forklift', 25, 78), _F('forklift', 75, 78),
+      _F('drum_can', -30, 80), _F('drum_can', 30, 80),
+      _F('pallet_stack', -55, 82), _F('pallet_stack', 50, 82),
+      _F('cargo_container', -130, 82),                          // 倉庫脇の追加コンテナ
+      _F('cargo_container', 130, 82),
+      _F('sign_board', -110, 52), _F('sign_board', 110, 52),
+      // ─── 下段: ヤードファサード + 旗 ───
+      _F('flag_pole', -170, 118), _F('flag_pole', 170, 118),
+      _F('sign_board', -140, 118), _F('sign_board', -90, 118),
+      _F('sign_board', -40, 118), _F('sign_board', 30, 118),
+      _F('sign_board', 80, 118), _F('sign_board', 130, 118),
+      // ─── 下段: ヤード内 forklift 行進 + 補助 ───
+      _F('forklift', -115, 168), _F('forklift', -65, 168),
+      _F('forklift', -15, 168), _F('forklift', 55, 168),
+      _F('forklift', 105, 168), _F('forklift', 155, 168),
+      _F('drum_can', -135, 178), _F('drum_can', -85, 178),
+      _F('drum_can', -35, 178), _F('drum_can', 35, 178),
+      _F('drum_can', 85, 178), _F('drum_can', 135, 178),
+      _F('pallet_stack', -115, 195), _F('pallet_stack', 25, 195),
+      _F('pallet_stack', 110, 195),
+      _F('cargo_container', -160, 158),                         // ヤード奥のコンテナ
+      _F('cargo_container', 0, 158),                            // 中央のコンテナ
+      _F('cargo_container', 170, 158),
+      // ─── 軸: guardrail ───
+      _F('guardrail_short', -150, 50), _F('guardrail_short', 150, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── 中央通り (ゲート前) ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('bollard', -60, 100), _F('bollard', 60, 100),
+    ],
+    humans: [
+      _H(-160, 80),                                             // ゲートハウス守衛
+      _H(160, 80),                                              // ゲートハウス守衛
+      _H(0, 100),                                               // 検査員
+      _H(-65, 165), _H(55, 165),                                // フォークリフト操縦
+      _H(-115, 175), _H(105, 175),                              // 荷役作業
+    ],
+    grounds: [
+      _G('steel_plate', 0, 46.5, 360, 93),                      // ★ Act II 全面が steel
+      _G('steel_plate', 0, 153.5, 360, 93),
+      _G('hazard_stripe', 0, 50, 60, 22),                       // ★★ ゲート入口の大警告
+      _G('hazard_stripe', -90, 100, 22, 22),                    // ★ ゲートバー左
+      _G('hazard_stripe', 90, 100, 22, 22),                     // ★ ゲートバー右
+      _G('hazard_stripe', -160, 100, 18, 18),
+      _G('hazard_stripe', 160, 100, 18, 18),
+      _G('oil_stained_concrete', -90, 168, 60, 50),             // 西ヤード油汚れ
+      _G('oil_stained_concrete', 90, 168, 60, 50),
+      _G('hazard_stripe', 0, 168, 30, 18),                      // ★ ヤード中央警告
+      _G('concrete', -160, 168, 32, 38),
+      _G('concrete', 160, 168, 32, 38),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C4: ガントリークレーン見本市 ★★ Stage 4 ランドマーク ★★ ──
+  // 上段: 巨大な crane_gantry 2 本が空にそびえる (h=78、最も高い建物)
+  // 下段: クレーン下のヤード、コンテナ運搬中
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: ガントリー 2 本 + サポート倉庫 ===
+      _B('crane_gantry', -130, 30),                             // ★★ 西ガントリー (主)
+      _B('crane_gantry', 130, 30),                              // ★★ 東ガントリー (主)
+      _B('container_stack', -65, 60),                           // クレーン下のスタック
+      _B('container_stack', -20, 60),
+      _B('container_stack', 25, 60),
+      _B('container_stack', 70, 60),
+      _B('shed', -80, 78), _B('shed', 80, 78),
+      // === 下段: 大ヤード ===
+      _B('container_stack', -150, 132),
+      _B('container_stack', -100, 132),
+      _B('container_stack', -50, 132),
+      _B('container_stack', 0, 132),
+      _B('container_stack', 50, 132),
+      _B('container_stack', 100, 132),
+      _B('container_stack', 150, 132),
+      _B('warehouse', -90, 138),                                // この行は重なるので除外
+      _B('shed', -180, 178), _B('shed', 180, 178),
+    ],
+    furniture: [
+      // ─── 上段: クレーン下の作業帯 ───
+      _F('cargo_container', -130, 80),                          // クレーンが吊る予定のコンテナ群
+      _F('cargo_container', 130, 80),
+      _F('drum_can', -160, 78), _F('drum_can', 160, 78),
+      _F('forklift', -100, 82), _F('forklift', 100, 82),
+      _F('pallet_stack', -45, 82), _F('pallet_stack', 45, 82),
+      _F('pallet_stack', 0, 82),
+      _F('cargo_container', -45, 30),                           // 既に積んだコンテナ (赤)
+      _F('cargo_container', 0, 32),                             // (青)
+      _F('cargo_container', 50, 30),                            // (緑)
+      _F('flag_pole', -130, 12), _F('flag_pole', 130, 12),      // クレーン頂上の旗
+      _F('signal_tower', -90, 50), _F('signal_tower', 90, 50),
+      // ─── 下段: ヤード ───
+      _F('forklift', -125, 168), _F('forklift', -75, 168),
+      _F('forklift', -25, 168), _F('forklift', 25, 168),
+      _F('forklift', 75, 168), _F('forklift', 125, 168),
+      _F('drum_can', -160, 158), _F('drum_can', -110, 158),
+      _F('drum_can', -60, 158), _F('drum_can', 0, 158),
+      _F('drum_can', 60, 158), _F('drum_can', 110, 158),
+      _F('drum_can', 160, 158),
+      _F('pallet_stack', -150, 195), _F('pallet_stack', -50, 195),
+      _F('pallet_stack', 50, 195), _F('pallet_stack', 150, 195),
+      _F('cargo_container', -120, 178),                         // 山の追加 (色違い)
+      _F('cargo_container', 120, 178),
+      _F('barrier', 0, 178),                                    // ヤードの仕切り
+      _F('cat', -180, 195),
+      // ─── 軸: guardrail + 安全帯 ───
+      _F('guardrail_short', -90, 50), _F('guardrail_short', 90, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      _F('traffic_cone', -90, 100), _F('traffic_cone', 90, 100),
+      _F('traffic_cone', -30, 100), _F('traffic_cone', 30, 100),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── 中央通り ───
+      _F('street_lamp', -60, 100), _F('street_lamp', 60, 100),
+      _F('manhole_cover', 0, 100),
+      _F('puddle_reflection', -45, 100),
+    ],
+    humans: [
+      _H(-130, 80),                                             // クレーン操縦士 (西)
+      _H(130, 80),                                              // クレーン操縦士 (東)
+      _H(-90, 100),                                             // 安全監視員
+      _H(0, 82),                                                // ホイスト誘導員
+      _H(-75, 168), _H(75, 168),                                // フォークリフト
+      _H(-150, 175), _H(150, 175),                              // ヤード作業
+    ],
+    grounds: [
+      _G('steel_plate', 0, 46.5, 360, 93),
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('hazard_stripe', -130, 60, 30, 28),                    // ★ 西クレーン基礎の警告
+      _G('hazard_stripe', 130, 60, 30, 28),                     // ★ 東クレーン基礎の警告
+      _G('hazard_stripe', 0, 100, 90, 22),                      // ★★ クレーン下の通行警告 (大)
+      _G('hazard_stripe', 0, 168, 30, 18),
+      _G('hazard_stripe', -150, 168, 18, 18),
+      _G('hazard_stripe', 150, 168, 18, 18),
+      _G('rust_deck', -65, 78, 100, 22),                        // クレーン下の鉄板
+      _G('rust_deck', 0, 178, 360, 18),                         // ヤード奥の鉄板帯
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C5: コンテナ山頂点 — 巨大な貨物車両ヤードと高く積まれたコンテナの森 ──
+  // 上段: 大型コンテナ列 + 線路 (railway_track) で港湾鉄道を表現
+  // 下段: コンテナの最終スタック地点 + 工場予兆 (silo + drum) — Act III へのブリッジ
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 鉄道引き込み線 + コンテナ列 ===
+      _B('container_stack', -160, 60),
+      _B('container_stack', -115, 60),
+      _B('container_stack', -70, 60),
+      _B('container_stack', -25, 60),
+      _B('container_stack', 25, 60),
+      _B('container_stack', 70, 60),
+      _B('container_stack', 115, 60),
+      _B('container_stack', 160, 60),
+      // === 下段: 第二段スタック + Act III 予兆 ===
+      _B('container_stack', -150, 132),
+      _B('container_stack', -100, 132),
+      _B('silo', -50, 110),                                     // ★ Act III 予兆 (1 本目)
+      _B('container_stack', 0, 132),
+      _B('container_stack', 50, 132),
+      _B('silo', 100, 110),                                     // ★ Act III 予兆 (2 本目)
+      _B('container_stack', 150, 132),
+      _B('shed', -180, 178), _B('shed', 180, 178),
+      _B('warehouse', 0, 175),                                  // 巨大倉庫の頭 (奥)
+    ],
+    furniture: [
+      // ─── 上段: 鉄道 (港湾線路) — Stage 4 ★ シグネチャ ───
+      _F('railway_track', -145, 90),                            // ★ 線路セグメント (左)
+      _F('railway_track', -95, 90),
+      _F('railway_track', -45, 90),
+      _F('railway_track', 5, 90),
+      _F('railway_track', 55, 90),
+      _F('railway_track', 105, 90),
+      _F('railway_track', 155, 90),
+      _F('signal_tower', -160, 50), _F('signal_tower', 160, 50),
+      _F('flag_pole', -160, 80), _F('flag_pole', 160, 80),
+      // ─── 上段: 山の追加コンテナ + ドラム ───
+      _F('cargo_container', -135, 30),                          // 上に乗ったコンテナ (赤)
+      _F('cargo_container', -90, 32),                           // (青)
+      _F('cargo_container', -45, 30),                           // (黄)
+      _F('cargo_container', 0, 32),                             // (緑)
+      _F('cargo_container', 45, 30),                            // (赤)
+      _F('cargo_container', 90, 32),                            // (青)
+      _F('cargo_container', 135, 30),                           // (黄)
+      _F('drum_can', -160, 80), _F('drum_can', 160, 80),
+      _F('forklift', -120, 82), _F('forklift', 120, 82),
+      _F('pallet_stack', 0, 78),
+      // ─── 下段: 第二段スタック ───
+      _F('cargo_container', -150, 158),
+      _F('cargo_container', -100, 158),
+      _F('cargo_container', 0, 158),
+      _F('cargo_container', 50, 158),
+      _F('cargo_container', 150, 158),
+      _F('drum_can', -75, 165), _F('drum_can', 75, 165),
+      _F('drum_can', -50, 178), _F('drum_can', 100, 178),       // サイロ脇のドラム
+      _F('forklift', -125, 168), _F('forklift', 125, 168),
+      _F('forklift', -25, 168), _F('forklift', 25, 168),
+      _F('pallet_stack', -180, 195), _F('pallet_stack', 180, 195),
+      _F('barrier', -90, 178), _F('barrier', 90, 178),
+      _F('cat', 0, 195),
+      // ─── 軸: guardrail + ハザード ───
+      _F('guardrail_short', -90, 50), _F('guardrail_short', 90, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      _F('traffic_cone', -45, 100), _F('traffic_cone', 45, 100),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 中央通り (鉄道横断) ───
+      _F('street_lamp', -60, 100), _F('street_lamp', 60, 100),
+      _F('manhole_cover', -25, 100), _F('manhole_cover', 25, 100),
+    ],
+    humans: [
+      _H(-150, 80), _H(150, 80),                                // 線路点検
+      _H(-50, 100),                                             // 鉄道交差員
+      _H(-100, 165), _H(100, 165),                              // ヤード作業
+      _H(0, 175),                                               // 中央倉庫
+    ],
+    grounds: [
+      _G('steel_plate', 0, 46.5, 360, 93),
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('rust_deck', 0, 90, 360, 18),                          // ★ 鉄道沿いの錆鉄
+      _G('hazard_stripe', -150, 60, 22, 22),
+      _G('hazard_stripe', 150, 60, 22, 22),
+      _G('hazard_stripe', 0, 60, 22, 22),
+      _G('hazard_stripe', -50, 132, 22, 18),                    // 西サイロ警告
+      _G('hazard_stripe', 100, 132, 22, 18),                    // 東サイロ警告
+      _G('hazard_stripe', -150, 168, 18, 18), _G('hazard_stripe', 150, 168, 18, 18),
+      _G('hazard_stripe', 0, 168, 22, 18),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ═══ Act III: 重工業地帯 (C6-C8) ═══════════════════════════════════
+  // コンセプト: コンテナの世界から、煙突 + サイロ + パイプの森林へ。
+  // 上段 = 巨大工場とサイロ群、下段 = 補助設備とドラム缶、人は最も少なく機械的。
+
+  // ── C6: 製鉄所 — 巨大な煙突 + サイロ群、鉄屑 + 溶鉱炉の重工業 ──
+  // 上段: factory_stack 2 本 (中心、煙突つき) + silo
+  // 下段: 鉄屑置き場 + 補助倉庫 + 倉庫間のドラム缶
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 製鉄所 (巨大煙突) ===
+      _B('factory_stack', -130, 38),                            // ★★ 西製鉄所 (h=62)
+      _B('silo', -75, 50),                                      // 高炉サイロ
+      _B('warehouse', -25, 70),                                 // 鉄屑倉庫
+      _B('silo', 25, 50),
+      _B('silo', 60, 50),                                       // 連続サイロ
+      _B('factory_stack', 130, 38),                             // ★★ 東製鉄所
+      _B('shed', 175, 78),
+      // === 下段: 鉄屑置き場 + 補助 ===
+      _B('warehouse', -150, 138),                               // 鉄鉱石倉庫
+      _B('container_stack', -100, 132),                         // 鉄屑コンテナ
+      _B('garage', -55, 138),                                   // 機械整備
+      _B('factory_stack', 0, 132),                              // ★ 中央炉 (中)
+      _B('garage', 55, 138),
+      _B('container_stack', 100, 132),
+      _B('warehouse', 150, 138),
+      _B('shed', -180, 178), _B('shed', 180, 178),
+    ],
+    furniture: [
+      // ─── 上段: 製鉄所の付属設備 ───
+      _F('water_tank', -160, 60),                               // 冷却水タンク
+      _F('water_tank', 160, 60),
+      _F('drum_can', -100, 78), _F('drum_can', -50, 78),
+      _F('drum_can', 50, 78), _F('drum_can', 100, 78),
+      _F('pallet_stack', -75, 82), _F('pallet_stack', 75, 82),
+      _F('cargo_container', -160, 82),                          // 鉄屑搬入コンテナ
+      _F('cargo_container', 160, 82),
+      _F('forklift', -55, 82), _F('forklift', 5, 82),
+      _F('flag_pole', -130, 12), _F('flag_pole', 130, 12),      // 工場頂上の旗
+      _F('signal_tower', 0, 50),                                // 中央の連絡塔
+      // ─── 上段: 鉄屑 (rock + drum で見立て) ───
+      _F('rock', -160, 32), _F('rock', -100, 30),
+      _F('rock', 100, 32), _F('rock', 160, 30),
+      _F('drum_can', -130, 12), _F('drum_can', 130, 12),
+      // ─── 下段: 倉庫ファサード ───
+      _F('sign_board', -150, 118), _F('sign_board', -55, 118),
+      _F('sign_board', 0, 118), _F('sign_board', 55, 118),
+      _F('sign_board', 150, 118),
+      _F('flag_pole', -180, 118), _F('flag_pole', 180, 118),
+      // ─── 下段: 鉄屑置き場 + 機械 ───
+      _F('forklift', -130, 168), _F('forklift', -75, 168),
+      _F('forklift', 75, 168), _F('forklift', 130, 168),
+      _F('drum_can', -160, 178), _F('drum_can', -110, 178),
+      _F('drum_can', -65, 178), _F('drum_can', -25, 178),
+      _F('drum_can', 25, 178), _F('drum_can', 65, 178),
+      _F('drum_can', 110, 178), _F('drum_can', 160, 178),
+      _F('pallet_stack', -90, 195), _F('pallet_stack', -25, 195),
+      _F('pallet_stack', 25, 195), _F('pallet_stack', 90, 195),
+      _F('cargo_container', -50, 158),
+      _F('cargo_container', 50, 158),
+      _F('rock', 0, 195), _F('rock', -180, 192),                // 鉄屑見立て
+      _F('water_tank', -180, 152), _F('water_tank', 180, 152),
+      _F('cat', 0, 100),                                        // 工場猫
+      // ─── 軸: guardrail + ハザード ───
+      _F('guardrail_short', -90, 50), _F('guardrail_short', 90, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      _F('barrier', 0, 100),                                    // 中央の排煙バリア
+      _F('traffic_cone', -45, 100), _F('traffic_cone', 45, 100),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 中央通り ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+    ],
+    humans: [
+      _H(-130, 100),                                            // 西製鉄所守衛
+      _H(130, 100),                                             // 東製鉄所守衛
+      _H(-25, 80),                                              // 鉄屑倉庫
+      _H(0, 100),                                               // 中央連絡員
+      _H(-55, 152), _H(55, 152),                                // 機械整備
+      _H(-150, 165), _H(150, 165),                              // 鉱石倉庫
+    ],
+    grounds: [
+      _G('oil_stained_concrete', 0, 46.5, 360, 93),             // ★ Act III は油汚れ基調
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('hazard_stripe', -130, 78, 30, 22),                    // 西製鉄所基礎
+      _G('hazard_stripe', 130, 78, 30, 22),
+      _G('hazard_stripe', 0, 78, 22, 22),                       // 中央サイロ警告
+      _G('hazard_stripe', 0, 100, 60, 22),                      // ★ 中央通り排煙警告 (大)
+      _G('hazard_stripe', 0, 152, 22, 18),
+      _G('hazard_stripe', -150, 168, 18, 18), _G('hazard_stripe', 150, 168, 18, 18),
+      _G('rust_deck', -75, 78, 30, 26),                         // サイロ下の錆鉄
+      _G('rust_deck', 25, 78, 30, 26),
+      _G('rust_deck', 60, 78, 30, 26),
+      _G('steel_plate', -150, 168, 60, 50), _G('steel_plate', 150, 168, 60, 50),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C7: 石油タンク群 — サイロが森のように立ち並び、パイプとドラム缶の海 ──
+  // 上段: silo の連続 (8 本) — 工業ジオラマの圧巻ポイント
+  // 下段: 石油タンクの基礎、パイプ、ドラム缶の山
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: サイロ 8 本連続 (オイルタンク見立て) ===
+      _B('silo', -160, 50),
+      _B('silo', -125, 50),
+      _B('silo', -90, 50),
+      _B('silo', -50, 50),
+      _B('silo', 50, 50),
+      _B('silo', 90, 50),
+      _B('silo', 125, 50),
+      _B('silo', 160, 50),
+      _B('warehouse', 0, 70),                                   // 中央のオペレーション棟
+      // === 下段: タンク基礎 + パイプライン ===
+      _B('silo', -160, 110),                                    // 第二段サイロ (短)
+      _B('silo', -100, 110),
+      _B('silo', 100, 110),
+      _B('silo', 160, 110),
+      _B('warehouse', -50, 138),                                // パイプライン分岐倉庫
+      _B('warehouse', 50, 138),
+      _B('garage', 0, 138),                                     // 制御室
+      _B('shed', -180, 178), _B('shed', 180, 178),
+      _B('container_stack', 0, 180),                            // 中央のタンクローリー
+    ],
+    furniture: [
+      // ─── 上段: サイロ間のパイプ + バルブ + ドラム ───
+      _F('water_tank', -142, 80),                               // パイプ分岐
+      _F('water_tank', -107, 80),
+      _F('water_tank', -70, 80),
+      _F('water_tank', 70, 80),
+      _F('water_tank', 107, 80),
+      _F('water_tank', 142, 80),
+      _F('drum_can', -160, 80), _F('drum_can', -125, 78),
+      _F('drum_can', -90, 80), _F('drum_can', -50, 78),
+      _F('drum_can', 50, 80), _F('drum_can', 90, 78),
+      _F('drum_can', 125, 80), _F('drum_can', 160, 78),
+      _F('flag_pole', -90, 12), _F('flag_pole', 90, 12),
+      _F('signal_tower', -30, 50), _F('signal_tower', 30, 50),
+      _F('pallet_stack', 0, 82),
+      // ─── 下段: タンク群 + パイプライン ───
+      _F('water_tank', -130, 100), _F('water_tank', 130, 100), // 中央通り脇の補助
+      _F('water_tank', -50, 158), _F('water_tank', 50, 158),
+      _F('water_tank', 0, 158),
+      _F('drum_can', -160, 168), _F('drum_can', -130, 178),
+      _F('drum_can', -100, 168), _F('drum_can', -75, 168),
+      _F('drum_can', -25, 178), _F('drum_can', 25, 178),
+      _F('drum_can', 75, 168), _F('drum_can', 100, 168),
+      _F('drum_can', 130, 178), _F('drum_can', 160, 168),
+      _F('pallet_stack', -90, 195), _F('pallet_stack', 90, 195),
+      _F('pallet_stack', 0, 195),
+      _F('cargo_container', -75, 158),                          // 補給コンテナ
+      _F('cargo_container', 75, 158),
+      _F('forklift', -55, 168), _F('forklift', 55, 168),
+      _F('barrier', -90, 178), _F('barrier', 90, 178),
+      _F('cat', 180, 192),
+      // ─── 軸: guardrail + ハザード ───
+      _F('guardrail_short', -150, 50), _F('guardrail_short', 150, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      _F('barrier', 0, 100),
+      _F('traffic_cone', -60, 100), _F('traffic_cone', 60, 100),
+      _F('traffic_cone', -30, 100), _F('traffic_cone', 30, 100),
+      // ─── 軸: 電柱 + 電線 ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 中央通り (ハザード盛り) ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -45, 100), _F('manhole_cover', 45, 100),
+    ],
+    humans: [
+      _H(0, 80),                                                // 中央オペレーション
+      _H(-160, 88),                                             // 西タンク点検
+      _H(160, 88),                                              // 東タンク点検
+      _H(0, 152),                                               // 制御室
+      _H(-50, 165), _H(50, 165),                                // パイプライン作業
+    ],
+    grounds: [
+      _G('oil_stained_concrete', 0, 46.5, 360, 93),             // ★★ Act III の油まみれ
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('hazard_stripe', -160, 80, 18, 18), _G('hazard_stripe', -125, 80, 18, 18),
+      _G('hazard_stripe', -90, 80, 18, 18), _G('hazard_stripe', -50, 80, 18, 18),
+      _G('hazard_stripe', 50, 80, 18, 18), _G('hazard_stripe', 90, 80, 18, 18),
+      _G('hazard_stripe', 125, 80, 18, 18), _G('hazard_stripe', 160, 80, 18, 18),
+      _G('hazard_stripe', 0, 100, 90, 22),                      // ★★ 中央通り全幅警告
+      _G('hazard_stripe', -160, 132, 18, 18), _G('hazard_stripe', -100, 132, 18, 18),
+      _G('hazard_stripe', 100, 132, 18, 18), _G('hazard_stripe', 160, 132, 18, 18),
+      _G('hazard_stripe', 0, 178, 22, 18),
+      _G('rust_deck', -75, 158, 30, 26),                        // タンク基礎の錆鉄
+      _G('rust_deck', 75, 158, 30, 26),
+      _G('rust_deck', 0, 158, 30, 26),
+      _G('steel_plate', -130, 168, 60, 50), _G('steel_plate', 130, 168, 60, 50),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C8: 発電所 + 化学工場 — 煙突の森、Act III の最終形 ──
+  // 上段: factory_stack 3 本連続 (大煙突)、発電所
+  // 下段: 化学工場、補助設備、変電所 (electric_box 群)
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 発電所 (大煙突連続) ===
+      _B('factory_stack', -130, 38),                            // ★★ 西大煙突
+      _B('silo', -75, 50),                                      // 補助
+      _B('factory_stack', 0, 38),                               // ★★ 中央大煙突
+      _B('silo', 75, 50),
+      _B('factory_stack', 130, 38),                             // ★★ 東大煙突
+      _B('shed', -180, 78), _B('shed', 180, 78),
+      // === 下段: 化学工場 + 変電所 ===
+      _B('warehouse', -150, 138),                               // 化学倉庫西
+      _B('silo', -100, 110),                                    // 化学反応塔
+      _B('container_stack', -50, 132),                          // 化学コンテナ
+      _B('warehouse', 0, 138),                                  // 中央倉庫
+      _B('container_stack', 50, 132),
+      _B('silo', 100, 110),                                     // 化学反応塔
+      _B('warehouse', 150, 138),                                // 化学倉庫東
+      _B('shed', -180, 178), _B('shed', 180, 178),
+      _B('garage', 0, 178),                                     // 出荷ガレージ
+    ],
+    furniture: [
+      // ─── 上段: 発電所付属 ───
+      _F('water_tank', -160, 60), _F('water_tank', 160, 60),
+      _F('water_tank', -50, 60), _F('water_tank', 50, 60),
+      _F('drum_can', -130, 12), _F('drum_can', 0, 12), _F('drum_can', 130, 12),
+      _F('drum_can', -100, 78), _F('drum_can', -25, 78),
+      _F('drum_can', 25, 78), _F('drum_can', 100, 78),
+      _F('pallet_stack', -75, 82), _F('pallet_stack', 75, 82),
+      _F('cargo_container', -160, 82),                          // 廃棄物コンテナ
+      _F('cargo_container', 160, 82),
+      _F('flag_pole', -130, 12), _F('flag_pole', 130, 12),
+      _F('signal_tower', -90, 50), _F('signal_tower', 90, 50),
+      _F('forklift', -55, 82), _F('forklift', 55, 82),
+      // ─── 下段: 変電所と化学工場の機械 ───
+      _F('electric_box', -170, 152),                            // ★★ 変電所 (Act III シグネチャ)
+      _F('electric_box', -130, 152),
+      _F('electric_box', -90, 152),
+      _F('electric_box', 90, 152),
+      _F('electric_box', 130, 152),
+      _F('electric_box', 170, 152),
+      _F('cable_junction_box', -55, 100),
+      _F('cable_junction_box', 55, 100),
+      _F('water_tank', -50, 158), _F('water_tank', 50, 158),
+      _F('drum_can', -160, 178), _F('drum_can', -125, 178),
+      _F('drum_can', -90, 178), _F('drum_can', -25, 178),
+      _F('drum_can', 25, 178), _F('drum_can', 90, 178),
+      _F('drum_can', 125, 178), _F('drum_can', 160, 178),
+      _F('pallet_stack', -50, 195), _F('pallet_stack', 50, 195),
+      _F('cargo_container', -150, 158),                         // 化学倉庫前
+      _F('cargo_container', 150, 158),
+      _F('forklift', 0, 168),                                   // ガレージ前
+      _F('barrier', -90, 178), _F('barrier', 90, 178),
+      _F('cat', -180, 195),
+      // ─── 軸: guardrail + 巨大ハザード ───
+      _F('guardrail_short', -150, 50), _F('guardrail_short', 150, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      _F('barrier', 0, 100),
+      _F('traffic_cone', -75, 100), _F('traffic_cone', 75, 100),
+      _F('traffic_cone', -45, 100), _F('traffic_cone', 45, 100),
+      _F('traffic_cone', -15, 100), _F('traffic_cone', 15, 100),
+      // ─── 軸: 電柱 + 電線 (発電所なので密) ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('power_pole', -90, 195), _F('power_line', -85, 192),
+      _F('power_pole', 90, 195), _F('power_line', 85, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 中央通り ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('fire_extinguisher', -30, 100), _F('fire_extinguisher', 30, 100),
+      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
+    ],
+    humans: [
+      _H(-130, 100),                                            // 発電所西
+      _H(0, 100),                                               // 中央発電所
+      _H(130, 100),                                             // 発電所東
+      _H(-150, 152),                                            // 化学倉庫西
+      _H(150, 152),                                             // 化学倉庫東
+      _H(0, 152),                                               // 中央倉庫
+      _H(-100, 165), _H(100, 165),                              // 化学反応塔
+    ],
+    grounds: [
+      _G('oil_stained_concrete', 0, 46.5, 360, 93),
+      _G('oil_stained_concrete', 0, 153.5, 360, 93),
+      _G('hazard_stripe', -130, 78, 30, 22), _G('hazard_stripe', 130, 78, 30, 22),
+      _G('hazard_stripe', 0, 78, 30, 22),
+      _G('hazard_stripe', 0, 100, 120, 22),                     // ★★ 全幅警告 (最強)
+      _G('hazard_stripe', -50, 132, 22, 18), _G('hazard_stripe', 50, 132, 22, 18),
+      _G('hazard_stripe', 0, 178, 22, 18),
+      _G('rust_deck', -75, 78, 30, 26), _G('rust_deck', 75, 78, 30, 26),
+      _G('rust_deck', -100, 158, 30, 26), _G('rust_deck', 100, 158, 30, 26),
+      _G('steel_plate', -150, 168, 60, 50), _G('steel_plate', 150, 168, 60, 50),
+      _G('steel_plate', -180, 152, 30, 36), _G('steel_plate', 180, 152, 30, 36),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ═══ Act IV: 出荷場 (C9) → Stage 5 (祭り) handoff ═════════════════
+  // コンセプト: 工業地帯の終端、トラックターミナル + 巨大倉庫。遠くの祭り (赤提灯 + 風船)
+  // が見え隠れし、Stage 5 への期待が高まる。色調が暖かさを取り戻し始める。
+
+  // ── C9: トラックターミナル + 祭りの予兆 ──
+  // 上段: 出荷倉庫 + トラック並び + 出荷ゲート
+  // 下段: 廃工場の残骸 + 遠くの祭りの予兆 (chouchin + balloon_cluster)
+  { patternId: 's4_raw', raw: {
+    buildings: [
+      // === 上段: 巨大倉庫 + トラック並び ===
+      _B('warehouse', -130, 70),                                // 西出荷倉庫
+      _B('container_stack', -75, 60),                           // 出荷待ちコンテナ
+      _B('warehouse', -10, 70),                                 // 中央倉庫
+      _B('container_stack', 50, 60),
+      _B('warehouse', 130, 70),                                 // 東出荷倉庫
+      _B('shed', -180, 78), _B('shed', 180, 78),
+      // === 下段: 廃工場 + 祭り予兆 ===
+      _B('factory_stack', -150, 132),                           // 最後の工場 (廃)
+      _B('garage', -100, 138),
+      _B('warehouse', -50, 138),                                // ガレージ + 待機トラック倉庫
+      _B('yatai', 0, 175),                                      // ★★ 祭り予兆: 屋台 (Stage 5 handoff)
+      _B('warehouse', 60, 138),
+      _B('garage', 110, 138),
+      _B('container_stack', 160, 132),
+      _B('shed', 35, 178), _B('shed', -35, 178),
+    ],
+    furniture: [
+      // ─── 上段: 出荷ゲート + トラック行列 (car で代用) ───
+      _F('car', -160, 80), _F('car', -140, 82),                 // 西列トラック
+      _F('car', -110, 78), _F('car', -90, 82),
+      _F('car', 90, 78), _F('car', 110, 82),                    // 東列
+      _F('car', 140, 80), _F('car', 160, 82),
+      _F('forklift', -50, 82), _F('forklift', 30, 82),
+      _F('drum_can', -75, 80), _F('drum_can', 50, 80),
+      _F('pallet_stack', -10, 82),
+      _F('cargo_container', -75, 30),                           // 上段コンテナ (赤)
+      _F('cargo_container', 50, 32),                            // (青)
+      _F('flag_pole', -160, 32), _F('flag_pole', 160, 32),
+      _F('signal_tower', 0, 50),                                // 出荷管理塔
+      _F('sign_board', -130, 52), _F('sign_board', 130, 52),
+      _F('sign_board', -10, 52),                                // 「出荷ゲート」
+      // ─── ★★ 下段: 祭りの予兆 (Stage 5 handoff シグネチャ) ★★ ───
+      _F('chouchin', -25, 162),                                 // ★ 遠くの提灯 1
+      _F('chouchin', 25, 162),                                  // ★ 遠くの提灯 2
+      _F('chouchin', 0, 158),                                   // ★ 中央提灯
+      _F('noren', 0, 168),                                      // ★ 屋台ののれん
+      _F('balloon_cluster', -55, 170),                          // ★★ 風船 (祭り)
+      _F('balloon_cluster', 55, 170),                           // ★★ 風船
+      _F('flag_pole', 0, 158),                                  // 屋台の旗
+      _F('matsuri_drum', 30, 178),                              // ★★ 太鼓 (Stage 5 シグネチャ)
+      // ─── 下段: 廃工場まわり (寂寥感) ───
+      _F('drum_can', -160, 168), _F('drum_can', -125, 178),
+      _F('drum_can', 125, 178), _F('drum_can', 160, 168),
+      _F('rock', -150, 195), _F('rock', 150, 195),              // 廃材
+      _F('puddle_reflection', -120, 168),                       // 水たまり (廃工場の寂寥)
+      _F('puddle_reflection', 120, 168),
+      _F('cat', -100, 178),                                     // 廃工場の猫
+      _F('forklift', 110, 168),                                 // 待機フォークリフト
+      _F('pallet_stack', -100, 195), _F('pallet_stack', 100, 195),
+      _F('cargo_container', -50, 158),                          // 廃倉庫前
+      _F('cargo_container', 60, 158),
+      _F('tarp', -180, 168),                                    // 廃材を覆うタープ
+      _F('tarp', 180, 168),
+      // ─── 軸: guardrail + ゲート ───
+      _F('guardrail_short', -90, 50), _F('guardrail_short', 90, 50),
+      _F('guardrail_short', -150, 100), _F('guardrail_short', 150, 100),
+      _F('barrier', -90, 100), _F('barrier', 90, 100),          // 出荷ゲートバー
+      _F('traffic_cone', -45, 100), _F('traffic_cone', 45, 100),
+      // ─── 軸: 電柱 + 電線 (薄め、Stage 5 へ受け渡し) ───
+      _F('power_pole', -178, 92), _F('power_line', -175, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -178, 195), _F('power_line', -175, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── 中央通り (祭りの灯り入る) ───
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('chouchin', -90, 92), _F('chouchin', 90, 92),          // ★ 提灯 (祭りの予感、街灯と並ぶ)
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('bollard', -60, 100), _F('bollard', 60, 100),
+    ],
+    humans: [
+      _H(-130, 80),                                             // 西出荷倉庫
+      _H(130, 80),                                              // 東出荷倉庫
+      _H(0, 100),                                               // 出荷ゲート守衛
+      _H(0, 168),                                               // ★★ 屋台店主 (Stage 5 予兆)
+      _H(-25, 178),                                             // 屋台客 1
+      _H(25, 178),                                              // 屋台客 2
+      _H(-100, 152),                                            // 廃工場の見回り
+      _H(110, 165),                                             // 待機トラック運転手
+    ],
+    grounds: [
+      _G('oil_stained_concrete', 0, 46.5, 360, 93),
+      _G('oil_stained_concrete', 0, 153.5, 240, 93),            // 廃工場側 (狭く)
+      _G('asphalt', -150, 100, 60, 18),                         // ゲート前車道
+      _G('asphalt', 150, 100, 60, 18),
+      _G('hazard_stripe', -90, 100, 22, 22),                    // ゲートバー左
+      _G('hazard_stripe', 90, 100, 22, 22),                     // ゲートバー右
+      _G('hazard_stripe', 0, 100, 30, 22),
+      _G('hazard_stripe', -150, 78, 18, 18), _G('hazard_stripe', 150, 78, 18, 18),
+      // ★★ Stage 5 予兆: 中央下段に祭りの赤絨毯 + チェッカータイル ★★
+      _G('red_carpet', 0, 168, 100, 38),                        // ★★ 屋台広場の赤絨毯
+      _G('checker_tile', -55, 168, 28, 38),                     // ★ 祭り予兆チェッカー
+      _G('checker_tile', 55, 168, 28, 38),                      // ★ 祭り予兆チェッカー
+      _G('rust_deck', -150, 158, 40, 26),                       // 廃工場の錆鉄
+      _G('steel_plate', -100, 168, 50, 50),
+      _G('steel_plate', 110, 168, 50, 50),
+      _G('concrete', 0, 15, 80, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
 ];
 
 // ─── Stage 5: テーマパーク・祭り (フィナーレ 14 チャンク) ─────
