@@ -631,58 +631,133 @@ export class HumanManager {
     return [this.px[i], this.py[i]];
   }
 
+  /**
+   * 細密ドット絵スタイルのミニスプライト描画。
+   *
+   * レイアウト (scale=1, sx=3, sy=6 基準):
+   *   y ≈ +4.1        帽子 (1.1×0.7)
+   *   y ≈ +3.6        帽子つば / 髪の頂上 (1.0×0.3)
+   *   y ≈ +2.7        頭 (円) — サイズ 0.92sx
+   *   y ≈ +2.7 左右   目 (暗色、0.13sx × 0.05sy の 2 点)
+   *   y ≈ +2.4        前髪フリンジ (0.88sx × 0.10sy、額を覆う)
+   *   y ≈ +2.0        首 (肌色、0.32sx × 0.12sy)
+   *   y ≈ +1.3        腕/袖 (シャツ色、左右に ±0.48sx オフセット)
+   *   y ≈ +1.3        胴体/シャツ (0.85sx × 0.32sy)
+   *   y ≈ +0.8        アクセント (ネクタイ等、細い帯)
+   *   y ≈ +0.1        ベルト (暗い帯、0.90sx × 0.08sy)
+   *   y ≈ -1.5        両脚 (ズボン色、左右 ±0.23sx、各 0.32sx × 0.35sy、脚の間に隙間)
+   *   y ≈ -2.8        両足 (暗い靴、左右 ±0.30sx、各 0.38sx × 0.10sy)
+   *   y ≈ -2.95       足下の影 (暗楕円、1.0sx × 0.10sy、半透明)
+   *   体側: カバン (0.42sx × 0.42sy、オプション)
+   *
+   * → 人間 1 体あたり 14-18 インスタンス (従来 6-7 の 2.5 倍)
+   */
   fillInstances(buf: Float32Array, startIdx: number, cameraY = 0): number {
     let n = startIdx;
     const camBot = cameraY + C.WORLD_MIN_Y - 50;
     const camTop = cameraY + C.WORLD_MAX_Y + 50;
+    // 肌色 (共通) + 影色
+    const SKIN_R = 0.95, SKIN_G = 0.75, SKIN_B = 0.55;
     for (let k = 0; k < this.activeLen; k++) {
       const i = this.activeIndices[k];
       const py = this.py[i];
       if (py < camBot || py > camTop) continue;
       const kind = HUMAN_KINDS[this.kind[i]];
-      // 身長スケール (子供は小さく、神主は長身)
       const ks = kind.scale ?? 1.0;
       const sx = C.HUMAN_W * this.scaleX[i] * ks;
       const sy = C.HUMAN_H * (2 - this.scaleX[i]) * ks;
       const px = this.px[i];
 
-      // 1. 上半身 (シャツ)
+      // === ① 足下の影 (地面との接地感) ===
+      writeInst(buf, n++, px, py - sy * 0.49, sx * 1.10, sy * 0.07,
+        0.05, 0.05, 0.08, 0.35, 0, 1);                          // 楕円影 (circle=1, 半透明)
+
+      // === ② 両足 (靴、暗色) ===
+      const shoeR = 0.12, shoeG = 0.10, shoeB = 0.08;
+      writeInst(buf, n++, px - sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
+        shoeR, shoeG, shoeB, 1, 0, 0);
+      writeInst(buf, n++, px + sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
+        shoeR, shoeG, shoeB, 1, 0, 0);
+
+      // === ③ 両脚 (ズボン or スカート色、中央に隙間) ===
+      const [pr, pg, pb] = kind.pants ?? kind.shirt;
+      writeInst(buf, n++, px - sx * 0.22, py - sy * 0.27, sx * 0.32, sy * 0.30,
+        pr, pg, pb, 1, 0, 0);
+      writeInst(buf, n++, px + sx * 0.22, py - sy * 0.27, sx * 0.32, sy * 0.30,
+        pr, pg, pb, 1, 0, 0);
+
+      // === ④ ベルト (腰の細い暗帯、胴体と脚の境目) ===
+      writeInst(buf, n++, px, py - sy * 0.05, sx * 0.90, sy * 0.06,
+        pr * 0.55, pg * 0.55, pb * 0.55, 1, 0, 0);
+
+      // === ⑤ 両腕/袖 (シャツ色、体の左右に細く) ===
       const [sr, sg, sb] = kind.shirt;
-      writeInst(buf, n++, px, py - sy * 0.15, sx, sy * 0.6, sr, sg, sb, 1, 0, 0);
+      writeInst(buf, n++, px - sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
+        sr * 0.92, sg * 0.92, sb * 0.92, 1, 0, 0);              // 少し暗い (影)
+      writeInst(buf, n++, px + sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
+        sr * 0.92, sg * 0.92, sb * 0.92, 1, 0, 0);
 
-      // 2. 下半身 (ズボン) — body の下半分にオーバーレイ
-      if (kind.pants) {
-        const [pr, pg, pb] = kind.pants;
-        writeInst(buf, n++, px, py - sy * 0.30, sx, sy * 0.30, pr, pg, pb, 1, 0, 0);
-      }
+      // === ⑥ 両手 (袖口、肌色) ===
+      writeInst(buf, n++, px - sx * 0.48, py - sy * 0.08, sx * 0.20, sy * 0.08,
+        SKIN_R, SKIN_G, SKIN_B, 1, 0, 0);
+      writeInst(buf, n++, px + sx * 0.48, py - sy * 0.08, sx * 0.20, sy * 0.08,
+        SKIN_R, SKIN_G, SKIN_B, 1, 0, 0);
 
-      // 3. アクセント (ネクタイ/たすき/エプロン紐など) — 胸元の細い帯
+      // === ⑦ 胴体/シャツ (メイン) ===
+      writeInst(buf, n++, px, py + sy * 0.12, sx * 0.85, sy * 0.32,
+        sr, sg, sb, 1, 0, 0);
+
+      // === ⑧ アクセント (ネクタイ・ブラウスのリボン・法被の腹帯など) ===
       if (kind.accent) {
         const [ar, ag, ab] = kind.accent;
-        writeInst(buf, n++, px, py - sy * 0.05, sx * 0.40, sy * 0.25, ar, ag, ab, 1, 0, 0);
+        writeInst(buf, n++, px, py + sy * 0.15, sx * 0.20, sy * 0.20,
+          ar, ag, ab, 1, 0, 0);
       }
 
-      // 4. かばん — 体の右側に小さく
+      // === ⑨ カバン (体の右側、オプション) ===
       if (kind.bag) {
         const [br, bg, bb] = kind.bag;
-        writeInst(buf, n++, px + sx * 0.55, py - sy * 0.20, sx * 0.42, sy * 0.42,
+        writeInst(buf, n++, px + sx * 0.62, py - sy * 0.10, sx * 0.38, sy * 0.38,
           br, bg, bb, 1, 0, 0);
+        // カバンの持ち手 (上部の小ライン、暗色)
+        writeInst(buf, n++, px + sx * 0.62, py + sy * 0.10, sx * 0.30, sy * 0.04,
+          br * 0.55, bg * 0.55, bb * 0.55, 1, 0, 0);
       }
 
-      // 5. 頭 (肌色の円)
-      writeInst(buf, n++, px, py + sy * 0.30, sx, sx, 0.95, 0.75, 0.55, 1, 0, 1);
+      // === ⑩ 首 (肌色、頭と胴体の接続) ===
+      writeInst(buf, n++, px, py + sy * 0.33, sx * 0.32, sy * 0.10,
+        SKIN_R, SKIN_G, SKIN_B, 1, 0, 0);
 
-      // 6. 髪 — 頭の上半分にオーバーレイ
+      // === ⑪ 頭 (肌色の円) ===
+      const headY = py + sy * 0.45;
+      writeInst(buf, n++, px, headY, sx * 0.92, sx * 0.92,
+        SKIN_R, SKIN_G, SKIN_B, 1, 0, 1);                        // circle=1
+
+      // === ⑫ 両目 (暗色の小さなドット) ===
+      writeInst(buf, n++, px - sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
+        0.08, 0.06, 0.04, 1, 0, 1);                              // 左目 (円)
+      writeInst(buf, n++, px + sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
+        0.08, 0.06, 0.04, 1, 0, 1);                              // 右目 (円)
+
+      // === ⑬ 髪: 後頭部の大きな塊 + 前髪フリンジ ===
       if (kind.hair) {
         const [hr, hg, hb] = kind.hair;
-        writeInst(buf, n++, px, py + sy * 0.30 + sx * 0.30, sx * 0.92, sx * 0.45,
+        // 後頭部 (頭の上半分にドーム状)
+        writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.98, sx * 0.45,
           hr, hg, hb, 1, 0, 0);
+        // 前髪フリンジ (額を覆う暗めの帯)
+        writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
+          hr * 0.85, hg * 0.85, hb * 0.85, 1, 0, 0);
       }
 
-      // 7. 帽子 — 髪のさらに上
+      // === ⑭ 帽子 (オプション): 帽子つば + 本体 ===
       if (kind.hat) {
         const [hr2, hg2, hb2] = kind.hat;
-        writeInst(buf, n++, px, py + sy * 0.30 + sx * 0.70, sx * 1.05, sx * 0.35,
+        // つば (薄い水平帯、少し暗め)
+        writeInst(buf, n++, px, headY + sx * 0.58, sx * 1.18, sx * 0.12,
+          hr2 * 0.80, hg2 * 0.80, hb2 * 0.80, 1, 0, 0);
+        // 本体 (縦に少し膨らんだ形)
+        writeInst(buf, n++, px, headY + sx * 0.72, sx * 0.95, sx * 0.32,
           hr2, hg2, hb2, 1, 0, 0);
       }
     }
