@@ -580,6 +580,45 @@ export interface StageDef {
   bgBottom?: readonly [number, number, number];
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// 【ステージ設計ガイド — ステージ単位コンセプト & ミニチュア原則】
+//
+// 各ステージは「一連のチャンクの集合」ではなく「一つの物語」として設計する。
+// 以下 7 原則を共通ルールとし、raw 形式 (直接オブジェクト配置) で手書きする。
+//
+// 1. Act 構造
+//    チャンクを 3〜4 幕で構成: 導入 (Act I) → 盛り上がり (Act II-III) → 離脱 (Act IV)。
+//    各 Act は 2〜4 チャンクを担当し、テーマと密度を緩やかにシフト。
+//
+// 2. 連続軸 (Spine)
+//    ステージ全体を貫く 2-3 本の連続要素 (並木/電線/ファサード/水路/提灯帯)
+//    をチャンク境界を跨いで配置。handoff チャンクで次ステージへ緩やかに受け渡す。
+//
+// 3. セル単位の物語グルーピング
+//    4 列 × 2 段 ≒ 8 セル (A-H) を意識し、各セルに「誰が住むか/何の店か」の
+//    キャラを付与。建物に帰属する家具 (エアコン/看板/自転車) をセル内にまとめる。
+//
+// 4. Y レイヤ構造
+//    y=20-30   facade 上段 (看板/郵便受/のれん)
+//    y=35-80   建物帯 上段
+//    y=88-102  中央道路 (avenue) — _MID_HR の周辺
+//    y=115-125 facade 下段
+//    y=130-180 建物帯 下段
+//    y=185-200 背景家具 (電線/電柱)
+//
+// 5. 左右非対称
+//    対になる位置 (±X) に同じ家具を並べない。奇数個で構成し整然としすぎない。
+//
+// 6. ミニチュア密度目安 (1 チャンク)
+//    buildings 15-25 / furniture 50-80 / humans 5-10。
+//    建物の隙間にも家具を置き、「ただ立つだけの空間」を作らない。
+//
+// 7. 歩道家具の自動配置
+//    generateSidewalkFurniture() が水平道路沿いに家具を自動配置するため、
+//    raw.furniture では街路定番家具 (自販機/街灯) を中央道路沿いに重ね置きしない。
+//    ステージ固有の歩道感は `sidewalkZone` で選択 (0:住宅/1:商業/2:工業/3:和風/4:祭/5:夜街)。
+// ═══════════════════════════════════════════════════════════════════
+
 // ─── Stage 1 raw チャンク用ヘルパー ─────────────────────────
 // dx: ワールド座標 (X は -180〜+180)。dy: チャンクローカル (0〜CHUNK_HEIGHT=200)。
 const _B = (size: C.BuildingSize, dx: number, dy: number) => ({ size, dx, dy });
@@ -2523,7 +2562,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
 export const STAGES: StageDef[] = [
   { id: 0, name: '住宅街ミックス都市', templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
     bgTop: [0.52, 0.74, 0.96], bgBottom: [0.38, 0.50, 0.38] },
-  { id: 1, name: '繁華街・夜の街',     templates: STAGE_2_TEMPLATES, sidewalkZone: 2,
+  { id: 1, name: '繁華街・夜の街',     templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
     bgTop: [0.10, 0.08, 0.25], bgBottom: [0.22, 0.14, 0.32] },
   { id: 2, name: '和風・古都',        templates: STAGE_3_TEMPLATES, sidewalkZone: 3,
     bgTop: [0.92, 0.78, 0.82], bgBottom: [0.62, 0.52, 0.44] },
@@ -2589,6 +2628,11 @@ const SIDEWALK_FURNITURE: Record<number, Array<FurnitureType>> = {
   4: ['chouchin', 'flag_pole', 'banner_pole', 'sign_board', 'chouchin', 'parasol',
       'noren', 'vending', 'chouchin', 'a_frame_sign', 'flag_pole', 'parasol',
       'bench', 'street_lamp'],
+  // Zone 5: 夜街・繁華街 — ネオン看板・提灯・自販機・公衆電話
+  5: ['chouchin', 'a_frame_sign', 'vending', 'sign_board', 'chouchin', 'noren',
+      'vending', 'kerbside_vending_pair', 'newspaper_stand', 'post_box',
+      'telephone_booth', 'atm', 'chouchin', 'dumpster', 'bicycle_rack',
+      'cable_junction_box', 'street_lamp', 'bollard'],
 };
 
 /** 歩道に沿って家具を均等配置する */
