@@ -65,10 +65,13 @@ export class Game {
   private bgBottomR = 0.38; private bgBottomG = 0.36; private bgBottomB = 0.33;
 
   // 坂のカメラ相対オフセット (スクリーン固定)
-  // ★ フリッパー rest 角度 (-30°) と平行にして、ボールが滑らかにフリッパーへ流れるよう調整
-  // ★ hw=55, 坂の左上端=(-180, camera.y-149.8), 右下端=(-85, camera.y-210) でフリッパーピボット直結
-  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -182.5, hw: 55, hh: 6, angle: -0.5236 }; // -π/6 rad = -30°
-  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -182.5, hw: 55, hh: 6, angle:  0.5236 };
+  // ★ フリッパー rest 角度 (-30°) より 8° 急な -38° に設定。
+  //   完全平行だと坂→フリッパー→ドレインを一直線に転がって即落ちしてしまうため、
+  //   角度差で「キャッチ」を作り、ボールが接点で微バウンドして滞空時間を生む。
+  //   急すぎないので上から落ちてきた時の加速も穏やか。
+  // ★ hw=60, 右下端=(-85, camera.y-210) でフリッパーピボット直結、左上端=(-180, camera.y-136)
+  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -173, hw: 60, hh: 6, angle: -0.663 }; // -38°
+  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -173, hw: 60, hh: 6, angle:  0.663 };
 
   private getSlopeL() {
     const b = this.SLOPE_L_BASE;
@@ -314,9 +317,10 @@ export class Game {
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      // 坂は滑走 (tangent 保存 + normal 減衰) で滑らかに流れる
+      // 坂は滑走 + 接線摩擦 (0.992/接触) で滑らかに流れつつ徐々に減速
+      // normalDamping=0.15 で跳ね返りは小さく、tangentFriction=0.992 で速度制御
       for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.15);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.15, 0.992);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
@@ -326,9 +330,10 @@ export class Game {
           break;
         }
       }
-      // フリッパーも滑走モード: 静止時は滑らかに流れ、押されたときだけ applyImpulse で強打ち出し
+      // フリッパーも滑走モード + 接線摩擦: 静止時は滑らかに流れ、押されたら applyImpulse
+      // tangentFriction=0.995 で滑らかに減速 (坂より摩擦は少なめ = フリッパーはよく走る)
       for (const fl of this.flippers) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.25);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.25, 0.995);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;

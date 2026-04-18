@@ -143,12 +143,14 @@ export function resolveCircleOBB(
 
 /** 円 vs OBB 衝突を「滑走」として解決。
  * ボールは坂の面に沿って流れる: tangent (接線) 成分は保存、normal (法線) 成分のみ
- * 強めに減衰。結果としてピンボールらしく滑らかに坂を下る。 */
+ * 強めに減衰。tangentFriction で接線方向にも摩擦 (1.0 = 無摩擦、0.99 = 1% 減衰/接触)
+ * 結果としてピンボールらしく滑らかに坂を下る。 */
 export function resolveCircleOBBSlide(
   bx: number, by: number, br: number,
   vx: number, vy: number,
   obb: OBB,
-  normalDamping = 0.15
+  normalDamping = 0.15,
+  tangentFriction = 1.0
 ): [number, number, number, number] | null {
   const [lx, ly] = worldToOBBLocal(bx, by, obb);
   const nearX = Math.max(-obb.hw, Math.min(lx, obb.hw));
@@ -166,8 +168,9 @@ export function resolveCircleOBBSlide(
   const newBy = by + ny * (pen + 0.5);
   // 法線・接線に分解
   const vNormal = vx * nx + vy * ny;      // + = 離脱向き / - = 接近向き
-  const vTx = vx - vNormal * nx;           // 接線成分 (そのまま保存)
-  const vTy = vy - vNormal * ny;
+  // 接線成分に摩擦を適用 (1.0 = 無摩擦)
+  const vTx = (vx - vNormal * nx) * tangentFriction;
+  const vTy = (vy - vNormal * ny) * tangentFriction;
   // 接近中なら小さく跳ね、離脱中なら法線成分ゼロに
   const newVNormal = vNormal < 0 ? -vNormal * normalDamping : 0;
   const newVx = vTx + newVNormal * nx;
