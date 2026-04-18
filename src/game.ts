@@ -317,10 +317,10 @@ export class Game {
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      // 坂は滑走 + 接線摩擦 (0.992/接触) で滑らかに流れつつ徐々に減速
-      // normalDamping=0.15 で跳ね返りは小さく、tangentFriction=0.992 で速度制御
+      // 坂: normalDamping=0.50 で半分の勢いで跳ね返り (ピンボールらしい弾性)。
+      // tangentFriction=0.995 で接線方向も極ごくわずかに減速。
       for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.15, 0.992);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.50, 0.995);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
@@ -330,10 +330,11 @@ export class Game {
           break;
         }
       }
-      // フリッパーも滑走モード + 接線摩擦: 静止時は滑らかに流れ、押されたら applyImpulse
-      // tangentFriction=0.995 で滑らかに減速 (坂より摩擦は少なめ = フリッパーはよく走る)
+      // フリッパー: normalDamping=0.60 でしっかり跳ねる (ピンボールのラバーっぽい弾性)。
+      // tangentFriction=0.998 でほぼ無摩擦 (フリッパーはよく走る)。
+      // 押されたら applyImpulse で追加の強打ち出し。
       for (const fl of this.flippers) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.25, 0.995);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.60, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
