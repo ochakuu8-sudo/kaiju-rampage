@@ -2999,8 +2999,101 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ═══ Act IV (C9) は次で raw 化 ═══════════════════════════════════
-  { patternId: 'dense_alley',        groundOverride: 'asphalt' },
+  // ═══ Act IV: 朝の気配 (C9) — Stage 3 への handoff ═══════════════
+
+  // ── C9: 小さな神社の裏手 — 夜明け前、石灯籠の気配 ──
+  // 歓楽街の騒めきが消え、神社の裏手で夜明けを待つ。次ステージ (和風古都) への
+  // 予兆として鳥居・石灯籠・松・古民家を配置。人影まばら、野良猫が主役。
+  { patternId: 's2_raw', raw: {
+    buildings: [
+      // === 上段: 古い町家 + 小さな神社 ===
+      _B('kominka', -158, 42), _B('kominka', -130, 42),         // Cell A 古民家
+      _B('shrine', -75, 45),                                    // ★ Cell B 小さな神社
+      _B('chaya', -30, 42), _B('kominka', 0, 42),               // Cell B 茶屋 + 古民家
+      _B('apartment', 55, 50),                                  // Cell C 残された古アパート
+      _B('kominka', 105, 42), _B('kominka', 130, 42),           // Cell D 古民家連
+      _B('shed', 160, 42),
+      // === 下段: 境内の気配 + 古民家 ===
+      _B('kominka', -160, 132), _B('kominka', -135, 132),       // Cell E 古民家
+      _B('shrine', -75, 140),                                   // ★ Cell F 摂社 (小)
+      _B('kominka', -25, 132), _B('chaya', 5, 132),             // Cell F
+      _B('kominka', 48, 132), _B('house', 75, 132),             // Cell G
+      _B('kominka', 120, 132), _B('kominka', 148, 132),         // Cell H
+      _B('shed', 175, 132),
+    ],
+    furniture: [
+      // ─── ★★ シグネチャ: 鳥居 + 石灯籠の列 (Stage 3 予兆) ★★ ───
+      _F('torii', -75, 22),                                     // ★ 上段神社の鳥居
+      _F('torii', -75, 118),                                    // ★ 下段摂社の鳥居
+      _F('stone_lantern', -95, 72), _F('stone_lantern', -55, 72),
+      _F('stone_lantern', -95, 170), _F('stone_lantern', -55, 170),
+      _F('stone_lantern', 90, 72), _F('stone_lantern', 120, 172),
+      _F('shinto_rope', -75, 28),                               // しめ縄
+      _F('shinto_rope', -75, 124),
+      _F('offering_box', -75, 75),                              // 賽銭箱
+      _F('koma_inu', -90, 78), _F('koma_inu', -60, 78),         // 狛犬
+      // ─── 松 + 桜 (和風の縦軸) ───
+      _F('pine_tree', -170, 80), _F('pine_tree', 175, 80),
+      _F('pine_tree', -170, 175), _F('pine_tree', 175, 175),
+      _F('sakura_tree', -105, 165),                             // 桜古木
+      _F('sakura_tree', 60, 65),
+      // ─── 古民家 facade (提灯は消え、mailbox と wood_fence) ───
+      _F('wood_fence', -178, 22), _F('wood_fence', 178, 22),
+      _F('wood_fence', -178, 118), _F('wood_fence', 178, 118),
+      _F('mailbox', -158, 22), _F('mailbox', -130, 22),
+      _F('mailbox', 0, 22), _F('mailbox', 105, 22), _F('mailbox', 130, 22),
+      _F('mailbox', -160, 118), _F('mailbox', -135, 118),
+      _F('mailbox', 48, 118), _F('mailbox', 120, 118), _F('mailbox', 148, 118),
+      _F('noren', -30, 28), _F('noren', 5, 124),                // 茶屋ののれん
+      // ─── 境内の装飾 ───
+      _F('bonsai', -95, 30), _F('bonsai', 95, 172),
+      _F('bamboo_cluster', 55, 75), _F('bamboo_cluster', 75, 168),
+      _F('potted_plant', -158, 30), _F('potted_plant', 0, 28),
+      _F('potted_plant', -25, 120), _F('potted_plant', 148, 120),
+      // ─── ゴミ収集車が来る朝 (handoff 演出) ───
+      _F('car', 160, 172),                                      // ゴミ収集車 (見立て)
+      _F('dumpster', -180, 172), _F('dumpster', 180, 172),
+      _F('garbage', 170, 170),
+      // ─── 電線 (街の気配の最後) ───
+      _F('power_pole', -175, 92), _F('power_line', -178, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -175, 195), _F('power_line', -178, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 野良猫の時間 (★★ Stage 2 最後の主役) ★★ ───
+      _F('cat', -70, 80),                                       // 賽銭箱の前
+      _F('cat', -70, 170),                                      // 摂社の前
+      _F('cat', 40, 195),                                       // 境内奥
+      _F('cat', 150, 190),
+      // ─── 水たまり (まだ夜の痕跡) ───
+      _F('puddle_reflection', -110, 100), _F('puddle_reflection', 110, 100),
+      _F('puddle_reflection', 0, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── 朝の手水 (Stage 3 への予兆) ───
+      _F('temizuya', -60, 65),                                  // 手水舎
+      _F('bamboo_water_fountain', -55, 165),                    // 竹の鹿威し
+      _F('sando_stone_pillar', -178, 100),                      // 参道の石柱
+      _F('sando_stone_pillar', 178, 100),
+    ],
+    humans: [
+      _H(-75, 78),                                              // 早朝の参拝者
+      _H(-75, 172),                                             // 境内の老人
+      _H(160, 170),                                             // ゴミ収集業者
+      _H(5, 152),                                               // 茶屋の女将
+      _H(-30, 55),                                              // 朝の散歩
+    ],
+    grounds: [
+      _G('asphalt', 0, 46.5, 180, 93),                          // 左半は asphalt (街の名残)
+      _G('gravel', 90, 46.5, 180, 93),                          // ★ 右半は玉砂利 (Stage 3 予兆)
+      _G('gravel', 0, 153.5, 360, 93),                          // 下段は全面玉砂利
+      _G('stone_pavement', -75, 65, 50, 40),                    // 神社の参道
+      _G('stone_pavement', -75, 170, 50, 55),                   // 摂社の参道
+      _G('moss', 40, 180, 40, 20),                              // 苔 (古都の気配)
+      _G('asphalt', 0, 15, 120, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
 ];
 
 // ─── Stage 3: 和風・古都 (12 チャンク) ────────────────────────
