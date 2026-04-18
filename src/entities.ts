@@ -223,6 +223,11 @@ const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,numb
   mahjong_parlor:   [0.42, 0.58, 0.38],  // 緑
   club:             [0.22, 0.18, 0.22],  // 黒
   capsule_hotel:    [0.78, 0.82, 0.90],  // 薄水色
+  // Stage 3 和風
+  kura:             [0.95, 0.92, 0.85],  // 白壁 (なまこ壁)
+  machiya:          [0.72, 0.58, 0.42],  // 木の色
+  onsen_inn:        [0.52, 0.36, 0.28],  // 濃い木 + 煙突
+  tahoto:           [0.78, 0.32, 0.22],  // 朱塗り
 };
 
 // 建物種別からファサードパレットを選択するヘルパー
@@ -2166,6 +2171,95 @@ export class BuildingManager {
           n = this.drawDoorDetail(buf, n, cx, bot, bW, 1);
           // 上端ロゴ
           writeInst(buf, n++, cx + bW * 0.30, top - 6, bW * 0.32, 2.5, 0.22, 0.42, 0.68, 0.95);
+          break;
+        }
+        // ── Stage 3 和風 ───────────────────────────────────────
+        case 'kura': {
+          // 土蔵: 白壁 + なまこ壁の黒格子 + 瓦屋根
+          // 本体 (白壁はデフォルト色で描画される想定)
+          // 瓦屋根 (濃茶)
+          writeInst(buf, n++, cx, top - 2, bW + 3, 3.5, 0.42, 0.32, 0.25, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 5, 1.5, 0.28, 0.22, 0.18, 1);
+          // なまこ壁 (黒格子の斜め模様を水平線で略)
+          writeInst(buf, n++, cx, bot + bH * 0.22, bW * 0.85, 1.2, 0.22, 0.18, 0.16, 0.92);
+          writeInst(buf, n++, cx, bot + bH * 0.35, bW * 0.85, 1.2, 0.22, 0.18, 0.16, 0.92);
+          // 小窓 (格子)
+          writeInst(buf, n++, cx, bot + bH * 0.60, bW * 0.32, bH * 0.18, 0.45, 0.35, 0.25, 0.92);
+          writeInst(buf, n++, cx, bot + bH * 0.60, bW * 0.28, bH * 0.14, 0.82, 0.72, 0.52, 0.85);
+          // 観音扉 (黒く厚い)
+          writeInst(buf, n++, cx, bot + 4, bW * 0.38, 8, 0.22, 0.18, 0.16, 1);
+          writeInst(buf, n++, cx, bot + 4, 0.5, 8, 0.52, 0.42, 0.32, 1);
+          break;
+        }
+        case 'machiya': {
+          // 町家: 2 階建て木造 + 1F 格子戸 + 2F 虫籠窓 + 瓦屋根
+          // 瓦屋根 (濃茶、長い庇)
+          writeInst(buf, n++, cx, top - 3, bW + 4, 5, 0.32, 0.25, 0.18, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 6, 2, 0.22, 0.18, 0.14, 1);
+          // 2F 虫籠窓 (格子細かい)
+          writeInst(buf, n++, cx, bot + bH * 0.62, bW * 0.80, bH * 0.20, 0.45, 0.32, 0.22, 0.95);
+          for (let i = -2; i <= 2; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.16, bot + bH * 0.62, 0.4, bH * 0.18, 0.18, 0.12, 0.08, 0.92);
+          }
+          // 1F 格子戸 (こうし)
+          writeInst(buf, n++, cx, bot + bH * 0.28, bW * 0.82, bH * 0.32, 0.42, 0.28, 0.18, 0.98);
+          for (let i = -3; i <= 3; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.12, bot + bH * 0.28, 0.35, bH * 0.28, 0.22, 0.15, 0.08, 0.95);
+          }
+          // 暖簾 (紺)
+          writeInst(buf, n++, cx, bot + bH * 0.44, bW * 0.65, 2.5, 0.22, 0.28, 0.52, 0.95);
+          // 玄関の石段
+          n = this.drawStairs(buf, n, cx, bot + 1, 4);
+          break;
+        }
+        case 'onsen_inn': {
+          // 温泉旅館: 大きな木造 + 煙突 + 湯気 + 暖簾 + 石段
+          // 瓦屋根 (濃茶、大庇)
+          writeInst(buf, n++, cx, top - 3, bW + 6, 5, 0.25, 0.18, 0.12, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 8, 2, 0.18, 0.12, 0.08, 1);
+          // 破風 (屋根中央の三角)
+          writeInst(buf, n++, cx, top + 4, bW * 0.28, 4, 0.22, 0.15, 0.10, 1);
+          // 煙突 (右端) + 湯気
+          writeInst(buf, n++, cx + bW * 0.38, top + 6, 2.5, 6, 0.35, 0.28, 0.22, 1);
+          writeInst(buf, n++, cx + bW * 0.38, top + 12, 4, 3, 0.88, 0.85, 0.82, 0.42, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.36, top + 15, 5, 3.5, 0.82, 0.80, 0.78, 0.32, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.40, top + 18, 6, 4, 0.78, 0.75, 0.72, 0.22, 0, 1);
+          // 2F 障子窓 (横並び)
+          for (let i = -2; i <= 2; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.18, bot + bH * 0.68, bW * 0.12, bH * 0.14,
+              0.92, 0.85, 0.62, 0.72);
+          }
+          // 1F 格子 + 玄関
+          writeInst(buf, n++, cx, bot + bH * 0.32, bW * 0.88, bH * 0.30, 0.42, 0.28, 0.18, 0.98);
+          // 暖簾 (紺、大きい)
+          writeInst(buf, n++, cx, bot + bH * 0.50, bW * 0.50, 3.5, 0.18, 0.25, 0.48, 0.95);
+          writeInst(buf, n++, cx, bot + bH * 0.50, bW * 0.44, 2, 0.92, 0.85, 0.62, 0.92);
+          // 玄関の石段
+          n = this.drawStairs(buf, n, cx, bot + 1, 5);
+          // 左右の石灯籠 (組み込み)
+          writeInst(buf, n++, cx - bW * 0.46, bot + 3, 2, 5, 0.52, 0.45, 0.38, 1);
+          writeInst(buf, n++, cx + bW * 0.46, bot + 3, 2, 5, 0.52, 0.45, 0.38, 1);
+          break;
+        }
+        case 'tahoto': {
+          // 多宝塔: 下層方形 + 上層円形の 2 層塔 + 相輪
+          // 方形下層 (本体、朱塗り)
+          writeInst(buf, n++, cx, bot + bH * 0.22, bW * 0.95, bH * 0.40, 0.72, 0.28, 0.20, 1);
+          // 下層の屋根 (濃茶の瓦、広い)
+          writeInst(buf, n++, cx, bot + bH * 0.48, bW + 4, 3, 0.32, 0.22, 0.15, 1);
+          writeInst(buf, n++, cx, bot + bH * 0.52, bW + 6, 1.5, 0.22, 0.15, 0.10, 1);
+          // 亀腹 (白漆喰の円形)
+          writeInst(buf, n++, cx, bot + bH * 0.58, bW * 0.60, 3, 0.92, 0.88, 0.82, 1, 0, 1);
+          // 上層円筒 (朱塗り)
+          writeInst(buf, n++, cx, bot + bH * 0.72, bW * 0.55, bH * 0.24, 0.72, 0.28, 0.20, 1);
+          // 上層の屋根
+          writeInst(buf, n++, cx, bot + bH * 0.86, bW * 0.85, 2.5, 0.32, 0.22, 0.15, 1);
+          // 相輪 (中央の金属棒 + 宝珠)
+          writeInst(buf, n++, cx, top - 6, 0.8, 10, 0.62, 0.48, 0.22, 1);
+          writeInst(buf, n++, cx, top - 2, 2.5, 2.5, 0.92, 0.72, 0.22, 1, 0, 1);
+          writeInst(buf, n++, cx, top + 1, 1.8, 1.8, 0.85, 0.68, 0.18, 1, 0, 1);
+          // 下層の扉 (中央)
+          writeInst(buf, n++, cx, bot + 4, bW * 0.22, bH * 0.18, 0.32, 0.18, 0.12, 1);
           break;
         }
       }

@@ -63,7 +63,9 @@ export type BuildingSize =
   // ── Stage 1 ミニチュア追加 ──
   'shotengai_arcade' | 'bus_terminal_shelter' | 'fountain_pavilion' |
   // ── Stage 2 夜街追加 ──
-  'snack' | 'love_hotel' | 'business_hotel' | 'mahjong_parlor' | 'club' | 'capsule_hotel';
+  'snack' | 'love_hotel' | 'business_hotel' | 'mahjong_parlor' | 'club' | 'capsule_hotel' |
+  // ── Stage 3 和風追加 ──
+  'kura' | 'machiya' | 'onsen_inn' | 'tahoto';
 
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
@@ -151,6 +153,11 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   mahjong_parlor: { w: 22, h: 26, hp: 1, score:  280, humanMin:  8,  humanMax: 18 },
   club:           { w: 28, h: 30, hp: 2, score:  480, humanMin: 40,  humanMax:  80 },
   capsule_hotel:  { w: 40, h: 28, hp: 2, score:  600, humanMin: 60,  humanMax: 120 },
+  // ===== Stage 3 和風追加 =====
+  kura:           { w: 18, h: 20, hp: 1, score:  220, humanMin:  2,  humanMax:  5 },
+  machiya:        { w: 24, h: 32, hp: 2, score:  400, humanMin: 15,  humanMax: 30 },
+  onsen_inn:      { w: 44, h: 36, hp: 2, score:  900, humanMin: 40,  humanMax: 90 },
+  tahoto:         { w: 22, h: 48, hp: 2, score: 1000, humanMin:  5,  humanMax: 15 },
 };
 
 // ===== 人間 =====
