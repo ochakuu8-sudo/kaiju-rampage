@@ -426,6 +426,7 @@ const HAIR_SHAPE_SPIKY    = 5;
 /** variant (32bit) から各パーツのインデックスをデコード。
  * パーツ毎に独立した bit 領域を使い、全パーツを自由に組み合わせられる。
  * 32 bit なので 2^32 = 42 億通り、kind と合わせて事実上無限の個体差。
+ * ★ 必ず >>> (unsigned shift) を使い、負のインデックスを絶対に返さない。
  */
 function decodeVariant(v: number): {
   shirtTint: number; pantsTint: number; hairColor: number; hairShape: number;
@@ -433,24 +434,24 @@ function decodeVariant(v: number): {
   accessory: number; hatTint: number;   bagIdx: number;   accentTint: number;
   useBagPalette: boolean; useWildHair: boolean;
 } {
-  // 32bit を各パーツに分配 (| 0 で u32 → i32 に切れるが bit ops は同じ)
-  const v1 = v | 0;
-  const v2 = (v / 65536) | 0;  // 上位 16bit
+  // 全て >>> と & で非負を保証。% は非負引数なので安全。
   return {
-    shirtTint: v1 & 0b1111,                            // 4 bits → 16
-    pantsTint: (v1 >> 4) & 0b1111,                     // 4 bits → 16
-    skinIdx:   (v1 >> 8) & 0b111,                      // 3 bits → 8
-    hairShape: (v1 >> 11) & 0b111,                     // 3 bits → mod 6
-    hairColor: (v1 >> 12) & 0b1111,                    // 4 bits → 16 (上位 bit 14-15 と重複 OK)
-    accessory: (v1 >> 14) & 0b11,                      // 2 bits → 4
-    shoeIdx:   (v2 ^ (v1 >> 3)) % SHOE_PALETTE.length, // 12
-    widthIdx:  (v2 >> 2) % WIDTH_FACTORS.length,       // 8
-    heightIdx: (v2 >> 5) % HEIGHT_FACTORS.length,      // 8
-    hatTint:   (v2 >> 8) & 0b11,                       // 4
-    bagIdx:    (v2 >> 10) & 0b111,                     // 8
-    accentTint: (v2 >> 13) & 0b11,                     // 4
-    useBagPalette: ((v2 >> 15) & 1) === 1,             // 50%
-    useWildHair:   ((v2 >> 3)  & 1) === 1,             // 50%
+    shirtTint: v & 0xF,                                          // bits 0-3: 16
+    pantsTint: (v >>> 4) & 0xF,                                  // bits 4-7: 16
+    skinIdx:   (v >>> 8) & 0x7,                                  // bits 8-10: 8
+    hairColor: (v >>> 11) & 0xF,                                 // bits 11-14: 16
+    hairShape: (v >>> 15) & 0x7,                                 // bits 15-17: 8 (mod 6 in render)
+    accessory: (v >>> 18) & 0x3,                                 // bits 18-19: 4
+    shoeIdx:   ((v >>> 20) & 0xF) % SHOE_PALETTE.length,         // bits 20-23 (mod 12)
+    widthIdx:  ((v >>> 24) & 0x7) % WIDTH_FACTORS.length,        // bits 24-26 (mod 8)
+    heightIdx: ((v >>> 27) & 0x7) % HEIGHT_FACTORS.length,       // bits 27-29 (mod 8)
+    // 残り bits 30-31 は useBagPalette/useWildHair に。
+    // hatTint/bagIdx/accentTint は XOR 混合で追加エントロピー
+    hatTint:   ((v ^ (v >>> 5))  >>> 0) & 0x3,
+    bagIdx:    ((v ^ (v >>> 9))  >>> 0) & 0x7,
+    accentTint:((v ^ (v >>> 13)) >>> 0) & 0x3,
+    useBagPalette: ((v >>> 30) & 1) === 1,
+    useWildHair:   ((v >>> 31) & 1) === 1,
   };
 }
 
