@@ -2769,26 +2769,40 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
   // ═══ Act III: 深夜の路地 (C6-C8) ══════════════════════════════════
 
-  // ── C6: スナック街の狭路地 — 提灯密集 + 小さな飲み屋 ──
-  // 歓楽街の奥。小さな店がひしめき、提灯が身を屈めて抜けるほど低く連なる。
+  // ── C6: スナック街の狭路地 — 28 種の小店が全て違う業種で並ぶ ──
+  // 歓楽街の奥。どの店も違う顔で、ミニチュアを覗き込む楽しみを最大化。
+  // 上段 14 種 + 下段 14 種 = 全て別業種。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 小さな店ひしめき ===
-      _B('izakaya', -162, 42), _B('ramen', -138, 42),           // Cell A
-      _B('shop', -115, 42), _B('izakaya', -92, 42),
-      _B('cafe', -65, 42), _B('izakaya', -40, 42),              // Cell B スナック列
-      _B('ramen', -15, 42), _B('izakaya', 12, 42),
-      _B('shop', 40, 42), _B('izakaya', 65, 42),                // Cell C 連続
-      _B('ramen', 92, 42), _B('izakaya', 118, 42),              // Cell D
-      _B('shop', 145, 42), _B('cafe', 172, 42),
-      // === 下段: 2 列目のスナック + 小さな風俗店 (shop 見立て) ===
-      _B('izakaya', -168, 132), _B('cafe', -142, 132),
-      _B('ramen', -115, 132), _B('shop', -90, 132),
-      _B('izakaya', -62, 132), _B('izakaya', -38, 132),
-      _B('shop', -12, 132), _B('ramen', 15, 132),
-      _B('izakaya', 42, 132), _B('shop', 68, 132),
-      _B('cafe', 95, 132), _B('izakaya', 120, 132),
-      _B('ramen', 148, 132), _B('izakaya', 175, 132),
+      // === 上段: 14 種の小店 (全て別業種) ===
+      _B('ramen', -162, 42),
+      _B('snack', -138, 42),
+      _B('izakaya', -115, 42),                                  // 唯一の居酒屋
+      _B('bakery', -92, 42),
+      _B('cafe', -65, 42),
+      _B('mahjong_parlor', -40, 42),
+      _B('shop', -15, 42),
+      _B('bookstore', 12, 42),
+      _B('florist', 40, 42),
+      _B('pharmacy', 65, 42),
+      _B('laundromat', 92, 42),
+      _B('convenience', 118, 42),
+      _B('restaurant', 148, 42),
+      _B('clinic', 175, 42),
+      // === 下段: 上段と一切被らない 14 種 (均等配置) ===
+      _B('club', -168, 138),                                    // ★ 黒クラブ
+      _B('karaoke', -142, 138),
+      _B('capsule_hotel', -115, 142),                           // ★ カプセル (横長)
+      _B('game_center', -85, 132),
+      _B('pachinko', -58, 138),
+      _B('love_hotel', -22, 150),                               // ★ ラブホ (派手)
+      _B('business_hotel', 15, 155),                            // ★ ビジネスホテル (縦)
+      _B('office', 45, 155),
+      _B('apartment_tall', 75, 160),
+      _B('tower', 110, 165),                                    // ★ タワー
+      _B('gas_station', 142, 135),
+      _B('bank', 165, 132),
+      _B('post_office', 178, 130),
     ],
     furniture: [
       // ─── ★★ シグネチャ: 提灯密集 (全幅連続) ★★ ───
@@ -2855,26 +2869,36 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ── C7: 深夜屋台 + 酔客 — 倒れ自転車とゴミ袋の路上 ──
-  // 終電後の混沌。屋台の湯気、倒れた自転車、ゴミ袋、酔いつぶれた人影。
+  // ── C7: 深夜屋台 + 酔客 — 屋台 1 台、残りは多様な夜の店 ──
+  // 終電後の混沌。屋台は絵になる 1 台に絞り、他は多様な夜食・飲み屋で賑わす。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 屋台混在 + 夜食店 ===
-      _B('ramen', -155, 42), _B('yatai', -120, 38),             // Cell A ラーメン + 屋台
-      _B('yatai', -95, 38),                                      // 屋台 2 連
-      _B('izakaya', -58, 42), _B('yatai', -25, 38),             // Cell B 屋台
-      _B('ramen', 10, 42), _B('yatai', 45, 38),                 // Cell C 屋台
-      _B('izakaya', 80, 42),
-      _B('apartment_tall', 135, 60),                            // Cell D 背景の高層
-      _B('yatai', 170, 38),                                     // Cell D 屋台
-      // === 下段: 静かな居酒屋 + 倒れた路上 ===
-      _B('izakaya', -160, 132), _B('ramen', -130, 132),
-      _B('yatai', -100, 128),                                   // 深夜屋台
-      _B('cafe', -65, 132), _B('izakaya', -38, 132),
-      _B('ramen', -10, 132), _B('yatai', 20, 128),              // 屋台
-      _B('izakaya', 55, 132), _B('shop', 85, 132),
-      _B('apartment', 130, 148),                                // Cell H 古アパート
-      _B('izakaya', 172, 132),
+      // === 上段: 1 屋台 + 13 種の多様な小店 ===
+      _B('ramen', -158, 42),
+      _B('yatai', -128, 38),                                    // ★ 上段唯一の屋台
+      _B('snack', -100, 42),
+      _B('izakaya', -72, 42),                                   // 唯一の居酒屋
+      _B('mahjong_parlor', -42, 42),
+      _B('cafe', -15, 42),
+      _B('bakery', 12, 42),
+      _B('pharmacy', 38, 42),
+      _B('convenience', 68, 42),
+      _B('bookstore', 100, 42),
+      _B('florist', 128, 42),
+      _B('restaurant', 152, 42),
+      _B('apartment_tall', 178, 60),                            // 背景高層
+      // === 下段: 別の屋台 1 台 + 別業種 ===
+      _B('karaoke', -162, 138),
+      _B('game_center', -128, 132),
+      _B('club', -92, 148),
+      _B('yatai', -58, 128),                                    // ★ 下段唯一の屋台
+      _B('love_hotel', -22, 150),
+      _B('pachinko', 22, 138),
+      _B('capsule_hotel', 65, 142),
+      _B('business_hotel', 108, 155),
+      _B('laundromat', 140, 132),
+      _B('gas_station', 168, 135),
+      _B('office', 192, 160),                                   // 端の雑居ビル (見切れ OK)
     ],
     furniture: [
       // ─── 屋台の湯気 ── noren + chouchin ───
