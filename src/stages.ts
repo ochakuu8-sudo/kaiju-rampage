@@ -4440,31 +4440,357 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 10: 古民家街 (落ち葉)
-  { patternId: 'full_grid', groundOverride: 'fallen_leaves',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'old_town_alley' },
-      { row: 0, col: 2, sceneId: 'tea_house_garden' },
-      { row: 1, col: 1, sceneId: 'old_town_alley' },
-      { row: 1, col: 3, sceneId: 'old_town_alley' },
-    ] },
-  // 11: 五重塔 (苔)
-  { patternId: 'shrine_approach', groundOverride: 'moss',
-    overrides: [
-      { row: 0, col: 1, sceneId: 'five_story_pagoda' },
-      { row: 0, col: 3, sceneId: 'tea_house_garden' },
-      { row: 1, col: 1, sceneId: 'five_story_pagoda' },
-      { row: 1, col: 3, sceneId: 'old_town_alley' },
-    ] },
-  // 12: 終盤 参道
-  { patternId: 'shrine_approach', groundOverride: 'gravel',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'tea_house_garden' },
-      { row: 0, col: 1, sceneId: 'sando_gate' },
-      { row: 0, col: 2, sceneId: 'sando_gate' },
-      { row: 1, col: 1, sceneId: 'sando_gate' },
-      { row: 1, col: 3, sceneId: 'ryokan_street' },
-    ] },
+  // ═══ Act IV: 古民家集落 → Stage 4 handoff (C9-C11) ═══════════════
+
+  // ── C9: 町家の並び (落ち葉の街) ──
+  // 街区分け:
+  //   上段 西: 町家集落 (machiya クラスタ)
+  //   上段 中: 古い料亭 (chaya + kominka)
+  //   上段 東: 町家続き + 蔵
+  //   下段 西: 古民家 + 庭
+  //   下段 中: 紅葉の石畳広場
+  //   下段 東: 町家 + 竹垣
+  { patternId: 's3_raw', raw: {
+    buildings: [
+      // === 上段 西: ★ 町家集落 ===
+      _B('machiya', -160, 52),                                  // ★ 町家 3 軒連続
+      _B('machiya', -125, 54),
+      _B('machiya', -95, 78),                                   // 奥の町家
+      _B('kura', -175, 78),
+
+      // === 上段 中: 古料亭 ===
+      _B('chaya', -55, 40),
+      _B('kominka', -22, 42),
+      _B('chaya', 22, 40),
+      _B('kominka', 55, 44),
+      _B('shed', -15, 78),
+      _B('shed', 18, 78),
+
+      // === 上段 東: 町家続き + 蔵 ===
+      _B('machiya', 108, 52),
+      _B('machiya', 142, 54),                                   // ★ 町家続き
+      _B('kura', 175, 40),
+      _B('kura', 178, 78),
+      _B('shed', 125, 78),
+
+      // === 下段 西: 古民家 + 庭 ===
+      _B('kominka', -162, 132),
+      _B('kominka', -135, 138),
+      _B('kominka', -108, 132),
+      _B('kura', -178, 175),
+      _B('greenhouse', -130, 178),
+
+      // === 下段 中: 紅葉の広場 ===
+      _B('chaya', -38, 132),
+      _B('chaya', 5, 138),
+      _B('chaya', 45, 132),
+      _B('shed', -20, 178),
+      _B('shed', 22, 178),
+
+      // === 下段 東: 町家 + 竹垣 ===
+      _B('machiya', 108, 170),                                  // ★ 奥の町家
+      _B('kominka', 108, 132),
+      _B('kominka', 138, 138),
+      _B('chaya', 168, 132),
+      _B('shed', 178, 178),
+    ],
+    furniture: [
+      // ─── 軸: 石灯籠 ───
+      _F('stone_lantern', -80, 92), _F('stone_lantern', 80, 92),
+      _F('stone_lantern', -40, 98), _F('stone_lantern', 40, 98),
+      _F('stone_lantern', -80, 108), _F('stone_lantern', 80, 108),
+      // ─── 軸: 松 + 紅葉 ───
+      _F('pine_tree', -170, 62), _F('pine_tree', 170, 62),
+      _F('pine_tree', -60, 95), _F('pine_tree', 60, 95),
+      _F('pine_tree', -170, 160), _F('pine_tree', 170, 160),
+      // ─── 町家の装飾 (上段 西・東) ───
+      _F('noren', -160, 36), _F('noren', -125, 38),
+      _F('chouchin', -160, 22), _F('chouchin', -125, 22),
+      _F('bamboo_fence', -95, 50),
+      _F('bonsai', -160, 32),
+      _F('potted_plant', -125, 32),
+      _F('wood_fence', -180, 40),
+      _F('noren', 108, 36), _F('noren', 142, 38),
+      _F('chouchin', 108, 22), _F('chouchin', 142, 22),
+      _F('bamboo_fence', 95, 50),
+      _F('wood_fence', 180, 40),
+      // ─── 古料亭 (上段 中) ───
+      _F('noren', -55, 30), _F('noren', 22, 30),
+      _F('chouchin', -22, 30), _F('chouchin', 55, 30),
+      _F('bamboo_cluster', 0, 50),
+      _F('potted_plant', -22, 30),
+      // ─── 古民家区画 (下段 西) ───
+      _F('bamboo_fence', -95, 150),
+      _F('potted_plant', -162, 122), _F('potted_plant', -108, 122),
+      _F('bonsai', -135, 122),
+      _F('sakura_tree', -162, 178),                             // 紅葉風の木 (sakura で代用)
+      // ─── 紅葉の広場 (下段 中) ───
+      _F('stepping_stones', 0, 165),
+      _F('rock', -25, 170), _F('rock', 25, 170),
+      _F('bonsai', -38, 122), _F('bonsai', 38, 122),
+      _F('noren', -38, 128), _F('noren', 45, 128),
+      _F('bamboo_water_fountain', -10, 170),
+      // ─── 町家 (下段 東) ───
+      _F('bamboo_fence', 95, 150),
+      _F('bonsai', 108, 122), _F('bonsai', 138, 124),
+      _F('wood_fence', 180, 168),
+      _F('potted_plant', 168, 122),
+    ],
+    humans: [
+      _H(-160, 72),                                             // 町家住人
+      _H(-22, 60),                                              // 古料亭客
+      _H(108, 72),                                              // 町家住人
+      _H(-135, 152),                                            // 古民家路地
+      _H(5, 152),                                               // 紅葉広場の散歩
+      _H(108, 152),
+    ],
+    grounds: [
+      _G('fallen_leaves', 0, 100, 360, 40),                     // ★ 中央に落ち葉の参道
+      _G('stone_pavement', -140, 60, 80, 42),
+      _G('wood_deck', 0, 60, 120, 42),                          // 古料亭の木道
+      _G('stone_pavement', 140, 60, 80, 42),
+      _G('fallen_leaves', -140, 160, 80, 42),                   // ★ 落ち葉
+      _G('fallen_leaves', 0, 160, 140, 42),                     // ★ 紅葉広場
+      _G('fallen_leaves', 140, 160, 80, 42),
+      _G('fallen_leaves', 0, 15, 240, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C10: 古民家集落 + 蔵 ──
+  // 街区分け:
+  //   上段 西: 古民家密集 (kominka × 4)
+  //   上段 中: 広場と井戸 (小さな chaya)
+  //   上段 東: 土蔵群 (kura クラスタ)
+  //   下段 西: 蔵と古民家の混合
+  //   下段 中: 茶屋の路地
+  //   下段 東: 古民家 + 温室
+  { patternId: 's3_raw', raw: {
+    buildings: [
+      // === 上段 西: 古民家密集 ===
+      _B('kominka', -165, 40),
+      _B('kominka', -138, 44),
+      _B('kominka', -112, 40),                                  // 古民家 3 連
+      _B('kominka', -170, 78),                                  // 奥の古民家
+      _B('shed', -130, 78),
+
+      // === 上段 中: 広場と井戸 ===
+      _B('chaya', -55, 42),
+      _B('kominka', -22, 40),
+      _B('kominka', 22, 44),
+      _B('chaya', 55, 40),
+      _B('kura', 0, 78),                                        // 奥の蔵
+
+      // === 上段 東: ★ 土蔵群 ===
+      _B('kura', 108, 40),
+      _B('kura', 135, 44),
+      _B('kura', 165, 40),                                      // ★ 蔵 3 連
+      _B('kura', 108, 78), _B('kura', 175, 78),                 // 奥に 2 つ
+
+      // === 下段 西: 蔵と古民家の混合 ===
+      _B('kominka', -162, 132),
+      _B('kura', -135, 138),
+      _B('kominka', -108, 132),
+      _B('shed', -178, 175),
+      _B('greenhouse', -135, 178),
+
+      // === 下段 中: 茶屋の路地 ===
+      _B('chaya', -38, 132),
+      _B('chaya', 5, 138),
+      _B('chaya', 45, 132),                                     // 茶屋 3 連
+      _B('shed', -15, 178),
+      _B('shed', 22, 178),
+
+      // === 下段 東: 古民家 + 温室 ===
+      _B('kominka', 108, 132),
+      _B('kominka', 138, 138),
+      _B('kominka', 168, 132),
+      _B('greenhouse', 125, 178),                               // 古い温室
+      _B('shed', 165, 178),
+    ],
+    furniture: [
+      // ─── 軸: 石灯籠 (最後) ───
+      _F('stone_lantern', -80, 92), _F('stone_lantern', 80, 92),
+      _F('stone_lantern', -40, 98), _F('stone_lantern', 40, 98),
+      // ─── 軸: 松 ───
+      _F('pine_tree', -170, 62), _F('pine_tree', 170, 62),
+      _F('pine_tree', -60, 95), _F('pine_tree', 60, 95),
+      _F('pine_tree', -170, 160), _F('pine_tree', 170, 160),
+      // ─── 古民家密集 (上段 西) ───
+      _F('bamboo_fence', -95, 50),
+      _F('potted_plant', -165, 30), _F('potted_plant', -138, 30),
+      _F('bonsai', -112, 30),
+      _F('wood_fence', -180, 42),
+      // ─── 広場 (上段 中) ───
+      _F('fountain', 0, 55),                                    // ★ 古い井戸 (fountain で代用)
+      _F('rock', -15, 65), _F('rock', 15, 65),
+      _F('bamboo_cluster', -70, 50),
+      _F('noren', -55, 30), _F('noren', 55, 30),
+      _F('stepping_stones', 0, 70),
+      // ─── 土蔵群 (上段 東) ───
+      _F('bamboo_fence', 95, 50),
+      _F('rock', 108, 62), _F('rock', 165, 62),
+      _F('wood_fence', 180, 45),
+      _F('stone_lantern', 135, 72),
+      // ─── 蔵と古民家混合 (下段 西) ───
+      _F('bamboo_fence', -95, 150),
+      _F('potted_plant', -162, 122), _F('potted_plant', -108, 122),
+      _F('sakura_tree', -162, 178),                             // 最後の桜
+      _F('koi_pond', -140, 172),
+      // ─── 茶屋の路地 (下段 中) ───
+      _F('noren', -38, 128), _F('noren', 5, 132),
+      _F('noren', 45, 128),
+      _F('chouchin', -38, 122), _F('chouchin', 5, 126),
+      _F('chouchin', 45, 122),
+      _F('bonsai', -20, 170),
+      _F('stepping_stones', 22, 170),
+      // ─── 古民家 (下段 東) ───
+      _F('bamboo_fence', 95, 150),
+      _F('bonsai', 108, 122), _F('bonsai', 138, 124),
+      _F('potted_plant', 168, 122),
+      _F('wood_fence', 180, 155),
+    ],
+    humans: [
+      _H(-138, 55),                                             // 古民家住人
+      _H(0, 70),                                                // 井戸で水汲み
+      _H(135, 60),                                              // 蔵の前
+      _H(-135, 152),
+      _H(5, 152),                                               // 茶屋路地
+      _H(138, 152),
+      _H(125, 182),                                             // 温室で野菜を摘む
+    ],
+    grounds: [
+      _G('stone_pavement', 0, 100, 360, 40),                    // 石畳
+      _G('stone_pavement', -140, 60, 80, 42),
+      _G('stone_pavement', 0, 60, 100, 42),                     // 広場
+      _G('stone_pavement', 140, 60, 80, 42),                    // 土蔵前
+      _G('stone_pavement', -140, 160, 80, 42),
+      _G('wood_deck', 0, 160, 120, 42),                         // 茶屋路地の木道
+      _G('stone_pavement', 140, 160, 80, 42),
+      _G('stone_pavement', 0, 15, 220, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C11: 石畳の終端 → Stage 4 への気配 ──
+  // 街区分け:
+  //   上段 西: 古い農家 (kominka + greenhouse)
+  //   上段 中: 集落の外れ (小さな祠 + 野菜畑)
+  //   上段 東: 集落の境界 (蔵 + 小屋)
+  //   下段 西: 畑地と小屋
+  //   下段 中: 終盤の広場
+  //   下段 東: 港へ続く道の気配 (kura + 小屋)
+  { patternId: 's3_raw', raw: {
+    buildings: [
+      // === 上段 西: 古い農家 ===
+      _B('kominka', -162, 42),
+      _B('kominka', -132, 44),
+      _B('greenhouse', -105, 40),                               // 農業用温室
+      _B('kura', -175, 78),
+      _B('greenhouse', -135, 78),                               // 2 棟目温室
+
+      // === 上段 中: 集落の外れ + 小祠 ===
+      _B('shrine', -25, 55),                                    // ★ 最後の小祠
+      _B('kominka', -62, 42),
+      _B('kominka', 25, 42),
+      _B('kominka', 62, 44),
+      _B('shed', -15, 78),
+      _B('shed', 18, 78),
+
+      // === 上段 東: 集落の境界 ===
+      _B('kominka', 108, 42),
+      _B('kura', 138, 40),
+      _B('kominka', 170, 44),
+      _B('shed', 130, 78),
+      _B('kura', 170, 78),
+
+      // === 下段 西: 畑地 ===
+      _B('kominka', -162, 132),
+      _B('greenhouse', -130, 138),                              // 野菜温室
+      _B('kura', -105, 132),
+      _B('shed', -178, 175),
+      _B('greenhouse', -138, 178),                              // 温室
+
+      // === 下段 中: 終盤の広場 ===
+      _B('chaya', -38, 132),
+      _B('chaya', 38, 132),                                     // 最後の茶屋 2 軒
+      _B('shed', 0, 178),
+
+      // === 下段 東: 港への道の気配 ===
+      _B('kura', 108, 132),                                     // 蔵
+      _B('kominka', 138, 138),
+      _B('kominka', 168, 132),
+      _B('shed', 125, 178),
+      _B('kura', 175, 175),                                     // ★ 港へ続く蔵 (Stage 4 handoff)
+    ],
+    furniture: [
+      // ─── 軸: 石灯籠 (控えめ、終盤) ───
+      _F('stone_lantern', -80, 95), _F('stone_lantern', 80, 95),
+      _F('stone_lantern', -40, 102), _F('stone_lantern', 40, 102),
+      // ─── 軸: 松 (最後の松並木) ───
+      _F('pine_tree', -170, 62), _F('pine_tree', 170, 62),
+      _F('pine_tree', -60, 95), _F('pine_tree', 60, 95),
+      _F('pine_tree', -170, 160), _F('pine_tree', 170, 160),
+      // ─── 農家 (上段 西) ───
+      _F('bamboo_fence', -95, 50),
+      _F('rock', -130, 65),
+      _F('potted_plant', -162, 30),
+      _F('wood_fence', -180, 42),
+      // ─── ★ 小祠 (上段 中) ───
+      _F('torii', -25, 42),
+      _F('koma_inu', -40, 80), _F('koma_inu', -10, 80),
+      _F('offering_box', -25, 80),
+      _F('shinto_rope', -25, 48),
+      _F('stone_lantern', -25, 70),
+      _F('bamboo_cluster', 40, 50),
+      _F('noren', 62, 32),
+      // ─── 集落境界 (上段 東) ───
+      _F('bamboo_fence', 95, 50),
+      _F('wood_fence', 180, 45),
+      _F('bonsai', 108, 30),
+      _F('rock', 148, 62),
+      // ─── 畑地 (下段 西) ───
+      _F('bamboo_fence', -95, 150),
+      _F('rock', -145, 165),
+      _F('potted_plant', -162, 122),
+      _F('flower_bed', -120, 165),                              // 野菜畑の見立て
+      _F('flower_bed', -145, 175),
+      // ─── 終盤の広場 (下段 中) ───
+      _F('fountain_large', 0, 160),                             // ★ 村の中央噴水 (大きい)
+      _F('stepping_stones', -20, 170),
+      _F('stepping_stones', 20, 170),
+      _F('sakura_tree', -8, 180),                               // 最後の桜
+      _F('rock', -25, 175), _F('rock', 25, 175),
+      _F('noren', -38, 128), _F('noren', 38, 128),
+      // ─── 港への道 (下段 東) ───
+      _F('bamboo_fence', 95, 150),
+      _F('wood_fence', 180, 155),
+      _F('bonsai', 138, 124),
+      _F('rock', 175, 165),                                     // ★ 港石の気配
+      _F('buoy', 178, 185),                                     // ★★ Stage 4 予兆: 浮標
+    ],
+    humans: [
+      _H(-132, 55),                                             // 農家
+      _H(-25, 82),                                              // 小祠参拝
+      _H(-105, 62),                                             // 温室作業
+      _H(108, 55),                                              // 集落境界
+      _H(-130, 152),                                            // 畑仕事
+      _H(0, 170),                                               // 広場の噴水
+      _H(175, 182),                                             // 港方面へ
+    ],
+    grounds: [
+      _G('stone_pavement', 0, 100, 360, 40),
+      _G('stone_pavement', -140, 60, 80, 42),
+      _G('moss', -25, 82, 50, 30),                              // 小祠の苔
+      _G('dirt', 0, 60, 100, 42),                               // ★ 集落外れの土
+      _G('stone_pavement', 140, 60, 80, 42),
+      _G('dirt', -140, 160, 80, 42),                            // ★ 畑の土
+      _G('stone_pavement', 0, 160, 140, 42),
+      _G('stone_pavement', 140, 160, 80, 42),
+      _G('stone_pavement', 0, 15, 220, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
 ];
 
 // ─── Stage 4: 港湾・工業地帯 (10 チャンク) ────────────────────
