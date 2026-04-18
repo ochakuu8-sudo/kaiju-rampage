@@ -35,30 +35,38 @@ const V_ALLEYS = [
 //   hair:  頭部上面に乗る髪の色 (省略可)
 //   hat:   髪のさらに上に乗る帽子の色 (省略可)
 //   bag:   体の横に持つかばんの色 (省略可)
+//   scale: 全体の大きさ倍率 (1.0 デフォルト、0.7 で子供、1.05 で長身の神主など)
+//   accent: 胸元のアクセント色 (省略可、ネクタイ・たすき・ネームタグなど)
 interface HumanKind {
   shirt: readonly [number, number, number];
   pants?: readonly [number, number, number];
   hair?: readonly [number, number, number];
   hat?: readonly [number, number, number];
   bag?: readonly [number, number, number];
+  scale?: number;
+  accent?: readonly [number, number, number];
 }
 
 const HUMAN_KINDS: ReadonlyArray<HumanKind> = [
+  // ═══ 0-11: 従来の一般市民 ═════════════════════════════════
   // 0: 会社員 (黒髪 + ダークスーツ + 茶色のブリーフケース)
   { shirt: [0.18, 0.22, 0.42], pants: [0.10, 0.12, 0.25],
-    hair:  [0.08, 0.06, 0.04], bag:   [0.55, 0.35, 0.18] },
+    hair:  [0.08, 0.06, 0.04], bag:   [0.55, 0.35, 0.18],
+    accent:[0.82, 0.20, 0.25] },                                // 赤ネクタイ
   // 1: OL (白ブラウス + 紺スカート + 茶髪 + ハンドバッグ)
   { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.22, 0.45],
     hair:  [0.35, 0.20, 0.10], bag:   [0.85, 0.30, 0.50] },
   // 2: 学生 (白シャツ + 紺スラックス + 黒髪 + 赤い学生鞄)
   { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.28, 0.55],
-    hair:  [0.08, 0.06, 0.04], bag:   [0.85, 0.20, 0.18] },
-  // 3: 子供 — 赤シャツ + 黄色い帽子
+    hair:  [0.08, 0.06, 0.04], bag:   [0.85, 0.20, 0.18],
+    accent:[0.18, 0.28, 0.55] },                                // 紺のリボン
+  // 3: 子供 — 赤シャツ + 黄色い帽子 (ランドセル的小鞄)
   { shirt: [1.00, 0.30, 0.20], pants: [0.20, 0.30, 0.55],
-    hair:  [0.30, 0.18, 0.08], hat:   [1.00, 0.85, 0.10] },
-  // 4: 子供 — 黄シャツ
+    hair:  [0.30, 0.18, 0.08], hat:   [1.00, 0.85, 0.10],
+    bag:   [0.62, 0.18, 0.12], scale: 0.70 },                   // 小さい
+  // 4: 子供 — 黄シャツ + 短い
   { shirt: [1.00, 0.85, 0.15], pants: [0.20, 0.30, 0.55],
-    hair:  [0.10, 0.08, 0.04] },
+    hair:  [0.10, 0.08, 0.04], scale: 0.68 },
   // 5: 私服 — 青シャツ + ジーンズ
   { shirt: [0.20, 0.50, 1.00], pants: [0.20, 0.30, 0.55],
     hair:  [0.20, 0.12, 0.08] },
@@ -74,38 +82,216 @@ const HUMAN_KINDS: ReadonlyArray<HumanKind> = [
   // 9: 観光客 (アロハ + ベージュ + 麦わら帽 + バックパック)
   { shirt: [0.95, 0.40, 0.30], pants: [0.65, 0.55, 0.35],
     hair:  [0.30, 0.18, 0.10], hat:   [0.95, 0.85, 0.40], bag: [0.30, 0.20, 0.10] },
-  // 10: お年寄り (くすんだ茶 + 白髪)
+  // 10: お年寄り (くすんだ茶 + 白髪、少し小柄)
   { shirt: [0.58, 0.52, 0.45], pants: [0.40, 0.36, 0.32],
-    hair:  [0.92, 0.90, 0.85] },
+    hair:  [0.92, 0.90, 0.85], scale: 0.88 },
   // 11: シェフ (白い服 + 白いコック帽)
   { shirt: [0.95, 0.95, 0.95], pants: [0.95, 0.95, 0.95],
     hair:  [0.08, 0.06, 0.04], hat:   [0.96, 0.96, 0.96] },
+
+  // ═══ 12-15: 医療系 (病院・診療所で出現) ═══════════════════
+  // 12: 看護師 — 白ワンピース + ピンク帽子 + 赤十字アクセント
+  { shirt: [0.96, 0.96, 0.98], pants: [0.96, 0.96, 0.98],
+    hair:  [0.30, 0.20, 0.12], hat:   [0.98, 0.85, 0.88],
+    accent:[0.90, 0.20, 0.22] },                                // 赤十字
+  // 13: 医者 — 白衣 + 聴診器 (青アクセント)
+  { shirt: [0.96, 0.96, 0.98], pants: [0.20, 0.22, 0.28],
+    hair:  [0.18, 0.10, 0.06], accent: [0.25, 0.40, 0.72] },    // 青の聴診器
+  // 14: 患者 — 水色の病衣、スリッパ
+  { shirt: [0.72, 0.88, 0.92], pants: [0.72, 0.88, 0.92],
+    hair:  [0.85, 0.80, 0.72], scale: 0.92 },
+
+  // ═══ 16-17: 公共サービス (警察・消防) ═════════════════════
+  // 15: 警察官 — 濃紺制服 + 黒帽子 + 金バッジ
+  { shirt: [0.16, 0.20, 0.35], pants: [0.10, 0.12, 0.25],
+    hair:  [0.08, 0.06, 0.04], hat:   [0.12, 0.14, 0.22],
+    accent:[0.92, 0.78, 0.20] },                                // 金バッジ
+  // 16: 消防士 — オレンジ制服 + 赤ヘルメット
+  { shirt: [0.92, 0.52, 0.15], pants: [0.42, 0.42, 0.42],
+    hair:  [0.12, 0.08, 0.04], hat:   [0.88, 0.18, 0.15] },
+
+  // ═══ 17-18: 商業・サービス ════════════════════════════════
+  // 17: 駅員 — 青制服 + 赤ネクタイ + キャップ
+  { shirt: [0.22, 0.38, 0.62], pants: [0.16, 0.22, 0.38],
+    hair:  [0.10, 0.08, 0.04], hat:   [0.18, 0.28, 0.48],
+    accent:[0.92, 0.25, 0.25] },                                // 赤ネクタイ
+  // 18: 商店店主 — エプロン + バンダナ
+  { shirt: [0.95, 0.85, 0.72], pants: [0.35, 0.28, 0.18],
+    hair:  [0.18, 0.10, 0.06], hat:   [0.85, 0.22, 0.18],
+    accent:[0.55, 0.38, 0.22] },                                // 茶色エプロン紐
+
+  // ═══ 19-20: 工業・作業員 ══════════════════════════════════
+  // 19: 工員 — 青い作業服 + 黄色いヘルメット + オレンジ安全ベスト
+  { shirt: [0.28, 0.40, 0.55], pants: [0.22, 0.25, 0.32],
+    hair:  [0.08, 0.06, 0.04], hat:   [0.98, 0.82, 0.15],
+    accent:[1.00, 0.55, 0.15] },                                // 安全ベスト
+  // 20: 港湾労働者 — 灰色オーバーオール + 白ヘルメット
+  { shirt: [0.50, 0.50, 0.52], pants: [0.50, 0.50, 0.52],
+    hair:  [0.10, 0.08, 0.04], hat:   [0.92, 0.92, 0.88] },
+
+  // ═══ 21-23: 和風 (神社・古都) ═════════════════════════════
+  // 21: 神主 — 白い装束 + 黒い烏帽子 (少し長身)
+  { shirt: [0.95, 0.92, 0.85], pants: [0.85, 0.20, 0.25],
+    hair:  [0.08, 0.06, 0.04], hat:   [0.12, 0.10, 0.15],
+    scale: 1.05 },
+  // 22: 巫女 — 白着物 + 緋袴 (赤下半身)
+  { shirt: [0.96, 0.94, 0.90], pants: [0.82, 0.18, 0.22],
+    hair:  [0.08, 0.06, 0.04],
+    accent:[0.82, 0.18, 0.22] },                                // 緋袴紐
+  // 23: 町民 (和装) — 茶色着物
+  { shirt: [0.55, 0.38, 0.22], pants: [0.42, 0.30, 0.18],
+    hair:  [0.92, 0.90, 0.85], scale: 0.92 },
+
+  // ═══ 24-27: 夜街 (繁華街) ═════════════════════════════════
+  // 24: ホステス — 赤いドレス + 金髪
+  { shirt: [0.88, 0.15, 0.30], pants: [0.88, 0.15, 0.30],
+    hair:  [0.92, 0.78, 0.32], bag: [0.92, 0.78, 0.32] },
+  // 25: バーテン — 黒ベスト + 白シャツ + 蝶ネクタイ
+  { shirt: [0.12, 0.12, 0.14], pants: [0.12, 0.12, 0.14],
+    hair:  [0.12, 0.08, 0.04], accent: [0.88, 0.15, 0.20] },    // 赤蝶ネクタイ
+  // 26: ホスト — 金髪 + 白スーツ + 紫アクセント
+  { shirt: [0.95, 0.95, 0.95], pants: [0.95, 0.95, 0.95],
+    hair:  [0.95, 0.80, 0.40], accent: [0.72, 0.25, 0.88] },
+  // 27: 酔客 — ラフな服装 + 少し猫背
+  { shirt: [0.68, 0.42, 0.25], pants: [0.35, 0.32, 0.28],
+    hair:  [0.20, 0.12, 0.08], bag: [0.22, 0.18, 0.12],
+    scale: 0.95 },
+
+  // ═══ 28-31: 祭り・テーマパーク ════════════════════════════
+  // 28: 祭り参加者 (男) — 青い法被 + 白鉢巻
+  { shirt: [0.22, 0.32, 0.62], pants: [0.92, 0.92, 0.95],
+    hair:  [0.08, 0.06, 0.04], hat:   [0.95, 0.95, 0.95],
+    accent:[0.92, 0.18, 0.22] },                                // 赤い腹帯
+  // 29: 祭り参加者 (浴衣の娘) — 赤浴衣
+  { shirt: [0.92, 0.30, 0.45], pants: [0.82, 0.22, 0.38],
+    hair:  [0.08, 0.06, 0.04],
+    accent:[0.95, 0.85, 0.15] },                                // 黄色い帯
+  // 30: 浴衣 (青柄)
+  { shirt: [0.28, 0.48, 0.78], pants: [0.22, 0.38, 0.62],
+    hair:  [0.22, 0.15, 0.08],
+    accent:[0.92, 0.92, 0.95] },                                // 白い帯
+  // 31: ピエロ (パーク) — カラフル + 赤鼻
+  { shirt: [0.95, 0.35, 0.60], pants: [0.30, 0.72, 0.45],
+    hair:  [0.92, 0.42, 0.18], hat:   [0.98, 0.88, 0.15],
+    accent:[0.95, 0.15, 0.18] },
+
+  // ═══ 32-34: 住宅街 ═════════════════════════════════════════
+  // 32: 主婦 — エプロン + カーディガン
+  { shirt: [0.88, 0.72, 0.62], pants: [0.55, 0.42, 0.30],
+    hair:  [0.35, 0.22, 0.12], bag: [0.68, 0.52, 0.38],
+    accent:[0.95, 0.88, 0.82] },                                // 白エプロン
+  // 33: 女子高生 — セーラー服 + 紺リボン
+  { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.22, 0.42],
+    hair:  [0.18, 0.12, 0.08], bag: [0.35, 0.22, 0.15],
+    accent:[0.20, 0.28, 0.55] },                                // セーラー襟
+  // 34: 幼児 — ピンク / 青の丸い服 (すごく小さい)
+  { shirt: [0.98, 0.78, 0.88], pants: [0.42, 0.68, 0.92],
+    hair:  [0.45, 0.30, 0.18], scale: 0.55 },                   // 超小柄
 ];
 
 /** 重み付き種類選択。比較的「ごく普通の人」を多めに、特殊型を少なめに。 */
 const HUMAN_KIND_WEIGHTS: ReadonlyArray<number> = [
-  6, // 0 会社員
-  4, // 1 OL
-  4, // 2 学生
-  3, // 3 子供 (赤)
-  3, // 4 子供 (黄)
-  5, // 5 私服 青
-  4, // 6 私服 緑
-  3, // 7 私服 紫
-  2, // 8 ジョガー
-  2, // 9 観光客
-  3, // 10 お年寄り
-  1, // 11 シェフ
+  6, 4, 4, 3, 3, 5, 4, 3, 2, 2, 3, 1,           // 0-11 (従来の12種)
+  0, 0, 0,                                       // 12-14 医療 (通常は出ない)
+  0, 0,                                          // 15-16 警察・消防
+  0, 0,                                          // 17-18 駅員・店主
+  0, 0,                                          // 19-20 工員・港湾
+  0, 0, 0,                                       // 21-23 神主・巫女・和装町民
+  0, 0, 0, 0,                                    // 24-27 夜街
+  0, 0, 0, 0,                                    // 28-31 祭り
+  2, 2, 1,                                       // 32-34 主婦・女子高生・幼児
 ];
 const HUMAN_KIND_TOTAL = HUMAN_KIND_WEIGHTS.reduce((a, b) => a + b, 0);
 
-function pickHumanKind(): number {
-  let r = Math.random() * HUMAN_KIND_TOTAL;
-  for (let i = 0; i < HUMAN_KIND_WEIGHTS.length; i++) {
-    r -= HUMAN_KIND_WEIGHTS[i];
+function pickHumanKind(weights: ReadonlyArray<number> = HUMAN_KIND_WEIGHTS): number {
+  let total = 0;
+  for (const w of weights) total += w;
+  if (total <= 0) return 0;
+  let r = Math.random() * total;
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
     if (r <= 0) return i;
   }
-  return HUMAN_KIND_WEIGHTS.length - 1;
+  return weights.length - 1;
+}
+
+// ═══ 建物別の人間ウェイト (テーマ別プール) ═══════════════════════════
+// 配列の index は HUMAN_KINDS の index に一致。値が大きいほど出現率 UP。
+// 0 のエントリは省略可能 (fill 関数を使わず稀疎配列で OK)
+function makeWeights(...pairs: Array<[number, number]>): number[] {
+  const arr = new Array(HUMAN_KINDS.length).fill(0);
+  for (const [idx, w] of pairs) arr[idx] = w;
+  return arr;
+}
+
+// 子供多め (学校・保育園)
+const W_KIDS = makeWeights([3, 10], [4, 10], [34, 3], [2, 3]);
+// 医療 (病院・診療所)
+const W_MEDICAL = makeWeights([12, 8], [13, 5], [14, 6], [10, 2]);
+// 警察
+const W_POLICE = makeWeights([15, 10], [0, 1]);
+// 消防
+const W_FIRE = makeWeights([16, 10], [0, 1]);
+// 駅・バスターミナル
+const W_STATION = makeWeights([17, 6], [0, 4], [1, 4], [2, 3], [9, 2], [33, 2]);
+// 商店
+const W_SHOP = makeWeights([18, 5], [11, 3], [32, 3], [0, 2], [5, 2]);
+// 工業・港湾
+const W_INDUSTRIAL = makeWeights([19, 8], [20, 4], [0, 1]);
+// 和風 (神社・寺)
+const W_SHRINE = makeWeights([21, 5], [22, 5], [23, 4], [10, 3], [9, 2]);
+// 夜街
+const W_NIGHTLIFE = makeWeights([24, 4], [25, 3], [26, 3], [27, 4], [0, 3], [1, 3]);
+// 祭り・テーマパーク
+const W_FESTIVAL = makeWeights(
+  [28, 4], [29, 4], [30, 4], [31, 2], [3, 4], [4, 3], [32, 2], [0, 1]
+);
+// 住宅
+const W_RESIDENTIAL = makeWeights(
+  [32, 4], [33, 3], [3, 3], [4, 3], [10, 3], [34, 2], [0, 2], [1, 2]
+);
+
+/** 建物サイズ → 出現する人間のウェイト配列。未定義ならデフォルト (一般通行人) */
+const BUILDING_WEIGHTS: { [key: string]: readonly number[] } = {
+  // 医療
+  hospital: W_MEDICAL, clinic: W_MEDICAL,
+  // 教育 (★ 学校・保育園 → 子供)
+  school: W_KIDS, daycare: W_KIDS,
+  // 公共サービス
+  police_station: W_POLICE,
+  fire_station: W_FIRE,
+  train_station: W_STATION, bus_terminal_shelter: W_STATION,
+  // 神社・寺
+  shrine: W_SHRINE, temple: W_SHRINE, pagoda: W_SHRINE, tahoto: W_SHRINE,
+  // 和風商店
+  chaya: W_SHOP, wagashi: W_SHOP, kimono_shop: W_SHOP, sushi_ya: W_SHOP,
+  // 一般商店・飲食
+  shop: W_SHOP, restaurant: W_SHOP, convenience: W_SHOP, cafe: W_SHOP,
+  bakery: W_SHOP, ramen: W_SHOP, izakaya: W_SHOP, florist: W_SHOP,
+  pharmacy: W_SHOP, bookstore: W_SHOP, laundromat: W_SHOP, supermarket: W_SHOP,
+  // 夜街
+  karaoke: W_NIGHTLIFE, pachinko: W_NIGHTLIFE, snack: W_NIGHTLIFE,
+  love_hotel: W_NIGHTLIFE, mahjong_parlor: W_NIGHTLIFE, club: W_NIGHTLIFE,
+  capsule_hotel: W_NIGHTLIFE, game_center: W_NIGHTLIFE,
+  // 工業
+  warehouse: W_INDUSTRIAL, crane_gantry: W_INDUSTRIAL,
+  container_stack: W_INDUSTRIAL, factory_stack: W_INDUSTRIAL,
+  silo: W_INDUSTRIAL, gas_station: W_INDUSTRIAL, garage: W_INDUSTRIAL,
+  // 祭り・テーマパーク
+  yatai: W_FESTIVAL, carousel: W_FESTIVAL, roller_coaster: W_FESTIVAL,
+  big_tent: W_FESTIVAL, ferris_wheel: W_FESTIVAL, castle: W_FESTIVAL,
+  // 住宅
+  house: W_RESIDENTIAL, townhouse: W_RESIDENTIAL, mansion: W_RESIDENTIAL,
+  apartment: W_RESIDENTIAL, apartment_tall: W_RESIDENTIAL,
+  duplex: W_RESIDENTIAL, bungalow: W_RESIDENTIAL,
+  kominka: W_RESIDENTIAL, kura: W_RESIDENTIAL, machiya: W_RESIDENTIAL,
+  shed: W_RESIDENTIAL, greenhouse: W_RESIDENTIAL, ryokan: W_RESIDENTIAL,
+  onsen_inn: W_NIGHTLIFE,
+};
+
+/** 建物サイズから対応する人間ウェイトを返す。未定義なら undefined (デフォルトを使う) */
+export function getHumanWeightsForBuilding(size: string): readonly number[] | undefined {
+  return BUILDING_WEIGHTS[size];
 }
 
 export class HumanManager {
@@ -217,8 +403,9 @@ export class HumanManager {
   }
 
   /** 建物破壊時: 中心から円状に吹き飛ばしてから逃走
-   *  人数が多いほど散布円が大きくなる (radius ∝ √n) */
-  spawnBlast(cx: number, cy: number, n: number) {
+   *  人数が多いほど散布円が大きくなる (radius ∝ √n)
+   *  kindWeights を渡すと、その建物固有の人間種類分布 (例: 学校なら子供多め) が使われる */
+  spawnBlast(cx: number, cy: number, n: number, kindWeights?: ReadonlyArray<number>) {
     const blastR = Math.sqrt(n) * 6;
     let spawned = 0;
     for (let i = 0; i < C.MAX_HUMANS && spawned < n; i++) {
@@ -238,7 +425,7 @@ export class HumanManager {
       this.blastTimer[i] = rand(0.30, 0.55);
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
-      this.kind[i]       = pickHumanKind();
+      this.kind[i]       = pickHumanKind(kindWeights);
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -452,10 +639,12 @@ export class HumanManager {
       const i = this.activeIndices[k];
       const py = this.py[i];
       if (py < camBot || py > camTop) continue;
-      const sx = C.HUMAN_W * this.scaleX[i];
-      const sy = C.HUMAN_H * (2 - this.scaleX[i]);
-      const px = this.px[i];
       const kind = HUMAN_KINDS[this.kind[i]];
+      // 身長スケール (子供は小さく、神主は長身)
+      const ks = kind.scale ?? 1.0;
+      const sx = C.HUMAN_W * this.scaleX[i] * ks;
+      const sy = C.HUMAN_H * (2 - this.scaleX[i]) * ks;
+      const px = this.px[i];
 
       // 1. 上半身 (シャツ)
       const [sr, sg, sb] = kind.shirt;
@@ -467,24 +656,30 @@ export class HumanManager {
         writeInst(buf, n++, px, py - sy * 0.30, sx, sy * 0.30, pr, pg, pb, 1, 0, 0);
       }
 
-      // 3. かばん — 体の右側に小さく
+      // 3. アクセント (ネクタイ/たすき/エプロン紐など) — 胸元の細い帯
+      if (kind.accent) {
+        const [ar, ag, ab] = kind.accent;
+        writeInst(buf, n++, px, py - sy * 0.05, sx * 0.40, sy * 0.25, ar, ag, ab, 1, 0, 0);
+      }
+
+      // 4. かばん — 体の右側に小さく
       if (kind.bag) {
         const [br, bg, bb] = kind.bag;
         writeInst(buf, n++, px + sx * 0.55, py - sy * 0.20, sx * 0.42, sy * 0.42,
           br, bg, bb, 1, 0, 0);
       }
 
-      // 4. 頭 (肌色の円)
+      // 5. 頭 (肌色の円)
       writeInst(buf, n++, px, py + sy * 0.30, sx, sx, 0.95, 0.75, 0.55, 1, 0, 1);
 
-      // 5. 髪 — 頭の上半分にオーバーレイ
+      // 6. 髪 — 頭の上半分にオーバーレイ
       if (kind.hair) {
         const [hr, hg, hb] = kind.hair;
         writeInst(buf, n++, px, py + sy * 0.30 + sx * 0.30, sx * 0.92, sx * 0.45,
           hr, hg, hb, 1, 0, 0);
       }
 
-      // 6. 帽子 — 髪のさらに上
+      // 7. 帽子 — 髪のさらに上
       if (kind.hat) {
         const [hr2, hg2, hb2] = kind.hat;
         writeInst(buf, n++, px, py + sy * 0.30 + sx * 0.70, sx * 1.05, sx * 0.35,

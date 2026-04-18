@@ -7,7 +7,7 @@ import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
 import { SoundEngine } from './sound';
 import { Ball, Flipper, BuildingManager, FurnitureManager, VehicleManager } from './entities';
-import { HumanManager } from './humans';
+import { HumanManager, getHumanWeightsForBuilding } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
 import { UIManager } from './ui';
@@ -553,7 +553,9 @@ export class Game {
       this.vehicles.spawnAmbulance(cx < 0 ? 190 : -190, C.MAIN_STREET_Y);
     }
 
-    this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax));
+    // 建物種別に応じた人間プールを取得 (学校 → 子供、病院 → 看護師など)
+    const kindWeights = getHumanWeightsForBuilding(bld.size);
+    this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax), kindWeights);
   }
 
   // ===== チャンク管理 =====
