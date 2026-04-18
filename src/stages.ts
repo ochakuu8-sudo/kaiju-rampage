@@ -595,234 +595,364 @@ const _SPINE_V = [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(+90, 0, 200)];
 const _MID_HR = _HR(100, -180, 180);       // 中央クロス街路 (全チャンク)
 const _TOP_HR = _HR(200, -180, 180);       // 上端クロス街路 (クロスポイントのみ)
 
-// ─── Stage 1: 住宅街ミックス都市 (12 チャンク, 完全手書き raw 配置) ───
-// scene/grid/pattern を一切使わず、建物・ファニチャ・人・地面・道路を 1 つ 1 つ
-// 座標指定して "超絶ハイクオリティミニチュア" を構成する。
-// 縦スパイン (x=-90/0/+90) は全チャンクで連続、道路は決して途切れない。
+// ─── Stage 1: 住宅街から街はずれへ (12 チャンク, raw 配置) ────────
+// 【全体の物語】: プレイヤーは怪獣として北→南 (y=0→2400) を進む。4 Acts で構成:
+//   Act I  (Chunks 0-2):  閑静な住宅街       — 庭付き一戸建て、物置、温室、桜
+//   Act II (Chunks 3-5):  生活と小商店        — コンビニ、クリーニング、保育園
+//   Act III(Chunks 6-8):  ローカル商店街     — 小学校、パン屋、本屋、小さな駅
+//   Act IV (Chunks 9-11): 街はずれ           — 畑、倉庫、踏切 (Stage 2 handoff)
+// 【連続要素】: 主要通り x=0 のファサード連続 / 桜並木 (Chunks 0-5) / 街路樹 (Chunks 6-11) /
+//              電柱+電線を奥層 (y=170-195) に散らす / 人流グラデ
+// 【設計原則】: scene-like 物語グルーピング (建物に帰属する家具をまとめる) /
+//              左右非対称 (偶数個でなく奇数個) / チャンク境界 (y=0, y=200) 近傍は対で繋ぐ
 const STAGE_1_TEMPLATES: ChunkTemplate[] = [
-  // 0: 閑静な住宅街入口 — 前後列 + 密な緑化 (raw)
+
+  // ═══ Act I: 閑静な住宅街 (Chunks 0-2) ═══════════════════════════════
+  // コンセプト: 朝の空気が残る一戸建て住宅街。各戸の庭、物置、車庫、温室で
+  // 「それぞれの家に暮らしがある」感を出す。桜並木が Act 全体を貫く。
+
+  // ── Chunk 0: 住宅街への入口 ──
+  // 左: 3 軒の家族住宅 + 共用物置の裏庭
+  // 中左: 大きな一戸建て + 趣味の温室 (象徴的な 1 匹の猫)
+  // 中右: 夫婦住宅 + 車庫 + 駐車中の車
+  // 右: 長屋風タウンハウス 3 連 + 桜の古木
   { patternId: 's1_raw', raw: {
     buildings: [
-      // 下段 前列 (y=25-35 小物)
-      _B('shed',-170,20),_B('shed',-145,20),_B('greenhouse',-115,22),
-      _B('shed',-55,20),_B('greenhouse',-25,22),
-      _B('shed',20,20),_B('greenhouse',55,22),
-      _B('shed',105,20),_B('greenhouse',135,22),_B('shed',170,20),
-      // 下段 中列 (y=55 中物)
-      _B('garage',-155,58),_B('greenhouse',-115,57),
-      _B('garage',-55,58),_B('shed',-20,60),
-      _B('garage',25,58),_B('shed',60,60),
-      _B('garage',110,58),_B('greenhouse',145,57),
-      // 下段 後列 (y=80-85 家)
-      _B('house',-170,82),_B('house',-140,82),_B('house',-110,82),
-      _B('house',-60,82),_B('house',-25,82),
-      _B('house',20,82),_B('townhouse',55,80),
-      _B('house',108,82),_B('house',140,82),_B('house',170,82),
-      // 上段 前列 (y=125 家)
-      _B('house',-170,125),_B('house',-140,125),_B('house',-110,125),
-      _B('house',-60,125),_B('house',-25,125),
-      _B('townhouse',22,129),_B('townhouse',52,129),
-      _B('house',108,125),_B('house',140,125),_B('house',170,125),
-      // 上段 中列 (y=155)
-      _B('garage',-155,155),_B('shed',-120,158),
-      _B('garage',-55,155),_B('greenhouse',-20,155),
-      _B('garage',25,155),_B('shed',60,158),
-      _B('garage',110,155),_B('shed',145,158),
-      // 上段 後列 (y=185 小物)
-      _B('shed',-170,185),_B('greenhouse',-140,184),_B('shed',-110,185),
-      _B('greenhouse',-55,184),_B('shed',-20,185),
-      _B('shed',25,185),_B('greenhouse',55,184),
-      _B('shed',108,185),_B('greenhouse',140,184),_B('shed',170,185),
+      // === Cell A (x:-180〜-97, 上): 3 軒家族住宅 + 裏庭 ===
+      _B('house', -155, 38), _B('house', -125, 42), _B('house', -100, 36),
+      _B('shed', -150, 72),   // 裏庭の共用物置
+      _B('greenhouse', -115, 75),
+      // === Cell B (x:-85〜-10, 上): 大きな一戸建て + 趣味の温室 ===
+      _B('townhouse', -50, 38),
+      _B('greenhouse', -20, 72),   // 趣味のガーデニング温室
+      _B('shed', -70, 78),
+      // === Cell C (x:10〜85, 上): 夫婦住宅 + 車庫 ===
+      _B('house', 30, 40),
+      _B('garage', 65, 42),         // 並びの車庫 (通勤用)
+      _B('house', 35, 78),
+      _B('shed', 70, 75),
+      // === Cell D (x:97〜180, 上): タウンハウス 3 連 + 桜ランドマーク ===
+      _B('townhouse', 112, 40), _B('townhouse', 140, 42), _B('townhouse', 168, 38),
+      _B('shed', 115, 78),
+      _B('greenhouse', 158, 75),
+
+      // === Cell E (x:-180〜-97, 下): 2 軒 + ホビー農家 (温室大) ===
+      _B('house', -150, 132), _B('house', -115, 128),
+      _B('greenhouse', -155, 170),  // 趣味の家庭菜園
+      _B('shed', -120, 178),
+      // === Cell F (x:-85〜-10, 下): 独居老人の家 + 小屋 ===
+      _B('house', -48, 132),
+      _B('shed', -20, 170),         // 物置
+      _B('garage', -70, 178),
+      // === Cell G (x:10〜85, 下): 小さな家 + 車庫群 ===
+      _B('townhouse', 35, 130),
+      _B('house', 70, 138),
+      _B('garage', 28, 175),
+      _B('shed', 68, 178),
+      // === Cell H (x:97〜180, 下): 桜の古木周りの家 + 温室農園 ===
+      _B('house', 115, 132),
+      _B('greenhouse', 158, 138),   // 桜の近くの温室
+      _B('greenhouse', 115, 178),
+      _B('shed', 160, 175),
     ],
     furniture: [
-      _F('tree',-175,8),_F('tree',-145,8),_F('tree',-115,8),
-      _F('tree',-55,8),_F('tree',-25,8),_F('tree',20,8),_F('tree',55,8),
-      _F('tree',105,8),_F('tree',135,8),_F('tree',170,8),
-      _F('hedge',-90,8),_F('hedge',90,8),
-      _F('flower_bed',-170,40),_F('flower_bed',-25,40),_F('flower_bed',145,40),
-      _F('wood_fence',-90,30),_F('wood_fence',-90,45),_F('wood_fence',90,30),_F('wood_fence',90,45),
-      _F('potted_plant',-140,70),_F('potted_plant',-110,70),_F('potted_plant',-60,70),
-      _F('potted_plant',20,70),_F('potted_plant',108,70),_F('potted_plant',140,70),
-      _F('mailbox',-170,92),_F('mailbox',-25,92),_F('mailbox',170,92),
-      _F('bicycle',-140,92),_F('bicycle',60,92),_F('bicycle',140,92),
-      _F('tree',-175,118),_F('tree',108,118),_F('tree',170,118),
-      _F('potted_plant',-140,115),_F('potted_plant',-60,115),_F('potted_plant',22,115),
-      _F('wood_fence',-90,140),_F('wood_fence',-90,155),_F('wood_fence',90,140),_F('wood_fence',90,155),
-      _F('laundry_pole',-170,140),_F('laundry_pole',140,140),
-      _F('flower_bed',-55,175),_F('flower_bed',108,175),
-      _F('tree',-175,195),_F('tree',-145,195),_F('tree',-115,195),
-      _F('tree',-55,195),_F('tree',-20,195),_F('tree',22,195),_F('tree',55,195),
-      _F('tree',108,195),_F('tree',140,195),_F('tree',170,195),
-      _F('hedge',-90,195),_F('hedge',90,195),
-      _F('street_lamp',-90,100),_F('street_lamp',90,100),
-      _F('car',-130,92),_F('car',30,92),_F('car',115,92),
-      // T-9: 朝の住宅街ディテール追加
-      _F('post_letter_box',-170,92),_F('post_letter_box',170,92),
-      _F('laundry_balcony',-140,125),_F('laundry_balcony',55,125),_F('laundry_balcony',140,125),
-      _F('flower_planter_row',-60,42),_F('flower_planter_row',22,42),_F('flower_planter_row',140,158),
-      _F('ac_outdoor_cluster',-108,115),_F('ac_outdoor_cluster',108,158),
-      _F('power_line',-90,45),_F('power_line',-90,155),_F('power_line',90,45),_F('power_line',90,155),
-      _F('manhole_cover',-45,100),_F('manhole_cover',45,100),
+      // === Cell A: 3 軒家族住宅の生活感 ===
+      _F('wood_fence', -178, 22), _F('hedge', -90, 10),
+      _F('mailbox', -155, 22), _F('mailbox', -125, 22),     // 玄関の郵便受け 2 つ (3 軒目は自転車)
+      _F('potted_plant', -142, 24), _F('bicycle', -100, 24),
+      _F('ac_unit', -148, 52), _F('ac_unit', -118, 55),      // 側面の室外機
+      _F('laundry_pole', -130, 68),                          // 共用物置前の物干し竿
+      _F('power_pole', -175, 92), _F('power_line', -178, 88),
+      // === Cell B: 象徴的な猫 ===
+      _F('flower_bed', -55, 22), _F('potted_plant', -30, 22),
+      _F('ac_unit', -65, 52),
+      _F('cat', -35, 65),                                    // ★ 縁側の猫 (象徴)
+      _F('sakura_tree', -80, 88),                            // Act I 桜並木 1
+      // === Cell C: 夫婦住宅の駐車場 ===
+      _F('mailbox', 30, 22), _F('potted_plant', 20, 25),
+      _F('car', 65, 55),                                     // 車庫の車
+      _F('ac_unit', 40, 68),
+      _F('flower_planter_row', 30, 92),
+      // === Cell D: タウンハウス連棟 + 桜 ===
+      _F('wood_fence', 100, 22), _F('wood_fence', 175, 22),
+      _F('potted_plant', 112, 24), _F('potted_plant', 140, 24), _F('potted_plant', 168, 24),
+      _F('sakura_tree', 125, 60),                            // ★ Act I 桜並木 2 (見せ場)
+      _F('sakura_tree', 155, 88),                            // 桜並木 3
+      _F('bicycle', 145, 92), _F('power_pole', 178, 90),
+
+      // === Cell E: 家庭菜園の農家風 ===
+      _F('wood_fence', -178, 160), _F('mailbox', -150, 112),
+      _F('potted_plant', -115, 112),
+      _F('flower_bed', -170, 145),                           // 畑の縁の花壇
+      _F('laundry_balcony', -130, 148),                      // 物干しバルコニー (Cell E 奥)
+      _F('power_pole', -175, 195), _F('power_line', -178, 192),
+      // === Cell F: 独居の静かさ ===
+      _F('potted_plant', -48, 112), _F('mailbox', -48, 118),
+      _F('ac_unit', -58, 148),
+      _F('cat', -30, 158),                                   // ★ 2 匹目の猫 (この家の住人の飼い猫)
+      _F('sakura_tree', -80, 175),                           // Act I 桜並木 4
+      // === Cell G: ファミリーの庭 ===
+      _F('bicycle', 15, 112), _F('mailbox', 70, 118),
+      _F('car', 28, 155),                                    // 車庫の車
+      _F('flower_planter_row', 65, 160),
+      _F('ac_outdoor_cluster', 48, 148),
+      // === Cell H: 温室農園 + 桜の古木 ===
+      _F('sakura_tree', 105, 152),                           // ★ Act I 桜並木 5 (古木)
+      _F('flower_bed', 140, 152), _F('potted_plant', 175, 155),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('bench', 135, 175),                                 // 温室の前のベンチ
+      // === 主要通り (x=0 avenue) 沿いの共通要素 ===
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('manhole_cover', -30, 100),                          // 奇数個ミラー破壊
+      _F('post_letter_box', 0, 22),                           // avenue 入口の郵便ポスト
+      _F('hedge', 90, 195),
     ],
     humans: [
-      _H(-140,45),_H(-25,45),_H(55,45),_H(140,45),
-      _H(-120,75),_H(-50,92),_H(40,75),_H(130,80),
-      _H(-100,150),_H(80,140),_H(-30,180),_H(140,175),
-      _H(0,60),_H(0,160),_H(-170,8),_H(170,8),_H(-170,195),_H(170,195),
+      _H(-125, 32), _H(40, 48), _H(160, 28),                 // 朝の庭先 (3 人)
+      _H(-145, 148), _H(70, 142),                            // 下段の庭 (2 人)
+      _H(0, 60), _H(0, 160),                                 // 主要通りの通勤者 (2 人)
     ],
     grounds: [
       _G('grass', 0, 46.5, 360, 93), _G('grass', 0, 153.5, 360, 93),
-      _G('dirt',  -130, 55, 60, 30), _G('dirt', -110, 140, 40, 30),
-      _G('concrete', 60, 70, 40, 15), _G('concrete', 150, 75, 30, 20),
-      _G('concrete', 30, 170, 50, 20), _G('dirt', 140, 165, 50, 30),
+      _G('dirt', -130, 55, 60, 30), _G('dirt', -155, 170, 50, 40),  // 畑風の土
+      _G('concrete', 65, 50, 30, 20), _G('concrete', 28, 168, 40, 20), // 駐車スペース
       _G('dirt', 0, 15, 60, 25), _G('dirt', 0, 185, 60, 25),
       _G('concrete', -170, 55, 30, 20), _G('concrete', 170, 155, 30, 20),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 1: 住宅 + コンビニ + ランドロマット (前後 3 列密度) (raw)
+  // ── Chunk 1: 住宅街の角のコンビニ ──
+  // 左奥: 住宅 3 軒 (1 軒は若い夫婦のマンション)
+  // 中左: 角のコンビニ + 自販機コーナー (通勤者の集合点)
+  // 中右: ランドロマット + 共同駐輪場 (主婦の朝の動線)
+  // 右奥: 一戸建て + 温室庭園 (古くからの住人)
   { patternId: 's1_raw', raw: {
     buildings: [
-      // 下段 前列
-      _B('shed',-170,20),_B('shed',-140,20),_B('greenhouse',-115,22),
-      _B('shed',-55,20),_B('greenhouse',-25,22),
-      _B('shed',20,20),_B('shed',55,20),
-      _B('greenhouse',105,22),_B('shed',140,20),_B('shed',170,20),
-      // 下段 中列
-      _B('garage',-155,58),_B('garage',-115,58),
-      _B('garage',-55,58),_B('shed',-20,60),
-      _B('garage',25,58),_B('shed',60,60),
-      _B('garage',108,58),_B('greenhouse',145,57),
-      // 下段 後列
-      _B('house',-170,82),_B('convenience',-130,82),_B('house',-108,82),
-      _B('house',-60,82),_B('laundromat',-25,84),
-      _B('house',20,82),_B('convenience',55,82),
-      _B('house',108,82),_B('convenience',145,82),_B('house',175,82),
-      // 上段 前列
-      _B('house',-170,125),_B('mansion',-130,127),
-      _B('house',-60,125),_B('house',-25,125),
-      _B('townhouse',22,129),_B('house',55,125),
-      _B('convenience',115,127),_B('house',155,125),_B('house',178,125),
-      // 上段 中列
-      _B('garage',-155,155),_B('shed',-120,158),
-      _B('garage',-55,155),_B('greenhouse',-20,155),
-      _B('garage',25,155),_B('shed',60,158),
-      _B('garage',110,155),_B('shed',145,158),
-      // 上段 後列
-      _B('shed',-170,185),_B('greenhouse',-140,184),_B('shed',-110,185),
-      _B('greenhouse',-55,184),_B('shed',-20,185),
-      _B('shed',22,185),_B('greenhouse',55,184),
-      _B('shed',108,185),_B('greenhouse',140,184),_B('shed',170,185),
+      // === Cell A (左上): 住宅 2 軒 + 共用物置 ===
+      _B('house', -155, 38), _B('house', -120, 42),
+      _B('shed', -148, 72),
+      _B('greenhouse', -115, 78),
+      // === Cell B (中左上): 角のコンビニランドマーク ===
+      _B('convenience', -45, 38),                            // ★ コンビニ (目立つ位置)
+      _B('shed', -75, 75),                                   // 裏の物置
+      _B('garage', -15, 75),                                 // 搬入用
+      // === Cell C (中右上): ランドロマット + 自販機小屋 ===
+      _B('laundromat', 35, 38),                              // ランドロマット (セル中央)
+      _B('shed', 65, 42),
+      _B('house', 30, 78),
+      // === Cell D (右上): 一戸建て + 温室農園 ===
+      _B('house', 115, 40),
+      _B('townhouse', 150, 42),
+      _B('greenhouse', 168, 75),
+      _B('shed', 118, 78),
+
+      // === Cell E (左下): 若夫婦のマンション + 1 戸建て ===
+      _B('mansion', -130, 132),                              // マンション (Cell E 中心)
+      _B('house', -170, 138),
+      _B('garage', -150, 175),
+      _B('shed', -110, 178),
+      // === Cell F (中左下): 独居老人宅 + 庭 ===
+      _B('house', -48, 132),
+      _B('greenhouse', -20, 165),                            // 趣味の温室
+      _B('shed', -72, 175),
+      // === Cell G (中右下): 住宅 2 軒 + コンビニ (住民の日常動線) ===
+      _B('house', 28, 132),
+      _B('convenience', 65, 138),                            // もう 1 軒のコンビニ
+      _B('shed', 30, 175),
+      // === Cell H (右下): 住宅連 + 駐輪場 ===
+      _B('townhouse', 110, 132), _B('house', 148, 136),
+      _B('garage', 115, 175),
+      _B('shed', 160, 178),
     ],
     furniture: [
-      _F('tree',-175,8),_F('tree',-145,8),_F('tree',-115,8),
-      _F('tree',-55,8),_F('tree',-25,8),_F('tree',22,8),_F('tree',55,8),
-      _F('tree',105,8),_F('tree',140,8),_F('tree',170,8),
-      _F('hedge',-90,8),_F('hedge',90,8),
-      _F('flower_bed',-170,40),_F('flower_bed',-25,40),_F('flower_bed',140,40),
-      _F('wood_fence',-90,30),_F('wood_fence',-90,45),_F('wood_fence',90,30),_F('wood_fence',90,45),
-      _F('mailbox',-150,92),_F('vending',-45,92),_F('bicycle_rack',-20,92),
-      _F('mailbox',135,92),_F('atm',145,92),
-      _F('potted_plant',-140,70),_F('potted_plant',-60,70),
-      _F('potted_plant',20,70),_F('potted_plant',108,70),
-      _F('tree',-175,118),_F('tree',108,118),_F('tree',170,118),
-      _F('potted_plant',-140,115),_F('potted_plant',-60,115),_F('potted_plant',22,115),
-      _F('wood_fence',-90,140),_F('wood_fence',-90,155),_F('wood_fence',90,140),_F('wood_fence',90,155),
-      _F('laundry_pole',-170,140),_F('laundry_pole',140,140),
-      _F('flower_bed',-55,175),_F('flower_bed',108,175),
-      _F('tree',-175,195),_F('tree',-145,195),_F('tree',-115,195),
-      _F('tree',-55,195),_F('tree',-20,195),_F('tree',22,195),_F('tree',55,195),
-      _F('tree',108,195),_F('tree',140,195),_F('tree',170,195),
-      _F('hedge',-90,195),_F('hedge',90,195),
-      _F('street_lamp',-90,100),_F('street_lamp',90,100),
-      _F('car',-140,92),_F('car',60,92),_F('car',155,92),
-      // T-9: コンビニ周辺の都市ディテール
-      _F('kerbside_vending_pair',-130,92),_F('kerbside_vending_pair',55,92),_F('kerbside_vending_pair',145,92),
-      _F('bicycle_row',-108,95),_F('bicycle_row',20,95),_F('bicycle_row',115,95),
-      _F('puddle_reflection',-60,100),_F('puddle_reflection',80,100),
-      _F('manhole_cover',-30,100),_F('manhole_cover',30,100),_F('manhole_cover',115,100),
-      _F('cable_junction_box',-170,100),_F('cable_junction_box',170,100),
-      _F('power_line',-90,45),_F('power_line',90,155),
+      // === Cell A: 家族の朝 ===
+      _F('wood_fence', -178, 22), _F('mailbox', -155, 22), _F('mailbox', -120, 22),
+      _F('potted_plant', -137, 24),
+      _F('ac_unit', -148, 52), _F('laundry_pole', -130, 68),
+      _F('power_pole', -175, 92),
+      // === Cell B: コンビニ前 (通勤者の集まる場) ===
+      _F('a_frame_sign', -62, 22),                           // 店先の A 型看板
+      _F('kerbside_vending_pair', -25, 22),                  // 歩道の自販機 2 台並び
+      _F('bicycle_row', -45, 55),                            // 店前の駐輪場
+      _F('dumpster', -80, 68),                               // 裏のゴミ箱
+      _F('milk_crate_stack', -68, 75),
+      _F('ac_outdoor_cluster', -30, 52),
+      _F('cable_junction_box', -65, 88),
+      // === Cell C: ランドロマット前の動線 ===
+      _F('a_frame_sign', 22, 22), _F('vending', 55, 22),     // 店先の自販機
+      _F('bicycle', 30, 62),
+      _F('potted_plant', 25, 55),
+      _F('manhole_cover', 55, 80),
+      // === Cell D: 古くからの住人の家 ===
+      _F('potted_plant', 115, 24), _F('mailbox', 150, 22),
+      _F('flower_bed', 175, 22),
+      _F('sakura_tree', 108, 58),                            // ★ Act I 桜並木 (Chunk 0 から継続)
+      _F('ac_unit', 155, 65),
+      _F('cat', 170, 62),                                    // ★ 象徴的猫
+
+      // === Cell E: 若夫婦のマンション周辺 ===
+      _F('a_frame_sign', -130, 112),                         // 不動産の看板
+      _F('potted_plant', -168, 115), _F('mailbox', -168, 122),
+      _F('ac_unit', -148, 148),                              // マンション側面
+      _F('car', -150, 158),                                  // 駐車場の車
+      _F('bicycle_row', -115, 150),                          // 駐輪場
+      _F('laundry_balcony', -130, 152),                      // マンションのバルコニー
+      _F('power_pole', -178, 195), _F('power_line', -175, 190),
+      // === Cell F: 静かな老人宅 ===
+      _F('potted_plant', -48, 112), _F('mailbox', -48, 118),
+      _F('wood_fence', -75, 160), _F('flower_bed', -20, 180),
+      _F('bonsai', -35, 148),                                // ★ 盆栽 (老人の趣味)
+      // === Cell G: コンビニ周辺 (2 つめの賑わい) ===
+      _F('a_frame_sign', 48, 112),
+      _F('kerbside_vending_pair', 85, 115),
+      _F('bicycle_row', 65, 158),
+      _F('puddle_reflection', 72, 102),                      // 雨上がり感
+      _F('dumpster', 88, 148),
+      // === Cell H: 駐輪場 + 庭 ===
+      _F('mailbox', 110, 115), _F('potted_plant', 148, 115),
+      _F('sakura_tree', 130, 150),                           // ★ 桜並木継続
+      _F('flower_planter_row', 165, 158),
+      _F('power_pole', 178, 195),
+      // === 主要通り + 中央道路 ===
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('traffic_light', 0, 92),                            // コンビニ近くの信号
+      _F('manhole_cover', -15, 100), _F('manhole_cover', 45, 100),  // 奇数個
+      _F('hedge', 90, 10), _F('hedge', -90, 195),            // 非対称
     ],
-    humans: [_H(-130,75),_H(-40,92),_H(30,92),_H(120,92),_H(-105,155),_H(75,145),_H(-25,180),_H(140,175),_H(-140,45),_H(30,45),_H(0,60),_H(0,160),_H(-170,8),_H(170,195)],
+    humans: [
+      _H(-35, 22), _H(-50, 52),                              // コンビニに向かう 2 人
+      _H(35, 28), _H(30, 52),                                // ランドロマット客
+      _H(-130, 148),                                         // マンションの前
+      _H(65, 152), _H(65, 158),                              // 2 つめのコンビニの主婦
+      _H(0, 60), _H(0, 160),                                 // 主要通り
+    ],
     grounds: [
-      _G('grass',0,46.5,360,93),_G('grass',0,153.5,360,93),
-      _G('concrete',-125,72,30,18),_G('concrete',-30,72,30,18),
-      _G('concrete',60,75,35,18),_G('concrete',145,72,30,18),
-      _G('dirt',-160,60,30,25),_G('dirt',175,165,30,30),
-      _G('concrete',115,118,35,16),
-      _G('dirt',0,15,60,25),_G('dirt',0,185,60,25),
+      _G('grass', 0, 46.5, 360, 93), _G('grass', 0, 153.5, 360, 93),
+      _G('concrete', -45, 50, 40, 40),                       // コンビニ前舗装
+      _G('concrete', 65, 148, 40, 40),                       // 2 つめのコンビニ前
+      _G('concrete', 35, 50, 30, 18),                        // ランドロマット前
+      _G('dirt', -125, 170, 40, 30),                         // マンション裏の空き地
+      _G('dirt', 0, 15, 60, 25), _G('dirt', 0, 185, 60, 25),
+      _G('concrete', -150, 170, 30, 20),                     // 駐車場
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 2: 保育園・診療所・銀行 + 上端クロス (前後 3 列) (raw)
+  // ── Chunk 2: 保育園 + 診療所 + 住宅 (Act I→II 橋渡し) ──
+  // 中左: 保育園 (園庭 + 国旗ポール + 送迎親子のざわめき) ← Act I 最大のランドマーク
+  // 中右: 診療所 (小児科、車椅子マーク、バイシクルラック)
+  // 両脇: 家族住宅 (園児の家)
+  // 上端: クロス街路あり、TRAFFIC_LIGHT で歩行者誘導
   { patternId: 's1_raw', raw: {
     buildings: [
-      // 下段 前列
-      _B('shed',-170,20),_B('greenhouse',-140,22),_B('shed',-110,20),
-      _B('shed',-55,20),_B('greenhouse',-20,22),
-      _B('shed',22,20),_B('greenhouse',55,22),
-      _B('greenhouse',105,22),_B('shed',140,20),_B('shed',170,20),
-      // 下段 中列
-      _B('garage',-155,58),_B('garage',-115,58),
-      _B('garage',-55,58),_B('shed',-20,60),
-      _B('garage',25,58),_B('shed',60,60),
-      _B('garage',110,58),_B('greenhouse',145,57),
-      // 下段 後列
-      _B('house',-170,82),_B('daycare',-125,82),
-      _B('clinic',-55,79),
-      _B('post_office',30,80),_B('house',65,82),
-      _B('bank',115,77),_B('house',155,82),_B('shed',178,85),
-      // 上段 前列
-      _B('house',-170,125),_B('house',-140,125),_B('townhouse',-108,127),
-      _B('clinic',-50,123),
-      _B('house',22,125),_B('house',55,125),
-      _B('house',108,125),_B('garage',145,128),_B('house',175,125),
-      // 上段 中列 (上端クロスまで余裕あり y=107~193)
-      _B('garage',-155,155),_B('shed',-120,158),
-      _B('garage',-55,155),_B('greenhouse',-20,155),
-      _B('garage',25,155),_B('shed',60,158),
-      _B('garage',110,155),_B('shed',145,158),
-      // 上段 後列 (上端 HR y=193 まで、h12 なら y=187 が最大)
-      _B('shed',-170,185),_B('greenhouse',-140,184),_B('shed',-110,185),
-      _B('greenhouse',-55,184),_B('shed',-20,185),
-      _B('shed',25,185),_B('greenhouse',55,184),
-      _B('shed',108,185),_B('greenhouse',140,184),_B('shed',170,185),
+      // === Cell A (左上): 家族住宅 + 小屋 (園児の家) ===
+      _B('house', -155, 38), _B('house', -120, 42),
+      _B('shed', -148, 72),
+      // === Cell B (中左上): 保育園 ★ (セル中心) ===
+      _B('daycare', -45, 40),                                // ★ 保育園 (Act I ランドマーク)
+      _B('shed', -18, 78),                                   // 園具倉庫
+      // === Cell C (中右上): 診療所 + 薬局 ===
+      _B('clinic', 40, 40),                                  // ★ 小児科診療所
+      _B('shed', 75, 78),
+      // === Cell D (右上): 郵便局 + 住宅 ===
+      _B('post_office', 125, 40),
+      _B('house', 168, 42),
+      _B('greenhouse', 115, 78),
+
+      // === Cell E (左下): もう 1 軒の診療所分院 + 住宅 ===
+      _B('clinic', -145, 130),                               // 分院 (セル中心)
+      _B('house', -105, 140),
+      _B('garage', -150, 178),
+      // === Cell F (中左下): 住宅 2 軒 ===
+      _B('house', -48, 132),
+      _B('townhouse', -18, 128),
+      _B('shed', -70, 175),
+      _B('greenhouse', -20, 178),
+      // === Cell G (中右下): 銀行 + 住宅 ===
+      _B('bank', 45, 128),                                   // 小さな支店
+      _B('house', 78, 136),
+      _B('shed', 30, 178),
+      // === Cell H (右下): 住宅 + ガレージ ===
+      _B('house', 115, 132), _B('house', 148, 138),
+      _B('garage', 170, 178),
+      _B('shed', 118, 175),
     ],
     furniture: [
-      _F('tree',-175,8),_F('tree',-140,8),_F('tree',-110,8),
-      _F('tree',-55,8),_F('tree',-20,8),_F('tree',22,8),_F('tree',55,8),
-      _F('tree',105,8),_F('tree',140,8),_F('tree',170,8),
-      _F('hedge',-90,8),_F('hedge',90,8),
-      _F('flag_pole',-125,92),_F('bicycle_rack',-55,92),
-      _F('post_box',30,92),_F('bench',65,92),
-      _F('atm',115,92),_F('mailbox',155,92),
-      _F('bench',-108,114),_F('flower_bed',-50,112),
-      _F('mailbox',170,115),_F('flag_pole',30,115),
-      _F('potted_plant',-140,70),_F('potted_plant',-20,70),_F('potted_plant',145,70),
-      _F('wood_fence',-90,30),_F('wood_fence',90,30),
-      _F('wood_fence',-90,140),_F('wood_fence',90,140),
-      _F('tree',-175,165),_F('tree',170,165),
-      _F('street_lamp',-90,100),_F('street_lamp',90,100),
-      _F('street_lamp',-90,193),_F('street_lamp',90,193),
-      _F('traffic_light',-90,185),_F('traffic_light',90,185),
-      _F('car',-130,92),_F('car',65,92),_F('car',155,92),
-      // T-9: 保育園/診療所周辺の歩道橋 + 緑化
-      _F('pedestrian_bridge',0,145),
-      _F('bicycle_row',-125,95),_F('bicycle_row',-55,95),_F('bicycle_row',115,95),
-      _F('flower_planter_row',-20,42),_F('flower_planter_row',30,105),_F('flower_planter_row',108,140),
-      _F('guardrail_short',-50,100),_F('guardrail_short',50,100),
-      _F('manhole_cover',-90,100),_F('manhole_cover',90,100),
-      _F('taxi_rank_sign',115,100),
+      // === Cell A: 園児の家の庭 ===
+      _F('wood_fence', -178, 22), _F('mailbox', -155, 22), _F('mailbox', -120, 22),
+      _F('potted_plant', -138, 24),
+      _F('ac_unit', -148, 52),
+      _F('laundry_pole', -130, 62),
+      _F('power_pole', -175, 92),
+      // === Cell B: 保育園の園庭 (生活感) ===
+      _F('flag_pole', -45, 22),                              // 国旗ポール (園の象徴)
+      _F('sign_board', -65, 22),                              // 園名看板
+      _F('flower_planter_row', -20, 22),                     // 園庭の花壇列
+      _F('bicycle_rack', -72, 62),                           // 送迎用
+      _F('flower_bed', -60, 78),                             // 園庭の花壇
+      _F('bench', -25, 65),                                  // 保護者の待ちベンチ
+      // === Cell C: 診療所前の小さな広場 ===
+      _F('sign_board', 20, 22), _F('sign_board', 62, 22),      // 診療科目看板
+      _F('bicycle_rack', 58, 62),                            // 患者の駐輪場
+      _F('potted_plant', 22, 28), _F('potted_plant', 58, 28),
+      _F('ac_outdoor_cluster', 72, 52),                      // 側面の室外機
+      _F('bench', 50, 78),
+      // === Cell D: 郵便局前 ===
+      _F('post_box', 105, 22),                               // 郵便ポスト
+      _F('atm', 145, 22),
+      _F('sign_board', 125, 22),
+      _F('flag_pole', 148, 62),
+      _F('sakura_tree', 155, 88),                            // ★ Act I 桜並木
+      _F('potted_plant', 168, 24),
+
+      // === Cell E: 分院の裏 ===
+      _F('sign_board', -165, 112), _F('bicycle_rack', -115, 148),
+      _F('potted_plant', -175, 115), _F('potted_plant', -125, 115),
+      _F('ac_unit', -160, 148),
+      _F('flower_bed', -125, 162),
+      _F('power_pole', -178, 195),
+      // === Cell F: 住宅の朝 ===
+      _F('mailbox', -48, 115), _F('mailbox', -18, 112),
+      _F('potted_plant', -35, 115),
+      _F('ac_unit', -58, 148),
+      _F('laundry_balcony', -28, 152),
+      _F('cat', -70, 152),                                   // ★ 象徴的猫
+      // === Cell G: 銀行支店 + 住民 ===
+      _F('atm', 28, 112),
+      _F('bench', 62, 115),                                  // 待ちベンチ
+      _F('flower_bed', 78, 115),
+      _F('ac_unit', 65, 148),
+      _F('sakura_tree', 35, 172),                            // ★ Act I 桜並木 (終端)
+      // === Cell H: 平穏な住宅 ===
+      _F('mailbox', 115, 112), _F('mailbox', 148, 115),
+      _F('potted_plant', 130, 115),
+      _F('flower_planter_row', 155, 148),
+      _F('car', 168, 158),                                   // 駐車車両
+      _F('power_pole', 178, 195),
+      // === 主要通り・中央道路・上端クロス ===
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('street_lamp', -90, 193), _F('street_lamp', 90, 193),
+      _F('traffic_light', -90, 92),                          // 保育園前の信号 (片側のみ = 非対称)
+      _F('guardrail_short', -30, 100), _F('guardrail_short', 30, 100),
+      _F('pedestrian_bridge', 0, 145),                       // 小児科近くの歩道橋
+      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100), _F('manhole_cover', 0, 100),
+      _F('hedge', 90, 10), _F('hedge', -90, 195),
     ],
-    humans: [_H(-125,90),_H(-55,92),_H(30,92),_H(115,92),_H(-105,140),_H(75,150),_H(140,175),_H(-30,180),_H(0,60),_H(160,60),_H(-170,8),_H(170,8)],
+    humans: [
+      _H(-45, 55), _H(-45, 62), _H(-60, 68),                 // 保育園の送迎親子 3 人
+      _H(40, 62), _H(58, 62),                                // 診療所の患者
+      _H(125, 55),                                           // 郵便局の客
+      _H(-145, 148),                                         // 分院の前
+      _H(0, 60), _H(0, 160),                                 // 主要通りの歩行者
+    ],
     grounds: [
-      _G('grass',0,46.5,360,93),_G('concrete',0,153.5,360,93),
-      _G('tile',-125,75,45,30),_G('tile',-55,72,30,35),
-      _G('tile',115,72,35,30),
-      _G('concrete',30,75,30,18),
-      _G('grass',-108,160,30,30),_G('grass',155,160,40,30),
-      _G('dirt',0,15,60,25),_G('grass',0,188,60,20),
+      _G('grass', 0, 46.5, 360, 93), _G('concrete', 0, 153.5, 360, 93),
+      _G('tile', -45, 55, 55, 50),                           // 保育園の園庭
+      _G('tile', 40, 55, 42, 50),                            // 診療所前
+      _G('tile', 125, 52, 42, 42),                           // 郵便局前
+      _G('tile', -145, 135, 42, 40),                         // 分院前
+      _G('concrete', 45, 128, 38, 30),                       // 銀行前
+      _G('grass', -110, 170, 30, 30),
+      _G('dirt', 0, 15, 60, 25), _G('grass', 0, 188, 60, 20),
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
