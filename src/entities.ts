@@ -234,8 +234,8 @@ const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,numb
   sushi_ya:         [0.85, 0.72, 0.52],  // 木 + 白のれん
   bungalow:         [0.78, 0.72, 0.58],  // 黄ベージュ (平屋)
   duplex:           [0.88, 0.82, 0.72],  // 明るいクリーム (2 世帯)
-  // Stage 5 フィナーレ: 象徴のお城 (天守閣)
-  castle:           [0.96, 0.93, 0.87],  // 白漆喰
+  // Stage 5 フィナーレ: ファンタジー城 (テーマパーク風)
+  castle:           [0.96, 0.90, 0.92],  // 淡いピンクの漆喰
 };
 
 // 建物種別からファサードパレットを選択するヘルパー
@@ -2266,83 +2266,120 @@ export class BuildingManager {
           break;
         }
         case 'castle': {
-          // ★★★ 日本のお城 (天守閣) ★★★
-          // 石垣 + 白漆喰の本体 + 多重の黒瓦屋根 + 金鯱
-          // 石垣 (基礎)
-          writeInst(buf, n++, cx, bot + 5, bW + 6, 10, 0.55, 0.52, 0.48, 1);
-          writeInst(buf, n++, cx, bot + 1, bW + 10, 2, 0.42, 0.40, 0.36, 1);
-          // 石垣の石ブロック (小 6 個)
+          // ★★★ テーマパークのファンタジー城 (童話の魔法城) ★★★
+          // パステル漆喰 + 3 本の尖塔 (円錐屋根) + 星の先端 + バルーンと旗の装飾
+          // ──── 基礎: パステル石壁 ────
+          writeInst(buf, n++, cx, bot + 6, bW + 4, 12, 0.88, 0.80, 0.82, 1);
+          writeInst(buf, n++, cx, bot + 1, bW + 8, 2, 0.72, 0.62, 0.66, 1);
+          // 石の継ぎ目 (市松)
           for (let i = -2; i <= 2; i++) {
-            writeInst(buf, n++, cx + i * bW * 0.18, bot + 3, bW * 0.14, 3, 0.62, 0.58, 0.52, 1);
-            writeInst(buf, n++, cx + i * bW * 0.18 + bW * 0.09, bot + 7, bW * 0.14, 3, 0.58, 0.55, 0.50, 1);
+            writeInst(buf, n++, cx + i * bW * 0.18, bot + 4, bW * 0.15, 3, 0.92, 0.86, 0.88, 1);
+            writeInst(buf, n++, cx + i * bW * 0.18 + bW * 0.09, bot + 9, bW * 0.15, 3, 0.90, 0.84, 0.86, 1);
           }
-          // === 層 1: 最大の層 (本体) ===
-          const l1Y = bot + 18;
-          const l1W = bW * 0.95;
-          const l1H = bH * 0.18;
-          writeInst(buf, n++, cx, l1Y + l1H / 2, l1W, l1H, cr, cg, cb, 1);          // 白漆喰
-          // 横の木格子窓 (4 つ)
-          for (let i = -1.5; i <= 1.5; i++) {
-            writeInst(buf, n++, cx + i * l1W * 0.22, l1Y + l1H * 0.55, l1W * 0.14, l1H * 0.45, 0.28, 0.18, 0.10, 0.9);
-            for (let j = -1; j <= 1; j++) {
-              writeInst(buf, n++, cx + i * l1W * 0.22, l1Y + l1H * 0.55 + j * l1H * 0.14, l1W * 0.13, 0.4, 0.15, 0.10, 0.06, 0.85);
-            }
+          // ──── メイン本体 (大きな胴体) ────
+          const bodyY = bot + 20;
+          const bodyW = bW * 0.82;
+          const bodyH = bH * 0.40;
+          writeInst(buf, n++, cx, bodyY + bodyH / 2, bodyW, bodyH, cr, cg, cb, 1);
+          // 胸壁 (くびれの段差)
+          for (let i = -3; i <= 3; i++) {
+            writeInst(buf, n++, cx + i * bodyW * 0.14, bodyY + bodyH - 1, bodyW * 0.10, 2.5, cr * 0.92, cg * 0.88, cb * 0.92, 1);
           }
-          // 層 1 屋根 (黒瓦、広い反り)
-          const r1Y = l1Y + l1H + 2;
-          writeInst(buf, n++, cx, r1Y, l1W + 8, 3.5, 0.18, 0.16, 0.20, 1);
-          writeInst(buf, n++, cx, r1Y + 2, l1W + 10, 1.2, 0.10, 0.10, 0.14, 1);
-          writeInst(buf, n++, cx - (l1W + 6) / 2, r1Y + 1, 2, 2.5, 0.22, 0.18, 0.22, 1, 0, 1);
-          writeInst(buf, n++, cx + (l1W + 6) / 2, r1Y + 1, 2, 2.5, 0.22, 0.18, 0.22, 1, 0, 1);
-          // === 層 2 ===
-          const l2Y = r1Y + 5;
-          const l2W = bW * 0.78;
-          const l2H = bH * 0.15;
-          writeInst(buf, n++, cx, l2Y + l2H / 2, l2W, l2H, cr, cg, cb, 1);
-          // 層 2 の窓
-          for (let i = -1; i <= 1; i++) {
-            writeInst(buf, n++, cx + i * l2W * 0.30, l2Y + l2H * 0.55, l2W * 0.12, l2H * 0.45, 0.28, 0.18, 0.10, 0.9);
+          // ハート型の窓 2 つ (下段)
+          writeInst(buf, n++, cx - bodyW * 0.28, bodyY + bodyH * 0.30, bodyW * 0.14, bodyH * 0.22, 0.42, 0.25, 0.45, 0.92);
+          writeInst(buf, n++, cx - bodyW * 0.28, bodyY + bodyH * 0.35, bodyW * 0.10, bodyH * 0.14, 0.88, 0.68, 0.78, 0.85);
+          writeInst(buf, n++, cx + bodyW * 0.28, bodyY + bodyH * 0.30, bodyW * 0.14, bodyH * 0.22, 0.42, 0.25, 0.45, 0.92);
+          writeInst(buf, n++, cx + bodyW * 0.28, bodyY + bodyH * 0.35, bodyW * 0.10, bodyH * 0.14, 0.88, 0.68, 0.78, 0.85);
+          // 星型の窓 (中央上)
+          writeInst(buf, n++, cx, bodyY + bodyH * 0.62, bodyW * 0.16, bodyH * 0.20, 0.42, 0.25, 0.45, 0.92);
+          writeInst(buf, n++, cx, bodyY + bodyH * 0.62, bodyW * 0.14, bodyH * 0.16, 0.98, 0.88, 0.40, 0.88);
+          writeInst(buf, n++, cx, bodyY + bodyH * 0.62, bodyW * 0.10, bodyH * 0.12, 0.95, 0.75, 0.25, 0.85);
+          // ──── 3 本の尖塔 (メイン中央 + サイド 2 本) ────
+          // --- サイド塔 (西) ---
+          const sideLx = cx - bodyW * 0.40;
+          const sideBot = bodyY + bodyH + 2;
+          const sideW = bW * 0.20;
+          const sideH = bH * 0.25;
+          writeInst(buf, n++, sideLx, sideBot + sideH / 2, sideW, sideH, cr, cg, cb, 1);
+          writeInst(buf, n++, sideLx, sideBot + sideH * 0.55, sideW * 0.42, sideH * 0.36, 0.42, 0.25, 0.45, 0.9);
+          writeInst(buf, n++, sideLx, sideBot + sideH * 0.55, sideW * 0.35, sideH * 0.30, 0.88, 0.68, 0.78, 0.85);
+          // 西塔の円錐屋根 (紫)
+          const sideLconeY = sideBot + sideH + 1;
+          writeInst(buf, n++, sideLx, sideLconeY + 4, sideW * 0.85, 8, 0.62, 0.42, 0.75, 1);
+          writeInst(buf, n++, sideLx, sideLconeY + 7, sideW * 0.55, 5, 0.72, 0.52, 0.82, 1);
+          writeInst(buf, n++, sideLx, sideLconeY + 9, sideW * 0.30, 3, 0.82, 0.62, 0.88, 1);
+          // 西塔の先端: 旗
+          writeInst(buf, n++, sideLx, sideLconeY + 12, 0.6, 4, 0.92, 0.78, 0.25, 1);
+          writeInst(buf, n++, sideLx + 2, sideLconeY + 13, 3, 2, 0.92, 0.32, 0.28, 1);
+          // --- サイド塔 (東) ---
+          const sideRx = cx + bodyW * 0.40;
+          writeInst(buf, n++, sideRx, sideBot + sideH / 2, sideW, sideH, cr, cg, cb, 1);
+          writeInst(buf, n++, sideRx, sideBot + sideH * 0.55, sideW * 0.42, sideH * 0.36, 0.42, 0.25, 0.45, 0.9);
+          writeInst(buf, n++, sideRx, sideBot + sideH * 0.55, sideW * 0.35, sideH * 0.30, 0.88, 0.68, 0.78, 0.85);
+          writeInst(buf, n++, sideRx, sideLconeY + 4, sideW * 0.85, 8, 0.62, 0.42, 0.75, 1);
+          writeInst(buf, n++, sideRx, sideLconeY + 7, sideW * 0.55, 5, 0.72, 0.52, 0.82, 1);
+          writeInst(buf, n++, sideRx, sideLconeY + 9, sideW * 0.30, 3, 0.82, 0.62, 0.88, 1);
+          writeInst(buf, n++, sideRx, sideLconeY + 12, 0.6, 4, 0.92, 0.78, 0.25, 1);
+          writeInst(buf, n++, sideRx + 2, sideLconeY + 13, 3, 2, 0.32, 0.78, 0.92, 1);
+          // --- 中央大塔 (メイン) ---
+          const mainBot = bodyY + bodyH + 1;
+          const mainW = bW * 0.42;
+          const mainH = bH * 0.40;
+          writeInst(buf, n++, cx, mainBot + mainH / 2, mainW, mainH, cr, cg, cb, 1);
+          // 中央塔の胸壁 (小段差)
+          for (let i = -2; i <= 2; i++) {
+            writeInst(buf, n++, cx + i * mainW * 0.18, mainBot + mainH - 1, mainW * 0.12, 2, cr * 0.92, cg * 0.88, cb * 0.92, 1);
           }
-          // 層 2 屋根
-          const r2Y = l2Y + l2H + 2;
-          writeInst(buf, n++, cx, r2Y, l2W + 7, 3, 0.18, 0.16, 0.20, 1);
-          writeInst(buf, n++, cx, r2Y + 1.5, l2W + 9, 1, 0.10, 0.10, 0.14, 1);
-          // 破風 (三角妻飾り)
-          writeInst(buf, n++, cx, r2Y + 4, l2W * 0.18, 3, cr, cg, cb, 1);
-          writeInst(buf, n++, cx, r2Y + 4, l2W * 0.16, 2.5, 0.68, 0.48, 0.22, 0.92);
-          // === 層 3 ===
-          const l3Y = r2Y + 5;
-          const l3W = bW * 0.62;
-          const l3H = bH * 0.13;
-          writeInst(buf, n++, cx, l3Y + l3H / 2, l3W, l3H, cr, cg, cb, 1);
-          for (let i = -1; i <= 1; i++) {
-            writeInst(buf, n++, cx + i * l3W * 0.32, l3Y + l3H * 0.55, l3W * 0.12, l3H * 0.45, 0.28, 0.18, 0.10, 0.9);
+          // 中央塔の大窓 (ティアラ型: 半円アーチ)
+          writeInst(buf, n++, cx, mainBot + mainH * 0.42, mainW * 0.38, mainH * 0.45, 0.42, 0.25, 0.55, 0.92);
+          writeInst(buf, n++, cx, mainBot + mainH * 0.50, mainW * 0.32, mainH * 0.35, 0.85, 0.62, 0.88, 0.85);
+          writeInst(buf, n++, cx, mainBot + mainH * 0.55, mainW * 0.22, mainH * 0.18, 0.42, 0.25, 0.55, 0.92); // 窓の内側模様
+          // バルコニー (中央塔 中段)
+          writeInst(buf, n++, cx, mainBot + mainH * 0.18, mainW * 1.08, 2, 0.78, 0.62, 0.72, 1);
+          for (let i = -3; i <= 3; i++) {
+            writeInst(buf, n++, cx + i * mainW * 0.14, mainBot + mainH * 0.20, 0.8, 4, 0.68, 0.52, 0.62, 0.9);
           }
-          const r3Y = l3Y + l3H + 2;
-          writeInst(buf, n++, cx, r3Y, l3W + 6, 2.5, 0.18, 0.16, 0.20, 1);
-          writeInst(buf, n++, cx, r3Y + 1.2, l3W + 8, 0.9, 0.10, 0.10, 0.14, 1);
-          // === 層 4 (天守) ===
-          const l4Y = r3Y + 4;
-          const l4W = bW * 0.48;
-          const l4H = bH * 0.12;
-          writeInst(buf, n++, cx, l4Y + l4H / 2, l4W, l4H, cr, cg, cb, 1);
-          writeInst(buf, n++, cx, l4Y + l4H * 0.55, l4W * 0.16, l4H * 0.55, 0.28, 0.18, 0.10, 0.9);
-          // 回廊 (縁側)
-          writeInst(buf, n++, cx, l4Y + l4H - 1, l4W + 3, 1, 0.35, 0.22, 0.14, 1);
-          // 層 4 屋根 (最上層、幅広)
-          const r4Y = l4Y + l4H + 2;
-          writeInst(buf, n++, cx, r4Y, l4W + 5, 3, 0.18, 0.16, 0.20, 1);
-          writeInst(buf, n++, cx, r4Y + 1.5, l4W + 7, 0.9, 0.10, 0.10, 0.14, 1);
-          // === 金鯱 (屋根の両端、象徴) ===
-          writeInst(buf, n++, cx - l4W * 0.42, r4Y + 4, 1.6, 3.2, 0.95, 0.75, 0.22, 1); // 西鯱 体
-          writeInst(buf, n++, cx - l4W * 0.42, r4Y + 6, 2.2, 1.2, 0.92, 0.72, 0.20, 1); // 西鯱 尾
-          writeInst(buf, n++, cx + l4W * 0.42, r4Y + 4, 1.6, 3.2, 0.95, 0.75, 0.22, 1); // 東鯱
-          writeInst(buf, n++, cx + l4W * 0.42, r4Y + 6, 2.2, 1.2, 0.92, 0.72, 0.20, 1);
-          // 大門 (石垣の中央)
-          writeInst(buf, n++, cx, bot + 6, bW * 0.18, 10, 0.22, 0.14, 0.08, 1);
-          writeInst(buf, n++, cx, bot + 6, bW * 0.15, 9, 0.35, 0.22, 0.14, 0.9);
-          // 門の屋根 (小)
-          writeInst(buf, n++, cx, bot + 12, bW * 0.26, 2, 0.18, 0.16, 0.20, 1);
+          // 中央塔の円錐屋根 (ピンク)
+          const mainConeY = mainBot + mainH + 1;
+          writeInst(buf, n++, cx, mainConeY + 6, mainW * 0.88, 12, 0.92, 0.42, 0.58, 1);
+          writeInst(buf, n++, cx, mainConeY + 11, mainW * 0.60, 8, 0.95, 0.52, 0.68, 1);
+          writeInst(buf, n++, cx, mainConeY + 15, mainW * 0.32, 5, 0.98, 0.62, 0.78, 1);
+          writeInst(buf, n++, cx, mainConeY + 18, mainW * 0.12, 3, 0.98, 0.72, 0.85, 1);
+          // ──── ★ 先端の金の星 ★ ────
+          writeInst(buf, n++, cx, mainConeY + 22, 1, 6, 0.78, 0.60, 0.20, 1);             // 支柱
+          writeInst(buf, n++, cx, mainConeY + 24, 5, 5, 0.98, 0.85, 0.25, 1, 0, 1);        // 星 (円で近似)
+          writeInst(buf, n++, cx, mainConeY + 24, 3.5, 3.5, 1.0, 0.95, 0.55, 0.92, 0, 1);  // 星中央
+          writeInst(buf, n++, cx - 3, mainConeY + 24, 1.2, 1.2, 1.0, 0.95, 0.40, 0.92, 0, 1); // 煌き
+          writeInst(buf, n++, cx + 3, mainConeY + 24, 1.2, 1.2, 1.0, 0.95, 0.40, 0.92, 0, 1);
+          writeInst(buf, n++, cx, mainConeY + 27, 1.2, 1.2, 1.0, 0.95, 0.40, 0.92, 0, 1);
+          // ──── 大門 (アーチ + 王冠装飾) ────
+          writeInst(buf, n++, cx, bot + 8, bW * 0.24, 14, 0.35, 0.22, 0.30, 1);
+          writeInst(buf, n++, cx, bot + 6, bW * 0.22, 11, 0.55, 0.32, 0.48, 0.9);
+          writeInst(buf, n++, cx, bot + 14, bW * 0.18, 2.5, 0.88, 0.42, 0.65, 1);          // アーチ上の帯
+          // 門の両脇の小旗
+          writeInst(buf, n++, cx - bW * 0.16, bot + 16, 0.5, 3, 0.75, 0.60, 0.25, 1);
+          writeInst(buf, n++, cx - bW * 0.13, bot + 17, 2, 1.5, 0.42, 0.78, 0.32, 1);
+          writeInst(buf, n++, cx + bW * 0.16, bot + 16, 0.5, 3, 0.75, 0.60, 0.25, 1);
+          writeInst(buf, n++, cx + bW * 0.13, bot + 17, 2, 1.5, 0.32, 0.52, 0.92, 1);
+          // ──── 装飾: 風船 (両脇) + 旗のガーランド ────
+          // 風船クラスタ 左
+          writeInst(buf, n++, cx - bW * 0.48, bot + 20, 2.5, 2.5, 0.92, 0.32, 0.42, 0.95, 0, 1);
+          writeInst(buf, n++, cx - bW * 0.42, bot + 22, 2.2, 2.2, 0.42, 0.72, 0.92, 0.95, 0, 1);
+          writeInst(buf, n++, cx - bW * 0.52, bot + 24, 2.0, 2.0, 0.92, 0.78, 0.22, 0.95, 0, 1);
+          // 風船クラスタ 右
+          writeInst(buf, n++, cx + bW * 0.48, bot + 20, 2.5, 2.5, 0.42, 0.85, 0.42, 0.95, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.42, bot + 22, 2.2, 2.2, 0.82, 0.42, 0.92, 0.95, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.52, bot + 24, 2.0, 2.0, 0.92, 0.52, 0.22, 0.95, 0, 1);
+          // 三角旗ガーランド (胴体の上を横断)
+          for (let i = -4; i <= 4; i++) {
+            const fx = cx + i * bodyW * 0.11;
+            const colors: Array<[number, number, number]> = [
+              [0.92, 0.32, 0.42], [0.42, 0.72, 0.92], [0.92, 0.78, 0.22],
+              [0.42, 0.85, 0.42], [0.82, 0.42, 0.92],
+            ];
+            const col = colors[(i + 4) % colors.length];
+            writeInst(buf, n++, fx, bodyY - 2, 2.2, 2.4, col[0], col[1], col[2], 1);
+          }
           break;
         }
         case 'tahoto': {
