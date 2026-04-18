@@ -41,11 +41,6 @@ export class Game {
 
   private totalDestroys= 0;
   private totalHumans  = 0;
-  private totalScore   = 0;
-
-  // スコア加算ティッカー用コンボ管理
-  private comboCount = 0;
-  private comboTimer = 0;
 
   private state: GameState = 'playing';
   private stateTimer = 0;
@@ -111,9 +106,6 @@ export class Game {
   private initRun() {
     this.totalDestroys    = 0;
     this.totalHumans      = 0;
-    this.totalScore       = 0;
-    this.comboCount       = 0;
-    this.comboTimer       = 0;
     this.state            = 'playing';
     this.stateTimer       = 0;
     this.fuel             = C.FUEL_INITIAL;
@@ -123,7 +115,6 @@ export class Game {
     this.ui.setZone(0, STAGES[0].name);
     this.ui.setSpeedMeter(0, C.SCROLL_MAX);
     this.ui.setFuel(C.FUEL_INITIAL);
-    this.ui.resetScore();
   }
 
   private loadCity() {
@@ -259,9 +250,6 @@ export class Game {
       }
     }
 
-    // コンボタイマー: 一定時間加算が無ければピッチを1.0に戻す
-    this.comboTimer -= rawDt;
-    if (this.comboTimer <= 0) this.comboCount = 0;
   }
 
   /** 現在のチャンクから所属ステージを判定して HUD / 背景を更新 */
@@ -397,9 +385,6 @@ export class Game {
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
       const destroyed = this.furniture.damage(furnitureHit, 1);
-      if (destroyed) {
-        this.addScore(furnitureHit.score, b.x, b.y);
-      }
       if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
       else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
       else if (furnitureHit.type === 'sign_board' && destroyed) this.particles.spawnConfetti(b.x, b.y, 8);
@@ -414,7 +399,6 @@ export class Game {
     if (vehicleHit) {
       const destroyed = this.vehicles.damage(vehicleHit, 1);
       if (destroyed) {
-        this.addScore(vehicleHit.score, b.x, b.y);
         this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
         this.particles.spawnSpark(b.x, b.y, 6);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
@@ -444,7 +428,6 @@ export class Game {
     const cx = bld.x + bld.w / 2;
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
-    this.addScore(bld.score, cx, cy);
     this.sound.buildingDestroy();
 
     // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う
@@ -624,29 +607,12 @@ export class Game {
     this.stateTimer = 1.0;
   }
 
-  /** スコア加算 + 即時ポップアップ + コンボ連動ティッカー音 */
-  private addScore(pts: number, worldX: number, worldY: number) {
-    this.totalScore += pts;
-    this.ui.setScore(this.totalScore);
-    this.ui.spawnDamagePopup(pts, worldX, worldY, this.camera.y);
-
-    // コンボを伸ばす
-    this.comboCount = Math.min(this.comboCount + 1, C.COMBO_MAX);
-    this.comboTimer = C.COMBO_TIMEOUT;
-
-    // ティッカー音: コンボ数に応じてピッチ上昇（マリオのコイン連打風）
-    const pitch = Math.min(
-      1.0 + this.comboCount * C.SCORE_TICK_PITCH_STEP,
-      C.SCORE_TICK_PITCH_MAX,
-    );
-    this.sound.scoreTick(pitch);
-  }
 
   private onGameOver() {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
     setTimeout(() => {
-      this.ui.showGameOver(this.totalScore, this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 
@@ -654,7 +620,7 @@ export class Game {
     this.state = 'clear';
     this.juice.flash(1, 0.9, 0.5, 0.7);
     setTimeout(() => {
-      this.ui.showClear(this.totalScore, this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+      this.ui.showClear(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
   }
 

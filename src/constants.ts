@@ -195,17 +195,6 @@ export const BUMPER_RADIUS = 18;
 export const BUMPER_SCORE = 5;
 export const BUMPER_FORCE = 14;
 
-// ===== コンボ =====
-export const COMBO_TIMEOUT = 1.0;
-export const COMBO_SLOW_THRESHOLD = 5;
-export const COMBO_MAX = 10;
-
-// ===== スコア演出（ティッカー音） =====
-// コンボ1回ごとにティッカー音のピッチを何倍上げるか
-export const SCORE_TICK_PITCH_STEP = 0.06;
-// ピッチの上限倍率
-export const SCORE_TICK_PITCH_MAX = 2.5;
-
 // ===== ジュース: シェイク =====
 export const SHAKE_HUMAN_AMP   = 1.5;
 export const SHAKE_HUMAN_DUR   = 0.05;
@@ -420,12 +409,6 @@ export function getStage1MicroPalette(chunkIdx: number): MicroPalette | null {
   return STAGE_1_MICRO_PALETTE[chunkIdx] ?? null;
 }
 
-// ===== スコアポップアップ =====
-export const SCORE_POPUP_RISE      = 40;  // ポップアップ上昇量 (px)
-export const SCORE_POPUP_DUR_SMALL = 0.7; // < ¥500 (家具・人間等)
-export const SCORE_POPUP_DUR_BIG   = 0.7; // ≥ ¥500
-export const SCORE_POPUP_DUR_LARGE = 0.7; // ≥ ¥2000
-export const SCORE_POPUP_DUR_MEGA  = 0.7; // ≥ ¥5000
 
 // ===== チャンク生成 =====
 export const CHUNK_HEIGHT         = 200; // 1チャンクの高さ (px)

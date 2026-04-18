@@ -8,7 +8,6 @@ export class SoundEngine {
   private master: GainNode | null = null;
   private activeCount = 0;
   private readonly MAX_ACTIVE = 8;
-  private comboStep = 0; // コンボSE用ピッチオフセット
 
   private getCtx(): AudioContext | null {
     if (!this.ctx) {
@@ -189,24 +188,6 @@ export class SoundEngine {
   }
 
   resetComboStep() { /* 廃止 */ }
-
-  /** スコア加算時の短い "チッ" 音。コンボでピッチ上昇。 */
-  scoreTick(pitch = 1.0) {
-    this.schedule((ctx, dst) => {
-      const t = ctx.currentTime;
-      const dur = 0.04;
-      const o = ctx.createOscillator();
-      o.type = 'square';
-      o.frequency.setValueAtTime(1200 * pitch, t);
-      o.frequency.exponentialRampToValueAtTime(30, t + dur);
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.08, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      o.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + dur);
-      return dur;
-    });
-  }
 
   bumper() {
     this.schedule((ctx, dst) => {
