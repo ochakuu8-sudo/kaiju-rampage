@@ -2164,7 +2164,16 @@ export type FurnitureType =
   'sando_stone_pillar' | 'ema_wall' | 'omikuji_stand' | 'shrine_fence_red' |
   'bamboo_water_fountain' |
   // 路面ディテール
-  'puddle_reflection' | 'manhole_cover' | 'cable_junction_box' | 'bicycle_row';
+  'puddle_reflection' | 'manhole_cover' | 'cable_junction_box' | 'bicycle_row' |
+  // ── Act signatures ──
+  // Act I: 児童公園
+  'play_structure' | 'slide' | 'swing_set' | 'sandbox' |
+  // Act II: 銭湯
+  'bathhouse_chimney' |
+  // Act III: 校庭遊具
+  'jungle_gym' |
+  // Act IV: 街はずれのランドマーク
+  'fire_watchtower' | 'grain_silo';
 
 export interface FurnitureItem {
   type: FurnitureType;
@@ -2287,6 +2296,15 @@ const FURNITURE_HW: Record<FurnitureType, number> = {
   manhole_cover:        2.5,
   cable_junction_box:   2.5,
   bicycle_row:          12,
+  // Act signatures
+  play_structure:       10,
+  slide:                4,
+  swing_set:            9,
+  sandbox:              8,
+  bathhouse_chimney:    2.5,
+  jungle_gym:           8,
+  fire_watchtower:      3,
+  grain_silo:           5,
 };
 const FURNITURE_HH: Record<FurnitureType, number> = {
   tree:             C.TREE_H / 2,
@@ -2395,6 +2413,15 @@ const FURNITURE_HH: Record<FurnitureType, number> = {
   manhole_cover:        2.5,
   cable_junction_box:   3,
   bicycle_row:          3,
+  // Act signatures
+  play_structure:       9,
+  slide:                7,
+  swing_set:            4,
+  sandbox:              5,
+  bathhouse_chimney:    14,
+  jungle_gym:           6,
+  fire_watchtower:      12,
+  grain_silo:           9,
 };
 
 // Traffic light cycle durations per state (seconds)
@@ -3330,6 +3357,92 @@ export class FurnitureManager {
             writeInst(buf, n++, cx - 1.5, item.y + 1.5, 1.3, 1.3, 0.15, 0.12, 0.10, 1, 0, 1); // 前輪
             writeInst(buf, n++, cx + 1.5, item.y + 1.5, 1.3, 1.3, 0.15, 0.12, 0.10, 1, 0, 1); // 後輪
           }
+          break;
+        }
+        // ── Act signatures ───────────────────────────────────────
+        case 'play_structure': {
+          // カラフル複合遊具: 影 + 赤デッキ + 黄屋根 + 青塔 + 橙階段
+          writeInst(buf, n++, item.x + 2, item.y + 2, 21, 19, 0, 0, 0, 0.20);
+          writeInst(buf, n++, item.x, item.y, 20, 18, 0.90, 0.25, 0.25, 1);          // 赤デッキ
+          writeInst(buf, n++, item.x - 5, item.y - 3, 9, 9, 0.20, 0.55, 0.90, 1);    // 青塔
+          writeInst(buf, n++, item.x + 4, item.y - 3, 10, 7, 0.95, 0.85, 0.15, 1);   // 黄屋根
+          writeInst(buf, n++, item.x + 5, item.y + 5, 5, 5, 1.00, 0.55, 0.15, 1);    // 橙階段
+          writeInst(buf, n++, item.x - 5, item.y + 5, 3, 3, 0.30, 0.80, 0.45, 1, 0, 1); // 緑ボタン
+          break;
+        }
+        case 'slide': {
+          // すべり台: 階段 + 滑走面 + 着地マット
+          writeInst(buf, n++, item.x + 1, item.y + 1, 8, 14, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x - 2, item.y - 4, 3, 6, 0.60, 0.40, 0.25, 1);    // 茶階段
+          writeInst(buf, n++, item.x + 1, item.y, 4, 12, 0.30, 0.75, 0.90, 1);       // 水色滑走面
+          writeInst(buf, n++, item.x + 1, item.y + 6, 5, 3, 0.95, 0.35, 0.55, 0.9);  // ピンク着地マット
+          break;
+        }
+        case 'swing_set': {
+          // ブランコ: フレーム + 座面×2 (赤/黄)
+          writeInst(buf, n++, item.x - 8, item.y, 1.5, 8, 0.45, 0.45, 0.50, 1);      // 左支柱
+          writeInst(buf, n++, item.x + 8, item.y, 1.5, 8, 0.45, 0.45, 0.50, 1);      // 右支柱
+          writeInst(buf, n++, item.x, item.y - 3, 17, 1.2, 0.55, 0.55, 0.60, 1);     // 横バー
+          writeInst(buf, n++, item.x - 4, item.y + 2, 3, 1.5, 0.95, 0.25, 0.20, 1);  // 赤座面
+          writeInst(buf, n++, item.x + 4, item.y + 2, 3, 1.5, 0.98, 0.85, 0.20, 1);  // 黄座面
+          writeInst(buf, n++, item.x - 4, item.y, 0.5, 5, 0.20, 0.20, 0.20, 0.9);    // チェーン L
+          writeInst(buf, n++, item.x + 4, item.y, 0.5, 5, 0.20, 0.20, 0.20, 0.9);    // チェーン R
+          break;
+        }
+        case 'sandbox': {
+          // 砂場: 木枠 + 砂 + 小バケツ
+          writeInst(buf, n++, item.x + 1, item.y + 1, 16, 10, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 15, 9, 0.55, 0.38, 0.22, 1);            // 木枠
+          writeInst(buf, n++, item.x, item.y, 13, 7, 0.95, 0.88, 0.62, 1);            // 砂
+          writeInst(buf, n++, item.x + 4, item.y - 1, 2, 2, 0.25, 0.65, 0.90, 1, 0, 1); // 青バケツ
+          writeInst(buf, n++, item.x - 4, item.y + 1, 1.8, 1.8, 0.95, 0.30, 0.30, 1, 0, 1); // 赤スコップ
+          break;
+        }
+        case 'bathhouse_chimney': {
+          // 銭湯の煙突: 赤白縞の高い煙突 + 頂上の煙
+          writeInst(buf, n++, item.x + 1, item.y + 1, 5, 28, 0, 0, 0, 0.22);
+          writeInst(buf, n++, item.x, item.y - 10, 4, 8, 0.95, 0.95, 0.92, 1);        // 白帯
+          writeInst(buf, n++, item.x, item.y - 2, 4, 8, 0.85, 0.20, 0.18, 1);         // 赤帯
+          writeInst(buf, n++, item.x, item.y + 6, 4, 8, 0.95, 0.95, 0.92, 1);         // 白帯
+          writeInst(buf, n++, item.x, item.y - 13, 5, 1.8, 0.30, 0.28, 0.26, 1);      // 頂口
+          writeInst(buf, n++, item.x - 1, item.y - 16, 4, 3, 0.82, 0.82, 0.85, 0.65, 0, 1); // 煙
+          writeInst(buf, n++, item.x + 1, item.y - 18, 3, 2.5, 0.88, 0.88, 0.90, 0.45, 0, 1);
+          break;
+        }
+        case 'jungle_gym': {
+          // ジャングルジム: 銀格子 3x2
+          writeInst(buf, n++, item.x + 1, item.y + 1, 16, 12, 0, 0, 0, 0.18);
+          writeInst(buf, n++, item.x, item.y, 15, 11, 0.62, 0.65, 0.70, 0.35);        // 下地影
+          for (let ix = -1; ix <= 1; ix++) {
+            writeInst(buf, n++, item.x + ix * 5, item.y, 1.2, 11, 0.58, 0.62, 0.70, 1); // 縦バー
+          }
+          writeInst(buf, n++, item.x, item.y - 4, 15, 1.0, 0.60, 0.64, 0.72, 1);       // 横バー上
+          writeInst(buf, n++, item.x, item.y, 15, 1.0, 0.60, 0.64, 0.72, 1);           // 横バー中
+          writeInst(buf, n++, item.x, item.y + 4, 15, 1.0, 0.60, 0.64, 0.72, 1);       // 横バー下
+          break;
+        }
+        case 'fire_watchtower': {
+          // 火の見やぐら: 鉄骨三角 + 頂上の小屋 + 半鐘
+          writeInst(buf, n++, item.x + 1, item.y + 1, 6, 24, 0, 0, 0, 0.22);
+          writeInst(buf, n++, item.x - 2.5, item.y, 0.8, 22, 0.45, 0.35, 0.28, 1);     // 左柱
+          writeInst(buf, n++, item.x + 2.5, item.y, 0.8, 22, 0.45, 0.35, 0.28, 1);     // 右柱
+          writeInst(buf, n++, item.x, item.y - 6, 5.5, 0.8, 0.50, 0.40, 0.32, 1);      // 筋交 1
+          writeInst(buf, n++, item.x, item.y + 0, 5.5, 0.8, 0.50, 0.40, 0.32, 1);      // 筋交 2
+          writeInst(buf, n++, item.x, item.y + 6, 5.5, 0.8, 0.50, 0.40, 0.32, 1);      // 筋交 3
+          writeInst(buf, n++, item.x, item.y - 10, 6, 4, 0.72, 0.28, 0.22, 1);          // 赤小屋
+          writeInst(buf, n++, item.x, item.y - 12, 7, 1.5, 0.30, 0.25, 0.20, 1);        // 屋根
+          writeInst(buf, n++, item.x + 2, item.y - 10, 1.2, 1.5, 0.90, 0.82, 0.20, 1); // 半鐘
+          break;
+        }
+        case 'grain_silo': {
+          // サイロ: 銀色円筒 + ドーム + 小窓
+          writeInst(buf, n++, item.x + 1, item.y + 1, 11, 18, 0, 0, 0, 0.22);
+          writeInst(buf, n++, item.x, item.y, 10, 16, 0.72, 0.75, 0.78, 1);            // 本体
+          writeInst(buf, n++, item.x, item.y - 8, 10, 4, 0.62, 0.65, 0.68, 1, 0, 1);   // 上ドーム
+          writeInst(buf, n++, item.x, item.y - 8, 3, 3, 0.40, 0.42, 0.45, 1, 0, 1);    // 通気口
+          writeInst(buf, n++, item.x, item.y + 6, 4, 2, 0.35, 0.32, 0.30, 1);          // 排出口
+          writeInst(buf, n++, item.x + 3, item.y - 2, 1.2, 1.2, 0.40, 0.38, 0.32, 1);  // 点検窓
+          writeInst(buf, n++, item.x - 3, item.y - 2, 1.2, 1.2, 0.40, 0.38, 0.32, 1);
           break;
         }
       }
