@@ -656,22 +656,24 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   //   facade の mailbox 行進を解除し、庭の物語に場所を譲る
   { patternId: 's1_raw', raw: {
     buildings: [
-      // === 上段: 古民家中心の住宅列 ===
-      _B('house', -155, 38), _B('house', -120, 42),             // Cell A 家族住宅
+      // === 上段: 古民家中心の住宅列 (多彩な住宅) ===
+      _B('house', -155, 38), _B('bungalow', -120, 48),          // Cell A 家族住宅 + 平屋
       _B('shed', -145, 72), _B('greenhouse', -115, 78),
       _B('townhouse', -50, 38),                                 // Cell B ★ 古民家 (庭園が裏)
       _B('shed', -75, 78),
-      _B('house', 30, 40), _B('garage', 65, 42),                // Cell C 夫婦住宅 + 車庫
+      _B('duplex', 30, 36), _B('garage', 65, 42),               // Cell C 二世帯住宅 + 車庫
       _B('shed', 70, 78),
-      _B('townhouse', 108, 40), _B('townhouse', 142, 42),       // Cell D タウンハウス連棟
+      _B('mansion', 108, 42),                                   // Cell D 大きめの住宅
+      _B('townhouse', 142, 42),
       _B('shed', 118, 78), _B('greenhouse', 162, 78),
 
       // === 下段: 古民家続き + 菜園 ===
-      _B('house', -150, 132), _B('house', -115, 128),           // Cell E 家庭菜園家族
+      _B('house', -150, 132), _B('duplex', -115, 128),          // Cell E 家庭菜園家族 (2世帯)
       _B('greenhouse', -155, 170), _B('shed', -120, 178),
-      _B('house', -48, 132),                                    // Cell F ★ 古民家の続き (縁側)
-      _B('townhouse', 35, 130), _B('house', 70, 138),           // Cell G 小家族
-      _B('house', 115, 132), _B('greenhouse', 158, 138),        // Cell H 桜古木の家
+      _B('townhouse', -48, 132),                                // Cell F ★ 古民家の続き (縁側)
+      _B('bungalow', 35, 138), _B('house', 70, 138),            // Cell G 小家族 (平屋+戸建)
+      _B('mansion', 118, 132),                                  // Cell H 桜古木の家 (大)
+      _B('greenhouse', 158, 138),
       _B('greenhouse', 115, 178), _B('shed', 160, 175),
     ],
     furniture: [
@@ -780,22 +782,23 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   //   Act II (商店街) への気配を先取り
   { patternId: 's1_raw', raw: {
     buildings: [
-      // === 上段: 住宅 + 商店 (facade が主要通り側) ===
-      _B('house', -155, 38), _B('house', -120, 42),             // Cell A 住宅
+      // === 上段: 住宅 + 商店 (多彩な住宅で facade) ===
+      _B('house', -155, 38), _B('duplex', -120, 38),            // Cell A 戸建 + 二世帯
       _B('shed', -148, 72), _B('greenhouse', -115, 78),
       _B('convenience', -45, 38),                               // ★ Cell B 角のコンビニ
-      _B('garage', -15, 75),                                    // 搬入用 (shed は撤去)
+      _B('garage', -15, 75),
       _B('laundromat', 35, 38),                                 // Cell C ランドロマット
-      _B('house', 68, 42), _B('shed', 38, 78),
-      _B('house', 115, 40), _B('townhouse', 148, 42),           // Cell D 住宅
+      _B('bungalow', 68, 48), _B('shed', 38, 78),               // ★ 平屋
+      _B('mansion', 115, 42),                                   // Cell D 住宅 (大)
+      _B('townhouse', 148, 42),
       _B('greenhouse', 170, 75), _B('shed', 118, 78),
 
-      // === 下段: マンション + 純住宅 (2 つめコンビニ撤去) ===
-      _B('mansion', -130, 132), _B('house', -170, 138),         // Cell E 若夫婦
+      // === 下段: マンション + 多様な住宅 ===
+      _B('mansion', -130, 132), _B('bungalow', -170, 148),      // Cell E 若夫婦 + 平屋
       _B('garage', -148, 175), _B('shed', -110, 178),
       _B('house', -48, 132),                                    // Cell F 独居老人
       _B('greenhouse', -20, 165), _B('shed', -72, 175),
-      _B('townhouse', 28, 130), _B('house', 65, 138),           // Cell G 純住宅 (コンビニ撤去)
+      _B('duplex', 28, 128), _B('townhouse', 65, 138),          // Cell G 2 世帯 + 連棟
       _B('shed', 30, 175),
       _B('townhouse', 108, 132), _B('house', 148, 136),         // Cell H 住宅連
       _B('garage', 115, 175), _B('shed', 160, 178),
@@ -929,24 +932,28 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   // ● 歩道橋は通り沿い全体の公共インフラとして残す
   { patternId: 's1_raw', raw: {
     buildings: [
-      // === 上段: 公共施設 3 連 + 住宅 ===
-      _B('house', -155, 38), _B('house', -120, 42),             // Cell A 園児の家
+      // === 上段: 公共施設 3 連 + 多様な住宅 ===
+      _B('house', -155, 38), _B('bungalow', -120, 48),          // Cell A 園児の家 + 平屋
       _B('shed', -148, 72), _B('greenhouse', -115, 78),
       _B('daycare', -45, 40),                                   // ★ Cell B 保育園
-      _B('shed', -18, 78),                                      // 園具倉庫
+      _B('shed', -18, 78),
       _B('clinic', 40, 40),                                     // ★ Cell C 小児科診療所
       _B('shed', 75, 78),
       _B('post_office', 125, 40),                               // ★ Cell D 郵便局
-      _B('house', 168, 42), _B('greenhouse', 115, 78),
+      _B('duplex', 168, 38),                                    // ★ 2 世帯
+      _B('greenhouse', 115, 78),
 
-      // === 下段: 分院 + 住宅 + 銀行支店 ===
+      // === 下段: 分院 + 多様な住宅 + 銀行支店 ===
       _B('clinic', -145, 130),                                  // Cell E 分院
-      _B('house', -105, 140), _B('garage', -150, 178),
-      _B('house', -48, 132), _B('townhouse', -18, 128),         // Cell F 住宅
+      _B('mansion', -105, 142),                                 // ★ 大きめ住宅
+      _B('garage', -150, 178),
+      _B('townhouse', -48, 132), _B('house', -18, 138),         // Cell F 住宅
       _B('shed', -70, 175), _B('greenhouse', -20, 178),
       _B('bank', 45, 128),                                      // Cell G 小さな銀行支店
-      _B('house', 78, 136), _B('shed', 30, 178),
-      _B('house', 115, 132), _B('house', 148, 138),             // Cell H 住宅
+      _B('bungalow', 78, 146),                                  // ★ 平屋
+      _B('shed', 30, 178),
+      _B('duplex', 115, 132),                                   // ★ 2 世帯
+      _B('townhouse', 148, 138),
       _B('garage', 170, 178), _B('shed', 118, 175),
     ],
     furniture: [
@@ -1062,24 +1069,24 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's1_raw', raw: {
     buildings: [
       // === Cell A (左上): 家族住宅 + 物置 ===
-      _B('house', -155, 38), _B('townhouse', -125, 42),
+      _B('house', -155, 38), _B('duplex', -125, 36),         // ★ 2 世帯
       _B('shed', -150, 72),
       _B('greenhouse', -120, 78),
       // === Cell B (中左上): コンビニ (角地) + 住宅 ===
-      _B('convenience', -45, 42),                            // 生活の要
-      _B('house', -15, 40),
+      _B('convenience', -45, 42),
+      _B('bungalow', -15, 48),                               // ★ 平屋
       _B('shed', -70, 78),
       // === Cell C (中右上): クリーニング + 家族住宅 ===
-      _B('laundromat', 35, 40),                              // 朝の洗濯
-      _B('house', 68, 42),
+      _B('laundromat', 35, 40),
+      _B('mansion', 68, 42),                                 // ★ 大きめ
       _B('shed', 30, 78),
       // === Cell D (右上): 住宅 + 薬局 ===
-      _B('house', 115, 40),
+      _B('townhouse', 115, 40),                              // 戸建 (houseから変更)
       _B('pharmacy', 150, 40),
       _B('greenhouse', 120, 78),
 
       // === Cell E (左下): 住宅 + ガレージ ===
-      _B('house', -155, 130), _B('townhouse', -125, 132),
+      _B('house', -155, 130), _B('bungalow', -125, 140),     // ★ 平屋
       _B('garage', -150, 178),
       _B('shed', -120, 175),
       // === Cell F-G (中下段): ★ パン屋 + 本屋 + カフェ 3 連テラス ★ ===
@@ -1087,13 +1094,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('bookstore', -20, 132),
       _B('cafe', 20, 130),
       _B('townhouse', -55, 178),
-      _B('house', 50, 178),
+      _B('duplex', 50, 172),                                 // ★ 奥の 2 世帯
       // === Cell G 右: 住宅 ===
       _B('house', 75, 138),
       _B('shed', 78, 178),
       // === Cell H (右下): 住宅 3 連 + 花屋 ===
       _B('florist', 115, 130),
-      _B('house', 150, 135),
+      _B('mansion', 150, 138),                               // ★ 大きめ
       _B('townhouse', 178, 132),
       _B('garage', 168, 178),
     ],
@@ -1204,8 +1211,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('pharmacy', 152, 42),
       _B('shed', 118, 78),
 
-      // === Cell E (左下): 住宅 3 軒 + 共用庭 ===
-      _B('house', -158, 130), _B('house', -128, 132),
+      // === Cell E (左下): 住宅 3 軒 + 共用庭 (多彩化) ===
+      _B('house', -158, 130), _B('bungalow', -128, 142),     // ★ 平屋
       _B('townhouse', -100, 138),
       _B('garage', -152, 180),
       // === Cell F (中左下): 小 cafe + 花屋 ===
@@ -1214,10 +1221,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -55, 180),
       // === Cell G (中右下): クリーニング分店 + 住宅 ===
       _B('laundromat', 40, 132),
-      _B('house', 72, 138),
+      _B('duplex', 72, 128),                                 // ★ 2 世帯
       _B('shed', 35, 178),
-      // === Cell H (右下): 住宅 + ガレージ + 温室 ===
-      _B('house', 118, 132), _B('townhouse', 148, 135),
+      // === Cell H (右下): 住宅 + ガレージ + 温室 (多彩化) ===
+      _B('mansion', 118, 138),                               // ★ 大きめ
+      _B('townhouse', 148, 135),
       _B('greenhouse', 175, 138),
       _B('garage', 120, 180),
     ],
@@ -1324,14 +1332,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('cafe', -125, 42),
       _B('shed', -150, 75),
       // === Cell B (中左上): 郵便局 (地域拠点) ===
-      _B('post_office', -50, 42),                            // 地域の郵便局
-      _B('townhouse', -18, 40),
+      _B('post_office', -50, 42),
+      _B('duplex', -18, 38),                                 // ★ 2 世帯
       _B('shed', -75, 78),
       // === Cell C (中右上): 銀行 + 住宅 ===
-      _B('bank', 45, 42),                                    // 地域の銀行支店
-      _B('house', 80, 42),
+      _B('bank', 45, 42),
+      _B('bungalow', 80, 48),                                // ★ 平屋
       // === Cell D (右上): 住宅 + パン屋 ===
-      _B('house', 118, 40),
+      _B('mansion', 118, 42),                                // ★ 大きめ
       _B('bakery', 150, 42),
       _B('greenhouse', 118, 78),
 
@@ -1349,7 +1357,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('townhouse', 72, 135),
       _B('shed', 35, 178),
       // === Cell H (右下): 住宅 + 温室 + ガレージ ===
-      _B('house', 118, 132), _B('townhouse', 148, 135),
+      _B('duplex', 118, 128), _B('bungalow', 152, 142),      // ★ 2 世帯 + 平屋
       _B('greenhouse', 175, 138),
       _B('garage', 120, 180),
     ],
@@ -1769,20 +1777,20 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', 148, 78),
 
       // === Cell E (左下): 住宅 + 駐車場 (家族のマイカー) ===
-      _B('house', -158, 130),
+      _B('duplex', -158, 128),                               // ★ 2 世帯
       _B('townhouse', -128, 135),
       _B('garage', -148, 180),
       _B('shed', -120, 180),
       // === Cell F (中左下): 小 cafe + 本屋 (駅前喫茶) ===
       _B('cafe', -55, 130),
       _B('bookstore', -20, 132),
-      _B('townhouse', -55, 180),
+      _B('bungalow', -55, 174),                              // ★ 奥の平屋
       // === Cell G (中右下): パン屋 + 花屋 ===
       _B('bakery', 35, 132),
       _B('florist', 68, 135),
       _B('shed', 35, 180),
       // === Cell H (右下): 住宅 + ガレージ (街はずれへ) ===
-      _B('house', 115, 132), _B('house', 148, 135),
+      _B('house', 115, 132), _B('mansion', 148, 138),        // ★ 大きめ
       _B('garage', 118, 180),
       _B('shed', 155, 180),
     ],
@@ -1887,19 +1895,19 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('greenhouse', -148, 78),                            // ビニールハウス
       // === Cell B (中左上): 畑の真ん中の小屋 + 温室 ===
       _B('shed', -65, 42),
-      _B('greenhouse', -25, 45),                             // 中央の大温室
+      _B('bungalow', -25, 48),                               // ★ 農家の平屋 (大温室から変更)
       // === Cell C (中右上): 別の農家 + 物置 ===
-      _B('house', 50, 42),                                   // 2 軒目の農家
+      _B('duplex', 50, 38),                                  // ★ 2 世帯農家
       _B('shed', 80, 40),
       _B('greenhouse', 55, 78),
-      // === Cell D (右上): 畑 + 温室連続 ===
-      _B('greenhouse', 120, 45),
-      _B('greenhouse', 160, 45),
+      // === Cell D (右上): 畑 + 温室 + 倉庫 ===
+      _B('greenhouse', 120, 45),                             // 温室 (1 つに削減)
+      _B('mansion', 160, 42),                                // ★ 大きな農家
       _B('shed', 130, 78),
 
       // === Cell E (左下): 農家 + ガレージ + 駐車軽トラ ===
-      _B('house', -152, 135),                                // 3 軒目
-      _B('garage', -120, 130),                               // 農機具ガレージ
+      _B('bungalow', -152, 142),                             // ★ 3 軒目 (平屋)
+      _B('garage', -120, 130),
       _B('shed', -148, 180),
       // === Cell F (中左下): 畑のど真ん中 + 小屋 ===
       _B('shed', -50, 138),
@@ -1907,11 +1915,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -55, 180),
       // === Cell G (中右下): 小さな倉庫 + 畑 ===
       _B('garage', 40, 135),
-      _B('greenhouse', 75, 140),
+      _B('townhouse', 75, 132),                              // ★ 農協風の連棟 (温室から変更)
       _B('shed', 38, 180),
       // === Cell H (右下): 住宅 + 畑 ===
       _B('house', 118, 138),
-      _B('greenhouse', 150, 138),
+      _B('greenhouse', 150, 138),                            // 温室 1 つに削減
       _B('shed', 178, 180),
     ],
     furniture: [
