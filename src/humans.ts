@@ -294,63 +294,84 @@ export function getHumanWeightsForBuilding(size: string): readonly number[] | un
   return BUILDING_WEIGHTS[size];
 }
 
-// ═══ バリエーション・パレット: 個体差を出すための色セット ═══════════════
-// 各人間は 8bit の variant seed を持ち、その bit を分割して各部位の
-// バリエーションを決定する。これにより同じ kind でも服の色や髪・肌・靴が
-// さまざまに組み合わさって、画面上に本当にさまざまな人間が混在する。
+// ═══ バリエーション・パレット: 個体差を出すための色・体型・髪型セット ═══════
+// 各人間は 16bit の variant seed を持ち、その bit を分割して各パーツの
+// バリエーションを決定する。シルエットレベルで違って見えるよう、
+// 体型 (太さ/高さ) と髪型 (短髪/ボブ/ポニテ/坊主) も個別化。
 
-// シャツ/ズボン/カバンの RGB 乗算テーブル (kind 固有色に適用)
-//   多くは 0.80-1.20 の範囲で明暗や彩度を変化させる
+// シャツ/ズボン/カバンの RGB 乗算テーブル (大胆に振る、0.55〜1.40)
+// kind の「制服らしさ」が消えないよう、「明度反転型」は弱めに
 const TINT_TABLE: ReadonlyArray<readonly [number, number, number]> = [
   [1.00, 1.00, 1.00],  // 0: 標準
-  [0.82, 0.82, 0.82],  // 1: 暗
-  [1.15, 1.15, 1.15],  // 2: 明
-  [1.12, 0.94, 0.85],  // 3: 温色寄り (赤味)
-  [0.85, 0.92, 1.12],  // 4: 寒色寄り (青味)
-  [0.90, 1.12, 0.88],  // 5: 緑寄り
-  [1.08, 1.04, 0.82],  // 6: 金茶
-  [1.05, 0.85, 1.05],  // 7: 紫寄り
+  [0.62, 0.62, 0.62],  // 1: かなり暗い
+  [1.35, 1.35, 1.35],  // 2: かなり明るい
+  [1.35, 0.80, 0.65],  // 3: 赤み強め
+  [0.65, 0.85, 1.40],  // 4: 青み強め
+  [0.70, 1.40, 0.70],  // 5: 緑強め
+  [1.35, 1.20, 0.55],  // 6: 黄金/マスタード
+  [1.25, 0.65, 1.30],  // 7: マゼンタ/紫
 ];
 
-// 髪色パレット: 8 段階、暗色〜白・金まで
+// 髪色パレット: 8 段階、漆黒〜白髪・赤毛まで (個性を強調)
 const HAIR_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
   [0.05, 0.04, 0.03],  // 0: 漆黒
-  [0.10, 0.07, 0.04],  // 1: ほぼ黒
-  [0.22, 0.15, 0.08],  // 2: 濃茶
-  [0.38, 0.25, 0.12],  // 3: 茶
-  [0.55, 0.40, 0.22],  // 4: 明るい茶
-  [0.72, 0.60, 0.35],  // 5: 栗金
-  [0.92, 0.82, 0.50],  // 6: 金髪
-  [0.88, 0.85, 0.80],  // 7: 白髪/アッシュ
+  [0.18, 0.12, 0.06],  // 1: 濃茶
+  [0.38, 0.22, 0.10],  // 2: 茶
+  [0.62, 0.42, 0.22],  // 3: 明るい茶
+  [0.88, 0.72, 0.32],  // 4: 金髪
+  [0.85, 0.82, 0.78],  // 5: アッシュ/銀髪
+  [0.78, 0.25, 0.18],  // 6: 赤毛
+  [0.92, 0.92, 0.90],  // 7: 白髪
 ];
 
 // 肌色パレット: 4 段階
 const SKIN_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
   [0.98, 0.88, 0.78],  // 0: 明
   [0.95, 0.78, 0.62],  // 1: 標準
-  [0.88, 0.70, 0.50],  // 2: 日焼け
-  [0.72, 0.55, 0.40],  // 3: 濃
+  [0.82, 0.62, 0.45],  // 2: 日焼け
+  [0.58, 0.42, 0.30],  // 3: 濃
 ];
 
-// 靴色パレット: 4 段階
+// 靴色パレット: 6 段階
 const SHOE_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
   [0.08, 0.06, 0.05],  // 0: 黒 (革靴)
   [0.22, 0.14, 0.08],  // 1: 濃茶
   [0.45, 0.32, 0.18],  // 2: ブラウン
   [0.92, 0.92, 0.88],  // 3: 白 (スニーカー)
+  [0.82, 0.22, 0.20],  // 4: 赤いスニーカー
+  [0.20, 0.45, 0.82],  // 5: 青いスニーカー
 ];
 
-/** variant byte から各パーツのインデックスをデコード (モジュロ/マスクで衝突回避) */
+// 体幅倍率 (横) — 細身〜ふくよか
+const WIDTH_FACTORS = [0.80, 0.90, 1.00, 1.10, 1.20, 1.30] as const;
+// 身長倍率 (縦) — チビ〜ノッポ
+const HEIGHT_FACTORS = [0.82, 0.92, 1.00, 1.08, 1.18] as const;
+
+// 髪型ID: 0=short (既存), 1=bob (肩までの丸い), 2=ponytail (後ろに長い),
+//         3=long (長髪、肩〜背中), 4=buzz (坊主、ほぼ皮膚), 5=spiky (とげとげ)
+const HAIR_SHAPE_SHORT    = 0;
+const HAIR_SHAPE_BOB      = 1;
+const HAIR_SHAPE_PONYTAIL = 2;
+const HAIR_SHAPE_LONG     = 3;
+const HAIR_SHAPE_BUZZ     = 4;
+const HAIR_SHAPE_SPIKY    = 5;
+
+/** variant (16bit) から各パーツのインデックスをデコード */
 function decodeVariant(v: number): {
-  shirtTint: number; pantsTint: number; hairIdx: number;
-  skinIdx: number;   shoeIdx: number;
+  shirtTint: number; pantsTint: number; hairColor: number; hairShape: number;
+  skinIdx: number;   shoeIdx: number;   widthIdx: number; heightIdx: number;
+  accessory: number;
 } {
   return {
-    shirtTint: v & 0b111,              // bits 0-2 (0-7)
-    pantsTint: (v >> 3) & 0b111,       // bits 3-5 (0-7)
-    hairIdx:   (v ^ (v >> 2)) & 0b111, // ミックス (0-7)
-    skinIdx:   (v >> 6) & 0b11,        // bits 6-7 (0-3)
-    shoeIdx:   ((v >> 4) ^ (v >> 1)) & 0b11,
+    shirtTint: v & 0b111,                     // 3 bits → 8
+    pantsTint: (v >> 3) & 0b111,              // 3 bits → 8
+    skinIdx:   (v >> 6) & 0b11,               // 2 bits → 4
+    hairColor: (v >> 8) & 0b111,              // 3 bits → 8
+    hairShape: (v >> 11) & 0b111,             // 3 bits → 6 (mod)
+    widthIdx:  ((v >> 14) ^ (v >> 2)) % WIDTH_FACTORS.length,  // ミックス
+    heightIdx: ((v >> 12) ^ (v >> 4)) % HEIGHT_FACTORS.length,
+    shoeIdx:   ((v >> 5) ^ (v >> 9)) % SHOE_PALETTE.length,
+    accessory: (v >> 7) & 0b11,               // 2 bits → 4 (なし/メガネ/ヒゲ/口ヒゲ)
   };
 }
 
@@ -365,7 +386,7 @@ export class HumanManager {
   scaleX:   Float32Array = new Float32Array(C.MAX_HUMANS);
   mode:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
   kind:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_KINDS index
-  variant:    Uint8Array   = new Uint8Array(C.MAX_HUMANS); // 8bit seed: 同 kind 内の個体差
+  variant:    Uint16Array  = new Uint16Array(C.MAX_HUMANS); // 16bit seed: 色・体型・髪型の個体差
   blastTimer: Float32Array = new Float32Array(C.MAX_HUMANS); // 吹き飛ばしフェーズ残り時間
 
   activeCount = 0;
@@ -425,7 +446,7 @@ export class HumanManager {
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
       this.kind[i]     = pickHumanKind();
-      this.variant[i]  = (Math.random() * 256) | 0;
+      this.variant[i]  = (Math.random() * 65536) | 0;
       this.activeCount = this.activeLen;
       return;
     }
@@ -459,7 +480,7 @@ export class HumanManager {
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
       this.kind[i]     = pickHumanKind();
-      this.variant[i]  = (Math.random() * 256) | 0;
+      this.variant[i]  = (Math.random() * 65536) | 0;
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -489,7 +510,7 @@ export class HumanManager {
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
       this.kind[i]       = pickHumanKind(kindWeights);
-      this.variant[i]    = (Math.random() * 256) | 0;
+      this.variant[i]    = (Math.random() * 65536) | 0;
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -726,26 +747,27 @@ export class HumanManager {
       if (py < camBot || py > camTop) continue;
       const kind = HUMAN_KINDS[this.kind[i]];
       const ks = kind.scale ?? 1.0;
-      const sx = C.HUMAN_W * this.scaleX[i] * ks;
-      const sy = C.HUMAN_H * (2 - this.scaleX[i]) * ks;
+      // バリエーション・デコード (先に取得して体型にも使う)
+      const v = decodeVariant(this.variant[i]);
+      const bodyW = WIDTH_FACTORS[v.widthIdx];
+      const bodyH = HEIGHT_FACTORS[v.heightIdx];
+      const sx = C.HUMAN_W * this.scaleX[i] * ks * bodyW;
+      const sy = C.HUMAN_H * (2 - this.scaleX[i]) * ks * bodyH;
       const px = this.px[i];
 
-      // === バリエーション・デコード ===
-      const v = decodeVariant(this.variant[i]);
+      // === 色の決定 ===
       const shirtT = TINT_TABLE[v.shirtTint];
       const pantsT = TINT_TABLE[v.pantsTint];
-      // 肌色はパレットから選択
       const [skinR, skinG, skinB] = SKIN_PALETTE[v.skinIdx];
-      // 髪色: kind.hair が指定されていれば色相はそれを優先しつつパレットで微調整
-      //       指定が無ければパレットから直接選ぶ
-      const hairBase = kind.hair ?? HAIR_PALETTE[v.hairIdx];
-      const hairShadeK = kind.hair ? (0.75 + (v.hairIdx / 7) * 0.50) : 1.0; // 0.75-1.25
+      // 髪色: kind.hair があれば基本色を優先、variant で濃淡を変える。
+      // ただし半分の確率 (bit0=1) で完全にパレットから置き換え = よりワイルドな髪色バリエーション
+      const useKindHair = !!kind.hair && (this.variant[i] & 1) === 0;
+      const hairBase = useKindHair ? kind.hair! : HAIR_PALETTE[v.hairColor];
+      const hairShadeK = useKindHair ? (0.70 + (v.hairColor / 7) * 0.60) : 1.0;
       const hairR = Math.min(1, hairBase[0] * hairShadeK);
       const hairG = Math.min(1, hairBase[1] * hairShadeK);
       const hairB = Math.min(1, hairBase[2] * hairShadeK);
-      // 靴色はパレットから
       const [shoeR, shoeG, shoeB] = SHOE_PALETTE[v.shoeIdx];
-      // シャツ / ズボン色に tint 適用 (安全に clamp)
       const [sr0, sg0, sb0] = kind.shirt;
       const sr = Math.min(1, sr0 * shirtT[0]);
       const sg = Math.min(1, sg0 * shirtT[1]);
@@ -755,11 +777,11 @@ export class HumanManager {
       const pg = Math.min(1, pg0 * pantsT[1]);
       const pb = Math.min(1, pb0 * pantsT[2]);
 
-      // === ① 足下の影 (地面との接地感) ===
+      // === ① 足下の影 ===
       writeInst(buf, n++, px, py - sy * 0.49, sx * 1.10, sy * 0.07,
         0.05, 0.05, 0.08, 0.35, 0, 1);
 
-      // === ② 両足 (靴、variant で色選択) ===
+      // === ② 両足 (靴) ===
       writeInst(buf, n++, px - sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
         shoeR, shoeG, shoeB, 1, 0, 0);
       writeInst(buf, n++, px + sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
@@ -775,7 +797,7 @@ export class HumanManager {
       writeInst(buf, n++, px, py - sy * 0.05, sx * 0.90, sy * 0.06,
         pr * 0.55, pg * 0.55, pb * 0.55, 1, 0, 0);
 
-      // === ⑤ 両腕/袖 (少し暗めのシャツ色) ===
+      // === ⑤ 両腕/袖 ===
       writeInst(buf, n++, px - sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
         sr * 0.90, sg * 0.90, sb * 0.90, 1, 0, 0);
       writeInst(buf, n++, px + sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
@@ -791,7 +813,7 @@ export class HumanManager {
       writeInst(buf, n++, px, py + sy * 0.12, sx * 0.85, sy * 0.32,
         sr, sg, sb, 1, 0, 0);
 
-      // === ⑧ アクセント (そのまま、kind 固有) ===
+      // === ⑧ アクセント ===
       if (kind.accent) {
         const [ar, ag, ab] = kind.accent;
         writeInst(buf, n++, px, py + sy * 0.15, sx * 0.20, sy * 0.20,
@@ -822,13 +844,71 @@ export class HumanManager {
       writeInst(buf, n++, px + sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
         0.08, 0.06, 0.04, 1, 0, 1);
 
-      // === ⑬ 髪 (後頭部 + 前髪フリンジ) ===
-      writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.98, sx * 0.45,
-        hairR, hairG, hairB, 1, 0, 0);
-      writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
-        hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
+      // === ⑬ 顔アクセサリ (variant.accessory): メガネ・ヒゲ・口ヒゲ ===
+      if (v.accessory === 1) {
+        // メガネ: 両目をまたぐ暗い横帯
+        writeInst(buf, n++, px, headY + sx * 0.02, sx * 0.62, sx * 0.08,
+          0.10, 0.08, 0.06, 1, 0, 0);
+        // フレームの橋 (細い明色ライン)
+        writeInst(buf, n++, px, headY + sx * 0.02, sx * 0.14, sx * 0.04,
+          0.60, 0.55, 0.45, 0.8, 0, 0);
+      } else if (v.accessory === 2) {
+        // 顎ヒゲ: 顔下半分の暗い帯
+        writeInst(buf, n++, px, headY - sx * 0.18, sx * 0.55, sx * 0.18,
+          hairR * 0.7, hairG * 0.7, hairB * 0.7, 1, 0, 0);
+      } else if (v.accessory === 3) {
+        // 口ヒゲ: 鼻の下の小さな暗帯
+        writeInst(buf, n++, px, headY - sx * 0.08, sx * 0.30, sx * 0.08,
+          hairR * 0.6, hairG * 0.6, hairB * 0.6, 1, 0, 0);
+      }
 
-      // === ⑭ 帽子 (kind 固有、バリエーションなし) ===
+      // === ⑭ 髪 — 形状バリエーション (short / bob / ponytail / long / buzz / spiky) ===
+      const hs = v.hairShape % 6;
+      if (hs === HAIR_SHAPE_BUZZ) {
+        // 坊主/超短髪: 頭の上端に薄い暗帯のみ
+        writeInst(buf, n++, px, headY + sx * 0.28, sx * 0.88, sx * 0.14,
+          hairR * 0.92, hairG * 0.92, hairB * 0.92, 1, 0, 0);
+      } else if (hs === HAIR_SHAPE_BOB) {
+        // ボブ: 頭の横を広く覆う丸い髪、耳までカバー
+        writeInst(buf, n++, px, headY + sx * 0.22, sx * 1.15, sx * 0.55,
+          hairR, hairG, hairB, 1, 0, 0);
+        writeInst(buf, n++, px, headY + sx * 0.06, sx * 0.96, sx * 0.16,
+          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);  // 毛先
+      } else if (hs === HAIR_SHAPE_PONYTAIL) {
+        // ポニーテール: 頭の後ろから下に伸びる長い髪束
+        writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.92, sx * 0.40,
+          hairR, hairG, hairB, 1, 0, 0);
+        writeInst(buf, n++, px + sx * 0.12, headY - sx * 0.35, sx * 0.22, sx * 0.85,
+          hairR, hairG, hairB, 1, 0, 0);                     // 束
+        writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
+          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0); // 前髪
+      } else if (hs === HAIR_SHAPE_LONG) {
+        // ロング: 肩まで垂れる長髪 (後ろの大きな帯 + 前髪)
+        writeInst(buf, n++, px, headY + sx * 0.20, sx * 1.10, sx * 0.50,
+          hairR, hairG, hairB, 1, 0, 0);
+        writeInst(buf, n++, px, headY - sx * 0.35, sx * 1.10, sx * 0.70,
+          hairR, hairG, hairB, 1, 0, 0);                      // 肩下まで
+        writeInst(buf, n++, px, headY + sx * 0.12, sx * 0.88, sx * 0.14,
+          hairR * 0.82, hairG * 0.82, hairB * 0.82, 1, 0, 0); // 前髪
+      } else if (hs === HAIR_SHAPE_SPIKY) {
+        // とげとげ: 頭頂に 3 つの三角っぽい髪束 (横並びの小quad)
+        writeInst(buf, n++, px, headY + sx * 0.28, sx * 0.98, sx * 0.30,
+          hairR, hairG, hairB, 1, 0, 0);
+        writeInst(buf, n++, px - sx * 0.30, headY + sx * 0.55, sx * 0.22, sx * 0.32,
+          hairR, hairG, hairB, 1, 0.25, 0);                   // 左のスパイク
+        writeInst(buf, n++, px,            headY + sx * 0.58, sx * 0.22, sx * 0.36,
+          hairR, hairG, hairB, 1, 0, 0);                      // 中央
+        writeInst(buf, n++, px + sx * 0.30, headY + sx * 0.55, sx * 0.22, sx * 0.32,
+          hairR, hairG, hairB, 1, -0.25, 0);                  // 右
+      } else {
+        // デフォルト = short (現行): 後頭部ドーム + 前髪フリンジ
+        writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.98, sx * 0.45,
+          hairR, hairG, hairB, 1, 0, 0);
+        writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
+          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
+      }
+
+      // === ⑮ 帽子 (kind 固有) ===
       if (kind.hat) {
         const [hr2, hg2, hb2] = kind.hat;
         writeInst(buf, n++, px, headY + sx * 0.58, sx * 1.18, sx * 0.12,
