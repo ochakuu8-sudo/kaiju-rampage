@@ -221,42 +221,33 @@ export class Game {
     }
 
     // ── GOAL チャンク到達 → スクロールロック (ラスボス戦) ──
-    // 最終チャンクの中央 (baseY + 100) でカメラ停止。城が画面中央に大きく見える。
-    if (this.camera.lockY === null) {
+    // 最終チャンクがスポーンされた瞬間にロックを予約。カメラは自然にスクロールし
+    // ロック位置 (goal chunk center) に達した時点で停止する。
+    // ※ 最終チャンクが loadedChunks に入った後に予約することで、スポーン前の
+    //   misfire を防ぐ (hasGoalCastle() が false を返す瞬間を避ける)。
+    if (this.camera.lockY === null && this.nextChunkId >= TOTAL_CHUNKS) {
       const goalBaseY = C.WORLD_MAX_Y + (TOTAL_CHUNKS - 1) * C.CHUNK_HEIGHT;
-      const lockTarget = goalBaseY + 100;
-      if (this.camera.y >= lockTarget - 1) {
-        this.camera.lockY = lockTarget;
-      }
+      this.camera.lockY = goalBaseY + 100;
     }
 
     // ── CLEAR 判定 ──
-    // 新方式: GOAL チャンクのお城を破壊でクリア。カメラがロックされ、かつ城が無い/破壊済みなら発火。
-    // フォールバック: お城を置いていない場合は従来方式 (カメラが最終チャンク終端を超える)
-    if (!this.clearTriggered) {
-      if (this.camera.lockY !== null) {
-        // カメラロック中 → お城が存在するなら破壊を待つ
-        if (this.buildings.hasGoalCastle()) {
-          if (!this.buildings.isGoalCastleAlive()) {
-            // 城が破壊された → クリア
-            this.clearTriggered = true;
-            this.onClear();
-            return;
-          }
-        } else {
-          // 城が無い (互換性フォールバック) → カメラロック到達で即クリア
+    // カメラがロック位置に実際に到達 + 城が破壊された時点で発火。
+    // (lockY 予約だけでは発火せず、カメラが物理的にそこへ到達するまで待つ)
+    if (!this.clearTriggered && this.camera.lockY !== null &&
+        this.camera.y >= this.camera.lockY - 1) {
+      // カメラがロック位置到達済み → お城の破壊を待つ
+      if (this.buildings.hasGoalCastle()) {
+        if (!this.buildings.isGoalCastleAlive()) {
           this.clearTriggered = true;
           this.onClear();
           return;
         }
-      } else if (this.nextChunkId >= TOTAL_CHUNKS) {
-        // ロック未発火のまま全チャンク抜けた場合 (ロジック抜け防止のフォールバック)
-        const finalTop = C.WORLD_MAX_Y + TOTAL_CHUNKS * C.CHUNK_HEIGHT;
-        if (this.camera.top >= finalTop) {
-          this.clearTriggered = true;
-          this.onClear();
-          return;
-        }
+        // 城がまだ生きている → クリアせず待機 (プレイ続行)
+      } else {
+        // 万一 GOAL チャンクに城が無い場合のみ即クリア (本来は発生しない)
+        this.clearTriggered = true;
+        this.onClear();
+        return;
       }
     }
 
