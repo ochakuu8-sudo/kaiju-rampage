@@ -1517,49 +1517,160 @@ export class Game {
     return n - start;
   }
 
+  /** ボールを「怪獣ドット絵」として描画。当たり判定は円のまま。
+   * 見た目: 角・鱗・牙・光る目をもつ小さな怪獣が転がる。
+   * b.angle で全パーツが一緒に回転し、転がる様子が視覚的に分かる。
+   * スクロール速度が上がるほど目の色が赤〜青へ変化 (パワーレベル表示)。
+   */
   private fillBall(buf: Float32Array, start: number): number {
     const b = this.ball;
     if (!b.active) return 0;
     let n = start;
     const isFl = this.juice.isBallFlashing();
-    const radius = C.BALL_RADIUS; // 固定サイズ
+    const R = C.BALL_RADIUS;
+    const ang = b.angle;
+    const cs = Math.cos(ang), sn = Math.sin(ang);
 
-    // スクロール速度に応じた色: orange(base) → red(+50) → electric blue(+100)
+    // 体の位置ヘルパー: ボディローカル (ox, oy) → ワールド (回転を適用)
+    const at = (ox: number, oy: number): [number, number] =>
+      [b.x + ox * cs - oy * sn, b.y + ox * sn + oy * cs];
+
+    // === 色: 基本は濃緑の怪獣、目だけ速度に応じて変化 ===
+    // 目の発光色: orange → red → electric blue (パワーレベル)
     const pt = Math.min(1, (this.camera.scrollSpeed - C.SCROLL_BASE_SPEED) / 100);
-    let cr: number, cg: number, cb: number;
+    let eyeR: number, eyeG: number, eyeB: number;
     if (pt < 0.5) {
       const s = pt * 2;
-      cr = 1.0; cg = 0.55 - s * 0.45; cb = 0.05 + s * 0.05;
+      eyeR = 1.0; eyeG = 0.85 - s * 0.40; eyeB = 0.20 + s * 0.10;
     } else {
       const s = (pt - 0.5) * 2;
-      cr = 1.0 - s * 0.8; cg = 0.10 + s * 0.40; cb = 0.10 + s * 0.90;
+      eyeR = 1.0 - s * 0.6; eyeG = 0.45 + s * 0.30; eyeB = 0.30 + s * 0.70;
     }
 
-    // トレイル
+    // 体の基本色 (暗緑)。ヒット時は白フラッシュ
+    const bodyR = isFl ? 1.00 : 0.18;
+    const bodyG = isFl ? 1.00 : 0.42;
+    const bodyB = isFl ? 1.00 : 0.20;
+    const bellyR = isFl ? 1.00 : 0.62;
+    const bellyG = isFl ? 1.00 : 0.82;
+    const bellyB = isFl ? 1.00 : 0.35;
+    const scaleR = isFl ? 1.00 : 0.10;
+    const scaleG = isFl ? 1.00 : 0.26;
+    const scaleB = isFl ? 1.00 : 0.12;
+
+    // === ① モーションブラートレイル (怪獣の残像) ===
     for (let ti = 0; ti < C.TRAIL_LEN; ti++) {
       const age = ti / C.TRAIL_LEN;
       const idx = (b.trailHead - 1 - ti + C.TRAIL_LEN) % C.TRAIL_LEN;
       const tx = b.trail[idx * 2], ty = b.trail[idx * 2 + 1];
-      const alpha = (1 - age) * 0.45;
-      const sz = radius * 2 * (1 - age * 0.6);
-      writeInst(buf, n++, tx, ty, sz, sz, cr, cg * (1 - age * 0.5), cb, alpha, 0, 1);
+      const alpha = (1 - age) * 0.40;
+      const sz = R * 2 * (1 - age * 0.5);
+      writeInst(buf, n++, tx, ty, sz, sz, bodyR, bodyG, bodyB, alpha, 0, 1);
     }
 
-    const r = isFl ? 1 : cr, g = isFl ? 1 : cg, bv = isFl ? 1 : cb;
-    writeInst(buf, n++, b.x, b.y, radius * 2, radius * 2, r, g, bv, 1, 0, 1);
-    // 回転マーカー: ボールの回転を示す 2 つの斑点 (180° 対称) + 中央のライン
-    // circle=1 で描画すると円になる。小さい斑点を ball.angle に沿って配置。
-    const markerR = radius * 0.55;
-    const mx1 = b.x + Math.cos(b.angle) * markerR;
-    const my1 = b.y + Math.sin(b.angle) * markerR;
-    const mx2 = b.x - Math.cos(b.angle) * markerR;
-    const my2 = b.y - Math.sin(b.angle) * markerR;
-    const mR = r * 0.35, mG = g * 0.35, mB = bv * 0.35;
-    writeInst(buf, n++, mx1, my1, radius * 0.45, radius * 0.45, mR, mG, mB, 0.85, 0, 1);
-    writeInst(buf, n++, mx2, my2, radius * 0.45, radius * 0.45, mR, mG, mB, 0.85, 0, 1);
-    // ハイライト (回転しない光沢、立体感): 左上寄りの白い小円
-    writeInst(buf, n++, b.x - radius * 0.35, b.y + radius * 0.35, radius * 0.5, radius * 0.5,
-      Math.min(1, r + 0.35), Math.min(1, g + 0.35), Math.min(1, bv + 0.35), 0.7, 0, 1);
+    // === ② 外殻の暗アウトライン (怪獣シルエット) ===
+    writeInst(buf, n++, b.x, b.y, R * 2.10, R * 2.10,
+      0.05, 0.15, 0.06, 0.75, 0, 1);
+
+    // === ③ 角/スパイク (6 本、体の周囲から突き出る、本体と一緒に回転) ===
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + ang;
+      const spX = b.x + Math.cos(a) * R * 0.98;
+      const spY = b.y + Math.sin(a) * R * 0.98;
+      // スパイク本体 (三角っぽく見せる細長い楕円、暗緑)
+      writeInst(buf, n++, spX, spY, R * 0.40, R * 0.55,
+        isFl ? 1 : 0.22, isFl ? 1 : 0.32, isFl ? 1 : 0.14, 1,
+        a - Math.PI / 2, 1);
+      // スパイクのハイライト (より明るい芯)
+      writeInst(buf, n++, spX, spY, R * 0.22, R * 0.32,
+        isFl ? 1 : 0.55, isFl ? 1 : 0.72, isFl ? 1 : 0.22, 0.85,
+        a - Math.PI / 2, 1);
+    }
+
+    // === ④ 怪獣の本体 (メイン、緑の円) ===
+    writeInst(buf, n++, b.x, b.y, R * 1.85, R * 1.85,
+      bodyR, bodyG, bodyB, 1, 0, 1);
+
+    // === ⑤ お腹 / 下腹のパッチ (明るい色、体の下側にある、回転する) ===
+    {
+      const [bx, by] = at(0, -R * 0.35);
+      writeInst(buf, n++, bx, by, R * 1.30, R * 0.90,
+        bellyR, bellyG, bellyB, 1, ang, 1);
+    }
+
+    // === ⑥ 鱗の斑点 (6 個、体に分散、回転する) ===
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + 0.4 + ang;
+      const r = R * 0.55;
+      writeInst(buf, n++, b.x + Math.cos(a) * r, b.y + Math.sin(a) * r,
+        R * 0.22, R * 0.22, scaleR, scaleG, scaleB, 1, 0, 1);
+    }
+
+    // === ⑦ 大きな角 (2 本、頭頂に向かって、回転する) ===
+    {
+      const hornColor: [number, number, number] =
+        isFl ? [1, 1, 1] : [0.95, 0.85, 0.42];  // 黄金
+      const [hlX, hlY] = at(-R * 0.55, R * 0.85);
+      const [hrX, hrY] = at(R * 0.55, R * 0.85);
+      // 左角 (三角っぽい)
+      writeInst(buf, n++, hlX, hlY, R * 0.38, R * 0.70,
+        hornColor[0], hornColor[1], hornColor[2], 1, ang - 0.45, 1);
+      writeInst(buf, n++, hrX, hrY, R * 0.38, R * 0.70,
+        hornColor[0], hornColor[1], hornColor[2], 1, ang + 0.45, 1);
+      // 角の芯 (白いハイライト)
+      writeInst(buf, n++, hlX, hlY, R * 0.18, R * 0.38,
+        1.0, 0.95, 0.70, 0.85, ang - 0.45, 1);
+      writeInst(buf, n++, hrX, hrY, R * 0.18, R * 0.38,
+        1.0, 0.95, 0.70, 0.85, ang + 0.45, 1);
+    }
+
+    // === ⑧ 光る目 (2 つ、スクロール速度で色変化、体と一緒に回転) ===
+    {
+      const [elX, elY] = at(-R * 0.35, R * 0.18);
+      const [erX, erY] = at(R * 0.35, R * 0.18);
+      // 目の白い/発光部 (大きめ)
+      writeInst(buf, n++, elX, elY, R * 0.42, R * 0.42,
+        eyeR, eyeG, eyeB, 1, 0, 1);
+      writeInst(buf, n++, erX, erY, R * 0.42, R * 0.42,
+        eyeR, eyeG, eyeB, 1, 0, 1);
+      // 瞳 (暗色、怖い縦長の瞳孔)
+      writeInst(buf, n++, elX, elY, R * 0.18, R * 0.32,
+        0.08, 0.04, 0.04, 1, 0, 1);
+      writeInst(buf, n++, erX, erY, R * 0.18, R * 0.32,
+        0.08, 0.04, 0.04, 1, 0, 1);
+      // ハイライト (生きてる感)
+      writeInst(buf, n++, elX + R * 0.08, elY + R * 0.10, R * 0.10, R * 0.10,
+        1.0, 1.0, 0.95, 0.95, 0, 1);
+      writeInst(buf, n++, erX + R * 0.08, erY + R * 0.10, R * 0.10, R * 0.10,
+        1.0, 1.0, 0.95, 0.95, 0, 1);
+    }
+
+    // === ⑨ 口 (暗い横帯 + 4 本の白い牙) ===
+    {
+      const [mX, mY] = at(0, -R * 0.25);
+      // 口の暗い部分
+      writeInst(buf, n++, mX, mY, R * 0.90, R * 0.18,
+        0.08, 0.04, 0.04, 1, ang, 0);
+      // 4 本の牙 (白/クリーム色の小さな三角)
+      const fangColor: [number, number, number] = isFl ? [1, 1, 1] : [0.95, 0.92, 0.82];
+      for (let i = 0; i < 4; i++) {
+        const fx = (-0.20 + i * 0.133) * R;
+        const [fX, fY] = at(fx, -R * 0.28);
+        writeInst(buf, n++, fX, fY, R * 0.10, R * 0.18,
+          fangColor[0], fangColor[1], fangColor[2], 1, ang, 0);
+      }
+    }
+
+    // === ⑩ 鼻の穴 (2 つの小さな暗ドット) ===
+    {
+      const [nlX, nlY] = at(-R * 0.12, -R * 0.08);
+      const [nrX, nrY] = at(R * 0.12, -R * 0.08);
+      writeInst(buf, n++, nlX, nlY, R * 0.10, R * 0.08,
+        0.05, 0.02, 0.02, 1, 0, 1);
+      writeInst(buf, n++, nrX, nrY, R * 0.10, R * 0.08,
+        0.05, 0.02, 0.02, 1, 0, 1);
+    }
+
     return n - start;
   }
 }
