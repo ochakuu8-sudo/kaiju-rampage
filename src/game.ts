@@ -142,6 +142,7 @@ export class Game {
     this.particles.reset();
     this.camera.reset();
     this.loadedChunks.clear();
+    this.groundTileCache.clear();
     this.nextChunkId = 0;
     this.ball.fullReset();
     this.ball.resetWithCamera(this.camera.y);
@@ -596,6 +597,14 @@ export class Game {
   }
 
   private _despawnChunk(chunkId: number) {
+    const chunk = this.loadedChunks.get(chunkId);
+    // このチャンクに属する地面タイルのキャッシュを解放
+    if (chunk) {
+      for (const tile of chunk.grounds) {
+        const key = `${tile.type}|${tile.x}|${tile.y}|${tile.w}|${tile.h}`;
+        this.groundTileCache.delete(key);
+      }
+    }
     this.buildings.unloadChunk(chunkId);
     this.furniture.unloadChunk(chunkId);
     this.vehicles.removeChunkLanes(chunkId);
@@ -678,8 +687,32 @@ export class Game {
    *   個別の葉・石・草を散らす
    * - 人工物 (wood_deck / tile / stone_pavement) は個別タイルをシェーディング
    * - 街路 (asphalt / concrete) は細かい骨材やヒビを描く
+   *
+   * ★ キャッシュ: 各タイルはハッシュベースで決定論的なので、一度計算したら
+   *   同じ結果が常に得られる。初回に全 instance を Float32Array へ焼き込み、
+   *   以後は buf.set() でコピーするだけ (毎フレームの再計算を省略)。
+   *   キャッシュキーは (type, x, y, w, h)。タイル識別子として十分。
    */
+  private groundTileCache = new Map<string, Float32Array>();
+
   private drawGroundTile(buf: Float32Array, idx: number, tile: GroundTile): number {
+    const key = `${tile.type}|${tile.x}|${tile.y}|${tile.w}|${tile.h}`;
+    let cached = this.groundTileCache.get(key);
+    if (!cached) {
+      // 初回: 十分大きい一時バッファに書き込んでから必要サイズに slice
+      const TEMP_MAX_INSTANCES = 64;
+      const temp = new Float32Array(TEMP_MAX_INSTANCES * INST_F);
+      const count = this._computeGroundTileInstances(temp, 0, tile);
+      cached = temp.slice(0, count * INST_F);
+      this.groundTileCache.set(key, cached);
+    }
+    // キャッシュ済み: buf の idx 位置にまるごとコピー
+    buf.set(cached, idx * INST_F);
+    return cached.length / INST_F;
+  }
+
+  /** 実際のタイル描画ロジック (キャッシュミス時のみ呼ばれる) */
+  private _computeGroundTileInstances(buf: Float32Array, idx: number, tile: GroundTile): number {
     let n = idx;
     const { type, x, y, w, h } = tile;
     // セル位置で決まる deterministic hash (同じタイルは常に同じパターン)
