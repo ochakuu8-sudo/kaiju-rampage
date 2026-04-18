@@ -3718,30 +3718,367 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 4: 旅館街
-  { patternId: 'suburban_calm', groundOverride: 'stone_pavement',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'ryokan_street' },
-      { row: 0, col: 2, sceneId: 'ryokan_street' },
-      { row: 1, col: 1, sceneId: 'tea_house_garden' },
-    ] },
-  // 5: 寺院の庭 (苔)
-  { patternId: 'shrine_approach', groundOverride: 'moss',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'tea_house_garden' },
-      { row: 0, col: 1, sceneId: 'five_story_pagoda' },
-      { row: 0, col: 3, sceneId: 'old_town_alley' },
-      { row: 1, col: 1, sceneId: 'five_story_pagoda' },
-      { row: 1, col: 3, sceneId: 'tea_house_garden' },
-    ] },
-  // 6: 古民家ずらり
-  { patternId: 'staggered', groundOverride: 'stone_pavement',
-    overrides: [
-      { row: 0, col: 0, sceneId: 'old_town_alley' },
-      { row: 0, col: 2, sceneId: 'old_town_alley' },
-      { row: 1, col: 1, sceneId: 'ryokan_street' },
-      { row: 1, col: 3, sceneId: 'tea_house_garden' },
-    ] },
+  // ═══ Act II: 旅館街・温泉街 (C3-C5) ═══════════════════════════════
+
+  // ── C3: 老舗旅館通り ──
+  // 街区分け:
+  //   上段 西: 老舗旅館 (ryokan メイン + 表の茶屋)
+  //   上段 中: 料亭と居酒屋 (chaya 密集)
+  //   上段 東: 2 軒目の旅館 (ryokan + kura)
+  //   下段 西: 古民家と蔵 (kominka + kura)
+  //   下段 中: 庭園 (koi_pond 中心の茶屋)
+  //   下段 東: 町家の並び (machiya クラスタ)
+  { patternId: 's3_raw', raw: {
+    buildings: [
+      // === 上段 西: ★ 老舗旅館 ===
+      _B('ryokan', -148, 50),                                   // ★ 大きな旅館
+      _B('chaya', -105, 38),
+      _B('kura', -172, 78),                                     // 旅館の蔵 (奥)
+      _B('shed', -130, 78),
+
+      // === 上段 中: 料亭 ===
+      _B('chaya', -55, 40),
+      _B('kominka', -25, 44),
+      _B('chaya', 25, 40),
+      _B('kominka', 55, 44),
+      _B('shed', 0, 78),
+
+      // === 上段 東: 2 軒目の旅館 ===
+      _B('ryokan', 132, 52),                                    // ★ 2 軒目
+      _B('chaya', 170, 38),
+      _B('kura', 100, 78),                                      // 蔵 (奥)
+      _B('shed', 165, 78),
+
+      // === 下段 西: 古民家と蔵 ===
+      _B('kominka', -162, 132),
+      _B('kominka', -132, 138),
+      _B('kura', -105, 132),
+      _B('shed', -178, 175),
+      _B('greenhouse', -135, 178),
+
+      // === 下段 中: 庭園の茶屋 ===
+      _B('chaya', -38, 132),
+      _B('chaya', 38, 132),                                     // 対の茶屋
+      _B('kominka', 5, 138),
+      _B('shed', -15, 178),
+
+      // === 下段 東: 町家クラスタ ===
+      _B('machiya', 108, 168),                                  // ★ 町家 (奥)
+      _B('machiya', 148, 170),                                  // ★
+      _B('kominka', 108, 132),
+      _B('chaya', 138, 136),
+      _B('kura', 175, 132),
+    ],
+    furniture: [
+      // ─── 軸: 石灯籠 ───
+      _F('stone_lantern', -80, 92), _F('stone_lantern', 80, 92),
+      _F('stone_lantern', -40, 98), _F('stone_lantern', 40, 98),
+      _F('stone_lantern', -80, 108), _F('stone_lantern', 80, 108),
+      // ─── 軸: 桜並木 ───
+      _F('sakura_tree', -170, 62), _F('sakura_tree', 170, 62),
+      _F('sakura_tree', -60, 95), _F('sakura_tree', 60, 95),
+      _F('sakura_tree', -170, 160), _F('sakura_tree', 170, 160),
+      // ─── 旅館の装飾 (上段 西) ───
+      _F('stone_lantern', -148, 72),
+      _F('noren', -148, 38),
+      _F('chouchin', -148, 30), _F('chouchin', -105, 30),
+      _F('shinto_rope', -148, 22),
+      _F('bonsai', -105, 30),
+      _F('stepping_stones', -130, 82),
+      // ─── 料亭の装飾 (上段 中) ───
+      _F('noren', -55, 30), _F('noren', 25, 30),
+      _F('chouchin', -25, 30), _F('chouchin', 55, 30),
+      _F('potted_plant', 0, 30),
+      _F('bamboo_cluster', -15, 50),
+      // ─── 2 軒目旅館 (上段 東) ───
+      _F('stone_lantern', 132, 72),
+      _F('noren', 132, 38),
+      _F('chouchin', 132, 30), _F('chouchin', 170, 30),
+      _F('shinto_rope', 132, 22),
+      _F('bamboo_fence', 95, 50),
+      // ─── 古民家・蔵 (下段 西) ───
+      _F('bamboo_fence', -162, 118),
+      _F('bamboo_fence', -105, 118),
+      _F('potted_plant', -132, 122),
+      _F('stone_lantern', -140, 168),
+      // ─── ★ 庭園 (下段 中) ───
+      _F('koi_pond', 0, 162),                                   // ★ 鯉の池
+      _F('stepping_stones', -18, 170),
+      _F('stepping_stones', 18, 170),
+      _F('rock', -25, 172), _F('rock', 25, 172),
+      _F('bonsai', -38, 122), _F('bonsai', 38, 122),
+      _F('sakura_tree', -8, 175),
+      _F('bamboo_water_fountain', 20, 158),
+      _F('stone_lantern', -50, 170),
+      // ─── 町家区画 (下段 東) ───
+      _F('bamboo_fence', 95, 150),
+      _F('bonsai', 108, 122), _F('bonsai', 138, 124),
+      _F('wood_fence', 180, 170),
+      _F('sakura_tree', 170, 150),
+    ],
+    humans: [
+      _H(-148, 82),                                             // 旅館受付
+      _H(-25, 60),                                              // 料亭客
+      _H(25, 60),
+      _H(132, 82),                                              // 2 軒目旅館
+      _H(-132, 152),                                            // 古民家住人
+      _H(0, 172),                                               // 庭園で鯉に餌
+      _H(108, 152),                                             // 町家前
+    ],
+    grounds: [
+      _G('gravel', 0, 100, 360, 40),
+      _G('wood_deck', -148, 72, 50, 42),                        // 旅館縁側
+      _G('wood_deck', 132, 72, 50, 42),                         // 2 軒目旅館縁側
+      _G('stone_pavement', -140, 60, 80, 42),
+      _G('stone_pavement', 140, 60, 80, 42),
+      _G('stone_pavement', 0, 60, 100, 42),                     // 中央石畳
+      _G('stone_pavement', -140, 160, 80, 42),
+      _G('moss', 0, 168, 120, 32),                              // ★ 庭園の苔
+      _G('stone_pavement', 140, 160, 80, 42),
+      _G('gravel', 0, 15, 240, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C4: ★ 温泉街 ──
+  // 街区分け:
+  //   上段 西: 小さな旅館 + 蔵 (kura クラスタ)
+  //   上段 中: ★ 温泉旅館 (onsen_inn メイン、湯気の煙突)
+  //   上段 東: 2 軒目の温泉旅館 + 土産物
+  //   下段 西: 竹林の小径
+  //   下段 中: 露天風呂風の庭 (koi_pond + 石庭)
+  //   下段 東: 町家の並び
+  { patternId: 's3_raw', raw: {
+    buildings: [
+      // === 上段 西: 小旅館 + 蔵 ===
+      _B('ryokan', -150, 46),
+      _B('kura', -108, 40),                                     // 隣の蔵
+      _B('kura', -172, 78),                                     // 奥の蔵
+      _B('kura', -128, 78),
+      _B('shed', -95, 80),
+
+      // === 上段 中: ★★ 温泉旅館 ★★ ===
+      _B('onsen_inn', 0, 68),                                   // ★ 大温泉 (中央、奥)
+      _B('chaya', -55, 38),                                     // 1F の茶屋
+      _B('chaya', 55, 42),
+      _B('shed', -30, 78),
+      _B('shed', 30, 76),
+
+      // === 上段 東: 2 軒目温泉 + 土産物 ===
+      _B('onsen_inn', 138, 68),                                 // ★ 2 軒目温泉 (奥)
+      _B('kominka', 108, 38),                                   // 土産物
+      _B('chaya', 178, 42),
+      _B('kura', 170, 78),
+
+      // === 下段 西: 竹林の小径 ===
+      _B('kominka', -162, 132),
+      _B('kominka', -135, 136),
+      _B('chaya', -108, 138),
+      _B('shed', -178, 175),
+
+      // === 下段 中: ★ 露天風呂風の庭 ===
+      _B('chaya', -40, 132),                                    // 茶屋
+      _B('chaya', 40, 132),
+      _B('shed', -10, 170),
+      _B('shed', 15, 175),
+
+      // === 下段 東: 町家の並び ===
+      _B('machiya', 108, 170),                                  // ★ 町家 (奥)
+      _B('machiya', 148, 172),
+      _B('kominka', 108, 132),
+      _B('chaya', 138, 138),
+      _B('kura', 175, 132),
+    ],
+    furniture: [
+      // ─── 軸: 石灯籠 ───
+      _F('stone_lantern', -80, 92), _F('stone_lantern', 80, 92),
+      _F('stone_lantern', -40, 98), _F('stone_lantern', 40, 98),
+      _F('stone_lantern', -80, 108), _F('stone_lantern', 80, 108),
+      // ─── 軸: 桜並木 ───
+      _F('sakura_tree', -170, 62), _F('sakura_tree', 170, 62),
+      _F('sakura_tree', -170, 160), _F('sakura_tree', 170, 160),
+      // ─── ★ 温泉街のしるし (暖簾 + 湯気は onsen_inn 内) ───
+      _F('noren', 0, 30),                                       // 大きな藍染のれん
+      _F('chouchin', -20, 22), _F('chouchin', 20, 22),
+      _F('shinto_rope', 0, 14),
+      _F('stone_lantern', -22, 78), _F('stone_lantern', 22, 78),
+      // ─── 西クラスタ (蔵の装飾) ───
+      _F('bamboo_fence', -150, 32),
+      _F('bamboo_fence', -105, 32),
+      _F('rock', -128, 65),
+      _F('stone_lantern', -150, 70),
+      // ─── 中クラスタ (1F 茶屋) ───
+      _F('noren', -55, 28), _F('noren', 55, 32),
+      _F('bamboo_cluster', -70, 50), _F('bamboo_cluster', 70, 50),
+      _F('bonsai', -30, 30),
+      _F('potted_plant', 30, 30),
+      // ─── 東クラスタ (2 軒目温泉) ───
+      _F('noren', 138, 30),
+      _F('chouchin', 108, 22), _F('chouchin', 178, 22),
+      _F('bamboo_fence', 120, 50),
+      _F('stone_lantern', 138, 78),
+      // ─── ★ 竹林の小径 (下段 西) ───
+      _F('bamboo_cluster', -178, 120),
+      _F('bamboo_cluster', -170, 125),
+      _F('bamboo_cluster', -160, 175),
+      _F('bamboo_cluster', -120, 175),
+      _F('bamboo_fence', -95, 150),
+      // ─── ★★ 露天風呂の庭 (下段 中) ★★ ───
+      _F('koi_pond', -8, 158),                                  // ★ 露天池
+      _F('rock', -28, 160), _F('rock', 28, 162),
+      _F('stepping_stones', 0, 170),
+      _F('bamboo_water_fountain', -28, 172),                    // ★ 鹿威し
+      _F('sakura_tree', 0, 182),
+      _F('stone_lantern', -40, 168), _F('stone_lantern', 40, 168),
+      _F('bonsai', 40, 122),
+      // ─── 東クラスタ (町家) ───
+      _F('bamboo_fence', 95, 150),
+      _F('wood_fence', 180, 170),
+      _F('bonsai', 108, 122), _F('bonsai', 138, 124),
+    ],
+    humans: [
+      _H(-150, 60),                                             // 小旅館客
+      _H(0, 82),                                                // 温泉帰り (浴衣)
+      _H(-55, 55),
+      _H(138, 82),                                              // 2 軒目温泉
+      _H(-108, 152),                                            // 竹林散歩
+      _H(-8, 168),                                              // 露天風呂の縁で
+      _H(108, 152),
+    ],
+    grounds: [
+      _G('gravel', 0, 100, 360, 40),
+      _G('stone_pavement', -140, 60, 80, 42),
+      _G('wood_deck', 0, 60, 100, 42),                          // 温泉旅館の縁側
+      _G('stone_pavement', 140, 60, 80, 42),
+      _G('wood_deck', 138, 72, 50, 30),                         // 2 軒目縁側
+      _G('moss', -140, 160, 80, 42),                            // ★ 竹林の苔
+      _G('moss', 0, 160, 120, 42),                              // ★ 露天庭の苔
+      _G('stone_pavement', 140, 160, 80, 42),
+      _G('gravel', 0, 15, 240, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C5: 裏路地の摂社 + 古民家 ──
+  // 街区分け:
+  //   上段 西: 古民家の並び (kominka クラスタ)
+  //   上段 中: ★ 裏の摂社 (shrine + 石庭)
+  //   上段 東: 町家 + 蔵
+  //   下段 西: 旅館の裏手 + 蔵
+  //   下段 中: 小さな茶屋の広場
+  //   下段 東: 町家集落 + 竹垣
+  { patternId: 's3_raw', raw: {
+    buildings: [
+      // === 上段 西: 古民家クラスタ ===
+      _B('kominka', -162, 40),
+      _B('kominka', -132, 44),
+      _B('kominka', -108, 40),                                  // 古民家 3 連
+      _B('kura', -172, 78),
+      _B('greenhouse', -128, 78),
+
+      // === 上段 中: ★ 裏の摂社 ===
+      _B('shrine', -25, 55),                                    // ★ 摂社 (avenue 左脇)
+      _B('temple', 30, 60),                                     // ★ 小さな寺 (avenue 右脇)
+      _B('kominka', -62, 42),
+      _B('chaya', 62, 38),
+      _B('shed', -10, 78),
+      _B('shed', 15, 78),
+
+      // === 上段 東: 町家 + 蔵 ===
+      _B('machiya', 108, 72),                                   // ★ 町家 (奥)
+      _B('kominka', 138, 40),
+      _B('kura', 170, 42),                                      // 蔵 (前)
+      _B('shed', 155, 78),
+
+      // === 下段 西: 旅館裏 + 蔵 ===
+      _B('ryokan', -138, 165),                                  // ★ 旅館の裏 (奥)
+      _B('kura', -168, 132),
+      _B('kura', -102, 138),
+      _B('shed', -145, 178),
+
+      // === 下段 中: 小茶屋の広場 ===
+      _B('chaya', -38, 132),
+      _B('chaya', 5, 136),
+      _B('chaya', 45, 132),                                     // 茶屋 3 連
+      _B('shed', -20, 178),
+      _B('shed', 22, 178),
+
+      // === 下段 東: 町家集落 ===
+      _B('machiya', 108, 170),                                  // ★
+      _B('kominka', 138, 132),
+      _B('kominka', 168, 138),
+      _B('kura', 178, 178),
+    ],
+    furniture: [
+      // ─── 軸: 石灯籠 ───
+      _F('stone_lantern', -80, 92), _F('stone_lantern', 80, 92),
+      _F('stone_lantern', -40, 98), _F('stone_lantern', 40, 98),
+      _F('stone_lantern', -80, 108), _F('stone_lantern', 80, 108),
+      // ─── 軸: 桜並木 (Act II 最後の華) ───
+      _F('sakura_tree', -170, 62), _F('sakura_tree', 170, 62),
+      _F('sakura_tree', -60, 95), _F('sakura_tree', 60, 95),
+      _F('sakura_tree', -170, 160), _F('sakura_tree', 170, 160),
+      // ─── ★ 中央の摂社 + 寺 ───
+      _F('torii', -25, 42),
+      _F('koma_inu', -38, 80), _F('koma_inu', -12, 80),
+      _F('offering_box', -25, 82),
+      _F('shinto_rope', -25, 48),
+      _F('ema_rack', 30, 48),
+      _F('stone_lantern', 30, 82),
+      _F('shrine_fence_red', -50, 55),
+      _F('shrine_fence_red', 50, 55),
+      _F('omikuji_stand', 45, 78),
+      // ─── 西クラスタ (古民家) ───
+      _F('bamboo_fence', -95, 50),
+      _F('potted_plant', -162, 30), _F('potted_plant', -132, 30),
+      _F('bonsai', -108, 30),
+      _F('stepping_stones', -140, 60),
+      // ─── 東クラスタ (町家+蔵) ───
+      _F('bamboo_fence', 95, 50),
+      _F('noren', 138, 30),
+      _F('wood_fence', 180, 70),
+      _F('bonsai', 108, 122),
+      // ─── 旅館裏 (下段 西) ───
+      _F('stone_lantern', -138, 145),
+      _F('bamboo_fence', -100, 150),
+      _F('koi_pond', -162, 175),                                // 旅館の裏庭の池
+      _F('rock', -170, 178),
+      _F('stepping_stones', -150, 172),
+      // ─── 茶屋の広場 (下段 中) ───
+      _F('noren', -38, 122), _F('noren', 5, 126),
+      _F('noren', 45, 122),
+      _F('chouchin', -38, 116), _F('chouchin', 45, 116),
+      _F('bonsai', -20, 170),
+      _F('bamboo_cluster', -45, 160),
+      // ─── 東集落 (下段) ───
+      _F('bamboo_fence', 95, 150),
+      _F('bamboo_cluster', 178, 155),
+      _F('bonsai', 138, 124),
+      _F('stone_lantern', 155, 168),
+    ],
+    humans: [
+      _H(-132, 55),                                             // 古民家住人
+      _H(-25, 82),                                              // 摂社参拝
+      _H(30, 85),                                               // 寺参拝
+      _H(108, 82),                                              // 町家前
+      _H(-138, 182),                                            // 旅館裏
+      _H(5, 152),                                               // 茶屋広場
+      _H(138, 152),
+    ],
+    grounds: [
+      _G('gravel', 0, 100, 360, 40),
+      _G('stone_pavement', -140, 60, 80, 42),
+      _G('stone_pavement', -25, 70, 80, 22),                    // 摂社の石畳
+      _G('moss', -25, 82, 60, 30),                              // 摂社の苔庭
+      _G('moss', 30, 80, 60, 30),                               // 寺の苔庭
+      _G('stone_pavement', 140, 60, 80, 42),
+      _G('stone_pavement', -140, 160, 80, 42),
+      _G('wood_deck', 0, 160, 120, 42),                         // 茶屋広場の木道
+      _G('stone_pavement', 140, 160, 80, 42),
+      _G('gravel', 0, 15, 240, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
   // 7: 参道 + 茶屋
   { patternId: 'shrine_approach', groundOverride: 'gravel',
     overrides: [
