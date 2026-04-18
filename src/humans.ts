@@ -294,6 +294,66 @@ export function getHumanWeightsForBuilding(size: string): readonly number[] | un
   return BUILDING_WEIGHTS[size];
 }
 
+// ═══ バリエーション・パレット: 個体差を出すための色セット ═══════════════
+// 各人間は 8bit の variant seed を持ち、その bit を分割して各部位の
+// バリエーションを決定する。これにより同じ kind でも服の色や髪・肌・靴が
+// さまざまに組み合わさって、画面上に本当にさまざまな人間が混在する。
+
+// シャツ/ズボン/カバンの RGB 乗算テーブル (kind 固有色に適用)
+//   多くは 0.80-1.20 の範囲で明暗や彩度を変化させる
+const TINT_TABLE: ReadonlyArray<readonly [number, number, number]> = [
+  [1.00, 1.00, 1.00],  // 0: 標準
+  [0.82, 0.82, 0.82],  // 1: 暗
+  [1.15, 1.15, 1.15],  // 2: 明
+  [1.12, 0.94, 0.85],  // 3: 温色寄り (赤味)
+  [0.85, 0.92, 1.12],  // 4: 寒色寄り (青味)
+  [0.90, 1.12, 0.88],  // 5: 緑寄り
+  [1.08, 1.04, 0.82],  // 6: 金茶
+  [1.05, 0.85, 1.05],  // 7: 紫寄り
+];
+
+// 髪色パレット: 8 段階、暗色〜白・金まで
+const HAIR_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
+  [0.05, 0.04, 0.03],  // 0: 漆黒
+  [0.10, 0.07, 0.04],  // 1: ほぼ黒
+  [0.22, 0.15, 0.08],  // 2: 濃茶
+  [0.38, 0.25, 0.12],  // 3: 茶
+  [0.55, 0.40, 0.22],  // 4: 明るい茶
+  [0.72, 0.60, 0.35],  // 5: 栗金
+  [0.92, 0.82, 0.50],  // 6: 金髪
+  [0.88, 0.85, 0.80],  // 7: 白髪/アッシュ
+];
+
+// 肌色パレット: 4 段階
+const SKIN_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
+  [0.98, 0.88, 0.78],  // 0: 明
+  [0.95, 0.78, 0.62],  // 1: 標準
+  [0.88, 0.70, 0.50],  // 2: 日焼け
+  [0.72, 0.55, 0.40],  // 3: 濃
+];
+
+// 靴色パレット: 4 段階
+const SHOE_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
+  [0.08, 0.06, 0.05],  // 0: 黒 (革靴)
+  [0.22, 0.14, 0.08],  // 1: 濃茶
+  [0.45, 0.32, 0.18],  // 2: ブラウン
+  [0.92, 0.92, 0.88],  // 3: 白 (スニーカー)
+];
+
+/** variant byte から各パーツのインデックスをデコード (モジュロ/マスクで衝突回避) */
+function decodeVariant(v: number): {
+  shirtTint: number; pantsTint: number; hairIdx: number;
+  skinIdx: number;   shoeIdx: number;
+} {
+  return {
+    shirtTint: v & 0b111,              // bits 0-2 (0-7)
+    pantsTint: (v >> 3) & 0b111,       // bits 3-5 (0-7)
+    hairIdx:   (v ^ (v >> 2)) & 0b111, // ミックス (0-7)
+    skinIdx:   (v >> 6) & 0b11,        // bits 6-7 (0-3)
+    shoeIdx:   ((v >> 4) ^ (v >> 1)) & 0b11,
+  };
+}
+
 export class HumanManager {
   px:       Float32Array = new Float32Array(C.MAX_HUMANS);
   py:       Float32Array = new Float32Array(C.MAX_HUMANS);
@@ -305,6 +365,7 @@ export class HumanManager {
   scaleX:   Float32Array = new Float32Array(C.MAX_HUMANS);
   mode:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
   kind:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_KINDS index
+  variant:    Uint8Array   = new Uint8Array(C.MAX_HUMANS); // 8bit seed: 同 kind 内の個体差
   blastTimer: Float32Array = new Float32Array(C.MAX_HUMANS); // 吹き飛ばしフェーズ残り時間
 
   activeCount = 0;
@@ -364,6 +425,7 @@ export class HumanManager {
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
       this.kind[i]     = pickHumanKind();
+      this.variant[i]  = (Math.random() * 256) | 0;
       this.activeCount = this.activeLen;
       return;
     }
@@ -397,6 +459,7 @@ export class HumanManager {
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
       this.kind[i]     = pickHumanKind();
+      this.variant[i]  = (Math.random() * 256) | 0;
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -426,6 +489,7 @@ export class HumanManager {
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
       this.kind[i]       = pickHumanKind(kindWeights);
+      this.variant[i]    = (Math.random() * 256) | 0;
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -656,8 +720,6 @@ export class HumanManager {
     let n = startIdx;
     const camBot = cameraY + C.WORLD_MIN_Y - 50;
     const camTop = cameraY + C.WORLD_MAX_Y + 50;
-    // 肌色 (共通) + 影色
-    const SKIN_R = 0.95, SKIN_G = 0.75, SKIN_B = 0.55;
     for (let k = 0; k < this.activeLen; k++) {
       const i = this.activeIndices[k];
       const py = this.py[i];
@@ -668,95 +730,109 @@ export class HumanManager {
       const sy = C.HUMAN_H * (2 - this.scaleX[i]) * ks;
       const px = this.px[i];
 
+      // === バリエーション・デコード ===
+      const v = decodeVariant(this.variant[i]);
+      const shirtT = TINT_TABLE[v.shirtTint];
+      const pantsT = TINT_TABLE[v.pantsTint];
+      // 肌色はパレットから選択
+      const [skinR, skinG, skinB] = SKIN_PALETTE[v.skinIdx];
+      // 髪色: kind.hair が指定されていれば色相はそれを優先しつつパレットで微調整
+      //       指定が無ければパレットから直接選ぶ
+      const hairBase = kind.hair ?? HAIR_PALETTE[v.hairIdx];
+      const hairShadeK = kind.hair ? (0.75 + (v.hairIdx / 7) * 0.50) : 1.0; // 0.75-1.25
+      const hairR = Math.min(1, hairBase[0] * hairShadeK);
+      const hairG = Math.min(1, hairBase[1] * hairShadeK);
+      const hairB = Math.min(1, hairBase[2] * hairShadeK);
+      // 靴色はパレットから
+      const [shoeR, shoeG, shoeB] = SHOE_PALETTE[v.shoeIdx];
+      // シャツ / ズボン色に tint 適用 (安全に clamp)
+      const [sr0, sg0, sb0] = kind.shirt;
+      const sr = Math.min(1, sr0 * shirtT[0]);
+      const sg = Math.min(1, sg0 * shirtT[1]);
+      const sb = Math.min(1, sb0 * shirtT[2]);
+      const [pr0, pg0, pb0] = kind.pants ?? kind.shirt;
+      const pr = Math.min(1, pr0 * pantsT[0]);
+      const pg = Math.min(1, pg0 * pantsT[1]);
+      const pb = Math.min(1, pb0 * pantsT[2]);
+
       // === ① 足下の影 (地面との接地感) ===
       writeInst(buf, n++, px, py - sy * 0.49, sx * 1.10, sy * 0.07,
-        0.05, 0.05, 0.08, 0.35, 0, 1);                          // 楕円影 (circle=1, 半透明)
+        0.05, 0.05, 0.08, 0.35, 0, 1);
 
-      // === ② 両足 (靴、暗色) ===
-      const shoeR = 0.12, shoeG = 0.10, shoeB = 0.08;
+      // === ② 両足 (靴、variant で色選択) ===
       writeInst(buf, n++, px - sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
         shoeR, shoeG, shoeB, 1, 0, 0);
       writeInst(buf, n++, px + sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
         shoeR, shoeG, shoeB, 1, 0, 0);
 
-      // === ③ 両脚 (ズボン or スカート色、中央に隙間) ===
-      const [pr, pg, pb] = kind.pants ?? kind.shirt;
+      // === ③ 両脚 ===
       writeInst(buf, n++, px - sx * 0.22, py - sy * 0.27, sx * 0.32, sy * 0.30,
         pr, pg, pb, 1, 0, 0);
       writeInst(buf, n++, px + sx * 0.22, py - sy * 0.27, sx * 0.32, sy * 0.30,
         pr, pg, pb, 1, 0, 0);
 
-      // === ④ ベルト (腰の細い暗帯、胴体と脚の境目) ===
+      // === ④ ベルト ===
       writeInst(buf, n++, px, py - sy * 0.05, sx * 0.90, sy * 0.06,
         pr * 0.55, pg * 0.55, pb * 0.55, 1, 0, 0);
 
-      // === ⑤ 両腕/袖 (シャツ色、体の左右に細く) ===
-      const [sr, sg, sb] = kind.shirt;
+      // === ⑤ 両腕/袖 (少し暗めのシャツ色) ===
       writeInst(buf, n++, px - sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
-        sr * 0.92, sg * 0.92, sb * 0.92, 1, 0, 0);              // 少し暗い (影)
+        sr * 0.90, sg * 0.90, sb * 0.90, 1, 0, 0);
       writeInst(buf, n++, px + sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
-        sr * 0.92, sg * 0.92, sb * 0.92, 1, 0, 0);
+        sr * 0.90, sg * 0.90, sb * 0.90, 1, 0, 0);
 
       // === ⑥ 両手 (袖口、肌色) ===
       writeInst(buf, n++, px - sx * 0.48, py - sy * 0.08, sx * 0.20, sy * 0.08,
-        SKIN_R, SKIN_G, SKIN_B, 1, 0, 0);
+        skinR, skinG, skinB, 1, 0, 0);
       writeInst(buf, n++, px + sx * 0.48, py - sy * 0.08, sx * 0.20, sy * 0.08,
-        SKIN_R, SKIN_G, SKIN_B, 1, 0, 0);
+        skinR, skinG, skinB, 1, 0, 0);
 
-      // === ⑦ 胴体/シャツ (メイン) ===
+      // === ⑦ 胴体/シャツ ===
       writeInst(buf, n++, px, py + sy * 0.12, sx * 0.85, sy * 0.32,
         sr, sg, sb, 1, 0, 0);
 
-      // === ⑧ アクセント (ネクタイ・ブラウスのリボン・法被の腹帯など) ===
+      // === ⑧ アクセント (そのまま、kind 固有) ===
       if (kind.accent) {
         const [ar, ag, ab] = kind.accent;
         writeInst(buf, n++, px, py + sy * 0.15, sx * 0.20, sy * 0.20,
           ar, ag, ab, 1, 0, 0);
       }
 
-      // === ⑨ カバン (体の右側、オプション) ===
+      // === ⑨ カバン ===
       if (kind.bag) {
         const [br, bg, bb] = kind.bag;
         writeInst(buf, n++, px + sx * 0.62, py - sy * 0.10, sx * 0.38, sy * 0.38,
           br, bg, bb, 1, 0, 0);
-        // カバンの持ち手 (上部の小ライン、暗色)
         writeInst(buf, n++, px + sx * 0.62, py + sy * 0.10, sx * 0.30, sy * 0.04,
           br * 0.55, bg * 0.55, bb * 0.55, 1, 0, 0);
       }
 
-      // === ⑩ 首 (肌色、頭と胴体の接続) ===
+      // === ⑩ 首 ===
       writeInst(buf, n++, px, py + sy * 0.33, sx * 0.32, sy * 0.10,
-        SKIN_R, SKIN_G, SKIN_B, 1, 0, 0);
+        skinR, skinG, skinB, 1, 0, 0);
 
-      // === ⑪ 頭 (肌色の円) ===
+      // === ⑪ 頭 ===
       const headY = py + sy * 0.45;
       writeInst(buf, n++, px, headY, sx * 0.92, sx * 0.92,
-        SKIN_R, SKIN_G, SKIN_B, 1, 0, 1);                        // circle=1
+        skinR, skinG, skinB, 1, 0, 1);
 
-      // === ⑫ 両目 (暗色の小さなドット) ===
+      // === ⑫ 両目 ===
       writeInst(buf, n++, px - sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
-        0.08, 0.06, 0.04, 1, 0, 1);                              // 左目 (円)
+        0.08, 0.06, 0.04, 1, 0, 1);
       writeInst(buf, n++, px + sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
-        0.08, 0.06, 0.04, 1, 0, 1);                              // 右目 (円)
+        0.08, 0.06, 0.04, 1, 0, 1);
 
-      // === ⑬ 髪: 後頭部の大きな塊 + 前髪フリンジ ===
-      if (kind.hair) {
-        const [hr, hg, hb] = kind.hair;
-        // 後頭部 (頭の上半分にドーム状)
-        writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.98, sx * 0.45,
-          hr, hg, hb, 1, 0, 0);
-        // 前髪フリンジ (額を覆う暗めの帯)
-        writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
-          hr * 0.85, hg * 0.85, hb * 0.85, 1, 0, 0);
-      }
+      // === ⑬ 髪 (後頭部 + 前髪フリンジ) ===
+      writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.98, sx * 0.45,
+        hairR, hairG, hairB, 1, 0, 0);
+      writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
+        hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
 
-      // === ⑭ 帽子 (オプション): 帽子つば + 本体 ===
+      // === ⑭ 帽子 (kind 固有、バリエーションなし) ===
       if (kind.hat) {
         const [hr2, hg2, hb2] = kind.hat;
-        // つば (薄い水平帯、少し暗め)
         writeInst(buf, n++, px, headY + sx * 0.58, sx * 1.18, sx * 0.12,
           hr2 * 0.80, hg2 * 0.80, hb2 * 0.80, 1, 0, 0);
-        // 本体 (縦に少し膨らんだ形)
         writeInst(buf, n++, px, headY + sx * 0.72, sx * 0.95, sx * 0.32,
           hr2, hg2, hb2, 1, 0, 0);
       }
