@@ -2318,56 +2318,80 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ── C1: サラリーマン動線 — ラーメン・牛丼・立ち飲み帯 ──
-  // 帰宅サラリーマンが夜食を取る帯。店の密度は Stage 2 で最も濃い。
+  // ── C1: サラリーマン動線 — 夜食と一杯の多彩な小店 ──
+  // 帰宅サラリーマンが夜食を取る帯。同系統の店が被らないよう 1 チャンク内で
+  // 全て異なる業種を並べる (ラーメン/牛丼/立ち飲み/スナック/麻雀/ブックカフェ等)。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 夜食ストリート ===
-      _B('ramen', -155, 42), _B('izakaya', -125, 42),           // Cell A ラーメン + 立ち飲み
-      _B('shop', -95, 42),                                       // 牛丼 (見立て)
-      _B('izakaya', -50, 42), _B('ramen', -18, 42),             // Cell B 連続居酒屋
-      _B('cafe', 22, 42), _B('izakaya', 55, 42),                // Cell C 夜カフェ + 立ち飲み
-      _B('shop', 92, 42),                                        // 牛丼 (見立て)
-      _B('convenience', 130, 42), _B('izakaya', 165, 42),       // Cell D 24h + 立ち飲み
-      // === 下段: 対岸の飲み屋 ===
-      _B('izakaya', -158, 132), _B('ramen', -125, 132),         // Cell E ネオン看板 2 軒
-      _B('izakaya', -80, 132),
-      _B('pachinko', -28, 138),                                 // ★ Cell F 早くも pachinko (Act II 予兆)
-      _B('shop', 30, 132), _B('ramen', 62, 132),                // Cell G
-      _B('izakaya', 110, 132), _B('cafe', 142, 132),            // Cell H
-      _B('apartment', 172, 150),
+      // === 上段: 夜食多彩ストリート (全て別業種) ===
+      _B('ramen', -156, 42),                                    // Cell A ラーメン
+      _B('snack', -128, 42),                                    // ★ スナック (ピンク)
+      _B('bakery', -102, 42),                                   // 深夜パン
+      _B('izakaya', -62, 42),                                   // Cell B 立ち飲み
+      _B('shop', -28, 42),                                      // 牛丼 (見立て)
+      _B('cafe', 5, 42),                                        // 夜カフェ
+      _B('convenience', 40, 42),                                // Cell C 24h
+      _B('pharmacy', 72, 42),                                   // 深夜ドラッグ
+      _B('bookstore', 105, 42),                                 // Cell D ブックカフェ
+      _B('karaoke', 140, 42),                                   // ★ カラオケ (Act II 予兆)
+      _B('house', 175, 42),                                     // 古い 2F 建て
+      // === 下段: 対岸の多様な夜店 ===
+      _B('mahjong_parlor', -160, 132),                          // ★ Cell E 麻雀荘
+      _B('laundromat', -130, 132),                              // 深夜ランドロマット
+      _B('florist', -105, 132),                                 // 深夜花屋 (稀)
+      _B('gas_station', -60, 135),                              // Cell F 深夜ガソスタ
+      _B('post_office', -20, 132),                              // 夜間郵便 (閉)
+      _B('business_hotel', 28, 150),                            // ★ Cell G ビジネスホテル (縦)
+      _B('clinic', 68, 132),                                    // 救急医院
+      _B('restaurant', 102, 132),                               // Cell H レストラン
+      _B('snack', 130, 132),                                    // ★ 2 軒目スナック (違う色)
+      _B('apartment', 170, 148),
     ],
     furniture: [
-      // ─── 軸: 提灯帯 (上段) — 軒先連続 ───
-      _F('chouchin', -155, 22), _F('noren', -155, 28),
-      _F('chouchin', -125, 22), _F('chouchin', -95, 22), _F('noren', -95, 28),
-      _F('chouchin', -50, 22), _F('noren', -50, 28),
-      _F('chouchin', -18, 22), _F('chouchin', 22, 22), _F('noren', 22, 28),
-      _F('chouchin', 55, 22), _F('a_frame_sign', 92, 22),
-      _F('chouchin', 130, 22), _F('chouchin', 165, 22), _F('noren', 165, 28),
-      // ─── 中間小物 (サラリーマン動線) ───
-      _F('kerbside_vending_pair', -110, 72),
-      _F('bicycle_row', -40, 72), _F('bicycle_rack', 75, 75),
-      _F('dumpster', 10, 75), _F('dumpster', 138, 75),
-      _F('a_frame_sign', -18, 32),
+      // ─── 上段 facade (業種別に看板を変える) ───
+      _F('chouchin', -156, 22), _F('noren', -156, 28),           // ramen
+      _F('sign_board', -128, 22),                                // snack ピンク看板
+      _F('a_frame_sign', -102, 22),                              // bakery
+      _F('chouchin', -62, 22), _F('noren', -62, 28),             // izakaya
+      _F('a_frame_sign', -28, 22),                               // shop
+      _F('shop_awning', 5, 28),                                  // cafe
+      _F('sign_board', 40, 22),                                  // convenience
+      _F('a_frame_sign', 72, 22),                                // pharmacy (+ 十字)
+      _F('flag_pole', 72, 25),
+      _F('banner_pole', 105, 22),                                // bookstore
+      _F('sign_board', 140, 22),                                 // karaoke 大看板
+      _F('mailbox', 175, 22),                                    // house
+      // ─── 中間小物 ───
+      _F('kerbside_vending_pair', -85, 72),
+      _F('bicycle_row', -45, 72), _F('bicycle_rack', 55, 75),
+      _F('dumpster', 90, 75), _F('dumpster', 125, 75),
+      _F('milk_crate_stack', -130, 72),
       // ─── 電線 ───
       _F('power_pole', -175, 92), _F('power_line', -178, 88),
       _F('power_pole', 178, 92), _F('power_line', 175, 88),
       _F('power_pole', -175, 195), _F('power_line', -178, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 軸: 提灯帯 (下段) ───
-      _F('chouchin', -158, 118), _F('noren', -158, 124),
-      _F('chouchin', -125, 118), _F('chouchin', -80, 118), _F('noren', -80, 124),
-      _F('sign_board', -28, 118),                                // ★ pachinko 大看板
-      _F('a_frame_sign', 30, 118), _F('chouchin', 62, 118), _F('noren', 62, 124),
-      _F('chouchin', 110, 118), _F('noren', 110, 124),
-      _F('chouchin', 142, 118), _F('noren', 142, 124),
+      // ─── 下段 facade (業種別) ───
+      _F('sign_board', -160, 118),                               // mahjong_parlor 緑看板
+      _F('a_frame_sign', -130, 118),                             // laundromat
+      _F('shop_awning', -105, 124),                              // florist
+      _F('sign_board', -60, 118),                                // gas_station
+      _F('flag_pole', -60, 115),
+      _F('post_box', -20, 122),                                  // post_office
+      _F('sign_board', -20, 118),
+      _F('banner_pole', 28, 118),                                // business_hotel
+      _F('a_frame_sign', 68, 118),                               // clinic
+      _F('chouchin', 102, 118), _F('noren', 102, 124),           // restaurant
+      _F('sign_board', 130, 118),                                // snack 2
+      _F('mailbox', 170, 118),                                   // apartment
       // ─── 下段小物 ───
-      _F('bicycle_row', -100, 172), _F('bicycle_rack', 35, 172),
-      _F('dumpster', -50, 170), _F('dumpster', 90, 170),
-      _F('kerbside_vending_pair', 5, 170),
-      _F('milk_crate_stack', -160, 170), _F('milk_crate_stack', 170, 172),
+      _F('bicycle_row', -100, 172), _F('bicycle_rack', 45, 172),
+      _F('dumpster', -45, 170), _F('dumpster', 85, 170),
+      _F('kerbside_vending_pair', -85, 170),
+      _F('traffic_cone', -58, 172), _F('traffic_cone', -48, 172), // ガソスタ前
+      _F('car', -60, 170),                                       // 給油中
+      _F('milk_crate_stack', 155, 172),
       // ─── 軸: 水たまり ───
       _F('puddle_reflection', -70, 72), _F('puddle_reflection', 40, 78),
       _F('puddle_reflection', -110, 168), _F('puddle_reflection', 80, 170),
@@ -2376,10 +2400,12 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
     ],
     humans: [
-      _H(-95, 55), _H(-50, 55), _H(-18, 55),                    // 連続ラーメン客
-      _H(22, 55), _H(92, 55), _H(165, 55),                      // 夜カフェ + 牛丼客
-      _H(-28, 152),                                             // パチンコ帰り (予兆)
-      _H(62, 152), _H(110, 152),                                // 深夜客
+      _H(-156, 55), _H(-62, 55),                                // ラーメン・居酒屋客
+      _H(5, 55), _H(72, 55),                                     // カフェ・ドラッグ客
+      _H(140, 55),                                               // カラオケ客
+      _H(-160, 152),                                             // 麻雀客
+      _H(-60, 152),                                              // 給油待ち
+      _H(102, 152),                                              // レストラン客
     ],
     grounds: [
       _G('asphalt', 0, 46.5, 360, 93),
@@ -2643,72 +2669,76 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ── C5: 雑居ビル + 飲み屋横丁 — 大人の路地 + 立ち飲みの列 ──
-  // 歓楽街の奥。大型ビルの足元に細く飲み屋がひしめく大人の空間。
+  // ── C5: 雑居ビル + 大人の小店 — 多業種がひしめく街 ──
+  // 歓楽街の奥。大型ビルの足元に細い小店、ホテル、クラブ、麻雀荘、スナック、
+  // バー、ラブホなどがひしめく。業種多様性で「どの店も違う」の生活感を出す。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 雑居ビル + オフィスの壁 ===
-      _B('office', -150, 55),                                   // Cell A 雑居ビル
-      _B('apartment_tall', -112, 60),
-      _B('izakaya', -68, 42), _B('izakaya', -42, 42),           // Cell B 立ち飲み 2 連
-      _B('ramen', -18, 42), _B('izakaya', 5, 42),               // Cell B 連
-      _B('office', 45, 55),                                     // Cell C 雑居ビル
-      _B('bank', 92, 48),                                        // Cell D 夜閉まった銀行
-      _B('apartment_tall', 150, 60),                            // 高層
-      _B('izakaya', 175, 42),
-      // === 下段: 横丁の立ち飲み街 ===
-      _B('izakaya', -165, 132), _B('izakaya', -140, 132),       // Cell E 立ち飲み密集
-      _B('ramen', -115, 132), _B('izakaya', -90, 132),
-      _B('izakaya', -62, 132),                                  // Cell F 連続
-      _B('cafe', -35, 132), _B('izakaya', -10, 132),
-      _B('izakaya', 22, 132), _B('ramen', 48, 132),             // Cell G 連続
-      _B('izakaya', 82, 132),
-      _B('office', 130, 150),                                   // Cell H 雑居ビル
-      _B('izakaya', 172, 132),
+      // === 上段: 雑居ビル + 夜店 (全て別業種) ===
+      _B('office', -150, 55),                                   // Cell A 雑居オフィス
+      _B('apartment_tall', -112, 60),                           // 高層雑居
+      _B('snack', -75, 42),                                     // ★ Cell B スナック
+      _B('mahjong_parlor', -48, 42),                            // ★ 麻雀荘
+      _B('izakaya', -20, 42),                                   // 立ち飲み (唯一)
+      _B('club', 15, 48),                                       // ★ Cell C クラブ
+      _B('ramen', 55, 42),
+      _B('bank', 98, 48),                                       // Cell D 夜閉まった銀行
+      _B('business_hotel', 150, 65),                            // ★ 高層ビジネスホテル
+      _B('cafe', 178, 42),
+      // === 下段: 横丁の多彩な夜店 (全て上段と別業種) ===
+      _B('love_hotel', -148, 150),                              // ★ Cell E ラブホテル
+      _B('pharmacy', -110, 132),                                // 深夜ドラッグ
+      _B('pachinko', -78, 138),                                 // パチンコ
+      _B('restaurant', -40, 132),                               // Cell F レストラン
+      _B('bookstore', -12, 132),                                // 夜ブックカフェ
+      _B('karaoke', 20, 140),                                   // カラオケ
+      _B('movie_theater', 62, 148),                             // ★ ミニシアター
+      _B('bakery', 102, 132),                                   // 深夜パン
+      _B('capsule_hotel', 138, 142),                            // ★ Cell H カプセルホテル
+      _B('laundromat', 175, 132),
     ],
     furniture: [
-      // ─── 上段 facade (オフィス壁面 + 飲み屋のれん) ───
-      _F('sign_board', -150, 22), _F('sign_board', 45, 22),     // オフィスビル看板
-      _F('sign_board', 92, 22),                                 // 銀行看板
-      _F('chouchin', -68, 22), _F('chouchin', -42, 22),
-      _F('chouchin', -18, 22), _F('chouchin', 5, 22),
-      _F('noren', -68, 28), _F('noren', -42, 28),
-      _F('noren', -18, 28), _F('noren', 5, 28),
-      _F('chouchin', 175, 22), _F('noren', 175, 28),
-      // ─── 上段 facade 装飾 ───
-      _F('a_frame_sign', -55, 22), _F('a_frame_sign', 170, 22),
-      _F('milk_crate_stack', -55, 72),                          // 立ち飲みのビール箱
-      _F('milk_crate_stack', -5, 72),
+      // ─── 上段 facade (業種ごとに違う看板) ───
+      _F('sign_board', -150, 22),                               // office
+      _F('banner_pole', -112, 22),                              // apartment_tall
+      _F('sign_board', -75, 22),                                // snack ピンク
+      _F('sign_board', -48, 22),                                // mahjong_parlor 緑
+      _F('chouchin', -20, 22), _F('noren', -20, 28),            // izakaya (唯一)
+      _F('sign_board', 15, 22),                                 // club (金)
+      _F('chouchin', 55, 22), _F('noren', 55, 28),              // ramen
+      _F('sign_board', 98, 22),                                 // bank
+      _F('banner_pole', 150, 22),                               // business_hotel
+      _F('shop_awning', 178, 28),                               // cafe
       // ─── 上段中間 ───
-      _F('kerbside_vending_pair', 25, 72),
-      _F('bicycle_rack', -85, 72), _F('bicycle_rack', 115, 72),
-      _F('dumpster', -180, 72),
+      _F('kerbside_vending_pair', -90, 72),
+      _F('bicycle_row', 30, 75), _F('bicycle_rack', 130, 75),
+      _F('dumpster', -180, 72), _F('dumpster', 125, 72),
+      _F('milk_crate_stack', -35, 72),
       // ─── 電線 ───
       _F('power_pole', -175, 92), _F('power_line', -178, 88),
       _F('power_pole', 178, 92), _F('power_line', 175, 88),
       _F('power_pole', -175, 195), _F('power_line', -178, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── ★★ シグネチャ: 横丁の提灯列 (下段 facade) ★★ ───
-      // Cell E-G にかけて x=-165 から x=82 まで提灯が連続、横丁の気配
-      _F('chouchin', -165, 118), _F('noren', -165, 124),
-      _F('chouchin', -140, 118), _F('noren', -140, 124),
-      _F('chouchin', -115, 118), _F('chouchin', -90, 118),
-      _F('chouchin', -62, 118), _F('chouchin', -35, 118),
-      _F('chouchin', -10, 118), _F('chouchin', 22, 118),
-      _F('chouchin', 48, 118), _F('chouchin', 82, 118),
-      _F('noren', -115, 124), _F('noren', -62, 124),
-      _F('noren', -10, 124), _F('noren', 48, 124),
-      _F('sign_board', 130, 118),                               // 雑居看板
-      _F('chouchin', 172, 118), _F('noren', 172, 124),
-      // ─── 下段小物 (横丁密度) ───
-      _F('milk_crate_stack', -140, 170),
-      _F('milk_crate_stack', -35, 170),
-      _F('milk_crate_stack', 48, 170),
-      _F('bicycle_row', -95, 172), _F('bicycle_row', 10, 172),
-      _F('bicycle_rack', 100, 172),
+      // ─── 下段 facade (業種ごと) ───
+      _F('sign_board', -148, 118),                              // love_hotel 紫
+      _F('a_frame_sign', -110, 118),                            // pharmacy
+      _F('flag_pole', -115, 115),
+      _F('sign_board', -78, 118),                               // pachinko 派手
+      _F('chouchin', -40, 118), _F('noren', -40, 124),          // restaurant
+      _F('banner_pole', -12, 118),                              // bookstore
+      _F('sign_board', 20, 118),                                // karaoke
+      _F('sign_board', 62, 118),                                // movie_theater
+      _F('a_frame_sign', 102, 118),                             // bakery
+      _F('banner_pole', 138, 118),                              // capsule_hotel
+      _F('a_frame_sign', 175, 118),                             // laundromat
+      // ─── 下段小物 ───
+      _F('bicycle_row', -78, 172), _F('bicycle_row', 62, 172),
+      _F('bicycle_rack', 102, 172),
       _F('dumpster', -180, 170), _F('dumpster', 180, 170),
-      _F('kerbside_vending_pair', 150, 170),
+      _F('kerbside_vending_pair', -40, 170),
+      _F('car', -148, 170),                                     // ラブホ前のタクシー
+      _F('milk_crate_stack', 20, 172),
       // ─── 水たまり ───
       _F('puddle_reflection', -50, 75), _F('puddle_reflection', 60, 75),
       _F('puddle_reflection', 135, 75),
@@ -2718,11 +2748,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
     ],
     humans: [
-      _H(-42, 55), _H(-18, 55), _H(5, 55),                      // 立ち飲み客
-      _H(-140, 152), _H(-90, 152), _H(-35, 152),
-      _H(22, 152), _H(82, 152),                                 // 横丁客多数
+      _H(-75, 55),                                              // スナック客
+      _H(-20, 55), _H(55, 55),                                  // 居酒屋 + ラーメン客
+      _H(15, 55),                                               // クラブ入場
       _H(-150, 82),                                             // オフィス残業帰り
-      _H(130, 172),
+      _H(-148, 172),                                            // ラブホ前
+      _H(-78, 152),                                             // パチンコ帰り
+      _H(20, 152), _H(62, 152),                                 // カラオケ + 映画客
     ],
     grounds: [
       _G('asphalt', 0, 46.5, 360, 93),

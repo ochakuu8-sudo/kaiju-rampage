@@ -61,7 +61,9 @@ export type BuildingSize =
   // ── テーマパーク・祭り (Stage 5) ──
   'carousel' | 'roller_coaster' | 'yatai' | 'big_tent' |
   // ── Stage 1 ミニチュア追加 ──
-  'shotengai_arcade' | 'bus_terminal_shelter' | 'fountain_pavilion';
+  'shotengai_arcade' | 'bus_terminal_shelter' | 'fountain_pavilion' |
+  // ── Stage 2 夜街追加 ──
+  'snack' | 'love_hotel' | 'business_hotel' | 'mahjong_parlor' | 'club' | 'capsule_hotel';
 
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
@@ -142,6 +144,13 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   shotengai_arcade:     { w: 40, h:  6, hp: 1, score: 200, humanMin:  0,  humanMax:  3 },
   bus_terminal_shelter: { w: 32, h: 10, hp: 1, score: 250, humanMin: 15,  humanMax: 30 },
   fountain_pavilion:    { w: 28, h: 14, hp: 2, score: 400, humanMin:  5,  humanMax: 15 },
+  // ===== Stage 2 夜街追加 =====
+  snack:          { w: 16, h: 22, hp: 1, score:  220, humanMin:  6,  humanMax: 14 },
+  love_hotel:     { w: 32, h: 42, hp: 2, score:  550, humanMin: 10,  humanMax: 28 },
+  business_hotel: { w: 24, h: 55, hp: 3, score:  800, humanMin: 80,  humanMax: 160 },
+  mahjong_parlor: { w: 22, h: 26, hp: 1, score:  280, humanMin:  8,  humanMax: 18 },
+  club:           { w: 28, h: 30, hp: 2, score:  480, humanMin: 40,  humanMax:  80 },
+  capsule_hotel:  { w: 40, h: 28, hp: 2, score:  600, humanMin: 60,  humanMax: 120 },
 };
 
 // ===== 人間 =====

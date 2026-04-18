@@ -216,6 +216,13 @@ const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,numb
   water_tower:      [0.68, 0.60, 0.50],
   // 特大施設
   department_store: [0.92, 0.82, 0.60],
+  // Stage 2 夜街 (派手な色で区別)
+  snack:            [0.95, 0.52, 0.68],  // ピンク
+  love_hotel:       [0.72, 0.38, 0.82],  // 紫
+  business_hotel:   [0.88, 0.86, 0.82],  // 白
+  mahjong_parlor:   [0.42, 0.58, 0.38],  // 緑
+  club:             [0.22, 0.18, 0.22],  // 黒
+  capsule_hotel:    [0.78, 0.82, 0.90],  // 薄水色
 };
 
 // 建物種別からファサードパレットを選択するヘルパー
@@ -2039,6 +2046,126 @@ export class BuildingManager {
           }
           writeInst(buf, n++, cx, top - 2, bW + 2, 3, 0.55, 0.42, 0.28, 1, 0, 1);
           writeInst(buf, n++, cx, top + 1, 3, 4, 0.85, 0.72, 0.28, 1);
+          break;
+        }
+        // ── Stage 2 夜街 ─────────────────────────────────────────
+        case 'snack': {
+          // ピンクネオン帯 + 小窓 + ママの縦看板
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.95, 0.35, 0.62, 1);
+          writeInst(buf, n++, cx, top - 7, bW, 2, 0.85, 0.22, 0.72, 0.9);
+          // ハート看板 (上端)
+          writeInst(buf, n++, cx, top + 2, 5, 5, 0.98, 0.28, 0.55, 1, 0, 1);
+          // 小窓 (2つ)
+          writeInst(buf, n++, cx - bW * 0.28, bot + bH * 0.55, bW * 0.28, bH * 0.22, 0.95, 0.72, 0.85, 0.72);
+          writeInst(buf, n++, cx + bW * 0.28, bot + bH * 0.55, bW * 0.28, bH * 0.22, 0.95, 0.72, 0.85, 0.72);
+          n = this.drawShopSign(buf, n, cx, top, bW, 3, true);
+          // ドア (小さく)
+          writeInst(buf, n++, cx, bot + 5, bW * 0.22, 9, 0.25, 0.10, 0.18, 1);
+          // 鉢植えのバラ (入口)
+          writeInst(buf, n++, cx - bW * 0.38, bot + 2, 2, 3, 0.92, 0.28, 0.42, 1);
+          break;
+        }
+        case 'love_hotel': {
+          // 紫系派手ネオン + ハート窓 + 城風コーニス
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.92, 0.28, 0.85, 1);
+          writeInst(buf, n++, cx, top - 8, bW, 3, 0.62, 0.22, 0.88, 0.9);
+          // ハート型ネオン
+          writeInst(buf, n++, cx, top + 3, 8, 7, 0.98, 0.35, 0.68, 1, 0, 1);
+          writeInst(buf, n++, cx, top + 3, 5, 4, 0.95, 0.82, 0.90, 0.95, 0, 1);
+          // 城風の屋根装飾 (3 つの塔頂)
+          for (const xOff of [-bW * 0.40, 0, bW * 0.40]) {
+            writeInst(buf, n++, cx + xOff, top + 1, 3, 4, 0.78, 0.32, 0.75, 1);
+            writeInst(buf, n++, cx + xOff, top + 4, 1.5, 3, 0.92, 0.72, 0.32, 1);
+          }
+          // 格子状の小窓 (3×5)
+          for (let j = 0; j < 3; j++) {
+            for (let i = -2; i <= 2; i++) {
+              writeInst(buf, n++, cx + i * bW * 0.18, bot + bH * 0.22 + j * bH * 0.20, 2, 2.5,
+                0.98, 0.85, 0.62, 0.72);
+            }
+          }
+          // 縦ネオン輪郭
+          writeInst(buf, n++, cx - bW * 0.48, cy, 0.8, bH * 0.88, 0.98, 0.35, 0.85, 0.85);
+          writeInst(buf, n++, cx + bW * 0.48, cy, 0.8, bH * 0.88, 0.98, 0.35, 0.85, 0.85);
+          n = this.drawShopSign(buf, n, cx, top, bW, 1, true);
+          // 入口 (低い開口)
+          writeInst(buf, n++, cx, bot + 4, bW * 0.28, 7, 0.18, 0.12, 0.22, 1);
+          break;
+        }
+        case 'business_hotel': {
+          // 白ボディ + 格子窓多数 + 上端ロゴ
+          writeInst(buf, n++, cx, top - 3, bW, 5, 0.92, 0.90, 0.86, 1);
+          // 縦ロゴ (青)
+          writeInst(buf, n++, cx - bW * 0.40, cy, 2.5, bH * 0.72, 0.22, 0.38, 0.68, 1);
+          // 格子窓 (4 列 × 7-8 段)
+          const bhRows = Math.floor(bH / 8);
+          for (let j = 0; j < bhRows; j++) {
+            for (let i = -1.5; i <= 1.5; i += 1) {
+              writeInst(buf, n++, cx + i * bW * 0.22, bot + bH * 0.15 + j * 6, 2.4, 3,
+                0.98, 0.92, 0.68, 0.78);
+            }
+          }
+          // エントランス (ガラス)
+          writeInst(buf, n++, cx, bot + 5, bW * 0.55, 8, 0.62, 0.78, 0.88, 0.72);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 3);
+          // 上端のロゴ帯
+          writeInst(buf, n++, cx + bW * 0.05, top - 6, bW * 0.45, 3, 0.22, 0.38, 0.68, 0.95);
+          break;
+        }
+        case 'mahjong_parlor': {
+          // 緑看板 + 「雀」イメージ + 古い雑居感
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.35, 0.52, 0.32, 1);
+          writeInst(buf, n++, cx, top - 7, bW, 2, 0.92, 0.92, 0.22, 0.92);  // 黄色帯
+          // 縦看板 (濃緑)
+          writeInst(buf, n++, cx - bW * 0.38, cy, 3.5, bH * 0.72, 0.22, 0.42, 0.22, 1);
+          writeInst(buf, n++, cx - bW * 0.38, cy, 2.5, bH * 0.62, 0.95, 0.92, 0.28, 0.95);
+          // 雀卓を思わせるショーウィンドウ (横長)
+          writeInst(buf, n++, cx + bW * 0.08, bot + bH * 0.45, bW * 0.52, bH * 0.28, 0.72, 0.88, 0.72, 0.78);
+          n = this.drawWindowFrame(buf, n, cx + bW * 0.08, bot + bH * 0.45, bW * 0.52, bH * 0.28);
+          // 階段 (2F入口)
+          n = this.drawStairs(buf, n, cx + bW * 0.44, bot + 1, 6);
+          // 古い看板 (赤錆)
+          writeInst(buf, n++, cx, bot + bH * 0.88, bW * 0.65, 2, 0.72, 0.28, 0.18, 1);
+          break;
+        }
+        case 'club': {
+          // 黒ボディ + 金色ネオン + 入口ドアマンライト
+          writeInst(buf, n++, cx, top - 3, bW, 6, 0.12, 0.10, 0.14, 1);
+          writeInst(buf, n++, cx, top - 8, bW, 3, 0.92, 0.72, 0.18, 0.95);  // 金帯
+          // 縦金ネオン
+          writeInst(buf, n++, cx - bW * 0.45, cy, 0.8, bH * 0.82, 0.95, 0.78, 0.22, 0.92);
+          writeInst(buf, n++, cx + bW * 0.45, cy, 0.8, bH * 0.82, 0.95, 0.78, 0.22, 0.92);
+          // VIP ドア (金縁)
+          writeInst(buf, n++, cx, bot + 8, bW * 0.30, 14, 0.72, 0.55, 0.22, 1);
+          writeInst(buf, n++, cx, bot + 8, bW * 0.24, 12, 0.15, 0.10, 0.12, 1);
+          // ドアの両脇のライト (赤)
+          writeInst(buf, n++, cx - bW * 0.22, bot + 4, 1.5, 2, 0.92, 0.22, 0.22, 1, 0, 1);
+          writeInst(buf, n++, cx + bW * 0.22, bot + 4, 1.5, 2, 0.92, 0.22, 0.22, 1, 0, 1);
+          // ロゴ帯 (金)
+          writeInst(buf, n++, cx, top + 2, bW * 0.75, 3, 0.95, 0.82, 0.32, 1);
+          writeInst(buf, n++, cx, top + 2, bW * 0.65, 1.5, 0.15, 0.08, 0.12, 0.95);
+          n = this.drawShopSign(buf, n, cx, top, bW, 2, true);
+          break;
+        }
+        case 'capsule_hotel': {
+          // 横長 + カプセル型丸窓の蜂の巣配列
+          writeInst(buf, n++, cx, top - 3, bW, 5, 0.62, 0.75, 0.88, 1);
+          // 蜂の巣窓 (千鳥配置 3 段)
+          const colsCap = Math.floor(bW / 7);
+          for (let j = 0; j < 3; j++) {
+            const offset = (j % 2) * 3.5;
+            for (let i = 0; i < colsCap; i++) {
+              const rx = cx - bW * 0.46 + offset + i * 7;
+              if (rx > cx + bW * 0.46) break;
+              writeInst(buf, n++, rx, bot + bH * 0.25 + j * bH * 0.22, 3, 3.5,
+                0.92, 0.95, 0.98, 0.78, 0, 1);
+            }
+          }
+          // エントランス
+          writeInst(buf, n++, cx, bot + 5, bW * 0.22, 9, 0.35, 0.52, 0.68, 1);
+          n = this.drawDoorDetail(buf, n, cx, bot, bW, 1);
+          // 上端ロゴ
+          writeInst(buf, n++, cx + bW * 0.30, top - 6, bW * 0.32, 2.5, 0.22, 0.42, 0.68, 0.95);
           break;
         }
       }
