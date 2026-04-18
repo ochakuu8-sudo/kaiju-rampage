@@ -2470,11 +2470,272 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ═══ Act II 以降 (C3-C9) は次セッションで raw 化予定 ═══════════════
-  // 以下は既存 grid + pattern + scene 構成のまま (暫定)
-  { patternId: 't_junction_west',    groundOverride: 'asphalt' },
-  { patternId: 'neon_alley',         groundOverride: 'asphalt' },
-  { patternId: 'dense_alley',        groundOverride: 'tile' },
+  // ═══ Act II: 歓楽街の極み (C3-C5) ════════════════════════════════
+
+  // ── C3: カラオケビル街 — 大型看板 + 高層雑居 ──
+  // 歓楽街の入り口。カラオケと雑居ビルが天を衝き、ネオンが最も派手。
+  { patternId: 's2_raw', raw: {
+    buildings: [
+      // === 上段: カラオケと高層雑居 ===
+      _B('karaoke', -150, 48),                                  // ★ Cell A カラオケ大箱
+      _B('apartment_tall', -110, 60),                           // ★ Cell A 高層アパート
+      _B('karaoke', -55, 48),                                   // ★ Cell B 2 棟目
+      _B('izakaya', -20, 42), _B('bookstore', 10, 42),
+      _B('tower', 55, 65),                                      // ★ Cell C 雑居タワー
+      _B('shop', 95, 42), _B('izakaya', 122, 42),
+      _B('apartment_tall', 165, 60),                            // ★ Cell D 高層アパート
+      // === 下段: ラウンジ・バー ===
+      _B('karaoke', -150, 138),                                 // Cell E 3 棟目
+      _B('izakaya', -110, 132), _B('ramen', -80, 132),
+      _B('office', -18, 152),                                   // Cell F 夜稼ぎのオフィスビル
+      _B('izakaya', 32, 132), _B('karaoke', 68, 138),           // Cell G 4 棟目
+      _B('apartment_tall', 128, 155),                           // Cell H
+      _B('izakaya', 172, 132),
+    ],
+    furniture: [
+      // ─── ★★ シグネチャ: 巨大カラオケ看板の連続 ★★ ───
+      _F('sign_board', -150, 22),                               // Cell A karaoke 大看板
+      _F('sign_board', -55, 22),                                // Cell B karaoke 看板
+      _F('sign_board', 68, 118),                                // Cell G karaoke 看板
+      _F('sign_board', -150, 118),                              // Cell E karaoke 看板
+      _F('banner_pole', -130, 22), _F('banner_pole', 88, 22),
+      // ─── ネオン提灯帯 (上段) ───
+      _F('chouchin', -20, 22), _F('noren', -20, 28),
+      _F('chouchin', 10, 22), _F('chouchin', 95, 22), _F('noren', 95, 28),
+      _F('chouchin', 122, 22), _F('noren', 122, 28),
+      _F('a_frame_sign', 55, 22),                               // タワー 1F 案内
+      // ─── 上段中間 ───
+      _F('kerbside_vending_pair', -80, 72),
+      _F('bicycle_rack', 35, 75), _F('bicycle_rack', 138, 75),
+      _F('dumpster', -180, 72), _F('dumpster', 180, 72),
+      _F('street_mirror', -95, 62),                             // 歓楽街の街角ミラー
+      // ─── 電線 ───
+      _F('power_pole', -175, 92), _F('power_line', -178, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -175, 195), _F('power_line', -178, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 提灯帯 (下段) ───
+      _F('chouchin', -110, 118), _F('noren', -110, 124),
+      _F('chouchin', -80, 118), _F('noren', -80, 124),
+      _F('chouchin', 32, 118), _F('noren', 32, 124),
+      _F('sign_board', -18, 118), _F('sign_board', 128, 118),
+      _F('chouchin', 172, 118), _F('noren', 172, 124),
+      // ─── 下段小物 (夜の路駐) ───
+      _F('bicycle_row', -50, 172), _F('bicycle_row', 100, 172),
+      _F('dumpster', -180, 170), _F('dumpster', 180, 170),
+      _F('car', 10, 172),                                       // 路駐タクシー
+      _F('kerbside_vending_pair', 60, 172),
+      // ─── 水たまり + 街灯 ───
+      _F('puddle_reflection', -85, 75), _F('puddle_reflection', 85, 75),
+      _F('puddle_reflection', -40, 170), _F('puddle_reflection', 50, 170),
+      _F('puddle_reflection', 0, 100),
+      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+    ],
+    humans: [
+      _H(-150, 72), _H(-55, 72),                                // カラオケ客
+      _H(68, 162), _H(-150, 162),
+      _H(55, 88),                                               // タワー雑居帰り
+      _H(-20, 55), _H(95, 55),                                  // 居酒屋客
+      _H(-18, 172),                                             // オフィス残業帰り
+    ],
+    grounds: [
+      _G('asphalt', 0, 46.5, 360, 93),
+      _G('asphalt', 0, 153.5, 360, 93),
+      _G('tile', -100, 65, 140, 45),                            // カラオケ街タイル
+      _G('tile', 60, 75, 60, 30),                               // タワー前
+      _G('tile', -110, 158, 100, 42),                           // カラオケ下段
+      _G('tile', 68, 162, 50, 38),
+      _G('asphalt', 0, 15, 360, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C4: パチンコ街のメイン通り — 交番 + 行列 + ネオン最盛期 ──
+  // Stage 2 の最盛期。密度も彩度も最大。小さな交番が秩序の象徴として混じる。
+  { patternId: 's2_raw', raw: {
+    buildings: [
+      // === 上段: パチンコ列 + ゲーセン + 交番 ===
+      _B('pachinko', -145, 42),                                 // ★ Cell A 1 軒目
+      _B('game_center', -100, 42),
+      _B('pachinko', -55, 42),                                  // ★ Cell B 2 軒目
+      _B('police_station', 0, 50),                              // ★ Cell B/C 交番 (秩序)
+      _B('pachinko', 55, 42),                                   // ★ Cell C 3 軒目
+      _B('movie_theater', 105, 48),                             // Cell D 映画館
+      _B('izakaya', 155, 42), _B('ramen', 178, 42),
+      // === 下段: パチンコ裏口 + 銀行 + ラーメン ===
+      _B('pachinko', -148, 138),                                // ★ Cell E 4 軒目
+      _B('game_center', -108, 132),
+      _B('bank', -55, 140),                                     // Cell F 夜閉まった銀行
+      _B('pachinko', -15, 138),                                 // ★ Cell F 5 軒目
+      _B('ramen', 30, 132), _B('izakaya', 55, 132),
+      _B('game_center', 105, 138),                              // Cell H ゲーセン
+      _B('izakaya', 155, 132), _B('ramen', 178, 132),
+    ],
+    furniture: [
+      // ─── ★★ シグネチャ: パチンコ大看板 5 連 ★★ ───
+      _F('sign_board', -145, 22), _F('sign_board', -55, 22),
+      _F('sign_board', 55, 22),
+      _F('sign_board', -148, 118), _F('sign_board', -15, 118),
+      // ─── 交番の看板 + 赤色灯 ───
+      _F('a_frame_sign', 0, 22),                                // KOBAN 案内板
+      _F('flag_pole', -10, 24), _F('flag_pole', 10, 24),
+      _F('traffic_cone', -15, 75), _F('traffic_cone', 15, 75),  // 交番前のコーン
+      // ─── 上段提灯帯 + 看板 ───
+      _F('banner_pole', -120, 22), _F('banner_pole', 80, 22),
+      _F('chouchin', -100, 22), _F('noren', -100, 28),
+      _F('chouchin', 105, 22), _F('noren', 105, 28),
+      _F('chouchin', 155, 22), _F('noren', 155, 28),
+      _F('chouchin', 178, 22),
+      // ─── 上段小物 (パチンコ出玉) ───
+      _F('bicycle_row', -145, 72), _F('bicycle_row', -55, 72),
+      _F('bicycle_row', 55, 72), _F('dumpster', -175, 72),
+      _F('kerbside_vending_pair', -30, 72), _F('kerbside_vending_pair', 78, 72),
+      _F('milk_crate_stack', 130, 72),
+      // ─── 電線 ───
+      _F('power_pole', -175, 92), _F('power_line', -178, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -175, 195), _F('power_line', -178, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── 下段 facade ───
+      _F('sign_board', -108, 118),                              // ゲーセン看板
+      _F('sign_board', -55, 118),                               // 銀行看板
+      _F('chouchin', 30, 118), _F('noren', 30, 124),
+      _F('chouchin', 55, 118), _F('noren', 55, 124),
+      _F('sign_board', 105, 118),                               // ゲーセン看板
+      _F('chouchin', 155, 118), _F('noren', 155, 124),
+      _F('chouchin', 178, 118),
+      // ─── 下段小物 ───
+      _F('bicycle_row', -148, 172), _F('bicycle_row', -15, 172),
+      _F('bicycle_row', 105, 172),
+      _F('dumpster', -175, 170), _F('dumpster', 175, 170),
+      _F('kerbside_vending_pair', -85, 170),
+      _F('atm', -55, 168),                                       // 銀行前 ATM
+      _F('traffic_cone', 78, 172), _F('traffic_cone', 85, 172),
+      // ─── 水たまり + 街灯 ───
+      _F('puddle_reflection', -125, 72), _F('puddle_reflection', 25, 78),
+      _F('puddle_reflection', 125, 72),
+      _F('puddle_reflection', -130, 170), _F('puddle_reflection', 85, 170),
+      _F('puddle_reflection', 0, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+    ],
+    humans: [
+      _H(-145, 72), _H(-55, 72), _H(55, 72),                    // パチンコ行列 3 箇所
+      _H(-148, 172), _H(-15, 172), _H(105, 172),                // 下段パチンコ
+      _H(0, 72),                                                 // 交番前の警官
+      _H(-100, 55), _H(155, 55),                                 // ゲーセン + 居酒屋客
+      _H(-55, 170),                                              // ATM 利用者
+    ],
+    grounds: [
+      _G('asphalt', 0, 46.5, 360, 93),
+      _G('asphalt', 0, 153.5, 360, 93),
+      _G('tile', -145, 65, 80, 45),                             // パチンコ街タイル
+      _G('tile', 55, 65, 70, 45),
+      _G('tile', 0, 72, 40, 38),                                // 交番前
+      _G('tile', -145, 158, 80, 42),
+      _G('tile', -15, 162, 40, 38),
+      _G('tile', 105, 162, 60, 38),
+      _G('asphalt', 0, 15, 360, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ── C5: 雑居ビル + 飲み屋横丁 — 大人の路地 + 立ち飲みの列 ──
+  // 歓楽街の奥。大型ビルの足元に細く飲み屋がひしめく大人の空間。
+  { patternId: 's2_raw', raw: {
+    buildings: [
+      // === 上段: 雑居ビル + オフィスの壁 ===
+      _B('office', -150, 55),                                   // Cell A 雑居ビル
+      _B('apartment_tall', -112, 60),
+      _B('izakaya', -68, 42), _B('izakaya', -42, 42),           // Cell B 立ち飲み 2 連
+      _B('ramen', -18, 42), _B('izakaya', 5, 42),               // Cell B 連
+      _B('office', 45, 55),                                     // Cell C 雑居ビル
+      _B('bank', 92, 48),                                        // Cell D 夜閉まった銀行
+      _B('apartment_tall', 150, 60),                            // 高層
+      _B('izakaya', 175, 42),
+      // === 下段: 横丁の立ち飲み街 ===
+      _B('izakaya', -165, 132), _B('izakaya', -140, 132),       // Cell E 立ち飲み密集
+      _B('ramen', -115, 132), _B('izakaya', -90, 132),
+      _B('izakaya', -62, 132),                                  // Cell F 連続
+      _B('cafe', -35, 132), _B('izakaya', -10, 132),
+      _B('izakaya', 22, 132), _B('ramen', 48, 132),             // Cell G 連続
+      _B('izakaya', 82, 132),
+      _B('office', 130, 150),                                   // Cell H 雑居ビル
+      _B('izakaya', 172, 132),
+    ],
+    furniture: [
+      // ─── 上段 facade (オフィス壁面 + 飲み屋のれん) ───
+      _F('sign_board', -150, 22), _F('sign_board', 45, 22),     // オフィスビル看板
+      _F('sign_board', 92, 22),                                 // 銀行看板
+      _F('chouchin', -68, 22), _F('chouchin', -42, 22),
+      _F('chouchin', -18, 22), _F('chouchin', 5, 22),
+      _F('noren', -68, 28), _F('noren', -42, 28),
+      _F('noren', -18, 28), _F('noren', 5, 28),
+      _F('chouchin', 175, 22), _F('noren', 175, 28),
+      // ─── 上段 facade 装飾 ───
+      _F('a_frame_sign', -55, 22), _F('a_frame_sign', 170, 22),
+      _F('milk_crate_stack', -55, 72),                          // 立ち飲みのビール箱
+      _F('milk_crate_stack', -5, 72),
+      // ─── 上段中間 ───
+      _F('kerbside_vending_pair', 25, 72),
+      _F('bicycle_rack', -85, 72), _F('bicycle_rack', 115, 72),
+      _F('dumpster', -180, 72),
+      // ─── 電線 ───
+      _F('power_pole', -175, 92), _F('power_line', -178, 88),
+      _F('power_pole', 178, 92), _F('power_line', 175, 88),
+      _F('power_pole', -175, 195), _F('power_line', -178, 192),
+      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      // ─── ★★ シグネチャ: 横丁の提灯列 (下段 facade) ★★ ───
+      // Cell E-G にかけて x=-165 から x=82 まで提灯が連続、横丁の気配
+      _F('chouchin', -165, 118), _F('noren', -165, 124),
+      _F('chouchin', -140, 118), _F('noren', -140, 124),
+      _F('chouchin', -115, 118), _F('chouchin', -90, 118),
+      _F('chouchin', -62, 118), _F('chouchin', -35, 118),
+      _F('chouchin', -10, 118), _F('chouchin', 22, 118),
+      _F('chouchin', 48, 118), _F('chouchin', 82, 118),
+      _F('noren', -115, 124), _F('noren', -62, 124),
+      _F('noren', -10, 124), _F('noren', 48, 124),
+      _F('sign_board', 130, 118),                               // 雑居看板
+      _F('chouchin', 172, 118), _F('noren', 172, 124),
+      // ─── 下段小物 (横丁密度) ───
+      _F('milk_crate_stack', -140, 170),
+      _F('milk_crate_stack', -35, 170),
+      _F('milk_crate_stack', 48, 170),
+      _F('bicycle_row', -95, 172), _F('bicycle_row', 10, 172),
+      _F('bicycle_rack', 100, 172),
+      _F('dumpster', -180, 170), _F('dumpster', 180, 170),
+      _F('kerbside_vending_pair', 150, 170),
+      // ─── 水たまり ───
+      _F('puddle_reflection', -50, 75), _F('puddle_reflection', 60, 75),
+      _F('puddle_reflection', 135, 75),
+      _F('puddle_reflection', -120, 170), _F('puddle_reflection', 35, 170),
+      _F('puddle_reflection', 0, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+    ],
+    humans: [
+      _H(-42, 55), _H(-18, 55), _H(5, 55),                      // 立ち飲み客
+      _H(-140, 152), _H(-90, 152), _H(-35, 152),
+      _H(22, 152), _H(82, 152),                                 // 横丁客多数
+      _H(-150, 82),                                             // オフィス残業帰り
+      _H(130, 172),
+    ],
+    grounds: [
+      _G('asphalt', 0, 46.5, 360, 93),
+      _G('asphalt', 0, 153.5, 360, 93),
+      _G('tile', -55, 60, 80, 42),                              // 立ち飲み列タイル
+      _G('tile', 92, 72, 40, 32),                               // 銀行前
+      _G('tile', -88, 158, 180, 42),                            // 横丁全幅タイル
+      _G('asphalt', 0, 15, 360, 25),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+
+  // ═══ Act III / IV (C6-C9) は次以降で raw 化 ═══════════════════════
   { patternId: 't_junction_east',    groundOverride: 'asphalt' },
   { patternId: 'entertainment_block',groundOverride: 'tile' },
   { patternId: 'neon_alley',         groundOverride: 'asphalt' },
