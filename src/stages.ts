@@ -1728,209 +1728,365 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 9: 町のシンボル神社 — 神社 + 五重塔 + 鳥居参道 + 上端クロス 6 列大密度化 (raw)
+  // ═══ Act IV: 街はずれ (Chunks 9-11) ═══════════════════════════════════
+  // 商店街を抜け、畑と倉庫が広がる郊外。Chunk 11 で踏切を越え Stage 2 (夜の街) へ。
+  // 建物密度を下げ、dirt/puddle/pine_tree で寂寥感。象徴: 野良猫、古い電柱、駐車の軽トラ。
+
+  // ── Chunk 9: 郊外の畑 + 農家 ──
+  // 中左: 農家 (大きめの house) + 納屋 + 温室群
+  // 中右: 畑 (ground=dirt 大きめ) + 温室
+  // 神社ランドマークは Stage 3 (古都) に委ね、Stage 1 から完全撤去
   { patternId: 's1_raw', raw: {
     buildings: [
-      // 下段 前列 (y=22)
-      _B('kominka',-170,22),_B('chaya',-140,22),_B('kominka',-110,22),
-      _B('chaya',-55,22),_B('kominka',-25,22),
-      _B('kominka',25,22),_B('chaya',55,22),
-      _B('kominka',110,22),_B('chaya',140,22),_B('kominka',170,22),
-      // 下段 中列 (y=55)
-      _B('chaya',-170,55),_B('kominka',-140,55),_B('chaya',-110,55),
-      _B('kominka',-55,55),_B('chaya',-20,55),
-      _B('chaya',20,55),_B('kominka',55,55),
-      _B('chaya',110,55),_B('kominka',140,55),_B('chaya',170,55),
-      // 下段 後列 (y=78)
-      _B('temple',-155,77),
-      _B('chaya',-55,80),_B('kominka',-20,81),
-      _B('shrine',35,78),
-      _B('kominka',108,81),_B('chaya',140,80),_B('kominka',175,81),
-      // 上段 前列 (y=125)
-      _B('kominka',-165,125),_B('pagoda',-130,145),
-      _B('shrine',-55,127),_B('kominka',-20,125),
-      _B('ryokan',35,125),
-      _B('kominka',108,125),_B('chaya',140,125),_B('kominka',172,125),
-      // 上段 中列 (y=158)
-      _B('chaya',-170,158),_B('kominka',-140,158),
-      _B('chaya',-55,158),_B('kominka',-20,158),
-      _B('kominka',20,158),_B('chaya',55,158),
-      _B('kominka',110,158),_B('chaya',140,158),_B('kominka',170,158),
-      // 上段 後列 (y=184)
-      _B('kominka',-170,184),_B('chaya',-140,184),_B('kominka',-110,184),
-      _B('chaya',-55,184),_B('kominka',-25,184),
-      _B('kominka',25,184),_B('chaya',55,184),
-      _B('kominka',110,184),_B('chaya',140,184),_B('kominka',170,184),
+      // === Cell A (左上): 農家 + 納屋 ===
+      _B('house', -150, 42),                                 // 農家の母屋
+      _B('shed', -122, 38),                                  // 納屋
+      _B('greenhouse', -148, 78),                            // ビニールハウス
+      // === Cell B (中左上): 畑の真ん中の小屋 + 温室 ===
+      _B('shed', -65, 42),
+      _B('greenhouse', -25, 45),                             // 中央の大温室
+      // === Cell C (中右上): 別の農家 + 物置 ===
+      _B('house', 50, 42),                                   // 2 軒目の農家
+      _B('shed', 80, 40),
+      _B('greenhouse', 55, 78),
+      // === Cell D (右上): 畑 + 温室連続 ===
+      _B('greenhouse', 120, 45),
+      _B('greenhouse', 160, 45),
+      _B('shed', 130, 78),
+
+      // === Cell E (左下): 農家 + ガレージ + 駐車軽トラ ===
+      _B('house', -152, 135),                                // 3 軒目
+      _B('garage', -120, 130),                               // 農機具ガレージ
+      _B('shed', -148, 180),
+      // === Cell F (中左下): 畑のど真ん中 + 小屋 ===
+      _B('shed', -50, 138),
+      _B('greenhouse', -15, 140),
+      _B('shed', -55, 180),
+      // === Cell G (中右下): 小さな倉庫 + 畑 ===
+      _B('garage', 40, 135),
+      _B('greenhouse', 75, 140),
+      _B('shed', 38, 180),
+      // === Cell H (右下): 住宅 + 畑 ===
+      _B('house', 118, 138),
+      _B('greenhouse', 150, 138),
+      _B('shed', 178, 180),
     ],
     furniture: [
-      _F('torii',0,30),_F('torii',0,60),_F('torii',0,85),
-      _F('stone_lantern',-20,45),_F('stone_lantern',20,45),
-      _F('stone_lantern',-20,80),_F('stone_lantern',20,80),
-      _F('koma_inu',-15,60),_F('koma_inu',15,60),
-      _F('sakura_tree',-90,45),_F('sakura_tree',90,45),
-      _F('pine_tree',-175,50),_F('pine_tree',175,50),
-      _F('offering_box',-55,92),_F('shinto_rope',35,60),
-      _F('ema_rack',-55,115),_F('temizuya',-90,150),
-      _F('torii',0,175),_F('stone_lantern',-20,170),_F('stone_lantern',20,170),
-      _F('sakura_tree',-90,170),_F('sakura_tree',90,170),
-      _F('bonsai',-30,115),_F('bonsai',110,115),
-      _F('bamboo_fence',-175,120),_F('bamboo_fence',-175,130),
-      _F('bamboo_fence',175,120),_F('bamboo_fence',175,130),
-      _F('stone_lantern',35,108),_F('stone_lantern',-55,108),
-      _F('street_lamp',-90,100),_F('street_lamp',90,100),
-      _F('street_lamp',-90,195),_F('street_lamp',90,195),
-      _F('traffic_light',-90,190),_F('traffic_light',90,190),
-      // T-13: 神社ランドマーク — 参道石柱 + 絵馬壁 + お御籤 + 朱色玉垣 + 竹筧
-      _F('sando_stone_pillar',-12,50),_F('sando_stone_pillar',12,50),
-      _F('sando_stone_pillar',-12,90),_F('sando_stone_pillar',12,90),
-      _F('ema_wall',-55,140),
-      _F('omikuji_stand',35,150),
-      _F('shrine_fence_red',-145,145),_F('shrine_fence_red',-115,145),
-      _F('shrine_fence_red',-145,170),_F('shrine_fence_red',-115,170),
-      _F('shrine_fence_red',110,145),_F('shrine_fence_red',140,145),
-      _F('bamboo_water_fountain',-90,135),
+      // === Cell A: 農家の庭 ===
+      _F('mailbox', -150, 22), _F('potted_plant', -122, 24),
+      _F('wood_fence', -178, 22),
+      _F('ac_unit', -150, 62),
+      _F('laundry_pole', -122, 62),
+      _F('power_pole', -175, 92),
+      _F('flower_bed', -180, 62),
+      // === Cell B: 畑 (家具で耕作地表現) ===
+      _F('flower_planter_row', -65, 22),                     // 苗プランター列
+      _F('flower_bed', -40, 22),
+      _F('flower_bed', -15, 78),                             // 畑の花壇
+      _F('wood_fence', -75, 62), _F('wood_fence', -8, 62),   // 畑のフェンス
+      // === Cell C: 2 軒目の農家 ===
+      _F('mailbox', 50, 22), _F('potted_plant', 80, 24),
+      _F('wood_fence', 30, 62),
+      _F('ac_unit', 50, 62),
+      _F('flower_planter_row', 78, 62),
+      // === Cell D: 温室群 + ビニールハウス ===
+      _F('pine_tree', 180, 60),                              // ★ 街路樹 (郊外らしい pine)
+      _F('flower_bed', 135, 22),
+      _F('puddle_reflection', 145, 90),                      // 畑の水たまり
+      _F('power_pole', 178, 92),
+
+      // === Cell E: 農家 + 軽トラ ===
+      _F('mailbox', -152, 112), _F('potted_plant', -140, 115),
+      _F('car', -120, 168),                                  // 軽トラ (駐車)
+      _F('flower_bed', -180, 155),
+      _F('wood_fence', -178, 112),
+      _F('power_pole', -175, 195),
+      // === Cell F: 畑の大きな水たまり + 鳥よけ ===
+      _F('puddle_reflection', -35, 100),                     // 畑の水たまり (大)
+      _F('puddle_reflection', -65, 168),
+      _F('flower_planter_row', -50, 112),                    // 苗プランター
+      _F('flower_bed', -15, 170),
+      _F('wood_fence', -75, 150), _F('wood_fence', -8, 150),
+      _F('cat', -35, 195),                                   // ★ 野良猫 (畑の主)
+      // === Cell G: 倉庫 + 農機具 + 温室 ===
+      _F('wood_fence', 22, 150), _F('wood_fence', 58, 150),
+      _F('flower_bed', 58, 112),
+      _F('potted_plant', 40, 115),
+      _F('cable_junction_box', 42, 155),                     // 温室のコントローラ
+      // === Cell H: 住宅 + 温室 + 電柱 ===
+      _F('mailbox', 118, 112), _F('potted_plant', 130, 115),
+      _F('flower_bed', 178, 115),
+      _F('pine_tree', 175, 155),                             // ★ 郊外の松
+      _F('puddle_reflection', 155, 160),
+      _F('power_pole', 178, 195),
+      // === 主要通り (x=0) 過疎の静けさ ===
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('power_line', -90, 45), _F('power_line', -90, 155),
+      _F('power_line', 90, 45), _F('power_line', 90, 155),
+      _F('manhole_cover', 0, 100),                           // 1 個だけ (郊外は舗装少ない)
+      _F('guardrail_short', -30, 100), _F('guardrail_short', 30, 100),
     ],
-    humans: [_H(-155,92),_H(-55,92),_H(0,70),_H(35,92),_H(130,92),_H(-130,115),_H(-55,115),_H(35,115),_H(130,115),_H(0,175),_H(-170,60),_H(170,60)],
+    humans: [
+      _H(-150, 55),                                          // 農家の住人
+      _H(-50, 62),                                           // 畑仕事
+      _H(50, 55),                                            // 2 軒目の農家
+      _H(-152, 150),                                         // 3 軒目の住人
+      _H(40, 152),                                           // 畑作業
+      _H(118, 155),                                          // 住宅
+      _H(0, 60), _H(0, 160),                                 // 主要通り (疎)
+    ],
     grounds: [
-      _G('grass',0,46.5,360,93),_G('stone_pavement',0,46.5,80,93),
-      _G('gravel',0,46.5,40,93),
-      _G('dirt',-130,140,40,50),
-      _G('stone_pavement',0,153.5,360,93),_G('gravel',0,153.5,40,93),
-      _G('grass',-175,153.5,30,93),_G('grass',175,153.5,30,93),
-    ],
-    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
-  } },
-  // 10: 町家密集 — 消防署と警察署 + 町家連続 6 列大密度化 (raw)
-  { patternId: 's1_raw', raw: {
-    buildings: [
-      // 下段 前列 (y=22)
-      _B('townhouse',-170,22),_B('townhouse',-145,22),_B('townhouse',-120,22),
-      _B('townhouse',-55,22),_B('kominka',-25,22),
-      _B('kominka',25,22),_B('townhouse',55,22),
-      _B('townhouse',105,22),_B('townhouse',130,22),_B('townhouse',155,22),_B('townhouse',178,22),
-      // 下段 中列 (y=55)
-      _B('kominka',-170,55),_B('townhouse',-140,55),_B('townhouse',-115,55),
-      _B('townhouse',-55,55),_B('kominka',-20,55),
-      _B('kominka',20,55),_B('townhouse',55,55),
-      _B('townhouse',110,55),_B('townhouse',135,55),_B('kominka',170,55),
-      // 下段 後列 (y=82)
-      _B('townhouse',-165,82),_B('townhouse',-140,82),_B('townhouse',-115,82),
-      _B('fire_station',-45,78),
-      _B('mansion',35,79),
-      _B('police_station',115,77),_B('townhouse',155,82),_B('townhouse',178,82),
-      // 上段 前列 (y=125)
-      _B('townhouse',-165,125),_B('townhouse',-140,125),_B('townhouse',-115,125),
-      _B('kominka',-60,124),_B('townhouse',-25,125),
-      _B('mansion',35,127),
-      _B('townhouse',105,125),_B('townhouse',130,125),_B('townhouse',155,125),_B('townhouse',178,125),
-      // 上段 中列 (y=158)
-      _B('kominka',-170,158),_B('townhouse',-140,158),_B('townhouse',-115,158),
-      _B('townhouse',-55,158),_B('kominka',-20,158),
-      _B('kominka',20,158),_B('townhouse',55,158),
-      _B('townhouse',110,158),_B('townhouse',135,158),_B('kominka',170,158),
-      // 上段 後列 (y=184)
-      _B('townhouse',-170,184),_B('townhouse',-145,184),_B('townhouse',-120,184),
-      _B('townhouse',-55,184),_B('kominka',-25,184),
-      _B('kominka',25,184),_B('townhouse',55,184),
-      _B('townhouse',105,184),_B('townhouse',130,184),_B('townhouse',155,184),_B('townhouse',178,184),
-    ],
-    furniture: [
-      _F('wood_fence',-130,92),_F('wood_fence',-100,92),_F('potted_plant',-165,92),
-      _F('post_box',-45,92),_F('flag_pole',-45,60),
-      _F('chouchin',35,92),_F('noren',35,95),
-      _F('post_box',115,92),_F('flag_pole',115,60),_F('bench',115,90),
-      _F('wood_fence',155,92),_F('wood_fence',178,92),
-      _F('potted_plant',-165,115),_F('potted_plant',-140,115),_F('potted_plant',-115,115),
-      _F('chouchin',-60,115),_F('noren',-25,115),
-      _F('banner_pole',35,145),
-      _F('potted_plant',105,115),_F('potted_plant',130,115),_F('potted_plant',155,115),_F('potted_plant',178,115),
-      _F('tree',-90,45),_F('tree',90,45),_F('tree',-90,170),_F('tree',90,170),
-      _F('street_lamp',-90,100),_F('street_lamp',90,100),
-      _F('fire_extinguisher',-45,95),_F('bicycle_rack',115,92),
-      // T-14: 町家密集 — 物干し + 小物 + マンホール
-      _F('laundry_balcony',-140,125),_F('laundry_balcony',-55,125),
-      _F('laundry_balcony',105,125),_F('laundry_balcony',155,125),
-      _F('manhole_cover',-90,100),_F('manhole_cover',0,100),_F('manhole_cover',90,100),
-      _F('post_letter_box',-45,92),_F('post_letter_box',115,92),
-      _F('potted_plant',-115,60),_F('potted_plant',55,60),_F('potted_plant',-55,55),
-      _F('flower_planter_row',-140,170),_F('flower_planter_row',55,170),
-    ],
-    humans: [_H(-130,92),_H(-45,85),_H(35,92),_H(115,85),_H(-130,115),_H(-60,115),_H(-25,115),_H(35,115),_H(120,115),_H(160,115),_H(0,50),_H(0,170)],
-    grounds: [
-      _G('concrete',0,46.5,360,93),_G('grass',0,153.5,360,93),
-      _G('concrete',-45,80,40,25),_G('concrete',115,80,40,25),
-      _G('concrete',35,78,40,25),
-      _G('concrete',0,153.5,360,20),_G('concrete',0,153.5,360,93),
-      _G('dirt',-150,170,50,30),_G('dirt',160,170,40,30),
-      _G('grass',-60,180,30,25),_G('grass',60,180,30,25),
+      _G('grass', 0, 46.5, 360, 93),
+      _G('dirt', -50, 60, 80, 50),                           // 中央の大畑 (土)
+      _G('dirt', 120, 60, 80, 50),                           // 右の畑
+      _G('grass', 0, 153.5, 360, 93),
+      _G('dirt', -50, 160, 80, 50),                          // 下段の畑
+      _G('dirt', 40, 160, 80, 50),                           // 下段右の畑
+      _G('dirt', 155, 168, 50, 40),
+      _G('dirt', 0, 15, 120, 25), _G('dirt', 0, 188, 120, 20),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
-  // 11: Stage 2 への橋渡し — 夜営業のガソスタ・パチンコでネオン予感 6 列大密度化 (raw)
+  // ── Chunk 10: 郊外倉庫 + 消防分署 ──
+  // 中左: 大きな倉庫 ★ (Act IV のシンボル、Stage 4 港湾倉庫とは別格)
+  // 中右: 消防分署 (fire_station) — 郊外に不可欠な施設
+  // 下段: 警察派出所 + 古い住宅 + ガレージ連続 (寂寥)
   { patternId: 's1_raw', raw: {
     buildings: [
-      // 下段 前列 (y=22)
-      _B('ramen',-170,22),_B('izakaya',-140,22),_B('ramen',-110,22),
-      _B('izakaya',-55,22),_B('ramen',-25,22),
-      _B('ramen',25,22),_B('izakaya',55,22),
-      _B('izakaya',110,22),_B('ramen',140,22),_B('izakaya',170,22),
-      // 下段 中列 (y=55)
-      _B('ramen',-170,55),_B('izakaya',-140,55),_B('convenience',-110,55),
-      _B('karaoke',-55,55),_B('ramen',-20,55),
-      _B('ramen',20,55),_B('karaoke',55,55),
-      _B('convenience',110,55),_B('izakaya',140,55),_B('ramen',170,55),
-      // 下段 後列 (y=80)
-      _B('ramen',-165,80),_B('izakaya',-140,79),_B('gas_station',-115,83),
-      _B('pachinko',-50,78),
-      _B('karaoke',30,78),_B('convenience',75,82),
-      _B('izakaya',108,79),_B('gas_station',145,83),_B('convenience',175,82),
-      // 上段 前列 (y=125)
-      _B('izakaya',-165,125),_B('ramen',-140,125),_B('convenience',-110,127),
-      _B('karaoke',-55,127),_B('ramen',-20,125),
-      _B('pachinko',35,127),
-      _B('ramen',108,125),_B('izakaya',140,125),_B('convenience',175,127),
-      // 上段 中列 (y=158)
-      _B('ramen',-170,158),_B('izakaya',-140,158),_B('ramen',-110,158),
-      _B('izakaya',-55,158),_B('karaoke',-20,158),
-      _B('karaoke',20,158),_B('izakaya',55,158),
-      _B('ramen',110,158),_B('izakaya',140,158),_B('ramen',170,158),
-      // 上段 後列 (y=184)
-      _B('izakaya',-170,184),_B('ramen',-140,184),_B('izakaya',-110,184),
-      _B('ramen',-55,184),_B('izakaya',-25,184),
-      _B('izakaya',25,184),_B('ramen',55,184),
-      _B('izakaya',110,184),_B('ramen',140,184),_B('izakaya',170,184),
+      // === Cell A (左上): 住宅 + 納屋 ===
+      _B('house', -152, 40),
+      _B('shed', -120, 38),
+      _B('greenhouse', -150, 78),
+      // === Cell B (中左上): 大きな倉庫 ★ (Act IV ランドマーク、warehouse 40x36) ===
+      _B('warehouse', -30, 48),                              // ★ 郊外の大きな倉庫
+      // === Cell C (中右上): 消防分署 + 訓練場 ===
+      _B('fire_station', 60, 48),                            // 郊外の消防分署
+      _B('shed', 95, 38),
+      // === Cell D (右上): 住宅 + 古いガレージ ===
+      _B('house', 138, 40),
+      _B('garage', 170, 40),
+      _B('shed', 140, 78),
+
+      // === Cell E (左下): 住宅 + ガレージ (古い住宅) ===
+      _B('townhouse', -155, 130),
+      _B('house', -125, 135),
+      _B('garage', -150, 180),
+      _B('shed', -120, 180),
+      // === Cell F (中左下): 警察派出所 + 住宅 ===
+      _B('police_station', -35, 132),                        // 郊外の派出所
+      _B('townhouse', -5, 138),
+      _B('shed', -55, 180),
+      // === Cell G (中右下): 倉庫 2 連 ===
+      _B('garage', 45, 132),
+      _B('garage', 75, 135),
+      _B('shed', 60, 180),
+      // === Cell H (右下): 住宅 + 空き地風 ===
+      _B('townhouse', 118, 132),
+      _B('house', 148, 135),
+      _B('shed', 178, 138),
+      _B('garage', 120, 180),
     ],
     furniture: [
-      _F('chouchin',-165,92),_F('noren',-140,92),_F('sign_board',-115,92),
-      _F('chouchin',-50,92),_F('vending',-85,90),
-      _F('chouchin',30,92),_F('sign_board',75,92),
-      _F('chouchin',108,92),_F('sign_board',145,92),_F('vending',175,90),
-      _F('chouchin',-165,115),_F('noren',-140,115),_F('sign_board',-110,115),
-      _F('chouchin',-55,115),_F('noren',-20,115),
-      _F('chouchin',35,115),_F('banner_pole',35,145),
-      _F('chouchin',108,115),_F('noren',140,115),_F('sign_board',175,115),
-      _F('traffic_cone',-115,95),_F('traffic_cone',145,95),
-      _F('dumpster',0,50),_F('dumpster',0,160),
-      _F('street_lamp',-90,100),_F('street_lamp',90,100),
-      _F('telephone_booth',-85,155),_F('telephone_booth',85,50),
-      _F('garbage',-170,170),_F('garbage',170,170),
-      // T-14: Stage 2 への橋渡し — 踏切 + 信号塔 + 反射水たまり + 電線
-      _F('railroad_crossing',0,95),
-      _F('signal_tower',-150,95),_F('signal_tower',150,95),
-      _F('puddle_reflection',-45,100),_F('puddle_reflection',45,100),
-      _F('puddle_reflection',-90,160),_F('puddle_reflection',90,160),
-      _F('cable_junction_box',-170,45),_F('cable_junction_box',170,45),
-      _F('cable_junction_box',-170,155),_F('cable_junction_box',170,155),
-      _F('power_line',-90,45),_F('power_line',-90,155),
-      _F('power_line',90,45),_F('power_line',90,155),
+      // === Cell A: 住宅 + 納屋 ===
+      _F('mailbox', -152, 22), _F('potted_plant', -120, 24),
+      _F('wood_fence', -178, 22),
+      _F('ac_unit', -152, 62),
+      _F('laundry_pole', -120, 62),
+      _F('power_pole', -175, 92),
+      // === Cell B: 倉庫の前 (ローディングヤード) ===
+      _F('sign_board', -55, 22),                             // 倉庫名看板
+      _F('dumpster', -10, 22),                               // ごみ箱
+      _F('milk_crate_stack', -50, 72),                       // 搬入用クレート
+      _F('car', -5, 72),                                     // 搬入トラック
+      _F('puddle_reflection', -30, 90),                      // アスファルトの水たまり
+      _F('cable_junction_box', 5, 75),                       // 倉庫の配電
+      // === Cell C: 消防分署 + 訓練場 ===
+      _F('flag_pole', 60, 22),                               // 国旗ポール
+      _F('sign_board', 78, 22),                              // 署名看板
+      _F('fire_extinguisher', 50, 62),                       // 消火器
+      _F('fire_extinguisher', 70, 62),
+      _F('wood_fence', 95, 62),
+      // === Cell D: 住宅 + ガレージ ===
+      _F('mailbox', 138, 22), _F('potted_plant', 148, 24),
+      _F('car', 170, 22),                                    // 駐車
+      _F('pine_tree', 178, 60),                              // ★ 郊外の松
+      _F('power_pole', 178, 92),
+
+      // === Cell E: 古い住宅 + ガレージ ===
+      _F('mailbox', -155, 112), _F('potted_plant', -125, 115),
+      _F('wood_fence', -178, 112), _F('wood_fence', -178, 150),
+      _F('laundry_balcony', -125, 150),
+      _F('car', -148, 168),                                  // 古い軽自動車
+      _F('power_pole', -175, 195),
+      // === Cell F: 派出所 + 住宅 ===
+      _F('flag_pole', -35, 112),                             // 派出所の国旗
+      _F('sign_board', -55, 112),
+      _F('bench', -20, 152),
+      _F('potted_plant', -5, 115),
+      _F('puddle_reflection', -35, 168),
+      _F('cat', -50, 195),                                   // ★ 野良猫 (派出所裏)
+      // === Cell G: 倉庫 2 連 (大ぐさり) ===
+      _F('sign_board', 45, 112),
+      _F('milk_crate_stack', 60, 152),                       // 搬入用クレート
+      _F('dumpster', 80, 168),
+      _F('cable_junction_box', 75, 155),
+      _F('pine_tree', 90, 195),                              // ★ 郊外の松
+      // === Cell H: 住宅 + 空き地 ===
+      _F('mailbox', 118, 112), _F('potted_plant', 148, 115),
+      _F('puddle_reflection', 148, 158),                     // 空き地の水たまり
+      _F('wood_fence', 178, 150),
+      _F('power_pole', 175, 195),
+      // === 主要通り (x=0) 寂寥・疎 ===
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('traffic_light', 90, 92),                           // 郊外の信号 (片側)
+      _F('power_line', -90, 45), _F('power_line', -90, 155),
+      _F('power_line', 90, 45), _F('power_line', 90, 155),
+      _F('manhole_cover', 0, 100),
+      _F('guardrail_short', -30, 100), _F('guardrail_short', 30, 100),
     ],
-    humans: [_H(-145,92),_H(-50,92),_H(30,92),_H(120,92),_H(-140,115),_H(-55,115),_H(-20,115),_H(35,115),_H(120,115),_H(170,115),_H(0,60),_H(0,170)],
+    humans: [
+      _H(-50, 72),                                           // 倉庫作業員
+      _H(-10, 62), _H(5, 72),                                // 搬入員
+      _H(60, 62), _H(78, 62),                                // 消防隊員
+      _H(138, 55),                                           // 住宅
+      _H(-35, 148), _H(-20, 155),                            // 派出所の警官 + 来訪者
+      _H(60, 152),                                           // 倉庫
+      _H(0, 60), _H(0, 160),                                 // 主要通り (疎)
+    ],
     grounds: [
-      _G('asphalt',0,46.5,360,93),_G('asphalt',0,153.5,360,93),
-      _G('concrete',-115,80,40,25),_G('concrete',145,80,40,25),
-      _G('tile',-50,77,35,30),_G('tile',30,77,30,30),
-      _G('tile',-55,128,35,33),_G('tile',35,128,35,33),
-      _G('concrete',75,82,30,20),_G('concrete',175,127,30,30),
+      _G('asphalt', 0, 46.5, 360, 93),                       // 倉庫前アスファルト
+      _G('asphalt', 0, 153.5, 360, 93),
+      _G('concrete', -30, 60, 55, 45),                       // 倉庫前ローディング
+      _G('concrete', 60, 60, 50, 45),                        // 消防署前
+      _G('concrete', -35, 140, 50, 40),                      // 派出所前
+      _G('dirt', 60, 155, 50, 50),                           // 倉庫裏の土
+      _G('grass', -60, 180, 40, 25),
+      _G('asphalt', 0, 15, 120, 25), _G('asphalt', 0, 188, 120, 20),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+  } },
+  // ── Chunk 11: 踏切 + Stage 2 (繁華街・夜) への handoff ──
+  // 中央: 踏切 + 信号塔 (ランドマーク) — 街の終わり、夜の入口
+  // 下段: 深夜営業の gas_station + convenience + ramen (夜の灯り予感)
+  // 寂寥感: puddle_reflection 多め、pine_tree、古いガレージ
+  { patternId: 's1_raw', raw: {
+    buildings: [
+      // === Cell A (左上): 倉庫 + 古い住宅 ===
+      _B('garage', -150, 42),
+      _B('townhouse', -118, 40),
+      _B('shed', -150, 78),
+      // === Cell B (中左上): 深夜ガソスタ ===
+      _B('gas_station', -50, 42),                            // 夜営業 (ネオン予感)
+      // === Cell C (中右上): 24 時間コンビニ + ラーメン ===
+      _B('convenience', 45, 42),
+      _B('ramen', 80, 42),                                   // 夜食のラーメン
+      // === Cell D (右上): 古い住宅 + ガレージ ===
+      _B('townhouse', 138, 40),
+      _B('garage', 170, 42),
+      _B('shed', 140, 78),
+
+      // === Cell E (左下): 住宅 + 物置 ===
+      _B('townhouse', -155, 132),
+      _B('house', -125, 135),
+      _B('garage', -148, 180),
+      _B('shed', -118, 180),
+      // === Cell F (中左下): 夜ラーメン + 古いガレージ ===
+      _B('ramen', -45, 135),                                 // 夜の ramen
+      _B('garage', -10, 132),
+      _B('shed', -50, 180),
+      // === Cell G (中右下): 2 軒目のコンビニ (夜) + 住宅 ===
+      _B('convenience', 45, 135),
+      _B('townhouse', 78, 138),
+      _B('shed', 45, 180),
+      // === Cell H (右下): 住宅 + ガレージ + 空き地 ===
+      _B('house', 118, 135),
+      _B('garage', 148, 138),
+      _B('shed', 175, 180),
+    ],
+    furniture: [
+      // === Cell A: 倉庫 + 住宅 ===
+      _F('sign_board', -152, 22),
+      _F('mailbox', -118, 22),
+      _F('dumpster', -132, 62),
+      _F('ac_unit', -118, 62),
+      _F('puddle_reflection', -152, 75),
+      _F('power_pole', -175, 92),
+      // === Cell B: 深夜ガソスタ (ネオン看板の予感) ===
+      _F('sign_board', -70, 22),                             // ガソスタ看板
+      _F('sign_board', -30, 22),
+      _F('chouchin', -50, 28),                               // 提灯 (夜の灯り)
+      _F('vending', -70, 72),
+      _F('traffic_cone', -60, 72), _F('traffic_cone', -40, 72),
+      _F('puddle_reflection', -50, 72),
+      // === Cell C: コンビニ + ラーメン (夜の灯り) ===
+      _F('a_frame_sign', 30, 22),
+      _F('chouchin', 80, 22),
+      _F('noren', 80, 28),
+      _F('vending', 30, 72),
+      _F('bicycle_rack', 62, 62),
+      _F('dumpster', 62, 72),
+      _F('puddle_reflection', 50, 72),
+      // === Cell D: 古い住宅 ===
+      _F('mailbox', 138, 22),
+      _F('car', 170, 22),                                    // 古い車
+      _F('pine_tree', 178, 60),                              // ★ 郊外の松 (Stage 2 への目印)
+      _F('power_pole', 178, 92),
+
+      // === Cell E: 古い住宅群 ===
+      _F('mailbox', -155, 112), _F('potted_plant', -125, 115),
+      _F('wood_fence', -178, 112),
+      _F('laundry_balcony', -125, 150),
+      _F('car', -148, 168),
+      _F('puddle_reflection', -158, 165),
+      _F('power_pole', -175, 195),
+      // === Cell F: 夜ラーメン ===
+      _F('chouchin', -45, 112),
+      _F('noren', -45, 118),
+      _F('dumpster', -60, 168),
+      _F('vending', -10, 152),
+      _F('ac_outdoor_cluster', -45, 152),
+      _F('puddle_reflection', -30, 168),
+      _F('cat', -65, 195),                                   // ★ 野良猫 (夜の店裏)
+      // === Cell G: コンビニ + 住宅 ===
+      _F('a_frame_sign', 30, 112),
+      _F('vending', 60, 152),
+      _F('mailbox', 78, 112), _F('potted_plant', 88, 115),
+      _F('puddle_reflection', 55, 168),
+      // === Cell H: 住宅 + 空き地 ===
+      _F('mailbox', 118, 112),
+      _F('potted_plant', 130, 115),
+      _F('wood_fence', 178, 150),
+      _F('pine_tree', 175, 168),                             // ★ 郊外の松
+      _F('power_pole', 178, 195),
+      // === 踏切 + 信号塔 (Stage 2 への handoff ランドマーク、不変) ===
+      _F('railroad_crossing', 0, 95),                        // ★★ 踏切 (Stage 2 handoff)
+      _F('signal_tower', -150, 95), _F('signal_tower', 150, 95),
+      _F('power_line', -90, 45), _F('power_line', -90, 155),
+      _F('power_line', 90, 45), _F('power_line', 90, 155),
+      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
+      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      _F('puddle_reflection', -45, 100), _F('puddle_reflection', 45, 100),
+      _F('traffic_cone', -30, 100), _F('traffic_cone', 30, 100),
+      _F('manhole_cover', 0, 100),
+      _F('telephone_booth', -85, 155),                       // 深夜の公衆電話
+    ],
+    humans: [
+      _H(-50, 55),                                           // ガソスタ店員
+      _H(45, 55), _H(80, 55),                                // コンビニ + ラーメン客
+      _H(-45, 152), _H(-60, 158),                            // 夜ラーメン客
+      _H(45, 152),                                           // 深夜コンビニ
+      _H(0, 60), _H(0, 160),                                 // 踏切前の通行人 (疎)
+    ],
+    grounds: [
+      _G('asphalt', 0, 46.5, 360, 93),
+      _G('asphalt', 0, 153.5, 360, 93),
+      _G('concrete', -50, 60, 50, 45),                       // ガソスタ
+      _G('tile', 45, 55, 30, 45),                            // コンビニ前
+      _G('tile', 80, 55, 25, 45),                            // ラーメン前
+      _G('concrete', 170, 60, 35, 45),                       // ガレージ前
+      _G('tile', -45, 148, 30, 42),                          // ラーメン前
+      _G('tile', 45, 148, 30, 42),                           // コンビニ前
+      _G('asphalt', 0, 15, 120, 25), _G('asphalt', 0, 188, 120, 20),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
