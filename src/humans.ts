@@ -317,53 +317,102 @@ export function getHumanWeightsForBuilding(size: string): readonly number[] | un
 // バリエーションを決定する。シルエットレベルで違って見えるよう、
 // 体型 (太さ/高さ) と髪型 (短髪/ボブ/ポニテ/坊主) も個別化。
 
-// シャツ/ズボン/カバンの RGB 乗算テーブル (大胆に振る、0.55〜1.40)
-// kind の「制服らしさ」が消えないよう、「明度反転型」は弱めに
+// ═══ シャツ/ズボン tint: 16 エントリ (0.55〜1.55 大胆レンジ) ═══
+// 白ベース (シェフ・医者) には強く染まり、濃色にも色味変化が十分に出る
 const TINT_TABLE: ReadonlyArray<readonly [number, number, number]> = [
   [1.00, 1.00, 1.00],  // 0: 標準
-  [0.62, 0.62, 0.62],  // 1: かなり暗い
-  [1.35, 1.35, 1.35],  // 2: かなり明るい
-  [1.35, 0.80, 0.65],  // 3: 赤み強め
-  [0.65, 0.85, 1.40],  // 4: 青み強め
-  [0.70, 1.40, 0.70],  // 5: 緑強め
-  [1.35, 1.20, 0.55],  // 6: 黄金/マスタード
-  [1.25, 0.65, 1.30],  // 7: マゼンタ/紫
+  [0.55, 0.55, 0.55],  // 1: 超暗
+  [1.50, 1.50, 1.50],  // 2: 超明
+  [0.80, 0.80, 0.82],  // 3: やや暗
+  [1.25, 1.25, 1.25],  // 4: やや明
+  [1.50, 0.75, 0.60],  // 5: 赤強
+  [1.20, 0.90, 0.85],  // 6: 赤弱
+  [0.55, 0.80, 1.55],  // 7: 青強
+  [0.85, 0.95, 1.30],  // 8: 青弱
+  [0.60, 1.55, 0.60],  // 9: 緑強
+  [0.90, 1.30, 0.90],  // 10: 緑弱
+  [1.55, 1.35, 0.50],  // 11: 金/マスタード
+  [1.30, 0.60, 1.40],  // 12: マゼンタ
+  [0.70, 1.25, 1.40],  // 13: シアン
+  [1.45, 1.15, 0.85],  // 14: ピーチ
+  [0.80, 0.70, 1.35],  // 15: ラベンダー
 ];
 
-// 髪色パレット: 8 段階、漆黒〜白髪・赤毛まで (個性を強調)
+// ═══ 髪色パレット: 16 段階 (漆黒 → 奇抜な色まで) ═══
 const HAIR_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
   [0.05, 0.04, 0.03],  // 0: 漆黒
-  [0.18, 0.12, 0.06],  // 1: 濃茶
-  [0.38, 0.22, 0.10],  // 2: 茶
-  [0.62, 0.42, 0.22],  // 3: 明るい茶
-  [0.88, 0.72, 0.32],  // 4: 金髪
-  [0.85, 0.82, 0.78],  // 5: アッシュ/銀髪
-  [0.78, 0.25, 0.18],  // 6: 赤毛
-  [0.92, 0.92, 0.90],  // 7: 白髪
+  [0.10, 0.08, 0.05],  // 1: ほぼ黒
+  [0.18, 0.12, 0.06],  // 2: 濃茶
+  [0.28, 0.18, 0.08],  // 3: 濃茶2
+  [0.38, 0.22, 0.10],  // 4: 茶
+  [0.52, 0.32, 0.14],  // 5: 中茶
+  [0.68, 0.46, 0.22],  // 6: 明茶
+  [0.88, 0.72, 0.32],  // 7: 金髪
+  [0.92, 0.85, 0.55],  // 8: プラチナ
+  [0.85, 0.82, 0.78],  // 9: アッシュ/銀
+  [0.92, 0.92, 0.90],  // 10: 白髪
+  [0.78, 0.25, 0.18],  // 11: 赤毛
+  [0.62, 0.15, 0.38],  // 12: ワインレッド
+  [0.92, 0.55, 0.75],  // 13: ピンク (奇抜)
+  [0.45, 0.72, 0.92],  // 14: 水色 (奇抜)
+  [0.60, 0.35, 0.82],  // 15: 紫 (奇抜)
 ];
 
-// 肌色パレット: 4 段階
+// ═══ 肌色パレット: 8 段階 ═══
 const SKIN_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
-  [0.98, 0.88, 0.78],  // 0: 明
-  [0.95, 0.78, 0.62],  // 1: 標準
-  [0.82, 0.62, 0.45],  // 2: 日焼け
-  [0.58, 0.42, 0.30],  // 3: 濃
+  [0.99, 0.92, 0.85],  // 0: 白い
+  [0.98, 0.88, 0.78],  // 1: 明
+  [0.95, 0.82, 0.68],  // 2: やや明
+  [0.92, 0.75, 0.58],  // 3: 標準
+  [0.88, 0.68, 0.48],  // 4: 小麦
+  [0.78, 0.58, 0.40],  // 5: 日焼け
+  [0.62, 0.45, 0.32],  // 6: 褐色
+  [0.42, 0.30, 0.22],  // 7: 濃
 ];
 
-// 靴色パレット: 6 段階
+// ═══ 靴色パレット: 12 色 ═══
 const SHOE_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
-  [0.08, 0.06, 0.05],  // 0: 黒 (革靴)
-  [0.22, 0.14, 0.08],  // 1: 濃茶
-  [0.45, 0.32, 0.18],  // 2: ブラウン
-  [0.92, 0.92, 0.88],  // 3: 白 (スニーカー)
-  [0.82, 0.22, 0.20],  // 4: 赤いスニーカー
-  [0.20, 0.45, 0.82],  // 5: 青いスニーカー
+  [0.08, 0.06, 0.05],  // 0: 黒革靴
+  [0.15, 0.10, 0.06],  // 1: 焦茶
+  [0.22, 0.14, 0.08],  // 2: 濃茶
+  [0.38, 0.26, 0.14],  // 3: ミディアムブラウン
+  [0.55, 0.40, 0.25],  // 4: タン
+  [0.92, 0.92, 0.88],  // 5: 白スニーカー
+  [0.82, 0.22, 0.20],  // 6: 赤スニーカー
+  [0.20, 0.45, 0.82],  // 7: 青スニーカー
+  [0.25, 0.78, 0.42],  // 8: 緑スニーカー
+  [0.92, 0.78, 0.20],  // 9: 黄色スニーカー
+  [0.85, 0.40, 0.72],  // 10: ピンクスニーカー
+  [0.45, 0.35, 0.55],  // 11: 紫
 ];
 
-// 体幅倍率 (横) — 細身〜ふくよか
-const WIDTH_FACTORS = [0.80, 0.90, 1.00, 1.10, 1.20, 1.30] as const;
-// 身長倍率 (縦) — チビ〜ノッポ
-const HEIGHT_FACTORS = [0.82, 0.92, 1.00, 1.08, 1.18] as const;
+// ═══ 帽子 tint: 4 段階 (kind 固有の帽子色に乗算) ═══
+const HAT_TINT: ReadonlyArray<readonly [number, number, number]> = [
+  [1.00, 1.00, 1.00], [0.85, 0.90, 1.00],
+  [1.05, 0.95, 0.85], [0.75, 0.75, 0.75],
+];
+
+// ═══ カバン独立色: 8 色 (kind.bag を完全置換する確率あり) ═══
+const BAG_PALETTE: ReadonlyArray<readonly [number, number, number]> = [
+  [0.55, 0.35, 0.18],  // 0: 茶革
+  [0.15, 0.12, 0.10],  // 1: 黒
+  [0.82, 0.22, 0.25],  // 2: 赤
+  [0.25, 0.40, 0.75],  // 3: 青
+  [0.72, 0.68, 0.62],  // 4: ベージュ
+  [0.88, 0.65, 0.82],  // 5: ピンク
+  [0.42, 0.65, 0.32],  // 6: 緑
+  [0.78, 0.72, 0.22],  // 7: マスタード
+];
+
+// ═══ アクセント tint: 4 段階 ═══
+const ACCENT_TINT: ReadonlyArray<readonly [number, number, number]> = [
+  [1.00, 1.00, 1.00], [0.75, 0.85, 1.05],
+  [1.10, 0.90, 0.80], [1.15, 1.15, 0.85],
+];
+
+// ═══ 体型倍率 (拡張) ═══
+const WIDTH_FACTORS  = [0.72, 0.82, 0.90, 0.96, 1.04, 1.12, 1.22, 1.34] as const;
+const HEIGHT_FACTORS = [0.75, 0.85, 0.92, 0.98, 1.04, 1.10, 1.18, 1.28] as const;
 
 // 髪型ID: 0=short (既存), 1=bob (肩までの丸い), 2=ponytail (後ろに長い),
 //         3=long (長髪、肩〜背中), 4=buzz (坊主、ほぼ皮膚), 5=spiky (とげとげ)
@@ -374,22 +423,34 @@ const HAIR_SHAPE_LONG     = 3;
 const HAIR_SHAPE_BUZZ     = 4;
 const HAIR_SHAPE_SPIKY    = 5;
 
-/** variant (16bit) から各パーツのインデックスをデコード */
+/** variant (32bit) から各パーツのインデックスをデコード。
+ * パーツ毎に独立した bit 領域を使い、全パーツを自由に組み合わせられる。
+ * 32 bit なので 2^32 = 42 億通り、kind と合わせて事実上無限の個体差。
+ */
 function decodeVariant(v: number): {
   shirtTint: number; pantsTint: number; hairColor: number; hairShape: number;
   skinIdx: number;   shoeIdx: number;   widthIdx: number; heightIdx: number;
-  accessory: number;
+  accessory: number; hatTint: number;   bagIdx: number;   accentTint: number;
+  useBagPalette: boolean; useWildHair: boolean;
 } {
+  // 32bit を各パーツに分配 (| 0 で u32 → i32 に切れるが bit ops は同じ)
+  const v1 = v | 0;
+  const v2 = (v / 65536) | 0;  // 上位 16bit
   return {
-    shirtTint: v & 0b111,                     // 3 bits → 8
-    pantsTint: (v >> 3) & 0b111,              // 3 bits → 8
-    skinIdx:   (v >> 6) & 0b11,               // 2 bits → 4
-    hairColor: (v >> 8) & 0b111,              // 3 bits → 8
-    hairShape: (v >> 11) & 0b111,             // 3 bits → 6 (mod)
-    widthIdx:  ((v >> 14) ^ (v >> 2)) % WIDTH_FACTORS.length,  // ミックス
-    heightIdx: ((v >> 12) ^ (v >> 4)) % HEIGHT_FACTORS.length,
-    shoeIdx:   ((v >> 5) ^ (v >> 9)) % SHOE_PALETTE.length,
-    accessory: (v >> 7) & 0b11,               // 2 bits → 4 (なし/メガネ/ヒゲ/口ヒゲ)
+    shirtTint: v1 & 0b1111,                            // 4 bits → 16
+    pantsTint: (v1 >> 4) & 0b1111,                     // 4 bits → 16
+    skinIdx:   (v1 >> 8) & 0b111,                      // 3 bits → 8
+    hairShape: (v1 >> 11) & 0b111,                     // 3 bits → mod 6
+    hairColor: (v1 >> 12) & 0b1111,                    // 4 bits → 16 (上位 bit 14-15 と重複 OK)
+    accessory: (v1 >> 14) & 0b11,                      // 2 bits → 4
+    shoeIdx:   (v2 ^ (v1 >> 3)) % SHOE_PALETTE.length, // 12
+    widthIdx:  (v2 >> 2) % WIDTH_FACTORS.length,       // 8
+    heightIdx: (v2 >> 5) % HEIGHT_FACTORS.length,      // 8
+    hatTint:   (v2 >> 8) & 0b11,                       // 4
+    bagIdx:    (v2 >> 10) & 0b111,                     // 8
+    accentTint: (v2 >> 13) & 0b11,                     // 4
+    useBagPalette: ((v2 >> 15) & 1) === 1,             // 50%
+    useWildHair:   ((v2 >> 3)  & 1) === 1,             // 50%
   };
 }
 
@@ -404,7 +465,7 @@ export class HumanManager {
   scaleX:   Float32Array = new Float32Array(C.MAX_HUMANS);
   mode:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // MODE_*
   kind:       Uint8Array   = new Uint8Array(C.MAX_HUMANS); // HUMAN_KINDS index
-  variant:    Uint16Array  = new Uint16Array(C.MAX_HUMANS); // 16bit seed: 色・体型・髪型の個体差
+  variant:    Uint32Array  = new Uint32Array(C.MAX_HUMANS); // 32bit seed: 色・体型・髪型の個体差 (42億通り)
   blastTimer: Float32Array = new Float32Array(C.MAX_HUMANS); // 吹き飛ばしフェーズ残り時間
 
   activeCount = 0;
@@ -464,7 +525,7 @@ export class HumanManager {
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
       this.kind[i]     = pickHumanKind();
-      this.variant[i]  = (Math.random() * 65536) | 0;
+      this.variant[i]  = (Math.random() * 0x100000000) >>> 0;
       this.activeCount = this.activeLen;
       return;
     }
@@ -498,7 +559,7 @@ export class HumanManager {
       this.timer[i]    = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]   = 1;
       this.kind[i]     = pickHumanKind();
-      this.variant[i]  = (Math.random() * 65536) | 0;
+      this.variant[i]  = (Math.random() * 0x100000000) >>> 0;
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -528,7 +589,7 @@ export class HumanManager {
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
       this.scaleX[i]     = 1;
       this.kind[i]       = pickHumanKind(kindWeights);
-      this.variant[i]    = (Math.random() * 65536) | 0;
+      this.variant[i]    = (Math.random() * 0x100000000) >>> 0;
       spawned++;
     }
     this.activeCount = this.activeLen;
@@ -810,9 +871,10 @@ export class HumanManager {
       const shirtT = TINT_TABLE[v.shirtTint];
       const pantsT = TINT_TABLE[v.pantsTint];
       const [skinR, skinG, skinB] = SKIN_PALETTE[v.skinIdx];
-      const useKindHair = !!kind.hair && (this.variant[i] & 1) === 0;
+      // 髪色: 約半分は kind.hair を活かし濃淡だけ変える、残り半分は完全にパレット置換 → 奇抜色含む
+      const useKindHair = !!kind.hair && !v.useWildHair;
       const hairBase = useKindHair ? kind.hair! : HAIR_PALETTE[v.hairColor];
-      const hairShadeK = useKindHair ? (0.70 + (v.hairColor / 7) * 0.60) : 1.0;
+      const hairShadeK = useKindHair ? (0.60 + (v.hairColor / 15) * 0.80) : 1.0;
       const hairR = Math.min(1, hairBase[0] * hairShadeK);
       const hairG = Math.min(1, hairBase[1] * hairShadeK);
       const hairB = Math.min(1, hairBase[2] * hairShadeK);
@@ -895,16 +957,21 @@ export class HumanManager {
       writeInst(buf, n++, hx + shoulderW * 0.55 + handDX, chestY - sy * 0.02 + handDY,
         sx * 0.22, sx * 0.22, skinR, skinG, skinB, 1, 0, 1);
 
-      // === ⑧ アクセント ===
+      // === ⑧ アクセント (tint で色ずらし) ===
       if (kind.accent) {
-        const [ar, ag, ab] = kind.accent;
+        const [ar0, ag0, ab0] = kind.accent;
+        const at = ACCENT_TINT[v.accentTint];
+        const ar = Math.min(1, ar0 * at[0]);
+        const ag = Math.min(1, ag0 * at[1]);
+        const ab = Math.min(1, ab0 * at[2]);
         writeInst(buf, n++, hx, chestY + sy * 0.02, sx * 0.18, sy * 0.18,
           ar, ag, ab, 1, 0, 0);
       }
 
-      // === ⑨ カバン ===
+      // === ⑨ カバン (50% で完全に BAG_PALETTE から置換 = 更に多様化) ===
       if (kind.bag) {
-        const [br, bg, bb] = kind.bag;
+        const bagBase = v.useBagPalette ? BAG_PALETTE[v.bagIdx] : kind.bag;
+        const [br, bg, bb] = bagBase;
         writeInst(buf, n++, hx + sx * 0.60, chestY - sy * 0.18, sx * 0.34, sy * 0.32,
           br, bg, bb, 1, 0, 0);
         writeInst(buf, n++, hx + sx * 0.60, chestY + sy * 0.02, sx * 0.28, sy * 0.04,
@@ -1005,9 +1072,13 @@ export class HumanManager {
           hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
       }
 
-      // === ⑰ 帽子 ===
+      // === ⑰ 帽子 (tint 適用) ===
       if (kind.hat) {
-        const [hr2, hg2, hb2] = kind.hat;
+        const [hr0, hg0, hb0] = kind.hat;
+        const ht = HAT_TINT[v.hatTint];
+        const hr2 = Math.min(1, hr0 * ht[0]);
+        const hg2 = Math.min(1, hg0 * ht[1]);
+        const hb2 = Math.min(1, hb0 * ht[2]);
         writeInst(buf, n++, hx, headY + headSize * 0.58, headSize * 1.20, headSize * 0.14,
           hr2 * 0.80, hg2 * 0.80, hb2 * 0.80, 1, 0, 0);
         writeInst(buf, n++, hx, headY + headSize * 0.74, headSize * 0.95, headSize * 0.32,
