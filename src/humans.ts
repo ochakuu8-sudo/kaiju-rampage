@@ -37,6 +37,10 @@ const V_ALLEYS = [
 //   bag:   体の横に持つかばんの色 (省略可)
 //   scale: 全体の大きさ倍率 (1.0 デフォルト、0.7 で子供、1.05 で長身の神主など)
 //   accent: 胸元のアクセント色 (省略可、ネクタイ・たすき・ネームタグなど)
+//   build:  体型 (adult_m/adult_f/child/elderly/infant) — 頭身比と肩幅が変わる
+//   hasSkirt: true なら下半身をスカート/着物として描画
+type HumanBuild = 'adult_m' | 'adult_f' | 'child' | 'elderly' | 'infant';
+
 interface HumanKind {
   shirt: readonly [number, number, number];
   pants?: readonly [number, number, number];
@@ -45,148 +49,162 @@ interface HumanKind {
   bag?: readonly [number, number, number];
   scale?: number;
   accent?: readonly [number, number, number];
+  build?: HumanBuild;
+  hasSkirt?: boolean;
 }
 
 const HUMAN_KINDS: ReadonlyArray<HumanKind> = [
   // ═══ 0-11: 従来の一般市民 ═════════════════════════════════
-  // 0: 会社員 (黒髪 + ダークスーツ + 茶色のブリーフケース)
+  // 0: 会社員 (男性、ダークスーツ + 赤ネクタイ)
   { shirt: [0.18, 0.22, 0.42], pants: [0.10, 0.12, 0.25],
     hair:  [0.08, 0.06, 0.04], bag:   [0.55, 0.35, 0.18],
-    accent:[0.82, 0.20, 0.25] },                                // 赤ネクタイ
-  // 1: OL (白ブラウス + 紺スカート + 茶髪 + ハンドバッグ)
+    accent:[0.82, 0.20, 0.25], build: 'adult_m' },
+  // 1: OL (女性、白ブラウス + 紺スカート)
   { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.22, 0.45],
-    hair:  [0.35, 0.20, 0.10], bag:   [0.85, 0.30, 0.50] },
-  // 2: 学生 (白シャツ + 紺スラックス + 黒髪 + 赤い学生鞄)
+    hair:  [0.35, 0.20, 0.10], bag:   [0.85, 0.30, 0.50],
+    build: 'adult_f', hasSkirt: true },
+  // 2: 学生 (男性、白シャツ + 紺スラックス)
   { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.28, 0.55],
     hair:  [0.08, 0.06, 0.04], bag:   [0.85, 0.20, 0.18],
-    accent:[0.18, 0.28, 0.55] },                                // 紺のリボン
-  // 3: 子供 — 赤シャツ + 黄色い帽子 (ランドセル的小鞄)
+    accent:[0.18, 0.28, 0.55], build: 'adult_m' },
+  // 3: 子供 (赤シャツ + 黄帽子 + ランドセル、大頭)
   { shirt: [1.00, 0.30, 0.20], pants: [0.20, 0.30, 0.55],
     hair:  [0.30, 0.18, 0.08], hat:   [1.00, 0.85, 0.10],
-    bag:   [0.62, 0.18, 0.12], scale: 0.70 },                   // 小さい
-  // 4: 子供 — 黄シャツ + 短い
+    bag:   [0.62, 0.18, 0.12], scale: 0.70, build: 'child' },
+  // 4: 子供 (黄シャツ、大頭)
   { shirt: [1.00, 0.85, 0.15], pants: [0.20, 0.30, 0.55],
-    hair:  [0.10, 0.08, 0.04], scale: 0.68 },
-  // 5: 私服 — 青シャツ + ジーンズ
+    hair:  [0.10, 0.08, 0.04], scale: 0.68, build: 'child' },
+  // 5: 私服男性 — 青シャツ + ジーンズ
   { shirt: [0.20, 0.50, 1.00], pants: [0.20, 0.30, 0.55],
-    hair:  [0.20, 0.12, 0.08] },
-  // 6: 私服 — 緑シャツ + ベージュパンツ
+    hair:  [0.20, 0.12, 0.08], build: 'adult_m' },
+  // 6: 私服男性 — 緑シャツ + ベージュパンツ
   { shirt: [0.20, 0.85, 0.30], pants: [0.55, 0.45, 0.30],
-    hair:  [0.10, 0.08, 0.04] },
-  // 7: 私服 — 紫シャツ + 黒パンツ
+    hair:  [0.10, 0.08, 0.04], build: 'adult_m' },
+  // 7: 私服女性 — 紫シャツ + 黒スカート
   { shirt: [0.78, 0.20, 0.92], pants: [0.18, 0.18, 0.20],
-    hair:  [0.10, 0.08, 0.04] },
-  // 8: ジョガー (ピンクシャツ + 黒タイツ + 白ヘッドバンド)
+    hair:  [0.10, 0.08, 0.04], build: 'adult_f', hasSkirt: true },
+  // 8: ジョガー女性 (ピンクシャツ + 黒タイツ)
   { shirt: [1.00, 0.40, 0.70], pants: [0.15, 0.15, 0.18],
-    hair:  [0.25, 0.15, 0.08], hat:   [0.95, 0.95, 0.95] },
-  // 9: 観光客 (アロハ + ベージュ + 麦わら帽 + バックパック)
+    hair:  [0.25, 0.15, 0.08], hat:   [0.95, 0.95, 0.95],
+    build: 'adult_f' },
+  // 9: 観光客男性 (アロハ + 麦わら帽子 + バックパック)
   { shirt: [0.95, 0.40, 0.30], pants: [0.65, 0.55, 0.35],
-    hair:  [0.30, 0.18, 0.10], hat:   [0.95, 0.85, 0.40], bag: [0.30, 0.20, 0.10] },
-  // 10: お年寄り (くすんだ茶 + 白髪、少し小柄)
+    hair:  [0.30, 0.18, 0.10], hat:   [0.95, 0.85, 0.40], bag: [0.30, 0.20, 0.10],
+    build: 'adult_m' },
+  // 10: お年寄り (小柄、少し前かがみ、白髪)
   { shirt: [0.58, 0.52, 0.45], pants: [0.40, 0.36, 0.32],
-    hair:  [0.92, 0.90, 0.85], scale: 0.88 },
-  // 11: シェフ (白い服 + 白いコック帽)
+    hair:  [0.92, 0.90, 0.85], scale: 0.88, build: 'elderly' },
+  // 11: シェフ (白い服 + コック帽)
   { shirt: [0.95, 0.95, 0.95], pants: [0.95, 0.95, 0.95],
-    hair:  [0.08, 0.06, 0.04], hat:   [0.96, 0.96, 0.96] },
+    hair:  [0.08, 0.06, 0.04], hat:   [0.96, 0.96, 0.96],
+    build: 'adult_m' },
 
-  // ═══ 12-15: 医療系 (病院・診療所で出現) ═══════════════════
-  // 12: 看護師 — 白ワンピース + ピンク帽子 + 赤十字アクセント
+  // ═══ 12-14: 医療 ══════════════════════════════════════════
+  // 12: 看護師 (女性、ワンピース + 帽子 + 赤十字)
   { shirt: [0.96, 0.96, 0.98], pants: [0.96, 0.96, 0.98],
     hair:  [0.30, 0.20, 0.12], hat:   [0.98, 0.85, 0.88],
-    accent:[0.90, 0.20, 0.22] },                                // 赤十字
-  // 13: 医者 — 白衣 + 聴診器 (青アクセント)
+    accent:[0.90, 0.20, 0.22], build: 'adult_f', hasSkirt: true },
+  // 13: 医者 (男性、白衣)
   { shirt: [0.96, 0.96, 0.98], pants: [0.20, 0.22, 0.28],
-    hair:  [0.18, 0.10, 0.06], accent: [0.25, 0.40, 0.72] },    // 青の聴診器
-  // 14: 患者 — 水色の病衣、スリッパ
+    hair:  [0.18, 0.10, 0.06], accent: [0.25, 0.40, 0.72],
+    build: 'adult_m' },
+  // 14: 患者 (水色の病衣、お年寄り寄り)
   { shirt: [0.72, 0.88, 0.92], pants: [0.72, 0.88, 0.92],
-    hair:  [0.85, 0.80, 0.72], scale: 0.92 },
+    hair:  [0.85, 0.80, 0.72], scale: 0.92, build: 'elderly',
+    hasSkirt: true },
 
-  // ═══ 16-17: 公共サービス (警察・消防) ═════════════════════
-  // 15: 警察官 — 濃紺制服 + 黒帽子 + 金バッジ
+  // ═══ 15-16: 公共サービス ══════════════════════════════════
+  // 15: 警察官 (男性)
   { shirt: [0.16, 0.20, 0.35], pants: [0.10, 0.12, 0.25],
     hair:  [0.08, 0.06, 0.04], hat:   [0.12, 0.14, 0.22],
-    accent:[0.92, 0.78, 0.20] },                                // 金バッジ
-  // 16: 消防士 — オレンジ制服 + 赤ヘルメット
+    accent:[0.92, 0.78, 0.20], build: 'adult_m' },
+  // 16: 消防士 (男性、オレンジ制服 + 赤ヘルメット)
   { shirt: [0.92, 0.52, 0.15], pants: [0.42, 0.42, 0.42],
-    hair:  [0.12, 0.08, 0.04], hat:   [0.88, 0.18, 0.15] },
+    hair:  [0.12, 0.08, 0.04], hat:   [0.88, 0.18, 0.15],
+    build: 'adult_m' },
 
-  // ═══ 17-18: 商業・サービス ════════════════════════════════
-  // 17: 駅員 — 青制服 + 赤ネクタイ + キャップ
+  // ═══ 17-18: 商業・サービス ═════════════════════════════════
+  // 17: 駅員 (男性、青制服)
   { shirt: [0.22, 0.38, 0.62], pants: [0.16, 0.22, 0.38],
     hair:  [0.10, 0.08, 0.04], hat:   [0.18, 0.28, 0.48],
-    accent:[0.92, 0.25, 0.25] },                                // 赤ネクタイ
-  // 18: 商店店主 — エプロン + バンダナ
+    accent:[0.92, 0.25, 0.25], build: 'adult_m' },
+  // 18: 商店店主 (男性、エプロン + バンダナ)
   { shirt: [0.95, 0.85, 0.72], pants: [0.35, 0.28, 0.18],
     hair:  [0.18, 0.10, 0.06], hat:   [0.85, 0.22, 0.18],
-    accent:[0.55, 0.38, 0.22] },                                // 茶色エプロン紐
+    accent:[0.55, 0.38, 0.22], build: 'adult_m' },
 
   // ═══ 19-20: 工業・作業員 ══════════════════════════════════
-  // 19: 工員 — 青い作業服 + 黄色いヘルメット + オレンジ安全ベスト
+  // 19: 工員 (男性)
   { shirt: [0.28, 0.40, 0.55], pants: [0.22, 0.25, 0.32],
     hair:  [0.08, 0.06, 0.04], hat:   [0.98, 0.82, 0.15],
-    accent:[1.00, 0.55, 0.15] },                                // 安全ベスト
-  // 20: 港湾労働者 — 灰色オーバーオール + 白ヘルメット
+    accent:[1.00, 0.55, 0.15], build: 'adult_m' },
+  // 20: 港湾労働者 (男性)
   { shirt: [0.50, 0.50, 0.52], pants: [0.50, 0.50, 0.52],
-    hair:  [0.10, 0.08, 0.04], hat:   [0.92, 0.92, 0.88] },
+    hair:  [0.10, 0.08, 0.04], hat:   [0.92, 0.92, 0.88],
+    build: 'adult_m' },
 
-  // ═══ 21-23: 和風 (神社・古都) ═════════════════════════════
-  // 21: 神主 — 白い装束 + 黒い烏帽子 (少し長身)
+  // ═══ 21-23: 和風 ══════════════════════════════════════════
+  // 21: 神主 (男性、白装束 + 烏帽子、長身)
   { shirt: [0.95, 0.92, 0.85], pants: [0.85, 0.20, 0.25],
     hair:  [0.08, 0.06, 0.04], hat:   [0.12, 0.10, 0.15],
-    scale: 1.05 },
-  // 22: 巫女 — 白着物 + 緋袴 (赤下半身)
+    scale: 1.05, build: 'adult_m', hasSkirt: true },             // 袴もスカート扱い
+  // 22: 巫女 (女性、白着物 + 緋袴)
   { shirt: [0.96, 0.94, 0.90], pants: [0.82, 0.18, 0.22],
     hair:  [0.08, 0.06, 0.04],
-    accent:[0.82, 0.18, 0.22] },                                // 緋袴紐
-  // 23: 町民 (和装) — 茶色着物
+    accent:[0.82, 0.18, 0.22], build: 'adult_f', hasSkirt: true },
+  // 23: 町民 (和装お年寄り)
   { shirt: [0.55, 0.38, 0.22], pants: [0.42, 0.30, 0.18],
-    hair:  [0.92, 0.90, 0.85], scale: 0.92 },
+    hair:  [0.92, 0.90, 0.85], scale: 0.92, build: 'elderly',
+    hasSkirt: true },
 
-  // ═══ 24-27: 夜街 (繁華街) ═════════════════════════════════
-  // 24: ホステス — 赤いドレス + 金髪
+  // ═══ 24-27: 夜街 ══════════════════════════════════════════
+  // 24: ホステス (女性、赤いドレス)
   { shirt: [0.88, 0.15, 0.30], pants: [0.88, 0.15, 0.30],
-    hair:  [0.92, 0.78, 0.32], bag: [0.92, 0.78, 0.32] },
-  // 25: バーテン — 黒ベスト + 白シャツ + 蝶ネクタイ
+    hair:  [0.92, 0.78, 0.32], bag: [0.92, 0.78, 0.32],
+    build: 'adult_f', hasSkirt: true },
+  // 25: バーテン (男性、黒ベスト)
   { shirt: [0.12, 0.12, 0.14], pants: [0.12, 0.12, 0.14],
-    hair:  [0.12, 0.08, 0.04], accent: [0.88, 0.15, 0.20] },    // 赤蝶ネクタイ
-  // 26: ホスト — 金髪 + 白スーツ + 紫アクセント
+    hair:  [0.12, 0.08, 0.04], accent: [0.88, 0.15, 0.20],
+    build: 'adult_m' },
+  // 26: ホスト (男性、金髪 + 白スーツ)
   { shirt: [0.95, 0.95, 0.95], pants: [0.95, 0.95, 0.95],
-    hair:  [0.95, 0.80, 0.40], accent: [0.72, 0.25, 0.88] },
-  // 27: 酔客 — ラフな服装 + 少し猫背
+    hair:  [0.95, 0.80, 0.40], accent: [0.72, 0.25, 0.88],
+    build: 'adult_m' },
+  // 27: 酔客 (男性、小柄猫背)
   { shirt: [0.68, 0.42, 0.25], pants: [0.35, 0.32, 0.28],
     hair:  [0.20, 0.12, 0.08], bag: [0.22, 0.18, 0.12],
-    scale: 0.95 },
+    scale: 0.95, build: 'adult_m' },
 
-  // ═══ 28-31: 祭り・テーマパーク ════════════════════════════
-  // 28: 祭り参加者 (男) — 青い法被 + 白鉢巻
+  // ═══ 28-31: 祭り ══════════════════════════════════════════
+  // 28: 祭り法被 (男性)
   { shirt: [0.22, 0.32, 0.62], pants: [0.92, 0.92, 0.95],
     hair:  [0.08, 0.06, 0.04], hat:   [0.95, 0.95, 0.95],
-    accent:[0.92, 0.18, 0.22] },                                // 赤い腹帯
-  // 29: 祭り参加者 (浴衣の娘) — 赤浴衣
+    accent:[0.92, 0.18, 0.22], build: 'adult_m' },
+  // 29: 浴衣娘 (女性、赤い浴衣)
   { shirt: [0.92, 0.30, 0.45], pants: [0.82, 0.22, 0.38],
     hair:  [0.08, 0.06, 0.04],
-    accent:[0.95, 0.85, 0.15] },                                // 黄色い帯
-  // 30: 浴衣 (青柄)
+    accent:[0.95, 0.85, 0.15], build: 'adult_f', hasSkirt: true },
+  // 30: 浴衣 (青柄、男性)
   { shirt: [0.28, 0.48, 0.78], pants: [0.22, 0.38, 0.62],
     hair:  [0.22, 0.15, 0.08],
-    accent:[0.92, 0.92, 0.95] },                                // 白い帯
-  // 31: ピエロ (パーク) — カラフル + 赤鼻
+    accent:[0.92, 0.92, 0.95], build: 'adult_m', hasSkirt: true },
+  // 31: ピエロ (男性、カラフル)
   { shirt: [0.95, 0.35, 0.60], pants: [0.30, 0.72, 0.45],
     hair:  [0.92, 0.42, 0.18], hat:   [0.98, 0.88, 0.15],
-    accent:[0.95, 0.15, 0.18] },
+    accent:[0.95, 0.15, 0.18], build: 'adult_m' },
 
   // ═══ 32-34: 住宅街 ═════════════════════════════════════════
-  // 32: 主婦 — エプロン + カーディガン
+  // 32: 主婦 (女性、エプロン + スカート)
   { shirt: [0.88, 0.72, 0.62], pants: [0.55, 0.42, 0.30],
     hair:  [0.35, 0.22, 0.12], bag: [0.68, 0.52, 0.38],
-    accent:[0.95, 0.88, 0.82] },                                // 白エプロン
-  // 33: 女子高生 — セーラー服 + 紺リボン
+    accent:[0.95, 0.88, 0.82], build: 'adult_f', hasSkirt: true },
+  // 33: 女子高生 (女性、セーラー + 紺スカート)
   { shirt: [0.92, 0.92, 0.95], pants: [0.18, 0.22, 0.42],
     hair:  [0.18, 0.12, 0.08], bag: [0.35, 0.22, 0.15],
-    accent:[0.20, 0.28, 0.55] },                                // セーラー襟
-  // 34: 幼児 — ピンク / 青の丸い服 (すごく小さい)
+    accent:[0.20, 0.28, 0.55], build: 'adult_f', hasSkirt: true },
+  // 34: 幼児 (頭が超大きい、丸い服)
   { shirt: [0.98, 0.78, 0.88], pants: [0.42, 0.68, 0.92],
-    hair:  [0.45, 0.30, 0.18], scale: 0.55 },                   // 超小柄
+    hair:  [0.45, 0.30, 0.18], scale: 0.55, build: 'infant' },
 ];
 
 /** 重み付き種類選択。比較的「ごく普通の人」を多めに、特殊型を少なめに。 */
@@ -747,7 +765,9 @@ export class HumanManager {
       if (py < camBot || py > camTop) continue;
       const kind = HUMAN_KINDS[this.kind[i]];
       const ks = kind.scale ?? 1.0;
-      // バリエーション・デコード (先に取得して体型にも使う)
+      const build = kind.build ?? 'adult_m';
+
+      // バリエーション・デコード
       const v = decodeVariant(this.variant[i]);
       const bodyW = WIDTH_FACTORS[v.widthIdx];
       const bodyH = HEIGHT_FACTORS[v.heightIdx];
@@ -755,12 +775,41 @@ export class HumanManager {
       const sy = C.HUMAN_H * (2 - this.scaleX[i]) * ks * bodyH;
       const px = this.px[i];
 
+      // === 頭身比 (build による) — 頭サイズ・肩幅・腰位置 ===
+      // 大人標準: 頭=sx*1.00、肩幅=sx*0.82、胴体=sy*0.30
+      // 子供:     頭=sx*1.35、肩幅=sx*0.72、胴体=sy*0.24 (3-4 頭身)
+      // 幼児:     頭=sx*1.55、肩幅=sx*0.62、胴体=sy*0.20 (2 頭身)
+      // お年寄り: 頭=sx*0.95、肩幅=sx*0.76、前傾 (少しY offset)
+      // 女性:     肩幅 sx*0.70 (細身)、腰広い (スカートあり時)
+      let headSize = sx * 1.00;
+      let shoulderW = sx * 0.85;
+      let torsoH    = sy * 0.30;
+      let headOffsetY = 0;          // お年寄り前傾で下がる
+      let bodyLeanX   = 0;          // 酔客・お年寄り傾き
+      if (build === 'child') {
+        headSize = sx * 1.35; shoulderW = sx * 0.72; torsoH = sy * 0.24;
+      } else if (build === 'infant') {
+        headSize = sx * 1.55; shoulderW = sx * 0.60; torsoH = sy * 0.18;
+      } else if (build === 'elderly') {
+        headSize = sx * 0.95; shoulderW = sx * 0.78; torsoH = sy * 0.28;
+        headOffsetY = -sy * 0.03;  // 前かがみ
+        bodyLeanX   = -sx * 0.03;
+      } else if (build === 'adult_f') {
+        shoulderW = sx * 0.70;     // 細身の肩
+      }
+
+      // === 歩行フェーズ (走り姿勢) ===
+      // px と variant で位相がばらけ、動いていれば位置変化でアニメ、停止時は静的
+      const phase = (this.px[i] * 0.40) + (this.variant[i] * 0.013);
+      const swing = Math.sin(phase);
+      const legRot = swing * 0.28;        // 脚の振り (~±16°)
+      const armRot = -swing * 0.45;       // 腕は脚と逆 (~±26°)
+      const strideOffset = swing * sx * 0.04;
+
       // === 色の決定 ===
       const shirtT = TINT_TABLE[v.shirtTint];
       const pantsT = TINT_TABLE[v.pantsTint];
       const [skinR, skinG, skinB] = SKIN_PALETTE[v.skinIdx];
-      // 髪色: kind.hair があれば基本色を優先、variant で濃淡を変える。
-      // ただし半分の確率 (bit0=1) で完全にパレットから置き換え = よりワイルドな髪色バリエーション
       const useKindHair = !!kind.hair && (this.variant[i] & 1) === 0;
       const hairBase = useKindHair ? kind.hair! : HAIR_PALETTE[v.hairColor];
       const hairShadeK = useKindHair ? (0.70 + (v.hairColor / 7) * 0.60) : 1.0;
@@ -777,144 +826,192 @@ export class HumanManager {
       const pg = Math.min(1, pg0 * pantsT[1]);
       const pb = Math.min(1, pb0 * pantsT[2]);
 
+      // === 各 Y 基準点 ===
+      const footY    = py - sy * 0.45;
+      const kneeY    = py - sy * 0.27;
+      const hipY     = py - sy * 0.05;
+      const waistY   = py + sy * 0.02;
+      const chestY   = py + sy * 0.15;
+      const shoulderY = py + sy * 0.28;
+      const neckY    = py + sy * 0.35;
+      const headY    = py + sy * 0.50 + headOffsetY;
+      const hx = px + bodyLeanX;           // 上半身の傾き
+
       // === ① 足下の影 ===
-      writeInst(buf, n++, px, py - sy * 0.49, sx * 1.10, sy * 0.07,
+      writeInst(buf, n++, px, py - sy * 0.49, sx * 1.15, sy * 0.07,
         0.05, 0.05, 0.08, 0.35, 0, 1);
 
-      // === ② 両足 (靴) ===
-      writeInst(buf, n++, px - sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
-        shoeR, shoeG, shoeB, 1, 0, 0);
-      writeInst(buf, n++, px + sx * 0.26, py - sy * 0.45, sx * 0.38, sy * 0.08,
-        shoeR, shoeG, shoeB, 1, 0, 0);
+      // === ② 靴/足 (小さな円) — 歩行 stride でずらす ===
+      writeInst(buf, n++, px - sx * 0.22 - strideOffset, footY, sx * 0.32, sy * 0.10,
+        shoeR, shoeG, shoeB, 1, 0, 1);                           // 左足 (円)
+      writeInst(buf, n++, px + sx * 0.22 + strideOffset, footY, sx * 0.32, sy * 0.10,
+        shoeR, shoeG, shoeB, 1, 0, 1);                           // 右足 (円)
 
-      // === ③ 両脚 ===
-      writeInst(buf, n++, px - sx * 0.22, py - sy * 0.27, sx * 0.32, sy * 0.30,
-        pr, pg, pb, 1, 0, 0);
-      writeInst(buf, n++, px + sx * 0.22, py - sy * 0.27, sx * 0.32, sy * 0.30,
-        pr, pg, pb, 1, 0, 0);
+      // === ③ 脚 — 回転する長方形 ===
+      if (kind.hasSkirt) {
+        // スカート / 着物: 台形っぽく広がる (2 枚重ね)
+        writeInst(buf, n++, hx, hipY - sy * 0.12, sx * 0.78, sy * 0.22,
+          pr, pg, pb, 1, 0, 0);
+        writeInst(buf, n++, hx, hipY - sy * 0.22, sx * 1.00, sy * 0.18,
+          pr * 0.92, pg * 0.92, pb * 0.92, 1, 0, 0);             // 裾広がり (少し暗く)
+        // スカート下の素足 / タイツ (膝から下が見える、小円)
+        writeInst(buf, n++, px - sx * 0.18 - strideOffset, (kneeY + footY) * 0.5 + sy * 0.05,
+          sx * 0.18, sy * 0.18, skinR * 0.92, skinG * 0.92, skinB * 0.92, 1, 0, 0);
+        writeInst(buf, n++, px + sx * 0.18 + strideOffset, (kneeY + footY) * 0.5 + sy * 0.05,
+          sx * 0.18, sy * 0.18, skinR * 0.92, skinG * 0.92, skinB * 0.92, 1, 0, 0);
+      } else {
+        // ズボン: 2 本の傾いた脚
+        writeInst(buf, n++, px - sx * 0.20 - strideOffset, kneeY, sx * 0.26, sy * 0.34,
+          pr, pg, pb, 1, -legRot, 0);
+        writeInst(buf, n++, px + sx * 0.20 + strideOffset, kneeY, sx * 0.26, sy * 0.34,
+          pr, pg, pb, 1, legRot, 0);
+      }
 
-      // === ④ ベルト ===
-      writeInst(buf, n++, px, py - sy * 0.05, sx * 0.90, sy * 0.06,
-        pr * 0.55, pg * 0.55, pb * 0.55, 1, 0, 0);
+      // === ④ 腰/ベルト ===
+      writeInst(buf, n++, hx, waistY - sy * 0.02, sx * 0.78, sy * 0.05,
+        pr * 0.5, pg * 0.5, pb * 0.5, 1, 0, 0);
 
-      // === ⑤ 両腕/袖 ===
-      writeInst(buf, n++, px - sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
-        sr * 0.90, sg * 0.90, sb * 0.90, 1, 0, 0);
-      writeInst(buf, n++, px + sx * 0.48, py + sy * 0.08, sx * 0.22, sy * 0.26,
-        sr * 0.90, sg * 0.90, sb * 0.90, 1, 0, 0);
-
-      // === ⑥ 両手 (袖口、肌色) ===
-      writeInst(buf, n++, px - sx * 0.48, py - sy * 0.08, sx * 0.20, sy * 0.08,
-        skinR, skinG, skinB, 1, 0, 0);
-      writeInst(buf, n++, px + sx * 0.48, py - sy * 0.08, sx * 0.20, sy * 0.08,
-        skinR, skinG, skinB, 1, 0, 0);
-
-      // === ⑦ 胴体/シャツ ===
-      writeInst(buf, n++, px, py + sy * 0.12, sx * 0.85, sy * 0.32,
+      // === ⑤ 胴体 (やや丸みのあるシルエット、2 重で肩の傾斜を演出) ===
+      writeInst(buf, n++, hx, chestY, shoulderW, torsoH,
         sr, sg, sb, 1, 0, 0);
+      // 肩の膨らみ (小さな円で両端を丸く = 肩のライン)
+      writeInst(buf, n++, hx - shoulderW * 0.48, shoulderY - sy * 0.02,
+        sx * 0.24, sy * 0.18, sr, sg, sb, 1, 0, 1);
+      writeInst(buf, n++, hx + shoulderW * 0.48, shoulderY - sy * 0.02,
+        sx * 0.24, sy * 0.18, sr, sg, sb, 1, 0, 1);
+
+      // === ⑥ 腕 (傾いた長方形、走り姿勢) ===
+      const armH = sy * 0.28;
+      writeInst(buf, n++, hx - shoulderW * 0.55, chestY - sy * 0.02,
+        sx * 0.18, armH, sr * 0.88, sg * 0.88, sb * 0.88, 1, -armRot, 0);
+      writeInst(buf, n++, hx + shoulderW * 0.55, chestY - sy * 0.02,
+        sx * 0.18, armH, sr * 0.88, sg * 0.88, sb * 0.88, 1, armRot, 0);
+
+      // === ⑦ 手 (小さな円、肌色、腕先端にオフセット) ===
+      const handDX = Math.sin(armRot) * armH * 0.5;
+      const handDY = -Math.cos(armRot) * armH * 0.45;
+      writeInst(buf, n++, hx - shoulderW * 0.55 - handDX, chestY - sy * 0.02 + handDY,
+        sx * 0.22, sx * 0.22, skinR, skinG, skinB, 1, 0, 1);
+      writeInst(buf, n++, hx + shoulderW * 0.55 + handDX, chestY - sy * 0.02 + handDY,
+        sx * 0.22, sx * 0.22, skinR, skinG, skinB, 1, 0, 1);
 
       // === ⑧ アクセント ===
       if (kind.accent) {
         const [ar, ag, ab] = kind.accent;
-        writeInst(buf, n++, px, py + sy * 0.15, sx * 0.20, sy * 0.20,
+        writeInst(buf, n++, hx, chestY + sy * 0.02, sx * 0.18, sy * 0.18,
           ar, ag, ab, 1, 0, 0);
       }
 
       // === ⑨ カバン ===
       if (kind.bag) {
         const [br, bg, bb] = kind.bag;
-        writeInst(buf, n++, px + sx * 0.62, py - sy * 0.10, sx * 0.38, sy * 0.38,
+        writeInst(buf, n++, hx + sx * 0.60, chestY - sy * 0.18, sx * 0.34, sy * 0.32,
           br, bg, bb, 1, 0, 0);
-        writeInst(buf, n++, px + sx * 0.62, py + sy * 0.10, sx * 0.30, sy * 0.04,
-          br * 0.55, bg * 0.55, bb * 0.55, 1, 0, 0);
+        writeInst(buf, n++, hx + sx * 0.60, chestY + sy * 0.02, sx * 0.28, sy * 0.04,
+          br * 0.5, bg * 0.5, bb * 0.5, 1, 0, 0);
       }
 
-      // === ⑩ 首 ===
-      writeInst(buf, n++, px, py + sy * 0.33, sx * 0.32, sy * 0.10,
+      // === ⑩ 首 (細め) ===
+      writeInst(buf, n++, hx, neckY, sx * 0.28, sy * 0.08,
         skinR, skinG, skinB, 1, 0, 0);
 
-      // === ⑪ 頭 ===
-      const headY = py + sy * 0.45;
-      writeInst(buf, n++, px, headY, sx * 0.92, sx * 0.92,
+      // === ⑪ 頭 (大きな円、主役) ===
+      writeInst(buf, n++, hx, headY, headSize, headSize,
         skinR, skinG, skinB, 1, 0, 1);
 
-      // === ⑫ 両目 ===
-      writeInst(buf, n++, px - sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
+      // === ⑫ 目 (小円、build で間隔調整) ===
+      const eyeSpread = (build === 'infant' || build === 'child') ? 0.22 : 0.19;
+      const eyeY = headY + headSize * 0.02;
+      const eyeSize = headSize * 0.16;
+      writeInst(buf, n++, hx - headSize * eyeSpread, eyeY, eyeSize, eyeSize,
         0.08, 0.06, 0.04, 1, 0, 1);
-      writeInst(buf, n++, px + sx * 0.18, headY + sx * 0.02, sx * 0.14, sx * 0.16,
+      writeInst(buf, n++, hx + headSize * eyeSpread, eyeY, eyeSize, eyeSize,
         0.08, 0.06, 0.04, 1, 0, 1);
 
-      // === ⑬ 顔アクセサリ (variant.accessory): メガネ・ヒゲ・口ヒゲ ===
-      if (v.accessory === 1) {
-        // メガネ: 両目をまたぐ暗い横帯
-        writeInst(buf, n++, px, headY + sx * 0.02, sx * 0.62, sx * 0.08,
-          0.10, 0.08, 0.06, 1, 0, 0);
-        // フレームの橋 (細い明色ライン)
-        writeInst(buf, n++, px, headY + sx * 0.02, sx * 0.14, sx * 0.04,
-          0.60, 0.55, 0.45, 0.8, 0, 0);
-      } else if (v.accessory === 2) {
-        // 顎ヒゲ: 顔下半分の暗い帯
-        writeInst(buf, n++, px, headY - sx * 0.18, sx * 0.55, sx * 0.18,
-          hairR * 0.7, hairG * 0.7, hairB * 0.7, 1, 0, 0);
-      } else if (v.accessory === 3) {
-        // 口ヒゲ: 鼻の下の小さな暗帯
-        writeInst(buf, n++, px, headY - sx * 0.08, sx * 0.30, sx * 0.08,
-          hairR * 0.6, hairG * 0.6, hairB * 0.6, 1, 0, 0);
+      // === ⑬ 口 (小さな暗帯) — 大人は一文字、子供・幼児は丸い口 ===
+      if (build === 'child' || build === 'infant') {
+        writeInst(buf, n++, hx, headY - headSize * 0.22, headSize * 0.14, headSize * 0.10,
+          0.45, 0.15, 0.15, 1, 0, 1);                            // 開いた口 (笑)
+      } else {
+        writeInst(buf, n++, hx, headY - headSize * 0.22, headSize * 0.20, headSize * 0.04,
+          0.25, 0.15, 0.12, 1, 0, 0);
       }
 
-      // === ⑭ 髪 — 形状バリエーション (short / bob / ponytail / long / buzz / spiky) ===
+      // === ⑭ ほっぺ (子供・幼児のみ、ピンクの丸) ===
+      if (build === 'child' || build === 'infant') {
+        const cheekR = headSize * 0.14;
+        writeInst(buf, n++, hx - headSize * 0.32, headY - headSize * 0.12,
+          cheekR, cheekR, 0.98, 0.55, 0.55, 0.5, 0, 1);
+        writeInst(buf, n++, hx + headSize * 0.32, headY - headSize * 0.12,
+          cheekR, cheekR, 0.98, 0.55, 0.55, 0.5, 0, 1);
+      }
+
+      // === ⑮ 顔アクセサリ: メガネ・顎ヒゲ・口ヒゲ (大人のみ) ===
+      if (build !== 'child' && build !== 'infant') {
+        if (v.accessory === 1) {
+          // メガネ (両目をまたぐ暗い横帯 + 橋)
+          writeInst(buf, n++, hx, eyeY, headSize * 0.70, headSize * 0.10,
+            0.10, 0.08, 0.06, 1, 0, 0);
+          writeInst(buf, n++, hx, eyeY, headSize * 0.16, headSize * 0.04,
+            0.55, 0.50, 0.40, 0.8, 0, 0);
+        } else if (v.accessory === 2) {
+          writeInst(buf, n++, hx, headY - headSize * 0.32, headSize * 0.55, headSize * 0.20,
+            hairR * 0.7, hairG * 0.7, hairB * 0.7, 1, 0, 1);     // 顎ヒゲ (円っぽく)
+        } else if (v.accessory === 3) {
+          writeInst(buf, n++, hx, headY - headSize * 0.15, headSize * 0.32, headSize * 0.08,
+            hairR * 0.6, hairG * 0.6, hairB * 0.6, 1, 0, 0);     // 口ヒゲ
+        }
+      }
+
+      // === ⑯ 髪 (形状バリエーション) ===
       const hs = v.hairShape % 6;
-      if (hs === HAIR_SHAPE_BUZZ) {
-        // 坊主/超短髪: 頭の上端に薄い暗帯のみ
-        writeInst(buf, n++, px, headY + sx * 0.28, sx * 0.88, sx * 0.14,
+      if (hs === HAIR_SHAPE_BUZZ || build === 'infant') {
+        // 坊主 or 幼児: 頭頂に薄い暗帯
+        writeInst(buf, n++, hx, headY + headSize * 0.30, headSize * 0.88, headSize * 0.16,
           hairR * 0.92, hairG * 0.92, hairB * 0.92, 1, 0, 0);
       } else if (hs === HAIR_SHAPE_BOB) {
-        // ボブ: 頭の横を広く覆う丸い髪、耳までカバー
-        writeInst(buf, n++, px, headY + sx * 0.22, sx * 1.15, sx * 0.55,
-          hairR, hairG, hairB, 1, 0, 0);
-        writeInst(buf, n++, px, headY + sx * 0.06, sx * 0.96, sx * 0.16,
-          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);  // 毛先
+        writeInst(buf, n++, hx, headY + headSize * 0.20, headSize * 1.18, headSize * 0.55,
+          hairR, hairG, hairB, 1, 0, 1);
+        writeInst(buf, n++, hx, headY + headSize * 0.05, headSize * 1.00, headSize * 0.18,
+          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
       } else if (hs === HAIR_SHAPE_PONYTAIL) {
-        // ポニーテール: 頭の後ろから下に伸びる長い髪束
-        writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.92, sx * 0.40,
-          hairR, hairG, hairB, 1, 0, 0);
-        writeInst(buf, n++, px + sx * 0.12, headY - sx * 0.35, sx * 0.22, sx * 0.85,
-          hairR, hairG, hairB, 1, 0, 0);                     // 束
-        writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
-          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0); // 前髪
+        writeInst(buf, n++, hx, headY + headSize * 0.28, headSize * 0.95, headSize * 0.40,
+          hairR, hairG, hairB, 1, 0, 1);
+        writeInst(buf, n++, hx + headSize * 0.15, headY - headSize * 0.35, headSize * 0.24, headSize * 0.85,
+          hairR, hairG, hairB, 1, 0.15, 0);
+        writeInst(buf, n++, hx, headY + headSize * 0.20, headSize * 0.86, headSize * 0.14,
+          hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
       } else if (hs === HAIR_SHAPE_LONG) {
-        // ロング: 肩まで垂れる長髪 (後ろの大きな帯 + 前髪)
-        writeInst(buf, n++, px, headY + sx * 0.20, sx * 1.10, sx * 0.50,
+        writeInst(buf, n++, hx, headY + headSize * 0.18, headSize * 1.12, headSize * 0.50,
+          hairR, hairG, hairB, 1, 0, 1);
+        writeInst(buf, n++, hx, headY - headSize * 0.30, headSize * 1.05, headSize * 0.75,
           hairR, hairG, hairB, 1, 0, 0);
-        writeInst(buf, n++, px, headY - sx * 0.35, sx * 1.10, sx * 0.70,
-          hairR, hairG, hairB, 1, 0, 0);                      // 肩下まで
-        writeInst(buf, n++, px, headY + sx * 0.12, sx * 0.88, sx * 0.14,
-          hairR * 0.82, hairG * 0.82, hairB * 0.82, 1, 0, 0); // 前髪
+        writeInst(buf, n++, hx, headY + headSize * 0.10, headSize * 0.90, headSize * 0.16,
+          hairR * 0.82, hairG * 0.82, hairB * 0.82, 1, 0, 0);
       } else if (hs === HAIR_SHAPE_SPIKY) {
-        // とげとげ: 頭頂に 3 つの三角っぽい髪束 (横並びの小quad)
-        writeInst(buf, n++, px, headY + sx * 0.28, sx * 0.98, sx * 0.30,
+        writeInst(buf, n++, hx, headY + headSize * 0.26, headSize * 0.98, headSize * 0.30,
           hairR, hairG, hairB, 1, 0, 0);
-        writeInst(buf, n++, px - sx * 0.30, headY + sx * 0.55, sx * 0.22, sx * 0.32,
-          hairR, hairG, hairB, 1, 0.25, 0);                   // 左のスパイク
-        writeInst(buf, n++, px,            headY + sx * 0.58, sx * 0.22, sx * 0.36,
-          hairR, hairG, hairB, 1, 0, 0);                      // 中央
-        writeInst(buf, n++, px + sx * 0.30, headY + sx * 0.55, sx * 0.22, sx * 0.32,
-          hairR, hairG, hairB, 1, -0.25, 0);                  // 右
+        writeInst(buf, n++, hx - headSize * 0.28, headY + headSize * 0.50, headSize * 0.22, headSize * 0.34,
+          hairR, hairG, hairB, 1, 0.35, 0);
+        writeInst(buf, n++, hx,                    headY + headSize * 0.54, headSize * 0.22, headSize * 0.38,
+          hairR, hairG, hairB, 1, 0, 0);
+        writeInst(buf, n++, hx + headSize * 0.28, headY + headSize * 0.50, headSize * 0.22, headSize * 0.34,
+          hairR, hairG, hairB, 1, -0.35, 0);
       } else {
-        // デフォルト = short (現行): 後頭部ドーム + 前髪フリンジ
-        writeInst(buf, n++, px, headY + sx * 0.30, sx * 0.98, sx * 0.45,
-          hairR, hairG, hairB, 1, 0, 0);
-        writeInst(buf, n++, px, headY + sx * 0.22, sx * 0.86, sx * 0.12,
+        // short: 頭を丸く包む
+        writeInst(buf, n++, hx, headY + headSize * 0.26, headSize * 1.00, headSize * 0.48,
+          hairR, hairG, hairB, 1, 0, 1);                         // 円で丸く
+        writeInst(buf, n++, hx, headY + headSize * 0.16, headSize * 0.90, headSize * 0.14,
           hairR * 0.85, hairG * 0.85, hairB * 0.85, 1, 0, 0);
       }
 
-      // === ⑮ 帽子 (kind 固有) ===
+      // === ⑰ 帽子 ===
       if (kind.hat) {
         const [hr2, hg2, hb2] = kind.hat;
-        writeInst(buf, n++, px, headY + sx * 0.58, sx * 1.18, sx * 0.12,
+        writeInst(buf, n++, hx, headY + headSize * 0.58, headSize * 1.20, headSize * 0.14,
           hr2 * 0.80, hg2 * 0.80, hb2 * 0.80, 1, 0, 0);
-        writeInst(buf, n++, px, headY + sx * 0.72, sx * 0.95, sx * 0.32,
-          hr2, hg2, hb2, 1, 0, 0);
+        writeInst(buf, n++, hx, headY + headSize * 0.74, headSize * 0.95, headSize * 0.32,
+          hr2, hg2, hb2, 1, 0, 1);                               // 円形のてっぺん
       }
     }
     return n - startIdx;
