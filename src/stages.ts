@@ -611,134 +611,124 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   // コンセプト: 朝の空気が残る一戸建て住宅街。各戸の庭、物置、車庫、温室で
   // 「それぞれの家に暮らしがある」感を出す。桜並木が Act 全体を貫く。
 
-  // ── Chunk 0: 朝の住宅街 (桜並木起点) ──
-  // ● 統一軸 (Act I 全体で連続):
-  //   - wood_fence ribbon   x=-178 / +178 に縦連続
-  //   - facade ライン       y=22 上段 / y=118 下段 に全家の mailbox + potted_plant
-  //   - stone_pavement 歩道 x=-65 幅 24 (C0-C2 で 600px 連続)
-  //   - sakura boulevard    x=+125-155 に sakura_tree, その下に fallen_leaves リボン
-  //   - dirt 菜園帯         x=-150 縦に家庭菜園
-  //   - power_pole 奥層    x=-175 / +178 に電柱+電線
-  // ● 独自要素: 朝の静けさ (庭仕事の老人、通勤前の家族)
-  // ● C0/C1 境界に「町内小広場」の入口 (ベンチ + 花壇 + tile)
+  // ── Chunk 0: 古民家の庭園 (★★ C0 固有: 日本庭園の朝) ──
+  // ● Act I 連続軸 (桜並木 / stone_pavement 歩道 / 電柱): 継続
+  // ● C0 固有: Cell B+F に日本庭園 (koi_pond + 飛び石 + 盆栽 + 松)
+  //   facade の mailbox 行進を解除し、庭の物語に場所を譲る
   { patternId: 's1_raw', raw: {
     buildings: [
-      // === 上段: 住宅列 (玄関が主要通り x=0 側を向く) ===
-      _B('house', -155, 38), _B('house', -120, 42),             // Cell A 家族住宅 2 軒
+      // === 上段: 古民家中心の住宅列 ===
+      _B('house', -155, 38), _B('house', -120, 42),             // Cell A 家族住宅
       _B('shed', -145, 72), _B('greenhouse', -115, 78),
-      _B('townhouse', -50, 38),                                 // Cell B 大きな一戸建て
-      _B('greenhouse', -20, 72), _B('shed', -75, 78),
+      _B('townhouse', -50, 38),                                 // Cell B ★ 古民家 (庭園が裏)
+      _B('shed', -75, 78),
       _B('house', 30, 40), _B('garage', 65, 42),                // Cell C 夫婦住宅 + 車庫
       _B('shed', 70, 78),
-      _B('townhouse', 108, 40), _B('townhouse', 142, 42),       // Cell D タウンハウス連棟 (3→2 に)
+      _B('townhouse', 108, 40), _B('townhouse', 142, 42),       // Cell D タウンハウス連棟
       _B('shed', 118, 78), _B('greenhouse', 162, 78),
 
-      // === 下段: 裏庭と郊外の一戸建て ===
+      // === 下段: 古民家続き + 菜園 ===
       _B('house', -150, 132), _B('house', -115, 128),           // Cell E 家庭菜園家族
       _B('greenhouse', -155, 170), _B('shed', -120, 178),
-      _B('house', -48, 132), _B('shed', -20, 170),              // Cell F 独居老人 (garage 撤去)
+      _B('house', -48, 132),                                    // Cell F ★ 古民家の続き (縁側)
       _B('townhouse', 35, 130), _B('house', 70, 138),           // Cell G 小家族
-      // (Cell G の garage/shed を撤去 → 町内小広場の入口スペース)
       _B('house', 115, 132), _B('greenhouse', 158, 138),        // Cell H 桜古木の家
       _B('greenhouse', 115, 178), _B('shed', 160, 175),
     ],
     furniture: [
-      // ─── 軸 1: wood_fence / hedge リボン (x=±178 縦連続) ───
+      // ─── ★★ C0 固有: 古民家の日本庭園 (Cell B 上段・Cell F 下段) ★★ ───
+      _F('koi_pond', -30, 62),                                  // ★ 鯉の池
+      _F('stepping_stones', -12, 72),                           // 飛び石
+      _F('rock', -45, 66), _F('rock', -18, 78),                 // 庭石
+      _F('bonsai', -55, 60), _F('bonsai', -10, 62),             // 盆栽 2 鉢
+      _F('pine_tree', -68, 82),                                 // ★ 松
+      _F('water_tank', 5, 78),                                  // 井戸風
+      _F('cat', -35, 68),                                       // 縁側の猫 (鯉を見る)
+      // Cell F 下段: 庭園の続き
+      _F('bonsai', -58, 150),                                   // 盆栽
+      _F('stepping_stones', -35, 162),                          // 飛び石
+      _F('rock', -22, 168),
+      _F('pine_tree', -75, 178),                                // 松 2 本目
+      _F('cat', -28, 158),                                      // ★ 2 匹目の猫
+
+      // ─── 軸: wood_fence (反復せず、庭園フレーム用のみ) ───
       _F('wood_fence', -178, 22), _F('wood_fence', 178, 22),
-      _F('wood_fence', -178, 118), _F('wood_fence', 178, 118),
-      _F('hedge', -178, 160), _F('hedge', 178, 160),
+      _F('wood_fence', -80, 90),                                // 庭園のフレーム (Stage 1 語彙)
+      _F('wood_fence', -80, 140),
 
-      // ─── 軸 2: facade ライン y=22 (全住宅の玄関側) ───
-      _F('mailbox', -155, 22), _F('mailbox', -120, 22),         // Cell A
-      _F('potted_plant', -140, 25), _F('bicycle', -100, 24),
-      _F('mailbox', -50, 22), _F('potted_plant', -30, 25),      // Cell B (大邸宅)
-      _F('flower_bed', -70, 22),
-      _F('mailbox', 30, 22), _F('potted_plant', 20, 25),        // Cell C
-      _F('mailbox', 108, 22), _F('mailbox', 142, 22),           // Cell D タウンハウス
-      _F('potted_plant', 125, 25), _F('potted_plant', 160, 25),
+      // ─── facade (減らす: 4 mailbox のみ) ───
+      _F('mailbox', -155, 22), _F('mailbox', 108, 22),          // 上段 2 箇所
+      _F('mailbox', -150, 118), _F('mailbox', 115, 118),        // 下段 2 箇所
+      _F('potted_plant', -120, 25), _F('potted_plant', 142, 25),
+      _F('post_letter_box', 0, 22),                             // avenue 入口ポスト
 
-      // ─── 軸 2: facade ライン y=118 (下段全住宅) ───
-      _F('mailbox', -150, 118), _F('mailbox', -115, 118),       // Cell E
-      _F('potted_plant', -130, 122),
-      _F('mailbox', -48, 118), _F('potted_plant', -35, 122),    // Cell F
-      _F('mailbox', 35, 118), _F('mailbox', 70, 118),           // Cell G
-      _F('potted_plant', 50, 122), _F('bicycle', 15, 118),
-      _F('mailbox', 115, 118), _F('potted_plant', 148, 122),    // Cell H
+      // ─── 軸: 桜並木 (連続) ───
+      _F('sakura_tree', 125, 60),
+      _F('sakura_tree', 155, 88),
+      _F('sakura_tree', 108, 150),
 
-      // ─── 軸 3: 桜並木 (x=+125-155) + 下に fallen_leaves ───
-      _F('sakura_tree', 125, 60),                               // ★ 上段桜 (見せ場)
-      _F('sakura_tree', 155, 88),                               // 上段 2 本目
-      _F('sakura_tree', 108, 150),                              // ★ 下段桜古木
-
-      // ─── 軸 4: 側面・裏の生活感 (エアコン・物干し) ───
-      _F('ac_unit', -148, 52), _F('ac_unit', -118, 55),         // Cell A 側面
+      // ─── 生活感 (エアコン・物干し・菜園小物) ───
+      _F('ac_unit', -148, 52),
       _F('laundry_pole', -130, 68),
-      _F('ac_unit', -65, 52), _F('cat', -35, 65),               // ★ Cell B 縁側の猫
-      _F('ac_unit', 40, 68), _F('car', 65, 55),                 // Cell C 車庫の車
-      _F('bicycle', 145, 92),                                   // Cell D
-      _F('ac_unit', -58, 148), _F('cat', -30, 158),             // ★ Cell F 2 匹目
-      _F('laundry_balcony', -130, 148),                         // Cell E 物干し
+      _F('ac_unit', 40, 68), _F('car', 65, 55),
+      _F('laundry_balcony', -130, 148),
       _F('flower_bed', -170, 145), _F('flower_planter_row', 65, 160),
-      _F('ac_outdoor_cluster', 48, 148),                        // Cell G
-      _F('flower_bed', 140, 152), _F('potted_plant', 175, 155), // Cell H
+      _F('ac_outdoor_cluster', 48, 148),
+      _F('flower_bed', 140, 152),
       _F('bench', 135, 150),                                    // 桜古木前のベンチ
 
-      // ─── 軸 5: 電柱 + 電線 (奥層 x=±175 y=92/195) ───
+      // ─── 電柱 + 電線 ───
       _F('power_pole', -175, 92), _F('power_line', -178, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 86),
       _F('power_pole', -175, 195), _F('power_line', -178, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
 
-      // ─── ランドマーク: 町内小広場の入口 (C0 下端、C1 へ続く) ───
-      _F('bench', 15, 182),                                     // 広場ベンチ 1
-      _F('bench', 50, 182),                                     // 広場ベンチ 2
-      _F('flower_bed', 82, 190),                                // 広場の花壇
-      _F('flower_planter_row', -15, 190),                       // 広場のプランター列
-      _F('sakura_tree', 32, 170),                               // 広場の象徴桜 (C1 境界の大木)
+      // ─── 町内小広場の入口 (C1 へ続く) ───
+      _F('bench', 15, 182), _F('bench', 50, 182),
+      _F('flower_bed', 82, 190),
+      _F('sakura_tree', 32, 170),
 
-      // ─── 主要通り (x=0 avenue) の共通設備 ───
+      // ─── avenue ───
       _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      _F('post_letter_box', 0, 22),                             // avenue 入口の郵便ポスト
       _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
     ],
     humans: [
-      _H(-125, 32),                                             // 朝の玄関で見送る妻
+      _H(-30, 68),                                              // 鯉に餌やる老人
+      _H(-40, 158),                                             // 縁側で新聞を読む老人
       _H(40, 48),                                               // 通勤前の父
       _H(-145, 148),                                            // 家庭菜園の老人
-      _H(0, 80),                                                // 主要通りの通勤者 (上段)
-      _H(0, 155),                                               // 主要通りの通勤者 (下段)
-      _H(32, 178),                                              // 町内小広場のベンチの老人
+      _H(0, 80),                                                // avenue 通勤者
+      _H(32, 178),                                              // 広場のベンチの老人
     ],
     grounds: [
-      // ─── ベース (全幅): grass/grass — 住宅街の緑 ───
       _G('grass', 0, 46.5, 360, 93),
       _G('grass', 0, 153.5, 360, 93),
 
-      // ─── 軸 2: stone_pavement 歩道 (x=-65, 2 段、C0-C2 連続) ───
+      // ─── 軸: stone_pavement 歩道 ───
       _G('stone_pavement', -65, 46.5, 24, 93),
       _G('stone_pavement', -65, 153.5, 24, 93),
 
-      // ─── 軸 3: 桜下の fallen_leaves リボン (x=+125-155 縦連続) ───
-      _G('fallen_leaves', 128, 68, 54, 38),                     // 上段桜 (見せ場+2 本目)
-      _G('fallen_leaves', 115, 150, 50, 42),                    // 下段桜古木
-      _G('fallen_leaves', 32, 178, 44, 34),                     // 広場の大桜下
+      // ─── ★ C0 固有: 日本庭園ベース (砂利=concrete + 池周り wood_deck) ───
+      _G('wood_deck', -45, 62, 52, 30),                         // ★ 縁側 (大幅拡張)
+      _G('wood_deck', -45, 162, 52, 30),                        // ★ 下段縁側
+      _G('dirt', -5, 82, 20, 16),                               // 庭園の砂利エリア
 
-      // ─── 軸 4: dirt 菜園帯 (x=-150 縦連続) ───
-      _G('dirt', -150, 70, 50, 32),                             // Cell A 菜園
-      _G('dirt', -150, 175, 64, 42),                            // Cell E 家庭菜園 (大)
-      _G('dirt', 158, 178, 36, 28),                             // Cell H 温室前の畑
+      // ─── 桜下の fallen_leaves リボン ───
+      _G('fallen_leaves', 128, 68, 54, 38),
+      _G('fallen_leaves', 115, 150, 50, 42),
+      _G('fallen_leaves', 32, 178, 44, 34),
 
-      // ─── 縁側のウッドデッキ (猫の居場所) ───
-      _G('wood_deck', -30, 70, 28, 18),                         // Cell B 縁側 (1 匹目)
-      _G('wood_deck', -30, 170, 28, 18),                        // Cell F 縁側 (2 匹目)
+      // ─── dirt 菜園帯 ───
+      _G('dirt', -150, 70, 50, 32),
+      _G('dirt', -150, 175, 64, 42),
+      _G('dirt', 158, 178, 36, 28),
 
-      // ─── 車庫の舗装 (1 箇所のみ、過剰な driveway 回避) ───
-      _G('concrete', 65, 58, 30, 26),                           // Cell C 車庫
+      // ─── 車庫 ───
+      _G('concrete', 65, 58, 30, 26),
 
-      // ─── 町内小広場の tile (C0 下端、C1 へ繋がる) ───
+      // ─── 町内小広場 tile ───
       _G('tile', 30, 190, 100, 20),
 
-      // ─── avenue マーカー (中央通りの起点) ───
       _G('dirt', 0, 15, 60, 25),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
@@ -1026,10 +1016,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   // 桜並木は Chunk 5 で終わり、Chunk 6 からは街路樹 (tree) へ切替。
 
   // ── Chunk 3: 住宅と小商店の混合 ──
-  // 中左: 家族住宅 + 裏庭 (Chunk 2 から連続)
-  // 中右: コンビニ + クリーニング (生活の要)
-  // 下段: パン屋 + 本屋 (朝の買い物) + 住宅
-  // 象徴: 猫 1 匹、桜並木継続
+  // ── Chunk 3: 朝のカフェテラス (★★ C3 固有: 連続テラス席) ──
+  // ● Cell F+G の下段をパン屋+本屋+カフェのテラス席で連結
+  //   3 店舗の前に 4 本のパラソル・4 連ベンチ・プランターで一つの「朝のテラス」として読ませる
+  //   Act II 共通の shop_awning / chouchin は使うが、パラソル密集が C3 固有
   { patternId: 's1_raw', raw: {
     buildings: [
       // === Cell A (左上): 家族住宅 + 物置 ===
@@ -1049,18 +1039,19 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('pharmacy', 150, 40),
       _B('greenhouse', 120, 78),
 
-      // === Cell E (左下): 住宅 + ガレージ (Chunk 2 分院の流れ) ===
+      // === Cell E (左下): 住宅 + ガレージ ===
       _B('house', -155, 130), _B('townhouse', -125, 132),
       _B('garage', -150, 178),
       _B('shed', -120, 175),
-      // === Cell F (中左下): パン屋 + 本屋 (小商店の芽) ===
+      // === Cell F-G (中下段): ★ パン屋 + 本屋 + カフェ 3 連テラス ★ ===
       _B('bakery', -55, 130),
       _B('bookstore', -20, 132),
+      _B('cafe', 20, 130),
       _B('townhouse', -55, 178),
-      // === Cell G (中右下): 住宅 + 小 cafe ===
-      _B('cafe', 35, 130),
-      _B('house', 65, 135),
-      _B('shed', 28, 178),
+      _B('house', 50, 178),
+      // === Cell G 右: 住宅 ===
+      _B('house', 75, 138),
+      _B('shed', 78, 178),
       // === Cell H (右下): 住宅 3 連 + 花屋 ===
       _B('florist', 115, 130),
       _B('house', 150, 135),
@@ -1087,40 +1078,42 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('laundry_pole', 42, 58),
       _F('laundry_balcony', 28, 62),                         // 物干し
       _F('ac_outdoor_cluster', 55, 62),
-      _F('mailbox', 68, 22), _F('potted_plant', 78, 26),
+      _F('mailbox', 68, 22),
       // === Cell D: 薬局 + 家族住宅 ===
       _F('sign_board', 138, 22),                             // 薬局の看板
       _F('bicycle_rack', 145, 58),
-      _F('potted_plant', 112, 24), _F('mailbox', 115, 22),
       _F('sakura_tree', 168, 88),                            // ★ 桜並木 (Chunk 4 に続く)
       _F('ac_unit', 155, 62),
 
       // === Cell E: 住宅 + ガレージ ===
       _F('mailbox', -155, 112), _F('potted_plant', -125, 115),
-      _F('wood_fence', -178, 112),
       _F('car', -150, 165),                                  // 駐車車両
       _F('ac_unit', -128, 148),
       _F('power_pole', -178, 195),
-      // === Cell F: パン屋 + 本屋前 (朝の買い物客) ===
-      _F('a_frame_sign', -70, 112),
+      // ─── ★★ C3 固有: 3 連テラス席 (パン屋 + 本屋 + カフェ) ★★ ───
       _F('shop_awning', -55, 120),
+      _F('shop_awning', -20, 120),
+      _F('shop_awning', 20, 120),
       _F('noren', -55, 116),
-      _F('parasol', -20, 120),
-      _F('bicycle_rack', -35, 152),
-      _F('potted_plant', -75, 115), _F('potted_plant', -8, 115),
-      _F('cat', -80, 162),                                   // ★ 象徴的猫 (店裏にたたずむ)
-      // === Cell G: 小 cafe ===
-      _F('parasol', 35, 112),                                // カフェのパラソル
-      _F('shop_awning', 35, 118),
-      _F('chouchin', 48, 112),
-      _F('potted_plant', 20, 115),
-      _F('bench', 52, 150),                                  // 店前ベンチ
-      _F('ac_unit', 58, 148),
-      _F('sakura_tree', 82, 152),                            // ★ 桜並木
-      // === Cell H: 住宅 + 花屋 ===
+      _F('a_frame_sign', -72, 112),
+      _F('a_frame_sign', 0, 112),
+      _F('a_frame_sign', 35, 112),
+      // テラス: パラソル 4 連 (連続感を出す)
+      _F('parasol', -50, 150), _F('parasol', -25, 150),
+      _F('parasol', 0, 150),    _F('parasol', 25, 150),
+      // ベンチ (朝食の常連)
+      _F('bench', -38, 162), _F('bench', -12, 162),
+      _F('bench', 12, 162),
+      _F('flower_planter_row', -38, 140), _F('flower_planter_row', 12, 140),
+      _F('bicycle_row', -55, 172),                           // 客の自転車
+      _F('cat', 38, 168),                                    // ★ テラスの猫
+
+      // === Cell G 右 + Cell H: 住宅 + 花屋 ===
+      _F('mailbox', 75, 122),
+      _F('sakura_tree', 95, 152),                            // ★ 桜並木
       _F('flower_planter_row', 115, 112),                    // 花屋前のプランター
       _F('a_frame_sign', 128, 112),
-      _F('mailbox', 150, 112), _F('mailbox', 178, 115),
+      _F('mailbox', 150, 112),
       _F('potted_plant', 140, 115),
       _F('laundry_pole', 160, 150),
       _F('power_pole', 178, 195),
@@ -1132,8 +1125,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     humans: [
       _H(-45, 55), _H(-30, 62),                              // コンビニ前の通勤者
-      _H(-55, 150), _H(-20, 150),                            // パン屋 + 本屋前の客
-      _H(35, 150), _H(50, 152),                              // cafe 客
+      _H(-38, 158), _H(-12, 158), _H(12, 158),               // テラス席の朝食客 3
+      _H(-38, 170), _H(12, 170),                             // ベンチの常連 2
       _H(120, 55),                                           // 薬局客
       _H(0, 60), _H(0, 160),                                 // 主要通りの歩行者
     ],
@@ -1142,8 +1135,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 0, 153.5, 360, 93),
       _G('tile', -45, 55, 30, 45),                           // コンビニ前の舗装
       _G('tile', 35, 55, 25, 40),                            // クリーニング前
-      _G('tile', -55, 135, 30, 40),                          // パン屋前
-      _G('tile', 35, 135, 25, 40),                           // カフェ前
+      // ─── ★ C3 固有: 3 連テラスの tile (連続) ───
+      _G('tile', -15, 140, 100, 50),                         // テラス広場 (幅広)
       _G('concrete', 150, 135, 50, 40),                      // 花屋+住宅前
       _G('dirt', 0, 15, 60, 25), _G('grass', 0, 188, 60, 20),
     ],
@@ -1332,15 +1325,22 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // === Cell B: 郵便局前 ===
       _F('post_box', -65, 22),                               // ポスト
       _F('sign_board', -35, 22),
-      _F('flag_pole', -50, 62),                              // 公共施設の国旗
       _F('bicycle_rack', -75, 62),
-      _F('mailbox', -18, 22),
       _F('potted_plant', -8, 24),
+      // ─── ★★ C5 固有: 地域公共広場 (郵便局 × 銀行の間の civic plaza) ★★ ───
+      _F('plaza_tile_circle', 0, 78),                        // ★ 広場の中央円 (大)
+      _F('statue', 0, 72),                                   // ★ 地域創設者の像 (モニュメント)
+      _F('fountain', -20, 80),                               // 小さな噴水
+      _F('flag_pole', -12, 88),                              // 国旗 1
+      _F('flag_pole', 12, 88),                               // 国旗 2
+      _F('bench', -18, 92), _F('bench', 18, 92),             // 広場ベンチ 2
+      _F('flower_bed', -30, 82),                             // 広場花壇
+      _F('flower_bed', 30, 82),
+      _F('flower_planter_row', 0, 62),                       // 広場入口プランター列
+      _F('street_lamp', -22, 72), _F('street_lamp', 22, 72), // 広場の街灯
       // === Cell C: 銀行 + 住宅 ===
       _F('atm', 28, 22),                                     // 銀行前の ATM
       _F('sign_board', 62, 22),
-      _F('bench', 25, 62),                                   // 待ちベンチ
-      _F('potted_plant', 78, 24),
       _F('mailbox', 80, 22),
       _F('ac_outdoor_cluster', 60, 62),
       // === Cell D: 住宅 + パン屋 ===
@@ -1390,20 +1390,24 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     humans: [
       _H(-115, 62),                                          // カフェ客
-      _H(-50, 55), _H(-65, 62), _H(-35, 68),                 // 郵便局の客 3 人
+      _H(-50, 55), _H(-65, 62),                              // 郵便局の客 2 人
       _H(28, 55), _H(62, 58),                                // 銀行の客
+      _H(-18, 90), _H(18, 90),                               // 広場ベンチの 2 人
+      _H(0, 80),                                             // 広場で像を見る人
       _H(138, 55),                                           // パン屋の客
       _H(-130, 150),                                         // 花屋の客
       _H(-55, 150), _H(-20, 150), _H(-55, 192),              // 本屋+カフェ+薬局の客
       _H(40, 150),                                           // クリーニングの客
-      _H(0, 60), _H(0, 160),                                 // 主要通り
+      _H(0, 160),                                            // 主要通り下段
     ],
     grounds: [
-      _G('concrete', 0, 46.5, 360, 93),                      // 公共ゾーン (concrete に切替: Act III への近接)
+      _G('concrete', 0, 46.5, 360, 93),                      // 公共ゾーン
       _G('concrete', 0, 153.5, 360, 93),
       _G('tile', -125, 55, 35, 45),                          // カフェ前
       _G('tile', -50, 55, 40, 45),                           // 郵便局前
       _G('tile', 45, 55, 40, 45),                            // 銀行前
+      // ─── ★ C5 固有: 地域広場の中央円 ───
+      _G('tile', 0, 78, 60, 36),                             // ★ 広場の円形相当 (tile 大)
       _G('tile', 150, 55, 28, 40),                           // パン屋前
       _G('tile', -130, 135, 30, 40),                         // 花屋前
       _G('tile', -55, 135, 60, 70),                          // 本屋+カフェ+薬局 小商店クラスタ
@@ -1541,9 +1545,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
-  // ── Chunk 7: 商店街の中心 ──
-  // 昼下がりの買い物客で最も活気ある区画。小店が連続、路地に小 ramen/izakaya。
-  // 象徴: 常連の自転車、街路樹、路地の猫
+  // ── Chunk 7: 提灯アーケード商店街 (★★ C7 固有: avenue 両脇の提灯連) ──
+  // ● C7 固有: 主要通り (x=0 avenue) の両側 y=86/114 に chouchin を連続 14 本ぶら下げる
+  //   商店街の天蓋効果を作り、C6 校門 / C8 駅前から視覚的に異質化
+  // ● banner_pole を 4 本に増やし、通り全体を祭日前のような賑わいに
   { patternId: 's1_raw', raw: {
     buildings: [
       // === Cell A (左上): 本屋 + 小 cafe ===
@@ -1638,10 +1643,17 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('car', 118, 168),
       _F('ac_unit', 148, 150),
       _F('power_pole', 178, 195),
+      // === ★★ C7 固有: 提灯アーケード (avenue 両脇に 14 本 + banner 4 本) ★★ ===
+      _F('chouchin', -90, 92), _F('chouchin', -60, 92), _F('chouchin', -30, 92),
+      _F('chouchin', 0, 92),   _F('chouchin', 30, 92),   _F('chouchin', 60, 92),
+      _F('chouchin', 90, 92),
+      _F('chouchin', -90, 108), _F('chouchin', -60, 108), _F('chouchin', -30, 108),
+      _F('chouchin', 0, 108),   _F('chouchin', 30, 108),  _F('chouchin', 60, 108),
+      _F('chouchin', 90, 108),
+      _F('banner_pole', -120, 100), _F('banner_pole', -60, 100),
+      _F('banner_pole', 60, 100),   _F('banner_pole', 120, 100),
       // === 主要通り (x=0) 商店街の最大密度 ===
       _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      _F('banner_pole', -60, 100),
-      _F('banner_pole', 60, 100),                            // 商店街バナー
       _F('power_line', -90, 45), _F('power_line', -90, 155),
       _F('power_line', 90, 45), _F('power_line', 90, 155),
       _F('manhole_cover', -60, 100), _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
