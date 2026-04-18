@@ -104,7 +104,8 @@ function linkProgram(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLP
 
 // per-instance layout (floats): pos(2) size(2) color(4) rot(1) circle(1) = 10
 export const INST_F = 10;
-const MAX_INST = 20000; // 5000 humans×2 + 2000 particles + 8000 scene/vehicles/misc
+const MAX_INST = 60000; // 1500 humans×25 + 2000 particles + 15000 scene/vehicles/misc
+                        // (人間 1 体 = 最大 25 instance のドット絵、1000+ 同時描画を想定)
 
 export class Renderer {
   readonly gl: WebGL2RenderingContext;

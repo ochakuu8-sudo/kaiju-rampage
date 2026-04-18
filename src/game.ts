@@ -18,7 +18,9 @@ import type { Intersection } from './grid';
 import { resolveCircleOBB, resolveCircleOBBSlide, clampSpeed, rand, randInt, circleAABB } from './physics';
 import type { BuildingData } from './entities';
 
-const SHARED_BUF = new Float32Array(20000 * INST_F);
+// 60000 instance 分の共有バッファ (renderer.ts の MAX_INST と一致させる)
+// 1000+ 人間同時描画を想定: 1500×25 instance + particles + scene
+const SHARED_BUF = new Float32Array(60000 * INST_F);
 
 type GameState = 'playing' | 'ball_lost' | 'game_over' | 'clear';
 
