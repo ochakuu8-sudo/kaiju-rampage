@@ -234,6 +234,8 @@ const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,numb
   sushi_ya:         [0.85, 0.72, 0.52],  // 木 + 白のれん
   bungalow:         [0.78, 0.72, 0.58],  // 黄ベージュ (平屋)
   duplex:           [0.88, 0.82, 0.72],  // 明るいクリーム (2 世帯)
+  // Stage 5 フィナーレ: 象徴のお城 (天守閣)
+  castle:           [0.96, 0.93, 0.87],  // 白漆喰
 };
 
 // 建物種別からファサードパレットを選択するヘルパー
@@ -356,6 +358,22 @@ export class BuildingManager {
 
   allDestroyed(): boolean {
     return this.buildings.every(b => !b.active);
+  }
+
+  /** GOAL チャンクのお城がまだ生きているか (size='castle') */
+  isGoalCastleAlive(): boolean {
+    for (const b of this.buildings) {
+      if (b.size === 'castle' && b.active) return true;
+    }
+    return false;
+  }
+
+  /** GOAL チャンクのお城が存在するか (破壊済みでも、非破壊でも true) */
+  hasGoalCastle(): boolean {
+    for (const b of this.buildings) {
+      if (b.size === 'castle') return true;
+    }
+    return false;
   }
 
   /** 新しい建物を追加（再建時）。非アクティブスロットを再利用 */
@@ -2245,6 +2263,86 @@ export class BuildingManager {
           // 左右の石灯籠 (組み込み)
           writeInst(buf, n++, cx - bW * 0.46, bot + 3, 2, 5, 0.52, 0.45, 0.38, 1);
           writeInst(buf, n++, cx + bW * 0.46, bot + 3, 2, 5, 0.52, 0.45, 0.38, 1);
+          break;
+        }
+        case 'castle': {
+          // ★★★ 日本のお城 (天守閣) ★★★
+          // 石垣 + 白漆喰の本体 + 多重の黒瓦屋根 + 金鯱
+          // 石垣 (基礎)
+          writeInst(buf, n++, cx, bot + 5, bW + 6, 10, 0.55, 0.52, 0.48, 1);
+          writeInst(buf, n++, cx, bot + 1, bW + 10, 2, 0.42, 0.40, 0.36, 1);
+          // 石垣の石ブロック (小 6 個)
+          for (let i = -2; i <= 2; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.18, bot + 3, bW * 0.14, 3, 0.62, 0.58, 0.52, 1);
+            writeInst(buf, n++, cx + i * bW * 0.18 + bW * 0.09, bot + 7, bW * 0.14, 3, 0.58, 0.55, 0.50, 1);
+          }
+          // === 層 1: 最大の層 (本体) ===
+          const l1Y = bot + 18;
+          const l1W = bW * 0.95;
+          const l1H = bH * 0.18;
+          writeInst(buf, n++, cx, l1Y + l1H / 2, l1W, l1H, cr, cg, cb, 1);          // 白漆喰
+          // 横の木格子窓 (4 つ)
+          for (let i = -1.5; i <= 1.5; i++) {
+            writeInst(buf, n++, cx + i * l1W * 0.22, l1Y + l1H * 0.55, l1W * 0.14, l1H * 0.45, 0.28, 0.18, 0.10, 0.9);
+            for (let j = -1; j <= 1; j++) {
+              writeInst(buf, n++, cx + i * l1W * 0.22, l1Y + l1H * 0.55 + j * l1H * 0.14, l1W * 0.13, 0.4, 0.15, 0.10, 0.06, 0.85);
+            }
+          }
+          // 層 1 屋根 (黒瓦、広い反り)
+          const r1Y = l1Y + l1H + 2;
+          writeInst(buf, n++, cx, r1Y, l1W + 8, 3.5, 0.18, 0.16, 0.20, 1);
+          writeInst(buf, n++, cx, r1Y + 2, l1W + 10, 1.2, 0.10, 0.10, 0.14, 1);
+          writeInst(buf, n++, cx - (l1W + 6) / 2, r1Y + 1, 2, 2.5, 0.22, 0.18, 0.22, 1, 0, 1);
+          writeInst(buf, n++, cx + (l1W + 6) / 2, r1Y + 1, 2, 2.5, 0.22, 0.18, 0.22, 1, 0, 1);
+          // === 層 2 ===
+          const l2Y = r1Y + 5;
+          const l2W = bW * 0.78;
+          const l2H = bH * 0.15;
+          writeInst(buf, n++, cx, l2Y + l2H / 2, l2W, l2H, cr, cg, cb, 1);
+          // 層 2 の窓
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + i * l2W * 0.30, l2Y + l2H * 0.55, l2W * 0.12, l2H * 0.45, 0.28, 0.18, 0.10, 0.9);
+          }
+          // 層 2 屋根
+          const r2Y = l2Y + l2H + 2;
+          writeInst(buf, n++, cx, r2Y, l2W + 7, 3, 0.18, 0.16, 0.20, 1);
+          writeInst(buf, n++, cx, r2Y + 1.5, l2W + 9, 1, 0.10, 0.10, 0.14, 1);
+          // 破風 (三角妻飾り)
+          writeInst(buf, n++, cx, r2Y + 4, l2W * 0.18, 3, cr, cg, cb, 1);
+          writeInst(buf, n++, cx, r2Y + 4, l2W * 0.16, 2.5, 0.68, 0.48, 0.22, 0.92);
+          // === 層 3 ===
+          const l3Y = r2Y + 5;
+          const l3W = bW * 0.62;
+          const l3H = bH * 0.13;
+          writeInst(buf, n++, cx, l3Y + l3H / 2, l3W, l3H, cr, cg, cb, 1);
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + i * l3W * 0.32, l3Y + l3H * 0.55, l3W * 0.12, l3H * 0.45, 0.28, 0.18, 0.10, 0.9);
+          }
+          const r3Y = l3Y + l3H + 2;
+          writeInst(buf, n++, cx, r3Y, l3W + 6, 2.5, 0.18, 0.16, 0.20, 1);
+          writeInst(buf, n++, cx, r3Y + 1.2, l3W + 8, 0.9, 0.10, 0.10, 0.14, 1);
+          // === 層 4 (天守) ===
+          const l4Y = r3Y + 4;
+          const l4W = bW * 0.48;
+          const l4H = bH * 0.12;
+          writeInst(buf, n++, cx, l4Y + l4H / 2, l4W, l4H, cr, cg, cb, 1);
+          writeInst(buf, n++, cx, l4Y + l4H * 0.55, l4W * 0.16, l4H * 0.55, 0.28, 0.18, 0.10, 0.9);
+          // 回廊 (縁側)
+          writeInst(buf, n++, cx, l4Y + l4H - 1, l4W + 3, 1, 0.35, 0.22, 0.14, 1);
+          // 層 4 屋根 (最上層、幅広)
+          const r4Y = l4Y + l4H + 2;
+          writeInst(buf, n++, cx, r4Y, l4W + 5, 3, 0.18, 0.16, 0.20, 1);
+          writeInst(buf, n++, cx, r4Y + 1.5, l4W + 7, 0.9, 0.10, 0.10, 0.14, 1);
+          // === 金鯱 (屋根の両端、象徴) ===
+          writeInst(buf, n++, cx - l4W * 0.42, r4Y + 4, 1.6, 3.2, 0.95, 0.75, 0.22, 1); // 西鯱 体
+          writeInst(buf, n++, cx - l4W * 0.42, r4Y + 6, 2.2, 1.2, 0.92, 0.72, 0.20, 1); // 西鯱 尾
+          writeInst(buf, n++, cx + l4W * 0.42, r4Y + 4, 1.6, 3.2, 0.95, 0.75, 0.22, 1); // 東鯱
+          writeInst(buf, n++, cx + l4W * 0.42, r4Y + 6, 2.2, 1.2, 0.92, 0.72, 0.20, 1);
+          // 大門 (石垣の中央)
+          writeInst(buf, n++, cx, bot + 6, bW * 0.18, 10, 0.22, 0.14, 0.08, 1);
+          writeInst(buf, n++, cx, bot + 6, bW * 0.15, 9, 0.35, 0.22, 0.14, 0.9);
+          // 門の屋根 (小)
+          writeInst(buf, n++, cx, bot + 12, bW * 0.26, 2, 0.18, 0.16, 0.20, 1);
           break;
         }
         case 'tahoto': {

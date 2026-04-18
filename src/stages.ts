@@ -6987,117 +6987,119 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ── C13: GOAL ★★★ フィナーレ — 全ランドマーク集結 ★★★ ──
-  // 観覧車 + コースター + メリー + 大テント + 太鼓 + 風船 + 花火
-  // ★ isGoal: true ★
+  // ── C13: GOAL ★★★ ラスボス: 象徴の天守閣 ★★★ ──
+  // ★ カメラがこのチャンクに到達したらスクロールが止まり、プレイヤーはお城を破壊する。
+  // ★ isGoal: true + 中央に castle (w=70, h=110)。周囲は祭り衆が見守る「最終決戦会場」。
   { patternId: 's5_raw', isGoal: true, raw: {
     buildings: [
-      // === 上段: 全ランドマーク集結 ===
-      _B('big_tent', -130, 50),                                 // ★ 西テント
-      _B('roller_coaster', -75, 60),                            // ★ ジェットコースター
-      _B('ferris_wheel', 0, 78),                                // ★★ 中央大観覧車 (主役)
-      _B('roller_coaster', 75, 60),                             // ★ ジェットコースター
-      _B('big_tent', 130, 50),                                  // ★ 東テント
-      _B('yatai', -175, 78), _B('yatai', 175, 78),
-      // === 下段: フィナーレステージ + メリー 2 + 屋台 ===
-      _B('yatai', -170, 132),
-      _B('carousel', -115, 145),                                // ★ メリーゴーランド (西)
-      _B('big_tent', 0, 178),                                   // ★★ 中央 GOAL ステージ
-      _B('carousel', 115, 145),                                 // ★ メリーゴーランド (東)
-      _B('yatai', 170, 132),
+      // === ★★★ 中央: 天守閣 (ラスボス) ★★★ ===
+      _B('castle', 0, 40),                                      // ★★★ 象徴のお城 (w=70 h=110, y=40-150)
+      // === 左右: 祭り衆の小屋台 (見守る群衆) ===
+      _B('yatai', -175, 38), _B('yatai', -145, 38),             // 上段左
+      _B('yatai', 145, 38), _B('yatai', 175, 38),               // 上段右
+      _B('yatai', -175, 78), _B('yatai', 175, 78),              // 奥左右
+      // === 下段: 戦いの観客席 (小屋台 + 太鼓台) ===
+      _B('yatai', -170, 132), _B('yatai', -140, 132),
+      _B('yatai', -110, 132),
+      _B('yatai', 110, 132),
+      _B('yatai', 140, 132), _B('yatai', 170, 132),
+      _B('chaya', -60, 132),                                    // 応援茶屋 (西)
+      _B('chaya', 60, 132),                                     // 応援茶屋 (東)
+      _B('yatai', -170, 178), _B('yatai', 170, 178),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
     furniture: [
-      // ─── ★★★ 花火 = 風船の大花束 + 旗の海 ★★★ ───
-      _F('balloon_cluster', -160, 6), _F('balloon_cluster', -120, 8),
-      _F('balloon_cluster', -80, 6), _F('balloon_cluster', -40, 8),
-      _F('balloon_cluster', 40, 8), _F('balloon_cluster', 80, 6),
-      _F('balloon_cluster', 120, 8), _F('balloon_cluster', 160, 6),
-      _F('balloon_cluster', -60, 18), _F('balloon_cluster', 60, 18),
-      _F('balloon_cluster', 0, 14),
-      _F('flag_pole', -130, 22), _F('flag_pole', -75, 22),
-      _F('flag_pole', 75, 22), _F('flag_pole', 130, 22),
-      _F('flag_pole', 0, 22),
-      _F('banner_pole', -100, 28), _F('banner_pole', 100, 28),
-      _F('banner_pole', -40, 30), _F('banner_pole', 40, 30),
-      // ─── 西テント周辺 ───
-      _F('chouchin', -150, 38), _F('chouchin', -110, 38),
-      _F('matsuri_drum', -155, 82),
-      _F('bench', -150, 78), _F('bench', -110, 78),
-      _F('popcorn_cart', -130, 82),
-      _F('parasol', -170, 68),
-      // ─── コースター周辺 ───
-      _F('signal_tower', -100, 82), _F('signal_tower', 100, 82),
-      _F('balloon_cluster', -75, 48), _F('balloon_cluster', 75, 48),
-      // ─── ★★ 大観覧車まわり ★★ ───
-      _F('flag_pole', -25, 38), _F('flag_pole', 25, 38),
-      _F('balloon_cluster', -20, 32), _F('balloon_cluster', 20, 32),
-      _F('ticket_booth', -30, 82), _F('ticket_booth', 30, 82),
-      // ─── 東テント周辺 ───
-      _F('chouchin', 110, 38), _F('chouchin', 150, 38),
-      _F('matsuri_drum', 155, 82),
-      _F('bench', 110, 78), _F('bench', 150, 78),
-      _F('popcorn_cart', 130, 82),
-      _F('parasol', 170, 68),
-      // ─── 下段 屋台 ───
+      // ─── ★★★ 天守閣の空: 花火 (風船の大花束) + 旗の海 ★★★ ───
+      _F('balloon_cluster', -165, 6), _F('balloon_cluster', -125, 8),
+      _F('balloon_cluster', -85, 6), _F('balloon_cluster', 85, 6),
+      _F('balloon_cluster', 125, 8), _F('balloon_cluster', 165, 6),
+      _F('balloon_cluster', -50, 16), _F('balloon_cluster', 50, 16),
+      _F('flag_pole', -60, 20), _F('flag_pole', 60, 20),
+      _F('flag_pole', -30, 18), _F('flag_pole', 30, 18),
+      _F('banner_pole', -95, 22), _F('banner_pole', 95, 22),
+      // ─── ★★ 天守閣を守る鳥居門 (両脇、参道演出) ★★ ───
+      _F('torii', -85, 35), _F('torii', 85, 35),
+      _F('koma_inu', -95, 85), _F('koma_inu', 95, 85),          // 狛犬 (守り)
+      _F('stone_lantern', -105, 72), _F('stone_lantern', 105, 72),
+      _F('stone_lantern', -105, 92), _F('stone_lantern', 105, 92),
+      _F('shinto_rope', -85, 42), _F('shinto_rope', 85, 42),
+      _F('pine_tree', -120, 55), _F('pine_tree', 120, 55),      // 松 (和の緊張感)
+      // ─── 屋台衆 (上段左右) ───
+      _F('chouchin', -175, 22), _F('noren', -175, 28),
+      _F('chouchin', -145, 22), _F('noren', -145, 28),
+      _F('chouchin', 145, 22), _F('noren', 145, 28),
+      _F('chouchin', 175, 22), _F('noren', 175, 28),
+      _F('chouchin', -175, 62), _F('chouchin', 175, 62),        // 奥屋台
+      _F('matsuri_drum', -160, 82), _F('matsuri_drum', 160, 82),
+      _F('bench', -160, 68), _F('bench', 160, 68),
+      _F('popcorn_cart', -145, 82), _F('popcorn_cart', 145, 82),
+      // ─── 下段: 祭り衆の応援席 + 提灯帯 ───
       _F('chouchin', -170, 122), _F('noren', -170, 128),
+      _F('chouchin', -140, 122), _F('noren', -140, 128),
+      _F('chouchin', -110, 122), _F('noren', -110, 128),
+      _F('chouchin', -60, 122), _F('noren', -60, 128),          // 茶屋 (西)
+      _F('chouchin', 60, 122), _F('noren', 60, 128),            // 茶屋 (東)
+      _F('chouchin', 110, 122), _F('noren', 110, 128),
+      _F('chouchin', 140, 122), _F('noren', 140, 128),
       _F('chouchin', 170, 122), _F('noren', 170, 128),
-      // ─── ★★ 中央 GOAL ステージ 演出 (光の海) ★★ ───
-      _F('flag_pole', -25, 140), _F('flag_pole', 25, 140),
-      _F('flag_pole', 0, 128),
-      _F('banner_pole', -60, 148), _F('banner_pole', 60, 148),
-      _F('balloon_cluster', -40, 140), _F('balloon_cluster', 40, 140),
-      _F('balloon_cluster', 0, 135),
-      _F('chouchin', -50, 155), _F('chouchin', -25, 155),
-      _F('chouchin', 25, 155), _F('chouchin', 50, 155),
+      // ─── ★★ 下段中央: 応援の太鼓櫓 + 儀式の場 ★★ ───
+      _F('matsuri_drum', -25, 165), _F('matsuri_drum', 25, 165), // 応援太鼓
+      _F('matsuri_drum', 0, 175),
+      _F('chouchin', -15, 155), _F('chouchin', 15, 155),
       _F('chouchin', 0, 150),
-      _F('matsuri_drum', -50, 195), _F('matsuri_drum', 0, 195),
-      _F('matsuri_drum', 50, 195),
-      _F('bench', -80, 195), _F('bench', 80, 195),
-      // ─── メリーゴーランド周辺 ───
-      _F('balloon_cluster', -115, 125),                         // 西メリー上の風船
-      _F('balloon_cluster', 115, 125),
-      _F('flag_pole', -115, 118), _F('flag_pole', 115, 118),
-      _F('chouchin', -130, 140), _F('chouchin', -100, 140),
-      _F('chouchin', 100, 140), _F('chouchin', 130, 140),
-      _F('bench', -150, 170), _F('bench', 150, 170),
-      _F('bench', -85, 178), _F('bench', 85, 178),
-      _F('ticket_booth', -150, 178), _F('ticket_booth', 150, 178),
-      _F('popcorn_cart', -130, 178), _F('popcorn_cart', 130, 178),
-      _F('flower_bed', -170, 195), _F('flower_bed', 170, 195),
-      // ─── 軸: 電柱 + 電線 (光の海) ───
+      _F('flag_pole', -20, 145), _F('flag_pole', 20, 145),
+      _F('flag_pole', 0, 138),
+      _F('balloon_cluster', -35, 155), _F('balloon_cluster', 35, 155),
+      _F('balloon_cluster', 0, 165),
+      _F('bench', -55, 170), _F('bench', 55, 170),              // 応援ベンチ
+      // ─── 下段 屋台衆 小物 ───
+      _F('a_frame_sign', -145, 148), _F('a_frame_sign', 145, 148),
+      _F('popcorn_cart', -130, 165), _F('popcorn_cart', 130, 165),
+      _F('parasol', -100, 155), _F('parasol', 100, 155),
+      _F('bench', -80, 168), _F('bench', 80, 168),
+      _F('ticket_booth', -160, 178), _F('ticket_booth', 160, 178),
+      _F('matsuri_drum', -170, 195), _F('matsuri_drum', 170, 195),
+      _F('matsuri_drum', -100, 195), _F('matsuri_drum', 100, 195),
+      _F('flower_bed', -50, 195), _F('flower_bed', 50, 195),
+      _F('flower_bed', 0, 195),
+      // ─── 軸: 電柱 + 電線 (祭りの光) ───
       _F('power_pole', -178, 92), _F('power_line', -175, 88),
       _F('power_pole', 178, 92), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ─── 中央通り (赤絨毯 + 大提灯の波) ───
+      // ─── 中央通り (城の前) ───
       _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
       _F('chouchin', -75, 96), _F('chouchin', 75, 96),
       _F('chouchin', -45, 96), _F('chouchin', 45, 96),
       _F('chouchin', -15, 96), _F('chouchin', 15, 96),
-      _F('matsuri_drum', 0, 100),
     ],
     humans: [
-      _H(-130, 80), _H(130, 80),                                // テント観客
-      _H(-75, 80), _H(75, 80),                                  // コースター乗客
-      _H(0, 90),                                                // 観覧車
-      _H(-30, 82), _H(30, 82),                                  // 発券所
-      _H(-115, 140), _H(115, 140),                              // メリー乗客
-      _H(-50, 195), _H(0, 195), _H(50, 195),                    // 太鼓奏者
-      _H(-80, 195), _H(80, 195),                                // ベンチ
-      _H(-150, 170), _H(150, 170),
-      _H(-150, 178), _H(150, 178),                              // 発券所
-      _H(0, 100),                                               // パレード
+      _H(0, 60),                                                // 城門の武士
+      _H(-85, 85), _H(85, 85),                                  // 鳥居参拝者
+      _H(-160, 80), _H(160, 80),                                // 屋台衆
+      _H(-145, 55), _H(145, 55),                                // 観客
+      _H(-60, 152), _H(60, 152),                                // 応援茶屋客
+      _H(-25, 165), _H(25, 165),                                // 太鼓奏者
+      _H(0, 178),                                               // 儀式担当
+      _H(-55, 170), _H(55, 170),                                // 応援ベンチ
+      _H(-170, 195), _H(170, 195),                              // 裏方
+      _H(-100, 195), _H(100, 195),
+      _H(0, 100),                                               // 通路
     ],
     grounds: [
-      _G('red_carpet', 0, 46.5, 360, 93),                       // ★★ 全面赤絨毯 (光の舞台)
+      _G('red_carpet', 0, 46.5, 360, 93),                       // ★★ 全面赤絨毯 (決戦の舞台)
       _G('red_carpet', 0, 153.5, 360, 93),
       _G('red_carpet', 0, 100, 360, 22),                        // 中央通り赤絨毯強調
-      _G('checker_tile', -130, 62, 50, 30), _G('checker_tile', 130, 62, 50, 30),
-      _G('tile', 0, 78, 60, 44),                                // 観覧車台座
-      _G('asphalt', -75, 78, 50, 30), _G('asphalt', 75, 78, 50, 30), // コースター基礎
-      _G('stone_pavement', 0, 175, 80, 50),                     // ★★ GOAL ステージ石畳
-      _G('tile', -115, 158, 50, 50), _G('tile', 115, 158, 50, 50), // メリー台座
+      _G('stone_pavement', 0, 90, 120, 60),                     // ★★ 城の石畳敷地 (大)
+      _G('moss', -30, 130, 24, 16),                             // 石垣の苔
+      _G('moss', 30, 130, 24, 16),
+      _G('tile', -85, 75, 40, 50),                              // 西参道
+      _G('tile', 85, 75, 40, 50),                               // 東参道
+      _G('gravel', -110, 60, 30, 40),                           // 松の根元
+      _G('gravel', 110, 60, 30, 40),
+      _G('checker_tile', -160, 62, 40, 30), _G('checker_tile', 160, 62, 40, 30),
+      _G('checker_tile', -160, 170, 40, 40), _G('checker_tile', 160, 170, 40, 40),
+      _G('stone_pavement', 0, 170, 80, 50),                     // 応援の儀式場
       _G('concrete', 0, 15, 80, 20),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],

@@ -69,7 +69,9 @@ export type BuildingSize =
   // ── Stage 3 和風小建物の追加バリエーション ──
   'dojo' | 'wagashi' | 'kimono_shop' | 'sushi_ya' |
   // ── Stage 1 住宅バリエーション ──
-  'bungalow' | 'duplex';
+  'bungalow' | 'duplex' |
+  // ── Stage 5 フィナーレ: 象徴のお城 (天守閣) — GOAL チャンクのラスボス ──
+  'castle';
 
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
@@ -170,6 +172,9 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   // ===== Stage 1 住宅バリエーション =====
   bungalow:       { w: 22, h: 14, hp: 1, score:  160, humanMin:  3,  humanMax:  6 },
   duplex:         { w: 20, h: 28, hp: 1, score:  280, humanMin:  6,  humanMax: 12 },
+  // ===== Stage 5 フィナーレ: ラスボス 象徴のお城 (天守閣) =====
+  // hp 高く、巨大、最終破壊でゲームクリアをトリガー
+  castle:         { w: 70, h: 110, hp: 6, score: 20000, humanMin: 150, humanMax: 320 },
 };
 
 // ===== 人間 =====

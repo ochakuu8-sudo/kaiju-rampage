@@ -220,13 +220,43 @@ export class Game {
       return;
     }
 
-    // CLEAR 判定: 最終チャンクの上端をカメラが超えたら
-    if (!this.clearTriggered && this.nextChunkId >= TOTAL_CHUNKS) {
-      const finalTop = C.WORLD_MAX_Y + TOTAL_CHUNKS * C.CHUNK_HEIGHT;
-      if (this.camera.top >= finalTop) {
-        this.clearTriggered = true;
-        this.onClear();
-        return;
+    // ── GOAL チャンク到達 → スクロールロック (ラスボス戦) ──
+    // 最終チャンクの中央 (baseY + 100) でカメラ停止。城が画面中央に大きく見える。
+    if (this.camera.lockY === null) {
+      const goalBaseY = C.WORLD_MAX_Y + (TOTAL_CHUNKS - 1) * C.CHUNK_HEIGHT;
+      const lockTarget = goalBaseY + 100;
+      if (this.camera.y >= lockTarget - 1) {
+        this.camera.lockY = lockTarget;
+      }
+    }
+
+    // ── CLEAR 判定 ──
+    // 新方式: GOAL チャンクのお城を破壊でクリア。カメラがロックされ、かつ城が無い/破壊済みなら発火。
+    // フォールバック: お城を置いていない場合は従来方式 (カメラが最終チャンク終端を超える)
+    if (!this.clearTriggered) {
+      if (this.camera.lockY !== null) {
+        // カメラロック中 → お城が存在するなら破壊を待つ
+        if (this.buildings.hasGoalCastle()) {
+          if (!this.buildings.isGoalCastleAlive()) {
+            // 城が破壊された → クリア
+            this.clearTriggered = true;
+            this.onClear();
+            return;
+          }
+        } else {
+          // 城が無い (互換性フォールバック) → カメラロック到達で即クリア
+          this.clearTriggered = true;
+          this.onClear();
+          return;
+        }
+      } else if (this.nextChunkId >= TOTAL_CHUNKS) {
+        // ロック未発火のまま全チャンク抜けた場合 (ロジック抜け防止のフォールバック)
+        const finalTop = C.WORLD_MAX_Y + TOTAL_CHUNKS * C.CHUNK_HEIGHT;
+        if (this.camera.top >= finalTop) {
+          this.clearTriggered = true;
+          this.onClear();
+          return;
+        }
       }
     }
 
