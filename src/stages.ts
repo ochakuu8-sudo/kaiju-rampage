@@ -2255,16 +2255,22 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   // Stage 1 終端の踏切から駅北口へ。帰宅サラリーマンと駅員が主役。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 駅舎中心 + 両脇飲食 ===
-      _B('ramen', -148, 42), _B('izakaya', -115, 42),          // Cell A 駅前ラーメン・立ち飲み
-      _B('train_station', -25, 50),                            // ★ Cell B 小さな駅舎
-      _B('convenience', 55, 42), _B('cafe', 90, 42),           // Cell C 24h コンビニ + カフェ
-      _B('apartment', 150, 50),                                // Cell D 駅前アパート
-      // === 下段: ロータリー + バス + 飲み屋 ===
-      _B('izakaya', -150, 132), _B('ramen', -118, 132),        // Cell E 横丁入口
-      _B('bus_terminal_shelter', -55, 140),                    // Cell F バス乗り場
-      _B('convenience', 38, 138), _B('izakaya', 72, 138),      // Cell G 夜食コンビニ + 屋台風居酒屋
-      _B('shop', 118, 135), _B('apartment', 158, 148),         // Cell H 小商店 + 雑居
+      // === 上段: 駅舎中心 + 両脇飲食 (全て別業種) ===
+      _B('ramen', -148, 42),                                    // Cell A 駅前ラーメン
+      _B('snack', -115, 42),                                    // ★ スナック
+      _B('train_station', -25, 50),                             // ★ Cell B 小さな駅舎
+      _B('convenience', 55, 42),                                // 24h コンビニ
+      _B('cafe', 90, 42),                                       // 夜カフェ
+      _B('business_hotel', 135, 65),                            // ★ 駅前ビジネスホテル
+      _B('shop', 172, 42),
+      // === 下段: ロータリー + バス + 多様な店 ===
+      _B('mahjong_parlor', -150, 132),                          // ★ 麻雀荘
+      _B('izakaya', -118, 132),                                 // 唯一の居酒屋
+      _B('bus_terminal_shelter', -55, 140),                     // Cell F バス乗り場
+      _B('bakery', 38, 132),                                    // 早朝パン屋
+      _B('karaoke', 78, 142),                                   // カラオケ
+      _B('capsule_hotel', 135, 142),                            // ★ カプセルホテル
+      _B('apartment', 175, 148),                                // 駅前アパート
     ],
     furniture: [
       // ─── 軸: ネオン提灯帯 (facade y=22 上段) ───
@@ -2498,25 +2504,31 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
   // ═══ Act II: 歓楽街の極み (C3-C5) ════════════════════════════════
 
-  // ── C3: カラオケビル街 — 大型看板 + 高層雑居 ──
-  // 歓楽街の入り口。カラオケと雑居ビルが天を衝き、ネオンが最も派手。
+  // ── C3: 高層雑居ビル街 — カラオケ 1 棟 + 多様な大型店 ──
+  // 歓楽街の入り口。高層雑居ビル・ホテル・ラウンジが天を衝くが、カラオケは
+  // 1 棟に絞り、club / love_hotel / business_hotel などで多様性を出す。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: カラオケと高層雑居 ===
-      _B('karaoke', -150, 48),                                  // ★ Cell A カラオケ大箱
-      _B('apartment_tall', -110, 60),                           // ★ Cell A 高層アパート
-      _B('karaoke', -55, 48),                                   // ★ Cell B 2 棟目
-      _B('izakaya', -20, 42), _B('bookstore', 10, 42),
-      _B('tower', 55, 65),                                      // ★ Cell C 雑居タワー
-      _B('shop', 95, 42), _B('izakaya', 122, 42),
-      _B('apartment_tall', 165, 60),                            // ★ Cell D 高層アパート
-      // === 下段: ラウンジ・バー ===
-      _B('karaoke', -150, 138),                                 // Cell E 3 棟目
-      _B('izakaya', -110, 132), _B('ramen', -80, 132),
-      _B('office', -18, 152),                                   // Cell F 夜稼ぎのオフィスビル
-      _B('izakaya', 32, 132), _B('karaoke', 68, 138),           // Cell G 4 棟目
-      _B('apartment_tall', 128, 155),                           // Cell H
-      _B('izakaya', 172, 132),
+      // === 上段: 高層雑居 + 1 カラオケ + 多彩な大型店 ===
+      _B('karaoke', -150, 48),                                  // ★ 上段唯一のカラオケ
+      _B('apartment_tall', -108, 60),                           // 高層アパート
+      _B('club', -58, 48),                                      // ★ クラブ
+      _B('izakaya', -22, 42),                                   // 居酒屋 (唯一)
+      _B('bookstore', 10, 42),
+      _B('tower', 55, 65),                                      // ★ 雑居タワー
+      _B('cafe', 95, 42),
+      _B('bank', 128, 48),
+      _B('love_hotel', 168, 62),                                // ★ ラブホテル
+      // === 下段: ラウンジ・バー・ホテル ===
+      _B('business_hotel', -150, 155),                          // ★ ビジネスホテル (高層)
+      _B('snack', -112, 132),                                   // ★ スナック
+      _B('ramen', -82, 132),
+      _B('office', -22, 152),                                   // 夜稼ぎのオフィスビル
+      _B('mahjong_parlor', 20, 132),                            // ★ 麻雀荘
+      _B('movie_theater', 62, 148),                             // ★ ミニシアター
+      _B('pharmacy', 100, 132),                                 // 深夜ドラッグ
+      _B('capsule_hotel', 145, 142),                            // ★ カプセルホテル
+      _B('apartment', 180, 148),
     ],
     furniture: [
       // ─── ★★ シグネチャ: 巨大カラオケ看板の連続 ★★ ───
@@ -2578,26 +2590,31 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
 
-  // ── C4: パチンコ街のメイン通り — 交番 + 行列 + ネオン最盛期 ──
-  // Stage 2 の最盛期。密度も彩度も最大。小さな交番が秩序の象徴として混じる。
+  // ── C4: ゲーセンとパチンコのメイン通り — 交番 + 多業種混在 ──
+  // Stage 2 の最盛期。パチンコとゲーセンは各 1 軒に絞り、周囲を多業種で彩る。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: パチンコ列 + ゲーセン + 交番 ===
-      _B('pachinko', -145, 42),                                 // ★ Cell A 1 軒目
-      _B('game_center', -100, 42),
-      _B('pachinko', -55, 42),                                  // ★ Cell B 2 軒目
-      _B('police_station', 0, 50),                              // ★ Cell B/C 交番 (秩序)
-      _B('pachinko', 55, 42),                                   // ★ Cell C 3 軒目
-      _B('movie_theater', 105, 48),                             // Cell D 映画館
-      _B('izakaya', 155, 42), _B('ramen', 178, 42),
-      // === 下段: パチンコ裏口 + 銀行 + ラーメン ===
-      _B('pachinko', -148, 138),                                // ★ Cell E 4 軒目
-      _B('game_center', -108, 132),
-      _B('bank', -55, 140),                                     // Cell F 夜閉まった銀行
-      _B('pachinko', -15, 138),                                 // ★ Cell F 5 軒目
-      _B('ramen', 30, 132), _B('izakaya', 55, 132),
-      _B('game_center', 105, 138),                              // Cell H ゲーセン
-      _B('izakaya', 155, 132), _B('ramen', 178, 132),
+      // === 上段: パチンコ 1 + ゲーセン 1 + 交番 + 多業種 ===
+      _B('pachinko', -148, 42),                                 // ★ 上段唯一のパチンコ
+      _B('game_center', -108, 42),                              // ★ ゲーセン (唯一)
+      _B('karaoke', -65, 48),                                   // カラオケ
+      _B('police_station', -10, 50),                            // ★ 交番 (秩序の象徴)
+      _B('club', 38, 48),                                       // ★ クラブ
+      _B('bookstore', 78, 42),
+      _B('movie_theater', 115, 50),                             // 映画館
+      _B('izakaya', 158, 42),                                   // 唯一の居酒屋
+      _B('ramen', 180, 42),
+      // === 下段: 多業種の夜店 (上段と被らない) ===
+      _B('bank', -150, 145),                                    // 夜閉まった銀行
+      _B('mahjong_parlor', -115, 132),                          // ★ 麻雀荘
+      _B('love_hotel', -75, 150),                               // ★ ラブホ
+      _B('cafe', -35, 132),
+      _B('capsule_hotel', 5, 142),                              // ★ カプセルホテル
+      _B('pharmacy', 42, 132),                                  // 深夜ドラッグ
+      _B('snack', 75, 132),                                     // ★ スナック
+      _B('business_hotel', 112, 158),                           // ★ ビジネスホテル
+      _B('bakery', 155, 132),                                   // 深夜パン
+      _B('apartment', 180, 148),
     ],
     furniture: [
       // ─── ★★ シグネチャ: パチンコ大看板 5 連 ★★ ───
