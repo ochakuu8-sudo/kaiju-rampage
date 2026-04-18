@@ -1517,9 +1517,9 @@ export class Game {
     return n - start;
   }
 
-  /** ボールを「怪獣ドット絵」として描画。当たり判定は円のまま。
-   * 見た目: 角・鱗・牙・光る目をもつ小さな怪獣が転がる。
-   * b.angle で全パーツが一緒に回転し、転がる様子が視覚的に分かる。
+  /** ボールを「直立した怪獣」ドット絵として描画。当たり判定は円のまま。
+   * スプライトは非回転 (常に上向き姿勢、ゴジラ風のシルエット)。
+   * 頭・胴体・腕・脚・尻尾・背ビレ・角を持つ小さな怪獣。
    * スクロール速度が上がるほど目の色が赤〜青へ変化 (パワーレベル表示)。
    */
   private fillBall(buf: Float32Array, start: number): number {
@@ -1527,16 +1527,10 @@ export class Game {
     if (!b.active) return 0;
     let n = start;
     const isFl = this.juice.isBallFlashing();
-    const R = C.BALL_RADIUS;
-    const ang = b.angle;
-    const cs = Math.cos(ang), sn = Math.sin(ang);
+    const R = C.BALL_RADIUS;  // 16
+    const cx = b.x, cy = b.y;
 
-    // 体の位置ヘルパー: ボディローカル (ox, oy) → ワールド (回転を適用)
-    const at = (ox: number, oy: number): [number, number] =>
-      [b.x + ox * cs - oy * sn, b.y + ox * sn + oy * cs];
-
-    // === 色: 基本は濃緑の怪獣、目だけ速度に応じて変化 ===
-    // 目の発光色: orange → red → electric blue (パワーレベル)
+    // 目の発光色 (スクロール速度 → orange → red → electric blue)
     const pt = Math.min(1, (this.camera.scrollSpeed - C.SCROLL_BASE_SPEED) / 100);
     let eyeR: number, eyeG: number, eyeB: number;
     if (pt < 0.5) {
@@ -1547,129 +1541,155 @@ export class Game {
       eyeR = 1.0 - s * 0.6; eyeG = 0.45 + s * 0.30; eyeB = 0.30 + s * 0.70;
     }
 
-    // 体の基本色 (暗緑)。ヒット時は白フラッシュ
-    const bodyR = isFl ? 1.00 : 0.18;
-    const bodyG = isFl ? 1.00 : 0.42;
-    const bodyB = isFl ? 1.00 : 0.20;
-    const bellyR = isFl ? 1.00 : 0.62;
-    const bellyG = isFl ? 1.00 : 0.82;
-    const bellyB = isFl ? 1.00 : 0.35;
-    const scaleR = isFl ? 1.00 : 0.10;
-    const scaleG = isFl ? 1.00 : 0.26;
-    const scaleB = isFl ? 1.00 : 0.12;
+    // 体の色 (ヒット時は全体白フラッシュ)
+    const bodyR = isFl ? 1 : 0.22, bodyG = isFl ? 1 : 0.42, bodyB = isFl ? 1 : 0.22;
+    const darkR = isFl ? 1 : 0.10, darkG = isFl ? 1 : 0.24, darkB = isFl ? 1 : 0.12;
+    const bellyR = isFl ? 1 : 0.72, bellyG = isFl ? 1 : 0.82, bellyB = isFl ? 1 : 0.40;
+    const clawR = isFl ? 1 : 0.92, clawG = isFl ? 1 : 0.88, clawB = isFl ? 1 : 0.70;
+    const hornR = isFl ? 1 : 0.95, hornG = isFl ? 1 : 0.85, hornB = isFl ? 1 : 0.35;
 
-    // === ① モーションブラートレイル (怪獣の残像) ===
+    // === ① モーションブラートレイル (円形、残像) ===
     for (let ti = 0; ti < C.TRAIL_LEN; ti++) {
       const age = ti / C.TRAIL_LEN;
       const idx = (b.trailHead - 1 - ti + C.TRAIL_LEN) % C.TRAIL_LEN;
       const tx = b.trail[idx * 2], ty = b.trail[idx * 2 + 1];
-      const alpha = (1 - age) * 0.40;
-      const sz = R * 2 * (1 - age * 0.5);
+      const alpha = (1 - age) * 0.35;
+      const sz = R * 1.6 * (1 - age * 0.5);
       writeInst(buf, n++, tx, ty, sz, sz, bodyR, bodyG, bodyB, alpha, 0, 1);
     }
 
-    // === ② 外殻の暗アウトライン (怪獣シルエット) ===
-    writeInst(buf, n++, b.x, b.y, R * 2.10, R * 2.10,
-      0.05, 0.15, 0.06, 0.75, 0, 1);
+    // === ② 尻尾 (体の後ろ、左下方向へ長く伸びる) ===
+    writeInst(buf, n++, cx - R * 0.85, cy - R * 0.70, R * 0.50, R * 1.10,
+      darkR, darkG, darkB, 1, -0.7, 1);
+    writeInst(buf, n++, cx - R * 1.15, cy - R * 1.05, R * 0.35, R * 0.60,
+      darkR, darkG, darkB, 1, -0.7, 1);                          // 尻尾の先端
 
-    // === ③ 角/スパイク (6 本、体の周囲から突き出る、本体と一緒に回転) ===
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 + ang;
-      const spX = b.x + Math.cos(a) * R * 0.98;
-      const spY = b.y + Math.sin(a) * R * 0.98;
-      // スパイク本体 (三角っぽく見せる細長い楕円、暗緑)
-      writeInst(buf, n++, spX, spY, R * 0.40, R * 0.55,
-        isFl ? 1 : 0.22, isFl ? 1 : 0.32, isFl ? 1 : 0.14, 1,
-        a - Math.PI / 2, 1);
-      // スパイクのハイライト (より明るい芯)
-      writeInst(buf, n++, spX, spY, R * 0.22, R * 0.32,
-        isFl ? 1 : 0.55, isFl ? 1 : 0.72, isFl ? 1 : 0.22, 0.85,
-        a - Math.PI / 2, 1);
+    // === ③ 背ビレ (ゴジラ風、頭頂〜背中にかけて 5 枚の三角) ===
+    for (let i = 0; i < 5; i++) {
+      const sy = cy + R * (1.00 - i * 0.28);
+      const sw = R * (0.28 - Math.abs(i - 2) * 0.04);
+      const sh = R * (0.36 - Math.abs(i - 2) * 0.04);
+      writeInst(buf, n++, cx + R * 0.08, sy, sw, sh,
+        darkR * 0.85, darkG * 0.85, darkB * 0.85, 1, 0, 1);
     }
 
-    // === ④ 怪獣の本体 (メイン、緑の円) ===
-    writeInst(buf, n++, b.x, b.y, R * 1.85, R * 1.85,
+    // === ④ 脚 (2 本、太い、直立) ===
+    writeInst(buf, n++, cx - R * 0.38, cy - R * 0.80, R * 0.48, R * 0.60,
+      bodyR, bodyG, bodyB, 1, 0, 1);
+    writeInst(buf, n++, cx + R * 0.38, cy - R * 0.80, R * 0.48, R * 0.60,
+      bodyR, bodyG, bodyB, 1, 0, 1);
+    // 脚の内側の影 (立体感)
+    writeInst(buf, n++, cx - R * 0.45, cy - R * 0.85, R * 0.26, R * 0.42,
+      darkR, darkG, darkB, 0.55, 0, 1);
+    writeInst(buf, n++, cx + R * 0.30, cy - R * 0.85, R * 0.26, R * 0.42,
+      darkR, darkG, darkB, 0.55, 0, 1);
+
+    // === ⑤ 足 + 鉤爪 (3 本 × 2 足) ===
+    writeInst(buf, n++, cx - R * 0.38, cy - R * 1.12, R * 0.58, R * 0.18,
+      darkR, darkG, darkB, 1, 0, 0);
+    writeInst(buf, n++, cx + R * 0.38, cy - R * 1.12, R * 0.58, R * 0.18,
+      darkR, darkG, darkB, 1, 0, 0);
+    for (let i = 0; i < 3; i++) {
+      writeInst(buf, n++, cx - R * 0.55 + i * R * 0.18, cy - R * 1.22,
+        R * 0.12, R * 0.18, clawR, clawG, clawB, 1, 0, 0);
+      writeInst(buf, n++, cx + R * 0.20 + i * R * 0.18, cy - R * 1.22,
+        R * 0.12, R * 0.18, clawR, clawG, clawB, 1, 0, 0);
+    }
+
+    // === ⑥ 胴体 (梨型、上が細く下が太い) ===
+    writeInst(buf, n++, cx, cy - R * 0.15, R * 1.25, R * 1.15,
       bodyR, bodyG, bodyB, 1, 0, 1);
 
-    // === ⑤ お腹 / 下腹のパッチ (明るい色、体の下側にある、回転する) ===
-    {
-      const [bx, by] = at(0, -R * 0.35);
-      writeInst(buf, n++, bx, by, R * 1.30, R * 0.90,
-        bellyR, bellyG, bellyB, 1, ang, 1);
+    // === ⑦ お腹 (明るいクリーム、体の前面) + 節模様 ===
+    writeInst(buf, n++, cx, cy - R * 0.25, R * 0.75, R * 0.85,
+      bellyR, bellyG, bellyB, 1, 0, 1);
+    writeInst(buf, n++, cx, cy - R * 0.10, R * 0.60, R * 0.05,
+      bellyR * 0.70, bellyG * 0.70, bellyB * 0.60, 1, 0, 0);
+    writeInst(buf, n++, cx, cy - R * 0.40, R * 0.55, R * 0.05,
+      bellyR * 0.70, bellyG * 0.70, bellyB * 0.60, 1, 0, 0);
+
+    // === ⑧ 胸の鱗 (暗ドット 4 個) ===
+    writeInst(buf, n++, cx - R * 0.35, cy + R * 0.25, R * 0.11, R * 0.11,
+      darkR, darkG, darkB, 1, 0, 1);
+    writeInst(buf, n++, cx + R * 0.35, cy + R * 0.25, R * 0.11, R * 0.11,
+      darkR, darkG, darkB, 1, 0, 1);
+    writeInst(buf, n++, cx - R * 0.45, cy - R * 0.05, R * 0.10, R * 0.10,
+      darkR, darkG, darkB, 1, 0, 1);
+    writeInst(buf, n++, cx + R * 0.45, cy - R * 0.05, R * 0.10, R * 0.10,
+      darkR, darkG, darkB, 1, 0, 1);
+
+    // === ⑨ 腕 (2 本、体の横に構える、やや斜めで威嚇) ===
+    writeInst(buf, n++, cx - R * 0.80, cy + R * 0.05, R * 0.30, R * 0.75,
+      bodyR, bodyG, bodyB, 1, -0.35, 1);
+    writeInst(buf, n++, cx + R * 0.80, cy + R * 0.05, R * 0.30, R * 0.75,
+      bodyR, bodyG, bodyB, 1, 0.35, 1);
+
+    // === ⑩ 爪 (手、3 本 × 2) ===
+    for (let i = 0; i < 3; i++) {
+      writeInst(buf, n++, cx - R * 1.05 + i * R * 0.10, cy - R * 0.32,
+        R * 0.08, R * 0.18, clawR, clawG, clawB, 1, 0, 0);
+      writeInst(buf, n++, cx + R * 0.90 + i * R * 0.10, cy - R * 0.32,
+        R * 0.08, R * 0.18, clawR, clawG, clawB, 1, 0, 0);
     }
 
-    // === ⑥ 鱗の斑点 (6 個、体に分散、回転する) ===
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 + 0.4 + ang;
-      const r = R * 0.55;
-      writeInst(buf, n++, b.x + Math.cos(a) * r, b.y + Math.sin(a) * r,
-        R * 0.22, R * 0.22, scaleR, scaleG, scaleB, 1, 0, 1);
-    }
+    // === ⑪ 首 (短く太い) ===
+    writeInst(buf, n++, cx, cy + R * 0.55, R * 0.55, R * 0.30,
+      bodyR, bodyG, bodyB, 1, 0, 1);
 
-    // === ⑦ 大きな角 (2 本、頭頂に向かって、回転する) ===
-    {
-      const hornColor: [number, number, number] =
-        isFl ? [1, 1, 1] : [0.95, 0.85, 0.42];  // 黄金
-      const [hlX, hlY] = at(-R * 0.55, R * 0.85);
-      const [hrX, hrY] = at(R * 0.55, R * 0.85);
-      // 左角 (三角っぽい)
-      writeInst(buf, n++, hlX, hlY, R * 0.38, R * 0.70,
-        hornColor[0], hornColor[1], hornColor[2], 1, ang - 0.45, 1);
-      writeInst(buf, n++, hrX, hrY, R * 0.38, R * 0.70,
-        hornColor[0], hornColor[1], hornColor[2], 1, ang + 0.45, 1);
-      // 角の芯 (白いハイライト)
-      writeInst(buf, n++, hlX, hlY, R * 0.18, R * 0.38,
-        1.0, 0.95, 0.70, 0.85, ang - 0.45, 1);
-      writeInst(buf, n++, hrX, hrY, R * 0.18, R * 0.38,
-        1.0, 0.95, 0.70, 0.85, ang + 0.45, 1);
-    }
+    // === ⑫ 頭 (丸い、体より少し小さい) + 下顎 ===
+    writeInst(buf, n++, cx, cy + R * 0.85, R * 0.95, R * 0.80,
+      bodyR, bodyG, bodyB, 1, 0, 1);
+    writeInst(buf, n++, cx, cy + R * 0.72, R * 0.70, R * 0.32,
+      darkR * 1.3, darkG * 1.3, darkB * 1.3, 1, 0, 1);
 
-    // === ⑧ 光る目 (2 つ、スクロール速度で色変化、体と一緒に回転) ===
-    {
-      const [elX, elY] = at(-R * 0.35, R * 0.18);
-      const [erX, erY] = at(R * 0.35, R * 0.18);
-      // 目の白い/発光部 (大きめ)
-      writeInst(buf, n++, elX, elY, R * 0.42, R * 0.42,
-        eyeR, eyeG, eyeB, 1, 0, 1);
-      writeInst(buf, n++, erX, erY, R * 0.42, R * 0.42,
-        eyeR, eyeG, eyeB, 1, 0, 1);
-      // 瞳 (暗色、怖い縦長の瞳孔)
-      writeInst(buf, n++, elX, elY, R * 0.18, R * 0.32,
-        0.08, 0.04, 0.04, 1, 0, 1);
-      writeInst(buf, n++, erX, erY, R * 0.18, R * 0.32,
-        0.08, 0.04, 0.04, 1, 0, 1);
-      // ハイライト (生きてる感)
-      writeInst(buf, n++, elX + R * 0.08, elY + R * 0.10, R * 0.10, R * 0.10,
-        1.0, 1.0, 0.95, 0.95, 0, 1);
-      writeInst(buf, n++, erX + R * 0.08, erY + R * 0.10, R * 0.10, R * 0.10,
-        1.0, 1.0, 0.95, 0.95, 0, 1);
-    }
+    // === ⑬ 眉 (怒り V 字) ===
+    writeInst(buf, n++, cx - R * 0.22, cy + R * 1.00, R * 0.22, R * 0.08,
+      darkR, darkG, darkB, 1, -0.35, 0);
+    writeInst(buf, n++, cx + R * 0.22, cy + R * 1.00, R * 0.22, R * 0.08,
+      darkR, darkG, darkB, 1, 0.35, 0);
 
-    // === ⑨ 口 (暗い横帯 + 4 本の白い牙) ===
-    {
-      const [mX, mY] = at(0, -R * 0.25);
-      // 口の暗い部分
-      writeInst(buf, n++, mX, mY, R * 0.90, R * 0.18,
-        0.08, 0.04, 0.04, 1, ang, 0);
-      // 4 本の牙 (白/クリーム色の小さな三角)
-      const fangColor: [number, number, number] = isFl ? [1, 1, 1] : [0.95, 0.92, 0.82];
-      for (let i = 0; i < 4; i++) {
-        const fx = (-0.20 + i * 0.133) * R;
-        const [fX, fY] = at(fx, -R * 0.28);
-        writeInst(buf, n++, fX, fY, R * 0.10, R * 0.18,
-          fangColor[0], fangColor[1], fangColor[2], 1, ang, 0);
-      }
-    }
+    // === ⑭ 光る目 (速度で色変化) + 縦長瞳孔 + ハイライト ===
+    writeInst(buf, n++, cx - R * 0.22, cy + R * 0.90, R * 0.28, R * 0.32,
+      eyeR, eyeG, eyeB, 1, 0, 1);
+    writeInst(buf, n++, cx + R * 0.22, cy + R * 0.90, R * 0.28, R * 0.32,
+      eyeR, eyeG, eyeB, 1, 0, 1);
+    writeInst(buf, n++, cx - R * 0.22, cy + R * 0.90, R * 0.10, R * 0.22,
+      0.05, 0.02, 0.02, 1, 0, 1);
+    writeInst(buf, n++, cx + R * 0.22, cy + R * 0.90, R * 0.10, R * 0.22,
+      0.05, 0.02, 0.02, 1, 0, 1);
+    writeInst(buf, n++, cx - R * 0.17, cy + R * 0.96, R * 0.06, R * 0.06,
+      1.0, 1.0, 0.95, 0.95, 0, 1);
+    writeInst(buf, n++, cx + R * 0.27, cy + R * 0.96, R * 0.06, R * 0.06,
+      1.0, 1.0, 0.95, 0.95, 0, 1);
 
-    // === ⑩ 鼻の穴 (2 つの小さな暗ドット) ===
-    {
-      const [nlX, nlY] = at(-R * 0.12, -R * 0.08);
-      const [nrX, nrY] = at(R * 0.12, -R * 0.08);
-      writeInst(buf, n++, nlX, nlY, R * 0.10, R * 0.08,
-        0.05, 0.02, 0.02, 1, 0, 1);
-      writeInst(buf, n++, nrX, nrY, R * 0.10, R * 0.08,
-        0.05, 0.02, 0.02, 1, 0, 1);
-    }
+    // === ⑮ 鼻の穴 (2 つ) ===
+    writeInst(buf, n++, cx - R * 0.08, cy + R * 0.76, R * 0.06, R * 0.05,
+      0.05, 0.02, 0.02, 1, 0, 1);
+    writeInst(buf, n++, cx + R * 0.08, cy + R * 0.76, R * 0.06, R * 0.05,
+      0.05, 0.02, 0.02, 1, 0, 1);
+
+    // === ⑯ 口 (暗帯) + 牙 4 本 ===
+    writeInst(buf, n++, cx, cy + R * 0.62, R * 0.60, R * 0.10,
+      0.08, 0.04, 0.04, 1, 0, 0);
+    const fangColor: [number, number, number] = isFl ? [1, 1, 1] : [0.95, 0.92, 0.82];
+    writeInst(buf, n++, cx - R * 0.15, cy + R * 0.66, R * 0.06, R * 0.12,
+      fangColor[0], fangColor[1], fangColor[2], 1, 0, 0);
+    writeInst(buf, n++, cx + R * 0.15, cy + R * 0.66, R * 0.06, R * 0.12,
+      fangColor[0], fangColor[1], fangColor[2], 1, 0, 0);
+    writeInst(buf, n++, cx - R * 0.08, cy + R * 0.58, R * 0.06, R * 0.10,
+      fangColor[0], fangColor[1], fangColor[2], 1, 0, 0);
+    writeInst(buf, n++, cx + R * 0.08, cy + R * 0.58, R * 0.06, R * 0.10,
+      fangColor[0], fangColor[1], fangColor[2], 1, 0, 0);
+
+    // === ⑰ 頭頂の 2 本の角 (金色) + ハイライト ===
+    writeInst(buf, n++, cx - R * 0.28, cy + R * 1.30, R * 0.18, R * 0.50,
+      hornR, hornG, hornB, 1, -0.30, 1);
+    writeInst(buf, n++, cx + R * 0.28, cy + R * 1.30, R * 0.18, R * 0.50,
+      hornR, hornG, hornB, 1, 0.30, 1);
+    writeInst(buf, n++, cx - R * 0.28, cy + R * 1.30, R * 0.08, R * 0.30,
+      1.0, 0.95, 0.70, 0.85, -0.30, 1);
+    writeInst(buf, n++, cx + R * 0.28, cy + R * 1.30, R * 0.08, R * 0.30,
+      1.0, 0.95, 0.70, 0.85, 0.30, 1);
 
     return n - start;
   }
