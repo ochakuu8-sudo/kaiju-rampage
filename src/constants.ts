@@ -65,7 +65,11 @@ export type BuildingSize =
   // ── Stage 2 夜街追加 ──
   'snack' | 'love_hotel' | 'business_hotel' | 'mahjong_parlor' | 'club' | 'capsule_hotel' |
   // ── Stage 3 和風追加 ──
-  'kura' | 'machiya' | 'onsen_inn' | 'tahoto';
+  'kura' | 'machiya' | 'onsen_inn' | 'tahoto' |
+  // ── Stage 3 和風小建物の追加バリエーション ──
+  'dojo' | 'wagashi' | 'kimono_shop' | 'sushi_ya' |
+  // ── Stage 1 住宅バリエーション ──
+  'bungalow' | 'duplex';
 
 export const BUILDING_DEFS: Record<BuildingSize, {
   w: number; h: number; hp: number; score: number; humanMin: number; humanMax: number
@@ -158,6 +162,14 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   machiya:        { w: 24, h: 32, hp: 2, score:  400, humanMin: 15,  humanMax: 30 },
   onsen_inn:      { w: 44, h: 36, hp: 2, score:  900, humanMin: 40,  humanMax: 90 },
   tahoto:         { w: 22, h: 48, hp: 2, score: 1000, humanMin:  5,  humanMax: 15 },
+  // ===== Stage 3 和風小建物の追加バリエーション =====
+  dojo:           { w: 24, h: 24, hp: 1, score:  280, humanMin:  5,  humanMax: 15 },
+  wagashi:        { w: 18, h: 20, hp: 1, score:  220, humanMin:  8,  humanMax: 16 },
+  kimono_shop:    { w: 22, h: 22, hp: 1, score:  260, humanMin:  6,  humanMax: 14 },
+  sushi_ya:       { w: 16, h: 20, hp: 1, score:  240, humanMin: 10,  humanMax: 20 },
+  // ===== Stage 1 住宅バリエーション =====
+  bungalow:       { w: 22, h: 14, hp: 1, score:  160, humanMin:  3,  humanMax:  6 },
+  duplex:         { w: 20, h: 28, hp: 1, score:  280, humanMin:  6,  humanMax: 12 },
 };
 
 // ===== 人間 =====

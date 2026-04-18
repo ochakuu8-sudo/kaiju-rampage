@@ -228,6 +228,12 @@ const BUILDING_TYPE_COLORS: Partial<Record<C.BuildingSize, readonly [number,numb
   machiya:          [0.72, 0.58, 0.42],  // 木の色
   onsen_inn:        [0.52, 0.36, 0.28],  // 濃い木 + 煙突
   tahoto:           [0.78, 0.32, 0.22],  // 朱塗り
+  dojo:             [0.42, 0.32, 0.22],  // 濃い木 (武道場)
+  wagashi:          [0.92, 0.82, 0.68],  // 淡いベージュ
+  kimono_shop:      [0.62, 0.42, 0.58],  // 紫 (呉服)
+  sushi_ya:         [0.85, 0.72, 0.52],  // 木 + 白のれん
+  bungalow:         [0.78, 0.72, 0.58],  // 黄ベージュ (平屋)
+  duplex:           [0.88, 0.82, 0.72],  // 明るいクリーム (2 世帯)
 };
 
 // 建物種別からファサードパレットを選択するヘルパー
@@ -2260,6 +2266,135 @@ export class BuildingManager {
           writeInst(buf, n++, cx, top + 1, 1.8, 1.8, 0.85, 0.68, 0.18, 1, 0, 1);
           // 下層の扉 (中央)
           writeInst(buf, n++, cx, bot + 4, bW * 0.22, bH * 0.18, 0.32, 0.18, 0.12, 1);
+          break;
+        }
+        case 'dojo': {
+          // 道場: 大きな切妻屋根 + 板壁 + 木の引き戸 + 「道」の縦額
+          writeInst(buf, n++, cx, top - 3, bW + 5, 5, 0.28, 0.20, 0.14, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 7, 2, 0.18, 0.12, 0.08, 1);
+          // 破風の三角 (切妻)
+          writeInst(buf, n++, cx, top + 4, bW * 0.40, 5, 0.25, 0.18, 0.12, 1);
+          // 縦の額 (黒地に金字風)
+          writeInst(buf, n++, cx - bW * 0.38, cy, 3.5, bH * 0.55, 0.15, 0.10, 0.08, 1);
+          writeInst(buf, n++, cx - bW * 0.38, cy, 2.5, bH * 0.48, 0.82, 0.68, 0.22, 0.92);
+          // 板壁の目地 (横線 3 本)
+          for (const yOff of [bH * 0.30, bH * 0.50, bH * 0.70]) {
+            writeInst(buf, n++, cx, bot + yOff, bW * 0.90, 0.5, 0.22, 0.16, 0.10, 0.85);
+          }
+          // 引き戸 (格子)
+          writeInst(buf, n++, cx + bW * 0.05, bot + bH * 0.32, bW * 0.55, bH * 0.34, 0.52, 0.35, 0.22, 0.95);
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + bW * 0.05 + i * bW * 0.18, bot + bH * 0.32, 0.4, bH * 0.32,
+              0.18, 0.12, 0.08, 0.92);
+          }
+          // 石段
+          n = this.drawStairs(buf, n, cx, bot + 1, 4);
+          break;
+        }
+        case 'wagashi': {
+          // 和菓子屋: 淡いベージュ壁 + 大きな暖簾 + ショーウィンドウ + 桜紋
+          writeInst(buf, n++, cx, top - 3, bW + 3, 4.5, 0.62, 0.48, 0.35, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 5, 1.5, 0.45, 0.32, 0.22, 1);
+          // 店名の横額
+          writeInst(buf, n++, cx, top - 6, bW * 0.80, 3, 0.98, 0.92, 0.82, 0.95);
+          writeInst(buf, n++, cx, top - 6, bW * 0.72, 1.5, 0.72, 0.32, 0.42, 0.92);
+          // ショーウィンドウ (透明のガラス)
+          writeInst(buf, n++, cx, bot + bH * 0.45, bW * 0.70, bH * 0.30, 0.92, 0.85, 0.72, 0.78);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.45, bW * 0.70, bH * 0.30);
+          // 和菓子のディスプレイ (窓の中、3 個)
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + i * bW * 0.18, bot + bH * 0.45, 2, 2,
+              [0.92, 0.72, 0.45][i+1], [0.42, 0.32, 0.28][i+1], [0.52, 0.68, 0.32][i+1], 0.92, 0, 1);
+          }
+          // のれん (紅色、大きめ)
+          writeInst(buf, n++, cx, bot + bH * 0.72, bW * 0.75, 3.5, 0.78, 0.22, 0.28, 0.95);
+          writeInst(buf, n++, cx, bot + bH * 0.72, bW * 0.68, 2, 0.95, 0.88, 0.82, 0.92);
+          // ドア
+          writeInst(buf, n++, cx, bot + 4, bW * 0.22, 8, 0.35, 0.22, 0.15, 1);
+          break;
+        }
+        case 'kimono_shop': {
+          // 呉服屋: 紫壁 + 大きな縦看板 + 着物の反物が見えるショーウィンドウ
+          writeInst(buf, n++, cx, top - 3, bW + 3, 4.5, 0.42, 0.28, 0.38, 1);
+          // 縦看板 (金字)
+          writeInst(buf, n++, cx - bW * 0.42, cy, 4, bH * 0.70, 0.28, 0.18, 0.22, 1);
+          writeInst(buf, n++, cx - bW * 0.42, cy, 2.8, bH * 0.62, 0.95, 0.78, 0.22, 0.92);
+          // 大きなショーウィンドウ (縦長、反物の色縞)
+          writeInst(buf, n++, cx + bW * 0.08, bot + bH * 0.50, bW * 0.55, bH * 0.55, 0.92, 0.88, 0.82, 0.82);
+          // 反物の色縞 (ショーウィンドウ内に複数の縦ストライプ)
+          for (let i = -2; i <= 2; i++) {
+            const colors = [[0.82, 0.32, 0.42], [0.42, 0.52, 0.78], [0.92, 0.68, 0.22],
+                            [0.48, 0.72, 0.38], [0.72, 0.42, 0.68]];
+            writeInst(buf, n++, cx + bW * 0.08 + i * bW * 0.09, bot + bH * 0.50,
+              bW * 0.06, bH * 0.50,
+              colors[i+2][0], colors[i+2][1], colors[i+2][2], 0.92);
+          }
+          // のれん (藍色)
+          writeInst(buf, n++, cx, bot + bH * 0.82, bW * 0.78, 3, 0.22, 0.28, 0.52, 0.95);
+          // 店先の盆 (木)
+          writeInst(buf, n++, cx - bW * 0.35, bot + 2, bW * 0.22, 1.5, 0.42, 0.28, 0.18, 0.95);
+          break;
+        }
+        case 'sushi_ya': {
+          // 寿司屋: 小さな店 + 赤のれん + 「寿」縦看板 + 木のカウンター
+          writeInst(buf, n++, cx, top - 3, bW + 3, 4.5, 0.52, 0.35, 0.22, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 5, 1.5, 0.32, 0.22, 0.15, 1);
+          // 「寿」縦看板 (赤地)
+          writeInst(buf, n++, cx - bW * 0.35, cy, 3, bH * 0.55, 0.78, 0.22, 0.22, 1);
+          writeInst(buf, n++, cx - bW * 0.35, cy, 2.2, bH * 0.48, 0.98, 0.92, 0.82, 0.92);
+          // ショーウィンドウ (小さい、寿司ケース風)
+          writeInst(buf, n++, cx + bW * 0.05, bot + bH * 0.45, bW * 0.50, bH * 0.22, 0.88, 0.92, 0.82, 0.78);
+          // 寿司ネタの色点 (窓の中)
+          for (let i = -1; i <= 1; i++) {
+            writeInst(buf, n++, cx + bW * 0.05 + i * 3.5, bot + bH * 0.45, 1.5, 1.2,
+              [0.92, 0.75, 0.32][i+1], [0.45, 0.78, 0.22][i+1], [0.32, 0.42, 0.92][i+1], 0.92);
+          }
+          // 赤のれん (大きめ)
+          writeInst(buf, n++, cx, bot + bH * 0.72, bW * 0.78, 4, 0.82, 0.22, 0.22, 0.95);
+          writeInst(buf, n++, cx, bot + bH * 0.72, bW * 0.70, 2.5, 0.98, 0.92, 0.82, 0.92);
+          // 赤提灯 (入口上)
+          writeInst(buf, n++, cx + bW * 0.38, bot + bH * 0.68, 2.2, 3, 0.92, 0.28, 0.18, 1, 0, 1);
+          // ドア
+          writeInst(buf, n++, cx, bot + 4, bW * 0.25, 8, 0.28, 0.18, 0.12, 1);
+          break;
+        }
+        case 'bungalow': {
+          // 平屋: 横長・背低 + 大きな屋根 + 縁側 + 小さな煙突
+          // 大きな寄棟屋根
+          writeInst(buf, n++, cx, top - 2, bW + 4, 4, 0.55, 0.42, 0.32, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 6, 1.5, 0.42, 0.32, 0.22, 1);
+          // 小さな煙突 (左端)
+          writeInst(buf, n++, cx - bW * 0.35, top + 4, 1.8, 4, 0.48, 0.38, 0.28, 1);
+          // 縁側の大きな窓 (横長)
+          writeInst(buf, n++, cx, bot + bH * 0.48, bW * 0.70, bH * 0.38, 0.72, 0.88, 0.95, 0.78);
+          n = this.drawWindowFrame(buf, n, cx, bot + bH * 0.48, bW * 0.70, bH * 0.38);
+          // 玄関ドア (右端)
+          writeInst(buf, n++, cx + bW * 0.35, bot + bH * 0.30, bW * 0.20, bH * 0.55, 0.42, 0.28, 0.18, 1);
+          // 縁側の段差 (低い)
+          writeInst(buf, n++, cx, bot + 1, bW * 0.80, 1.2, 0.62, 0.48, 0.32, 0.95);
+          break;
+        }
+        case 'duplex': {
+          // 二世帯住宅: 縦長 2 階建 + 中央で分割された 2 玄関 + バルコニー
+          // 切妻屋根
+          writeInst(buf, n++, cx, top - 2, bW + 3, 4, 0.48, 0.38, 0.28, 1);
+          writeInst(buf, n++, cx, top + 1, bW + 5, 1.5, 0.32, 0.25, 0.18, 1);
+          // 2F バルコニー (横長)
+          writeInst(buf, n++, cx, bot + bH * 0.62, bW * 0.85, 1.5, 0.55, 0.42, 0.32, 0.95);
+          // 2F 窓 (2 つ、左右)
+          writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.72, bW * 0.30, bH * 0.16, 0.72, 0.88, 0.95, 0.78);
+          writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.72, bW * 0.30, bH * 0.16, 0.72, 0.88, 0.95, 0.78);
+          // 中央の分割線
+          writeInst(buf, n++, cx, cy, 0.6, bH * 0.95, 0.32, 0.22, 0.15, 0.92);
+          // 1F 2 玄関 (左右別々)
+          writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.25, bW * 0.18, bH * 0.42, 0.52, 0.35, 0.22, 1);
+          writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.25, bW * 0.18, bH * 0.42, 0.52, 0.35, 0.22, 1);
+          // 1F 小窓 (各世帯)
+          writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.45, bW * 0.14, bH * 0.12, 0.72, 0.88, 0.95, 0.72);
+          writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.45, bW * 0.14, bH * 0.12, 0.72, 0.88, 0.95, 0.72);
+          // 2 つの表札
+          writeInst(buf, n++, cx - bW * 0.25, bot + bH * 0.08, bW * 0.10, 1.2, 0.92, 0.85, 0.72, 0.95);
+          writeInst(buf, n++, cx + bW * 0.25, bot + bH * 0.08, bW * 0.10, 1.2, 0.92, 0.85, 0.72, 0.95);
           break;
         }
       }
