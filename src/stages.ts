@@ -713,34 +713,27 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 60), _H(0, 160),                                 // 主要通りの通勤者 (2 人)
     ],
     grounds: [
-      // ── 上段: 4 セル別の地面 (庭の性格で分ける、緑一辺倒を回避) ──
-      _G('grass',           -135, 46.5, 90, 93),          // Cell A: 家族住宅の前庭
-      _G('stone_pavement',   -45, 46.5, 90, 93),          // Cell B: 町内の石畳路地
-      _G('grass',             45, 46.5, 90, 93),          // Cell C: 夫婦住宅の庭
-      _G('grass',            135, 46.5, 90, 93),          // Cell D: タウンハウス連棟の庭
-      // 上段オーバーレイ
-      _G('dirt',            -155, 72, 42, 32),            // Cell A 奥の家庭菜園
-      _G('wood_deck',        -35, 72, 30, 20),            // Cell B 縁側のウッドデッキ (cat)
-      _G('fallen_leaves',    -78, 90, 34, 16),            // Cell B 桜並木 1 の下
-      _G('concrete',          65, 55, 32, 28),            // Cell C 車庫前舗装
-      _G('fallen_leaves',    126, 70, 36, 24),            // ★ Cell D 桜並木 2 の見せ場
-      _G('fallen_leaves',    158, 92, 28, 16),            // Cell D 桜並木 3 の下
-      _G('dirt',             145, 20, 38, 18),            // Cell D 奥の花壇
-      _G('stone_pavement',  -170, 55, 26, 22),            // Cell A 玄関アプローチ
-
-      // ── 下段: 4 セル別の地面 (裏庭とガレージで性格分け) ──
-      _G('grass',           -135, 153.5, 90, 93),         // Cell E 家庭菜園の庭
-      _G('grass',            -45, 153.5, 90, 93),         // Cell F 独居老人の裏庭
-      _G('concrete',          45, 153.5, 90, 93),         // Cell G ファミリーの駐車帯
-      _G('grass',            135, 153.5, 90, 93),         // Cell H 桜古木の庭
-      // 下段オーバーレイ
-      _G('dirt',            -155, 175, 56, 42),           // Cell E 広い家庭菜園
-      _G('wood_deck',        -30, 168, 28, 18),           // Cell F 縁側 (2 匹目 cat)
-      _G('fallen_leaves',    -80, 178, 32, 18),           // Cell F 桜並木 4 の下
-      _G('dirt',              70, 172, 32, 24),           // Cell G 車庫横の土
-      _G('stone_pavement',    15, 135, 30, 22),           // Cell G ガレージ進入路
-      _G('fallen_leaves',    108, 150, 32, 22),           // ★ Cell H 桜古木の下
-      _G('dirt',             158, 178, 38, 28),           // Cell H 温室前の畑
+      // ── ベース: 全幅の住宅街の緑 (Chunk 1 へ連続) ──
+      _G('grass', 0, 46.5, 360, 93),
+      _G('grass', 0, 153.5, 360, 93),
+      // ── 連続桜並木リボン (Chunks 0→1→2 で右側 x≈+120 に続く) ──
+      _G('fallen_leaves', 128, 75, 60, 36),                  // ★ 見せ場桜下
+      _G('fallen_leaves', 158, 92, 30, 18),                  // 桜並木 3 の下
+      _G('fallen_leaves', 108, 150, 44, 30),                 // ★ 桜古木の下
+      // ── 家庭菜園の畑 (左側に集中: 畑エリアを形成) ──
+      _G('dirt', -150, 70, 50, 32),                          // Cell A 奥の菜園
+      _G('dirt', -150, 175, 70, 42),                         // Cell E 家庭菜園 (大)
+      _G('dirt', 155, 178, 38, 28),                          // Cell H 温室前の畑
+      // ── 縁側のウッドデッキ (猫の居場所を温かい色で) ──
+      _G('wood_deck', -30, 70, 28, 18),                      // Cell B 縁側 (1 匹目)
+      _G('wood_deck', -30, 170, 28, 18),                     // Cell F 縁側 (2 匹目)
+      // ── 車庫・玄関の舗装 ──
+      _G('concrete', 65, 58, 32, 28),                        // Cell C 車庫前
+      _G('concrete', 28, 168, 38, 24),                       // Cell G 車庫
+      _G('stone_pavement', -170, 55, 28, 24),                // Cell A 玄関アプローチ
+      // ── avenue マーカー (x=0、上下端) ──
+      _G('dirt', 0, 15, 60, 25),
+      _G('dirt', 0, 185, 60, 25),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -850,32 +843,28 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 60), _H(0, 160),                                 // 主要通り
     ],
     grounds: [
-      // ── 上段: 住宅 + 角のコンビニ + ランドロマット ──
-      _G('grass',           -135, 46.5, 90, 93),          // Cell A 住宅の庭
-      _G('asphalt',          -45, 46.5, 90, 93),          // Cell B コンビニ前駐車場
-      _G('stone_pavement',    45, 46.5, 90, 93),          // Cell C ランドロマット路地
-      _G('grass',            135, 46.5, 90, 93),          // Cell D 一戸建て + 温室の庭
-      // 上段オーバーレイ
-      _G('dirt',            -150, 72, 45, 30),            // Cell A 奥の庭
-      _G('concrete',         -15, 72, 35, 25),            // Cell B 搬入用ガレージ
-      _G('fallen_leaves',    -90, 92, 28, 16),            // Cell A-B 境界の桜下
-      _G('wood_deck',         30, 68, 26, 18),            // Cell C ランドロマット縁
-      _G('dirt',             170, 75, 32, 30),            // Cell D 温室前の花壇
-      _G('fallen_leaves',    108, 90, 28, 16),            // Cell D 桜並木 (Chunk 0 継続)
-      _G('stone_pavement',  -150, 20, 30, 18),            // Cell A 玄関アプローチ
-
-      // ── 下段: マンション + 独居 + 2 つめコンビニ ──
-      _G('concrete',        -135, 153.5, 90, 93),         // Cell E マンションの駐車場
-      _G('grass',            -45, 153.5, 90, 93),         // Cell F 独居老人の庭
-      _G('asphalt',           45, 153.5, 90, 93),         // Cell G 2 つめコンビニ前駐車場
-      _G('grass',            135, 153.5, 90, 93),         // Cell H 住宅 + 温室
-      // 下段オーバーレイ
-      _G('dirt',            -165, 172, 32, 32),           // マンション裏の空き地
-      _G('stone_pavement',  -110, 175, 40, 30),           // 住宅間の石畳路地
-      _G('wood_deck',        -20, 170, 28, 18),           // Cell F 縁側
-      _G('dirt',              65, 176, 35, 28),           // Cell G コンビニ裏の土
-      _G('fallen_leaves',    108, 170, 28, 18),           // Cell H 桜の下
-      _G('dirt',             168, 180, 30, 25),           // Cell H 温室の裏の畑
+      // ── ベース: 上段 grass (Chunk 0 から連続) / 下段 asphalt (コンビニ駐車場ゾーン) ──
+      _G('grass', 0, 46.5, 360, 93),
+      _G('asphalt', 0, 153.5, 360, 93),
+      // ── 連続桜並木リボン (Chunk 0 から繋がる) ──
+      _G('fallen_leaves', 108, 90, 30, 18),                  // 桜下 (Chunk 0 境界)
+      _G('fallen_leaves', 115, 170, 28, 18),                 // Cell H 桜下
+      // ── 角のコンビニ・ランドロマット周辺舗装 (asphalt 地を tile/concrete で punctuate) ──
+      _G('concrete', -45, 55, 50, 35),                       // コンビニ前
+      _G('tile', 38, 55, 36, 30),                            // ランドロマット前
+      _G('concrete', -15, 78, 32, 22),                       // コンビニ搬入ガレージ
+      // ── 住宅の庭の dirt 菜園 ──
+      _G('dirt', -150, 72, 45, 30),                          // Cell A 住宅裏の庭
+      _G('dirt', 170, 75, 32, 28),                           // Cell D 温室前の花壇
+      _G('dirt', 168, 178, 32, 26),                          // Cell H 温室の裏畑
+      // ── 下段のマンション・コンビニの補助舗装 (asphalt を tile で punctuate) ──
+      _G('concrete', 65, 150, 40, 36),                       // 2 つめコンビニ前
+      _G('tile', -130, 135, 36, 28),                         // マンション玄関前タイル
+      _G('stone_pavement', -110, 175, 38, 26),               // 住宅間の石畳路地
+      _G('wood_deck', -20, 170, 28, 18),                     // Cell F 縁側
+      // ── avenue マーカー ──
+      _G('dirt', 0, 15, 60, 25),
+      _G('dirt', 0, 185, 60, 25),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -987,33 +976,26 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 60), _H(0, 160),                                 // 主要通りの歩行者
     ],
     grounds: [
-      // ── 上段: 住宅 + 保育園 + 診療所 + 郵便局 (4 セル性格分け) ──
-      _G('grass',           -135, 46.5, 90, 93),          // Cell A 家族住宅 (園児の家) の庭
-      _G('tile',             -45, 46.5, 90, 93),          // Cell B 保育園の園庭 (タイル舗装)
-      _G('tile',              45, 46.5, 90, 93),          // Cell C 診療所前のタイル
-      _G('grass',            135, 46.5, 90, 93),          // Cell D 住宅 + 郵便局の庭
-      // 上段オーバーレイ
-      _G('dirt',            -165, 72, 32, 28),            // Cell A 住宅裏の菜園
-      _G('fallen_leaves',    -85, 78, 28, 20),            // Cell B 保育園脇の桜下
-      _G('wood_deck',       -105, 30, 28, 18),            // Cell A 縁側
-      _G('concrete',          30, 72, 30, 25),            // Cell C 診療所駐車場
-      _G('tile',             125, 52, 42, 42),            // Cell D 郵便局前
-      _G('fallen_leaves',    155, 90, 28, 16),            // Cell D 桜並木 (Chunk 1 継続)
-      _G('dirt',              0, 15, 60, 25),             // avenue 入口の土 (post_letter_box 周り)
-
-      // ── 下段: 公共ゾーン (Act II への近接、concrete 中心) ──
-      _G('concrete',        -135, 153.5, 90, 93),         // Cell E 分院の駐車帯
-      _G('concrete',         -45, 153.5, 90, 93),         // Cell F 公共歩道
-      _G('concrete',          45, 153.5, 90, 93),         // Cell G 銀行前
-      _G('stone_pavement',   135, 153.5, 90, 93),         // Cell H 公園風の石畳
-      // 下段オーバーレイ
-      _G('tile',            -145, 135, 42, 40),           // Cell E 分院前
-      _G('grass',           -110, 172, 30, 28),           // Cell E 小さな緑地
-      _G('dirt',             -75, 178, 32, 24),           // Cell F バス停横の土
-      _G('tile',              45, 128, 38, 28),           // Cell G 銀行前
-      _G('wood_deck',         75, 172, 26, 18),           // Cell G 郵便局側のウッドデッキ
-      _G('fallen_leaves',     35, 172, 30, 20),           // Cell G Act I 桜並木 終端の下
-      _G('grass',             0, 188, 60, 20),            // avenue 出口の植え込み
+      // ── ベース: 上段 grass (住宅街連続) / 下段 concrete (公共ゾーン、Act II 橋渡し) ──
+      _G('grass', 0, 46.5, 360, 93),
+      _G('concrete', 0, 153.5, 360, 93),
+      // ── 上段: 保育園・診療所・郵便局の tile 舗装 (各建物前に punctuate) ──
+      _G('tile', -45, 55, 55, 50),                           // 保育園の園庭
+      _G('tile', 40, 55, 42, 50),                            // 診療所前
+      _G('tile', 125, 52, 42, 42),                           // 郵便局前
+      // ── 上段 住宅側の dirt 菜園 (連続) ──
+      _G('dirt', -165, 72, 32, 28),                          // Cell A 住宅裏の菜園
+      // ── 連続桜並木リボン終端 (Chunks 0-2 で右側 x≈+120 に続いた fallen_leaves が終わる) ──
+      _G('fallen_leaves', 155, 90, 28, 16),                  // 桜並木 (Chunk 1 継続、Act I 終端)
+      _G('fallen_leaves', 35, 172, 32, 20),                  // 下段 Act I 桜並木 最終株
+      // ── 下段: 公共 concrete を tile/grass で punctuate ──
+      _G('tile', -145, 135, 42, 40),                         // 分院前
+      _G('tile', 45, 128, 38, 28),                           // 銀行前
+      _G('grass', -110, 172, 32, 28),                        // 小さな緑地 (バス停脇)
+      _G('wood_deck', 75, 172, 26, 18),                      // 郵便局裏のウッドデッキ
+      // ── avenue マーカー ──
+      _G('dirt', 0, 15, 60, 25),
+      _G('grass', 0, 188, 60, 20),
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
