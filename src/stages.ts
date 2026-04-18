@@ -2255,22 +2255,39 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   // Stage 1 終端の踏切から駅北口へ。帰宅サラリーマンと駅員が主役。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 駅舎中心 + 両脇飲食 (全て別業種) ===
+      // === 上段 ─ 前列ファサード (Y をずらす) ===
       _B('ramen', -148, 42),                                    // Cell A 駅前ラーメン
-      _B('snack', -115, 42),                                    // ★ スナック
-      _B('train_station', -25, 50),                             // ★ Cell B 小さな駅舎
-      _B('convenience', 55, 42),                                // 24h コンビニ
-      _B('cafe', 90, 42),                                       // 夜カフェ
-      _B('business_hotel', 135, 65),                            // ★ 駅前ビジネスホテル
-      _B('shop', 172, 42),
-      // === 下段: ロータリー + バス + 多様な店 ===
+      _B('snack', -115, 38),
+      _B('train_station', -25, 52),                             // ★ Cell B 駅舎 (奥に構える)
+      _B('convenience', 55, 40),
+      _B('cafe', 90, 44),
+      _B('business_hotel', 135, 68),                            // ★ 背が高いため奥
+      _B('shop', 172, 40),
+      // === 上段 ─ 奥列 (小屋/物置/人力車置き場) ===
+      _B('shed', -170, 76),                                     // 駅裏の倉庫
+      _B('garage', -128, 80),
+      _B('greenhouse', -78, 78),                                // 花屋の温室
+      _B('shed', 30, 72),
+      _B('garage', 78, 74),
+      _B('shed', 110, 76),
+      _B('shed', 168, 80),
+      // === 下段 ─ 前列ファサード ===
       _B('mahjong_parlor', -150, 132),                          // ★ 麻雀荘
-      _B('izakaya', -118, 132),                                 // 唯一の居酒屋
-      _B('bus_terminal_shelter', -55, 140),                     // Cell F バス乗り場
-      _B('bakery', 38, 132),                                    // 早朝パン屋
-      _B('karaoke', 78, 142),                                   // カラオケ
-      _B('capsule_hotel', 135, 142),                            // ★ カプセルホテル
-      _B('apartment', 175, 148),                                // 駅前アパート
+      _B('izakaya', -118, 138),
+      _B('bus_terminal_shelter', -55, 142),                     // Cell F バス乗り場 (長庇)
+      _B('bakery', 38, 130),
+      _B('karaoke', 78, 144),                                   // 少し奥
+      _B('capsule_hotel', 135, 146),                            // ★ カプセル (横長、少し奥)
+      _B('apartment', 175, 148),
+      // === 下段 ─ 奥列 (駐輪場/物置/タクシー溜まり) ===
+      _B('shed', -170, 172),
+      _B('garage', -128, 178),                                  // タクシー車庫
+      _B('shed', -90, 174),
+      _B('yatai', -22, 170),                                    // ★ 駅前の夜鳴き屋台
+      _B('shed', 12, 176),
+      _B('garage', 100, 178),
+      _B('shed', 158, 172),
+      _B('house', 195, 170),                                    // 駅前の古い家
     ],
     furniture: [
       // ─── 軸: ネオン提灯帯 (facade y=22 上段) ───
@@ -2329,29 +2346,46 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   // 全て異なる業種を並べる (ラーメン/牛丼/立ち飲み/スナック/麻雀/ブックカフェ等)。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: 夜食多彩ストリート (全て別業種) ===
+      // === 上段 ─ 前列ファサード (y=38-46、業種で Y を少しずらす) ===
       _B('ramen', -156, 42),                                    // Cell A ラーメン
-      _B('snack', -128, 42),                                    // ★ スナック (ピンク)
-      _B('bakery', -102, 42),                                   // 深夜パン
-      _B('izakaya', -62, 42),                                   // Cell B 立ち飲み
-      _B('shop', -28, 42),                                      // 牛丼 (見立て)
-      _B('cafe', 5, 42),                                        // 夜カフェ
-      _B('convenience', 40, 42),                                // Cell C 24h
-      _B('pharmacy', 72, 42),                                   // 深夜ドラッグ
-      _B('bookstore', 105, 42),                                 // Cell D ブックカフェ
-      _B('karaoke', 140, 42),                                   // ★ カラオケ (Act II 予兆)
-      _B('house', 175, 42),                                     // 古い 2F 建て
-      // === 下段: 対岸の多様な夜店 ===
+      _B('snack', -128, 38),                                    // 前方 (小さく手前)
+      _B('bakery', -102, 44),                                   // 奥めに
+      _B('izakaya', -62, 40),                                   // Cell B 立ち飲み
+      _B('shop', -28, 46),                                      // 牛丼 (見立て)
+      _B('cafe', 5, 38),
+      _B('convenience', 40, 44),                                // Cell C 24h
+      _B('pharmacy', 72, 40),
+      _B('bookstore', 105, 42),                                 // Cell D
+      _B('karaoke', 142, 48),                                   // ★ カラオケ (奥めに、背が高い)
+      // === 上段 ─ 奥列 (y=65-85) 物置/室外機小屋/小さな店 ===
+      _B('shed', -170, 72),                                     // 路地裏の物置
+      _B('garage', -115, 78),                                   // 車庫
+      _B('shed', -78, 74),
+      _B('yatai', -42, 68),                                     // ★ 路地に置かれた屋台
+      _B('shed', 22, 76),
+      _B('garage', 85, 80),                                     // 奥の車庫
+      _B('shed', 125, 72),
+      _B('house', 172, 68),                                     // ★ 奥の古い家
+      // === 下段 ─ 前列ファサード (y=128-138) ===
       _B('mahjong_parlor', -160, 132),                          // ★ Cell E 麻雀荘
-      _B('laundromat', -130, 132),                              // 深夜ランドロマット
-      _B('florist', -105, 132),                                 // 深夜花屋 (稀)
-      _B('gas_station', -60, 135),                              // Cell F 深夜ガソスタ
-      _B('post_office', -20, 132),                              // 夜間郵便 (閉)
-      _B('business_hotel', 28, 150),                            // ★ Cell G ビジネスホテル (縦)
-      _B('clinic', 68, 132),                                    // 救急医院
-      _B('restaurant', 102, 132),                               // Cell H レストラン
-      _B('snack', 130, 132),                                    // ★ 2 軒目スナック (違う色)
-      _B('apartment', 170, 148),
+      _B('laundromat', -128, 138),
+      _B('florist', -102, 130),
+      _B('gas_station', -60, 136),                              // Cell F 深夜ガソスタ (少し奥)
+      _B('post_office', -18, 132),
+      _B('business_hotel', 30, 150),                            // ★ Cell G (背が高いため少し奥)
+      _B('clinic', 72, 128),                                    // Cell H
+      _B('restaurant', 102, 134),
+      _B('snack', 132, 130),                                    // ★ スナック 2 軒目
+      // === 下段 ─ 奥列 (y=160-180) ===
+      _B('shed', -175, 170),
+      _B('garage', -128, 178),                                  // 麻雀荘の裏
+      _B('shed', -90, 174),
+      _B('greenhouse', -48, 172),                               // ★ 深夜営業の八百屋風
+      _B('shed', 5, 168),
+      _B('yatai', 58, 170),                                     // ★ 駐車場脇の屋台
+      _B('shed', 118, 176),
+      _B('apartment', 170, 168),                                // Cell H 駅前アパート (背景)
+      _B('shed', 195, 172),
     ],
     furniture: [
       // ─── 上段 facade (業種別に看板を変える) ───
@@ -2429,18 +2463,40 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   // Act II 歓楽街への扉。提灯が避ける間もなく連続し、ネオンが近づく。
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段: アーケード入口 + 雑貨 ===
-      _B('shotengai_arcade', -110, 48),                         // ★ Cell A+B 上段を跨ぐ大型アーケード
-      _B('bookstore', -30, 42), _B('cafe', 0, 42),              // アーケード端
-      _B('izakaya', 30, 42), _B('ramen', 60, 42),               // Cell C 飲食
-      _B('pachinko', 108, 42),                                  // ★ Cell D Act II 予兆の pachinko
-      _B('izakaya', 148, 42), _B('shop', 175, 42),
-      // === 下段: アーケード出口 + 裏路地 ===
-      _B('shotengai_arcade', 105, 140),                         // ★ Cell G+H 下段大型アーケード
-      _B('izakaya', -160, 132), _B('ramen', -128, 132),         // Cell E 横丁
-      _B('izakaya', -95, 132), _B('bookstore', -62, 132),
-      _B('karaoke', -15, 140),                                  // ★ Cell F 早くも karaoke (Act II 予兆)
-      _B('shop', 35, 132), _B('cafe', 60, 132),
+      // === 上段 ─ 前列 (アーケード + 多様小店) ===
+      _B('shotengai_arcade', -110, 48),                         // ★ 大型アーケード (奥)
+      _B('bookstore', -30, 40),
+      _B('cafe', 0, 44),
+      _B('izakaya', 30, 38),
+      _B('ramen', 60, 42),
+      _B('pachinko', 108, 46),                                  // ★ Act II 予兆
+      _B('snack', 148, 40),
+      _B('shop', 175, 42),
+      // === 上段 ─ 奥列 (小屋/物置/花屋の温室など) ===
+      _B('shed', -170, 74),
+      _B('garage', -60, 78),
+      _B('florist', -25, 75),                                   // 花屋 (小さく)
+      _B('shed', 40, 82),
+      _B('greenhouse', 85, 76),
+      _B('shed', 135, 74),
+      _B('garage', 168, 80),
+      // === 下段 ─ 前列 ===
+      _B('mahjong_parlor', -160, 132),
+      _B('ramen', -128, 138),
+      _B('snack', -95, 130),
+      _B('bookstore', -62, 134),
+      _B('karaoke', -15, 144),                                  // ★ 奥に
+      _B('shotengai_arcade', 105, 140),                         // ★ 下段大型アーケード
+      _B('shop', 35, 130),
+      _B('cafe', 60, 136),
+      // === 下段 ─ 奥列 ===
+      _B('shed', -175, 170),
+      _B('garage', -140, 176),
+      _B('shed', -78, 172),
+      _B('yatai', -32, 168),                                    // ★ 屋台
+      _B('shed', 18, 176),
+      _B('garage', 48, 172),
+      _B('shed', 165, 178),
     ],
     furniture: [
       // ─── ★★ Act I→II 遷移シグネチャ: 提灯ガーランド全幅連続 ★★ ───
