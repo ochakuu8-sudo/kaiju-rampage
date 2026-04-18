@@ -22,6 +22,9 @@ export class Ball {
   // トレイル: リングバッファ
   trail: Float32Array = new Float32Array(C.TRAIL_LEN * 2);
   trailHead = 0;
+  // 回転 (描画用): 速度から計算される見た目の回転角と角速度
+  angle = 0;
+  angularVel = 0;
 
   /** ボール半径 (固定) */
   get radius(): number {
@@ -36,6 +39,8 @@ export class Ball {
     this.vy = 0;
     this.active = true;
     this.lastPiercedBld = null;
+    this.angle = 0;
+    this.angularVel = 0;
     for (let i = 0; i < C.TRAIL_LEN; i++) {
       this.trail[i * 2]     = C.BALL_START_X;
       this.trail[i * 2 + 1] = C.BALL_START_Y;

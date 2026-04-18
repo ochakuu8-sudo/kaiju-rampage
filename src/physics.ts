@@ -106,7 +106,9 @@ export function circleOBBOverlap(
   return dx * dx + dy * dy < br * br;
 }
 
-/** 円 vs OBB 衝突解決。法線はワールド座標で返す */
+/** 円 vs OBB 衝突解決。法線はワールド座標で返す。
+ * 接近中 (dot < 0) のみ反射、既に離れている場合は押し出しのみ
+ * (擦り挙動=毎フレーム反射を防ぐ) */
 export function resolveCircleOBB(
   bx: number, by: number, br: number,
   vx: number, vy: number,
@@ -129,10 +131,47 @@ export function resolveCircleOBB(
   const pen = br - dist;
   const newBx = bx + nx * (pen + 0.5);
   const newBy = by + ny * (pen + 0.5);
-  // 反射
+  // 反射: 接近中のみ (dot < 0 = 面に向かう向き)。離脱中は速度維持。
   const dot = vx * nx + vy * ny;
-  const newVx = (vx - 2 * dot * nx) * damping;
-  const newVy = (vy - 2 * dot * ny) * damping;
+  let newVx = vx, newVy = vy;
+  if (dot < 0) {
+    newVx = (vx - 2 * dot * nx) * damping;
+    newVy = (vy - 2 * dot * ny) * damping;
+  }
+  return [newBx, newBy, newVx, newVy];
+}
+
+/** 円 vs OBB 衝突を「滑走」として解決。
+ * ボールは坂の面に沿って流れる: tangent (接線) 成分は保存、normal (法線) 成分のみ
+ * 強めに減衰。結果としてピンボールらしく滑らかに坂を下る。 */
+export function resolveCircleOBBSlide(
+  bx: number, by: number, br: number,
+  vx: number, vy: number,
+  obb: OBB,
+  normalDamping = 0.15
+): [number, number, number, number] | null {
+  const [lx, ly] = worldToOBBLocal(bx, by, obb);
+  const nearX = Math.max(-obb.hw, Math.min(lx, obb.hw));
+  const nearY = Math.max(-obb.hh, Math.min(ly, obb.hh));
+  const dlx = lx - nearX, dly = ly - nearY;
+  const dist2 = dlx * dlx + dly * dly;
+  if (dist2 >= br * br) return null;
+  const dist = Math.sqrt(dist2) || 0.001;
+  const lnx = dlx / dist, lny = dly / dist;
+  const c = Math.cos(obb.angle), s = Math.sin(obb.angle);
+  const nx = c * lnx - s * lny;
+  const ny = s * lnx + c * lny;
+  const pen = br - dist;
+  const newBx = bx + nx * (pen + 0.5);
+  const newBy = by + ny * (pen + 0.5);
+  // 法線・接線に分解
+  const vNormal = vx * nx + vy * ny;      // + = 離脱向き / - = 接近向き
+  const vTx = vx - vNormal * nx;           // 接線成分 (そのまま保存)
+  const vTy = vy - vNormal * ny;
+  // 接近中なら小さく跳ね、離脱中なら法線成分ゼロに
+  const newVNormal = vNormal < 0 ? -vNormal * normalDamping : 0;
+  const newVx = vTx + newVNormal * nx;
+  const newVy = vTy + newVNormal * ny;
   return [newBx, newBy, newVx, newVy];
 }
 

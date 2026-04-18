@@ -15,7 +15,7 @@ import { Camera } from './camera';
 import { getStage, generateChunk, getInitialCityRoadData, chunkInfoFor, TOTAL_CHUNKS, STAGES } from './stages';
 import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad, GroundTile } from './stages';
 import type { Intersection } from './grid';
-import { resolveCircleOBB, clampSpeed, rand, randInt, circleAABB } from './physics';
+import { resolveCircleOBB, resolveCircleOBBSlide, clampSpeed, rand, randInt, circleAABB } from './physics';
 import type { BuildingData } from './entities';
 
 const SHARED_BUF = new Float32Array(20000 * INST_F);
@@ -308,22 +308,37 @@ export class Game {
       b.x  += b.vx * dts * 60;
       b.y  += b.vy * dts * 60;
       [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
+      // 回転: 水平速度に比例 (転がり、ω = v / r)。右に進めば CW 回転。
+      b.angle -= (b.vx / r) * dts * 60;
       const camTop = this.camera.y + C.WORLD_MAX_Y;
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
+      // 坂は滑走 (tangent 保存 + normal 減衰) で滑らかに流れる
       for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
-        const res = resolveCircleOBB(b.x, b.y, r, b.vx, b.vy, slope);
-        if (res) { [b.x, b.y, b.vx, b.vy] = res; wallSoundNeeded = true; break; }
-      }
-      for (const fl of this.flippers) {
-        const res = resolveCircleOBB(b.x, b.y, r, b.vx, b.vy, fl.getOBB());
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.15);
         if (res) {
+          const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          [b.x, b.y, b.vx, b.vy] = res;
+          const postSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          // 接触音は大きな normal 入力時のみ (擦り音の連発を避ける)
+          if (preSpd - postSpd > 2) wallSoundNeeded = true;
+          break;
+        }
+      }
+      // フリッパーも滑走モード: 静止時は滑らかに流れ、押されたときだけ applyImpulse で強打ち出し
+      for (const fl of this.flippers) {
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.25);
+        if (res) {
+          const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
           const [nvx, nvy] = fl.applyImpulse(b.vx, b.vy);
           b.vx = nvx; b.vy = nvy;
           [b.vx, b.vy] = clampSpeed(b.vx, b.vy, C.MAX_BALL_SPEED);
-          flipperSoundNeeded = true; break;
+          const postSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          // 打ち出し時のみ音を鳴らす (擦り音の連発を避ける)
+          if (postSpd > preSpd + 2) flipperSoundNeeded = true;
+          break;
         }
       }
       if (!bldResult) {
@@ -1489,6 +1504,19 @@ export class Game {
 
     const r = isFl ? 1 : cr, g = isFl ? 1 : cg, bv = isFl ? 1 : cb;
     writeInst(buf, n++, b.x, b.y, radius * 2, radius * 2, r, g, bv, 1, 0, 1);
+    // 回転マーカー: ボールの回転を示す 2 つの斑点 (180° 対称) + 中央のライン
+    // circle=1 で描画すると円になる。小さい斑点を ball.angle に沿って配置。
+    const markerR = radius * 0.55;
+    const mx1 = b.x + Math.cos(b.angle) * markerR;
+    const my1 = b.y + Math.sin(b.angle) * markerR;
+    const mx2 = b.x - Math.cos(b.angle) * markerR;
+    const my2 = b.y - Math.sin(b.angle) * markerR;
+    const mR = r * 0.35, mG = g * 0.35, mB = bv * 0.35;
+    writeInst(buf, n++, mx1, my1, radius * 0.45, radius * 0.45, mR, mG, mB, 0.85, 0, 1);
+    writeInst(buf, n++, mx2, my2, radius * 0.45, radius * 0.45, mR, mG, mB, 0.85, 0, 1);
+    // ハイライト (回転しない光沢、立体感): 左上寄りの白い小円
+    writeInst(buf, n++, b.x - radius * 0.35, b.y + radius * 0.35, radius * 0.5, radius * 0.5,
+      Math.min(1, r + 0.35), Math.min(1, g + 0.35), Math.min(1, bv + 0.35), 0.7, 0, 1);
     return n - start;
   }
 }
