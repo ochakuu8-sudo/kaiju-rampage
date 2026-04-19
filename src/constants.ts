@@ -274,7 +274,7 @@ export const BRIDGE_COLOR:     readonly [number,number,number,number] = [0.58, 0
 export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 0.32, 0.26, 1];
 
 // ===== 自動スクロール =====
-export const SCROLL_SPEED = 50;   // 固定スクロール速度 (px/s)
+export const SCROLL_SPEED = 30;   // 固定スクロール速度 (px/s)
 
 // ===== 燃料ゲージ (ゲームオーバー条件) =====
 // 時間経過で線形に減少し、人間を踏むと線形に回復する。0 でゲームオーバー。
