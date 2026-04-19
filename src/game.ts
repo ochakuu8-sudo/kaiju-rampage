@@ -405,7 +405,7 @@ export class Game {
         const restRad = (fl.isLeft ? C.FLIPPER_REST_DEG : (180 - C.FLIPPER_REST_DEG)) * Math.PI / 180;
         const rCos = Math.cos(restRad), rSin = Math.sin(restRad);
         const yDirT = fl.isLeft ? 1 : -1;
-        const bumpLocalX = C.FLIPPER_W;   // ピボットから最先端までの全長
+        const bumpLocalX = C.FLIPPER_W + TIP_BUMP_R;   // 突起の内側端が最先端 = ギリギリ外側に配置
         const bumpLocalY = 6 * yDirT;
         const tipBX = fl.pivotX + bumpLocalX * rCos - bumpLocalY * rSin;
         const tipBY = fl.pivotY + bumpLocalX * rSin + bumpLocalY * rCos;
@@ -1979,7 +1979,7 @@ export class Game {
       const restRadV = (fl.isLeft ? C.FLIPPER_REST_DEG : (180 - C.FLIPPER_REST_DEG)) * Math.PI / 180;
       const rCosV = Math.cos(restRadV), rSinV = Math.sin(restRadV);
       const bumpLocalY_v = 6 * yDir;
-      const bumpLocalX_v = C.FLIPPER_W;   // ピボットから最先端までの全長
+      const bumpLocalX_v = C.FLIPPER_W + 2;   // 突起の内側端が最先端
       const bumpVX = fl.pivotX + bumpLocalX_v * rCosV - bumpLocalY_v * rSinV;
       const bumpVY = fl.pivotY + bumpLocalX_v * rSinV + bumpLocalY_v * rCosV;
       writeInst(buf, n++, bumpVX, bumpVY, 4, 4, gr * 0.9, gg * 0.9, gb * 1.05, 1, 0, 1);
