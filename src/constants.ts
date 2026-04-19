@@ -14,7 +14,7 @@ export const FALLOFF_Y = -285;       // これ以下でボールロスト
 // ===== ボール =====
 // リアルピンボール寄り: 穏やかな打ち出し + 緩い重力で滞空時間を確保
 // 建物ヒットでの減速は一切なし (HP > 0 なら反射、HP ≤ 0 なら貫通=破壊、速度そのまま)
-export const BALL_RADIUS = 17;           // ボール半径 (固定)
+export const BALL_RADIUS = 16;           // ボール半径 (固定)
 export const GRAVITY = 0.28;             // やや控えめにしてホールドタイムを確保
 export const MAX_BALL_SPEED = 22;        // クランプ上限 (ビル通過・降下時に頭打ちしない程度)
 export const WALL_DAMPING = 0.66;        // 壁での反発 (世界端のみ)
@@ -29,7 +29,7 @@ export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーショ
 export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 
 // ===== フリッパー =====
-export const FLIPPER_W = 68;       // 先端の丸みを考慮した視覚ギャップがボール径の約0.95倍 (≈30 px) になる長さ
+export const FLIPPER_W = 72;       // 視覚ギャップ ≈27 px (ボール径 32 の約0.83倍)
 export const FLIPPER_H = 8;        // フリッパー厚 (先端の丸み半径 = FLIPPER_H/2 = 4)
 export const FLIPPER_REST_DEG = -20;
 export const FLIPPER_ACTIVE_DEG = 25;
