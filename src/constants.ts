@@ -281,7 +281,7 @@ export const SCROLL_SPEED = 50;   // 固定スクロール速度 (px/s)
 export const FUEL_MAX             = 100;
 export const FUEL_INITIAL         = 70;
 export const FUEL_DRAIN_PER_SEC   = 10;   // 満タンから約 10 秒で空になる (何も踏めなければゲームオーバー)
-export const FUEL_GAIN_PER_HUMAN  = 2.5;
+export const FUEL_GAIN_PER_HUMAN  = 0.5;
 export const FUEL_LOW_THRESHOLD   = 20;   // この値を下回ると赤く点滅
 
 // ===== ステージ (完走型) =====
