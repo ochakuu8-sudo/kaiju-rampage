@@ -3964,7 +3964,7 @@ export class FurnitureManager {
 
 // ===== VEHICLE =====
 
-export type VehicleType = 'car' | 'bus' | 'truck' | 'ambulance' | 'taxi' | 'motorcycle' | 'delivery' | 'van';
+export type VehicleType = 'car' | 'bus' | 'truck' | 'ambulance' | 'taxi' | 'motorcycle' | 'delivery' | 'van' | 'worker_truck';
 
 export interface VehicleItem {
   type: VehicleType;
@@ -3991,15 +3991,32 @@ interface VehicleDef {
 }
 
 const VEHICLE_DEFS_DATA: Record<VehicleType, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
-  car:        { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 50,  speedMax: 70  },
-  bus:        { w: 28, h: 12, maxHp: 1, score:  8, speedMin: 35,  speedMax: 50  },
-  truck:      { w: 24, h: 12, maxHp: 1, score:  5, speedMin: 30,  speedMax: 45  },
-  ambulance:  { w: 22, h: 10, maxHp: 1, score: 50, speedMin: 100, speedMax: 120 },
-  taxi:       { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 55,  speedMax: 75  },
-  motorcycle: { w: 12, h:  7, maxHp: 1, score:  2, speedMin: 70,  speedMax: 100 },
-  delivery:   { w: 22, h: 11, maxHp: 1, score:  3, speedMin: 40,  speedMax: 60  },
-  van:        { w: 22, h: 11, maxHp: 1, score:  4, speedMin: 35,  speedMax: 55  },
+  car:          { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 50,  speedMax: 70  },
+  bus:          { w: 28, h: 12, maxHp: 1, score:  8, speedMin: 35,  speedMax: 50  },
+  truck:        { w: 24, h: 12, maxHp: 1, score:  5, speedMin: 30,  speedMax: 45  },
+  ambulance:    { w: 22, h: 10, maxHp: 1, score: 50, speedMin: 100, speedMax: 120 },
+  taxi:         { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 55,  speedMax: 75  },
+  motorcycle:   { w: 12, h:  7, maxHp: 1, score:  2, speedMin: 70,  speedMax: 100 },
+  delivery:     { w: 22, h: 11, maxHp: 1, score:  3, speedMin: 40,  speedMax: 60  },
+  van:          { w: 22, h: 11, maxHp: 1, score:  4, speedMin: 35,  speedMax: 55  },
+  worker_truck: { w: 26, h: 14, maxHp: 1, score: 30, speedMin: 25,  speedMax: 40  },
 };
+
+/** 破壊時に人間を吐く車種と人数レンジ (工業エリアの燃料補給源) */
+export const VEHICLE_HUMAN_YIELD: Partial<Record<VehicleType, [number, number]>> = {
+  worker_truck: [20, 35],
+};
+
+/** ステージ別の動的スポーン車種プール (stageIndex で選択) */
+const DEFAULT_DYN_TYPES: VehicleType[] = ['car', 'car', 'car', 'bus', 'truck', 'taxi', 'motorcycle', 'delivery', 'van'];
+const STAGE4_DYN_TYPES:  VehicleType[] = ['truck', 'van', 'delivery', 'worker_truck', 'worker_truck', 'worker_truck'];
+const DYN_TYPES_BY_STAGE: VehicleType[][] = [
+  DEFAULT_DYN_TYPES, // Stage 1
+  DEFAULT_DYN_TYPES, // Stage 2
+  DEFAULT_DYN_TYPES, // Stage 3
+  STAGE4_DYN_TYPES,  // Stage 4 (港湾・工業) — worker_truck が過半
+  DEFAULT_DYN_TYPES, // Stage 5
+];
 
 // Car color palette (deterministic by position)
 const CAR_COLORS: ReadonlyArray<readonly [number, number, number]> = [
@@ -4017,7 +4034,8 @@ export class VehicleManager {
   private defs: VehicleDef[] = [];
   private spawnTimers: number[] = [];
   private dynLanes: Array<{
-    chunkId: number; laneY: number; laneH: number;
+    chunkId: number; stageIndex: number;
+    laneY: number; laneH: number;
     timerR: number; timerL: number;
   }> = [];
 
@@ -4027,13 +4045,15 @@ export class VehicleManager {
     this.vehicles = [];
   }
 
-  addChunkLanes(chunkId: number, roads: { y: number; h: number }[]) {
+  addChunkLanes(chunkId: number, roads: { y: number; h: number }[], stageIndex: number) {
+    // Stage 4 は燃料補給が worker_truck に依存するため、発生頻度を上げる
+    const isIndustrial = stageIndex === 3;
     for (const road of roads) {
       this.dynLanes.push({
-        chunkId,
+        chunkId, stageIndex,
         laneY: road.y, laneH: road.h,
-        timerR: 1 + Math.random() * 4,
-        timerL: 2 + Math.random() * 4,
+        timerR: isIndustrial ? 0.5 + Math.random() * 1.5 : 1 + Math.random() * 4,
+        timerL: isIndustrial ? 1.0 + Math.random() * 1.5 : 2 + Math.random() * 4,
       });
     }
   }
@@ -4054,19 +4074,20 @@ export class VehicleManager {
       }
     }
     // Update dynamic (chunk) spawn timers — only spawn on visible/near lanes
-    const dynTypes: VehicleType[] = ['car', 'car', 'car', 'bus', 'truck', 'taxi', 'motorcycle', 'delivery', 'van'];
     for (const lane of this.dynLanes) {
       if (lane.laneY < camBottom - 50) continue;  // road scrolled off bottom
+      const pool = DYN_TYPES_BY_STAGE[lane.stageIndex] ?? DEFAULT_DYN_TYPES;
+      const isIndustrial = lane.stageIndex === 3;
       lane.timerR -= dt;
       lane.timerL -= dt;
       if (lane.timerR <= 0) {
-        lane.timerR = 3 + Math.random() * 5;
-        const t = dynTypes[Math.floor(Math.random() * dynTypes.length)];
+        lane.timerR = isIndustrial ? 1.5 + Math.random() * 2.5 : 3 + Math.random() * 5;
+        const t = pool[Math.floor(Math.random() * pool.length)];
         this.spawnDynVehicle(lane.laneY, lane.laneH, 1, t);
       }
       if (lane.timerL <= 0) {
-        lane.timerL = 3.5 + Math.random() * 5;
-        const t = dynTypes[Math.floor(Math.random() * dynTypes.length)];
+        lane.timerL = isIndustrial ? 2.0 + Math.random() * 2.5 : 3.5 + Math.random() * 5;
+        const t = pool[Math.floor(Math.random() * pool.length)];
         this.spawnDynVehicle(lane.laneY, lane.laneH, -1, t);
       }
     }
@@ -4186,6 +4207,9 @@ export class VehicleManager {
         cr = 0.92; cg = 0.92; cb = 0.92;
       } else if (v.type === 'van') {
         cr = 0.42; cg = 0.55; cb = 0.68;
+      } else if (v.type === 'worker_truck') {
+        // 工事用作業車: くすんだ黄色〜オレンジ
+        cr = 0.92; cg = 0.62; cb = 0.15;
       } else {
         // car/motorcycle: deterministic color from spawn position
         const ci = Math.abs(Math.floor(v.y * 31 + Math.floor(v.speed * 0.1))) % CAR_COLORS.length;
@@ -4229,6 +4253,14 @@ export class VehicleManager {
       } else if (v.type === 'van') {
         // バン: 大型窓
         writeInst(buf, n++, v.x, v.y, v.w * 0.72, v.h * 0.48, 0.65, 0.85, 0.95, 0.72);
+      } else if (v.type === 'worker_truck') {
+        // 作業員トラック: 荷台に詰まった人員 + 黒帯 (警告色)
+        const wdir = v.speed >= 0 ? 1 : -1;
+        writeInst(buf, n++, v.x - wdir * v.w * 0.22, v.y, v.w * 0.55, v.h * 0.80,
+          cr - 0.15, cg - 0.15, cb - 0.05, 1);
+        writeInst(buf, n++, v.x, v.y, v.w * 0.90, 1.5, 0.10, 0.10, 0.10, 0.95);
+        writeInst(buf, n++, v.x + wdir * v.w * 0.28, v.y, v.w * 0.32, v.h * 0.55,
+          0.65, 0.85, 0.95, 0.72);
       } else {
         // 乗用車
         const dir = v.speed >= 0 ? 1 : -1;

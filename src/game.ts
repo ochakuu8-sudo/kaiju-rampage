@@ -6,7 +6,7 @@ import * as C from './constants';
 import { Renderer, writeInst, INST_F } from './renderer';
 import { InputManager } from './input';
 import { SoundEngine } from './sound';
-import { Ball, Flipper, BuildingManager, FurnitureManager, VehicleManager } from './entities';
+import { Ball, Flipper, BuildingManager, FurnitureManager, VehicleManager, VEHICLE_HUMAN_YIELD } from './entities';
 import { HumanManager, getHumanWeightsForBuilding } from './humans';
 import { ParticleManager } from './particles';
 import { JuiceManager } from './juice';
@@ -451,6 +451,11 @@ export class Game {
       if (destroyed) {
         this.spawnVehicleFx(vehicleHit.type, b.x, b.y);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
+        // 工業車両 (worker_truck) は破壊時に労働者を吐く — Stage 4 の燃料補給源
+        const yield_ = VEHICLE_HUMAN_YIELD[vehicleHit.type];
+        if (yield_) {
+          this.humans.spawnBlast(vehicleHit.x, vehicleHit.y, randInt(yield_[0], yield_[1]));
+        }
       }
       this.juice.ballHitFlash();
     }
@@ -929,6 +934,9 @@ export class Game {
       case 'ambulance':
         p.spawnMetalDebris(x, y, 10); p.spawnGlass(x, y, 8); p.spawnPills(x, y, 10);
         p.spawnElectric(x, y, 4); break;
+      case 'worker_truck':
+        p.spawnMetalDebris(x, y, 14); p.spawnGears(x, y, 8); p.spawnSpark(x, y, 8);
+        p.spawnGlass(x, y, 6); p.spawnEmbers(x, y, 4); break;
       default:
         p.spawnDebris(x, y, 8, 0.5, 0.5, 0.55); p.spawnSpark(x, y, 6);
     }
@@ -963,7 +971,7 @@ export class Game {
     const chunk = generateChunk(chunkId);
     this.buildings.loadChunk(chunk.buildings);
     this.furniture.loadChunk(chunkId, chunk.furniture);
-    this.vehicles.addChunkLanes(chunkId, chunk.roads);
+    this.vehicles.addChunkLanes(chunkId, chunk.roads, chunk.stageIndex);
     for (const road of chunk.roads) {
       this.humans.addRoad(road.y, road.h / 2 + 2);
     }
