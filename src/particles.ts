@@ -212,15 +212,27 @@ export class ParticleManager {
     }
   }
 
-  /** 血溜まり — 人間が潰れた跡地にしばらく残る暗い小円 (静止・重力なし・ゆっくりフェード) */
+  /** 血溜まり — 潰れた跡地に広がる真っ赤な血のり (複数の不揃いな飛沫で splatter 感) */
   spawnBloodPool(x: number, y: number) {
-    const n = 2 + Math.floor(Math.random() * 2); // 2-3 滴
-    for (let i = 0; i < n; i++) {
+    // 中央の大きめの溜まり
+    const main = 2 + Math.floor(Math.random() * 2); // 2-3 個
+    for (let i = 0; i < main; i++) {
       this.emit(
         x + rand(-3, 3), y + rand(-2, 2),
         0, 0,
-        rand(0.45, 0.65), 0, 0,
-        rand(3, 6), rand(1.5, 2.5),
+        1.0, 0, 0,
+        rand(5, 9), rand(1.6, 2.6),
+        false, true
+      );
+    }
+    // 周辺に飛び散った小さな飛沫
+    const spatter = 4 + Math.floor(Math.random() * 3); // 4-6 個
+    for (let i = 0; i < spatter; i++) {
+      this.emit(
+        x + rand(-10, 10), y + rand(-7, 7),
+        0, 0,
+        1.0, 0, 0,
+        rand(2, 4.5), rand(1.4, 2.4),
         false, true
       );
     }
