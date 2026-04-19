@@ -15,7 +15,7 @@ export const FALLOFF_Y = -285;       // これ以下でボールロスト
 // リアルピンボール寄り: 穏やかな打ち出し + 緩い重力で滞空時間を確保
 // 建物ヒットでの減速は一切なし (HP > 0 なら反射、HP ≤ 0 なら貫通=破壊、速度そのまま)
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
-export const GRAVITY = 0.28;             // やや控えめにしてホールドタイムを確保
+export const GRAVITY = 0.38;             // ボールが放物線で落ちる程度に強化 (反対フリッパーの上面に着地しやすく)
 export const MAX_BALL_SPEED = 22;        // クランプ上限 (ビル通過・降下時に頭打ちしない程度)
 export const WALL_DAMPING = 0.66;        // 壁での反発 (世界端のみ)
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
