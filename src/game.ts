@@ -16,13 +16,71 @@ import { getStage, generateChunk, getInitialCityRoadData, chunkInfoFor, TOTAL_CH
 import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad, GroundTile } from './stages';
 import type { Intersection } from './grid';
 import { resolveCircleOBB, resolveCircleOBBSlide, clampSpeed, rand, randInt, circleAABB } from './physics';
-import type { BuildingData } from './entities';
+import type { BuildingData, FurnitureType, VehicleType } from './entities';
 
 // 60000 instance 分の共有バッファ (renderer.ts の MAX_INST と一致させる)
 // 1000+ 人間同時描画を想定: 1500×25 instance + particles + scene
 const SHARED_BUF = new Float32Array(60000 * INST_F);
 
 type GameState = 'playing' | 'ball_lost' | 'game_over' | 'clear';
+
+// 建物の素材プロファイル — onBuildingDestroyed で基本パーティクルを切り替えるため
+type BuildingMaterial =
+  | 'wood' | 'wood_traditional'
+  | 'concrete_small' | 'concrete_medium' | 'glass_tower'
+  | 'metal_industrial' | 'landmark' | 'explosive' | 'castle';
+
+const BUILDING_MATERIAL: Partial<Record<C.BuildingSize, BuildingMaterial>> = {
+  // 木造系
+  house: 'wood', townhouse: 'wood', garage: 'wood', shed: 'wood',
+  bungalow: 'wood', duplex: 'wood', mansion: 'wood',
+  yatai: 'wood', greenhouse: 'wood', florist: 'wood',
+  bakery: 'wood', cafe: 'wood', ramen: 'wood', izakaya: 'wood',
+  snack: 'wood', kura: 'wood', wagashi: 'wood', sushi_ya: 'wood',
+
+  // 木造伝統建築
+  shrine: 'wood_traditional', temple: 'wood_traditional', pagoda: 'wood_traditional',
+  tahoto: 'wood_traditional', ryokan: 'wood_traditional', onsen_inn: 'wood_traditional',
+  kominka: 'wood_traditional', machiya: 'wood_traditional', chaya: 'wood_traditional',
+  dojo: 'wood_traditional', kimono_shop: 'wood_traditional',
+
+  // 小型コンクリ・店舗
+  shop: 'concrete_small', convenience: 'concrete_small', restaurant: 'concrete_small',
+  bookstore: 'concrete_small', pharmacy: 'concrete_small', laundromat: 'concrete_small',
+  daycare: 'concrete_small', clinic: 'concrete_small', post_office: 'concrete_small',
+  mahjong_parlor: 'concrete_small', shotengai_arcade: 'concrete_small',
+  bus_terminal_shelter: 'concrete_small', fountain_pavilion: 'concrete_small',
+
+  // 中型コンクリ・公共
+  apartment: 'concrete_medium', parking: 'concrete_medium', supermarket: 'concrete_medium',
+  karaoke: 'concrete_medium', pachinko: 'concrete_medium', game_center: 'concrete_medium',
+  bank: 'concrete_medium', library: 'concrete_medium', museum: 'concrete_medium',
+  fire_station: 'concrete_medium', police_station: 'concrete_medium',
+  movie_theater: 'concrete_medium', school: 'concrete_medium', hospital: 'concrete_medium',
+  love_hotel: 'concrete_medium', club: 'concrete_medium', capsule_hotel: 'concrete_medium',
+
+  // ガラス張り高層
+  office: 'glass_tower', tower: 'glass_tower', skyscraper: 'glass_tower',
+  apartment_tall: 'glass_tower', city_hall: 'glass_tower',
+  business_hotel: 'glass_tower', department_store: 'glass_tower',
+  train_station: 'glass_tower',
+
+  // 工業・港湾
+  warehouse: 'metal_industrial', crane_gantry: 'metal_industrial',
+  container_stack: 'metal_industrial', factory_stack: 'metal_industrial',
+  silo: 'metal_industrial', water_tower: 'metal_industrial',
+
+  // ランドマーク・娯楽巨大施設
+  clock_tower: 'landmark', radio_tower: 'landmark', ferris_wheel: 'landmark',
+  stadium: 'landmark', carousel: 'landmark', roller_coaster: 'landmark',
+  big_tent: 'landmark',
+
+  // 爆発系
+  gas_station: 'explosive',
+
+  // 最終ボス
+  castle: 'castle',
+};
 
 export class Game {
   private renderer:  Renderer;
@@ -385,13 +443,7 @@ export class Game {
     const furnitureHit = this.furniture.checkBallHit(b.x, b.y, r);
     if (furnitureHit) {
       const destroyed = this.furniture.damage(furnitureHit, 1);
-      if (furnitureHit.type === 'hydrant' && destroyed) this.particles.spawnWater(b.x, b.y, 12);
-      else if (furnitureHit.type === 'flower_bed' && destroyed) this.particles.spawnFlower(b.x, b.y, 10);
-      else if (furnitureHit.type === 'sign_board' && destroyed) this.particles.spawnConfetti(b.x, b.y, 8);
-      else if (furnitureHit.type === 'power_pole' && destroyed) this.particles.spawnElectric(b.x, b.y, 12);
-      else if (furnitureHit.type === 'garbage' && destroyed) this.particles.spawnFood(b.x, b.y, 6);
-      else if (furnitureHit.type === 'tree' || furnitureHit.type === 'vending') this.particles.spawnDebris(b.x, b.y, 4, 0.5, 0.4, 0.3);
-      else this.particles.spawnSpark(b.x, b.y, 3);
+      this.spawnFurnitureFx(furnitureHit.type, b.x, b.y, destroyed);
       this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
     }
 
@@ -399,8 +451,7 @@ export class Game {
     if (vehicleHit) {
       const destroyed = this.vehicles.damage(vehicleHit, 1);
       if (destroyed) {
-        this.particles.spawnDebris(b.x, b.y, 8, 0.5, 0.5, 0.55);
-        this.particles.spawnSpark(b.x, b.y, 6);
+        this.spawnVehicleFx(vehicleHit.type, b.x, b.y);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
       }
       this.juice.ballHitFlash();
@@ -439,99 +490,12 @@ export class Game {
     const [dr, dg, db] = bld.baseColor;
     const top = bld.y + bld.h;
 
-    // ── メイン破壊エフェクト ──────────────────────────────
-    this.particles.spawnDebris(cx, cy, 18 + sc * 12, dr, dg, db);
-    this.particles.spawnSpark (cx, cy, 16 + sc * 10);
-    this.particles.spawnFire  (cx, cy, 10 + sc *  7);
+    // ── 素材別ベース破壊エフェクト ────────────────────────
+    // 建物の素材・規模に応じた基本パーティクルセットを散らす
+    this.spawnBaseDestructionFx(bld.size, cx, cy, top, sc, isLarge, dr, dg, db);
 
-    // ── 大型ビル: 頂部からも追加演出 ─────────────────────
-    if (isLarge) {
-      this.particles.spawnDebris(cx, top, 14, dr, dg, db);
-      this.particles.spawnSpark (cx, top, 18);
-      this.particles.spawnFire  (cx, top, 14);
-    }
-
-    // ── ガラス散乱: 高層・ガラス張りビル ─────────────────
-    if (bld.size === 'office'     || bld.size === 'tower'      || bld.size === 'skyscraper' ||
-        bld.size === 'apartment_tall' || bld.size === 'city_hall') {
-      this.particles.spawnGlass(cx, cy, 14 + sc * 5);
-    }
-
-    // ── 爆発: ガソリンスタンド ───────────────────────────
-    if (bld.size === 'gas_station') {
-      this.particles.spawnFire(cx, cy, 20);
-      this.particles.spawnSpark(cx, cy, 20);
-    }
-
-    // ── 紙幣: 銀行・百貨店 ───────────────────────────────
-    if (bld.size === 'bank' || bld.size === 'department_store') {
-      this.particles.spawnCash(cx, cy, 16 + sc * 4);
-    }
-
-    // ── 本: 図書館・書店 ─────────────────────────────────
-    if (bld.size === 'library' || bld.size === 'bookstore') {
-      this.particles.spawnBooks(cx, cy, 14 + sc * 3);
-    }
-
-    // ── 花びら: 花屋・温室 ───────────────────────────────
-    if (bld.size === 'florist' || bld.size === 'greenhouse') {
-      this.particles.spawnFlower(cx, cy, 16);
-    }
-
-    // ── 桜吹雪: 神社 ─────────────────────────────────────
-    if (bld.size === 'shrine') {
-      this.particles.spawnSakuraPetals(cx, cy, 20);
-    }
-
-    // ── 電気スパーク: 寺院・ゲームセンター・警察 ──────────
-    if (bld.size === 'temple') {
-      this.particles.spawnElectric(cx, cy, 16);
-      this.juice.flash(1.0, 0.7, 0.2, 0.30);
-    }
-    if (bld.size === 'game_center' || bld.size === 'police_station') {
-      this.particles.spawnElectric(cx, cy, 12);
-    }
-
-    // ── 食べ物: 飲食・食料品 ─────────────────────────────
-    if (bld.size === 'restaurant' || bld.size === 'cafe'       || bld.size === 'bakery' ||
-        bld.size === 'ramen'      || bld.size === 'izakaya'    ||
-        bld.size === 'supermarket'|| bld.size === 'convenience') {
-      this.particles.spawnFood(cx, cy, 14);
-    }
-
-    // ── 蒸気: 熱い食べ物・蒸気機関 ──────────────────────
-    if (bld.size === 'ramen' || bld.size === 'izakaya' || bld.size === 'train_station') {
-      this.particles.spawnSteam(cx, cy, 12);
-    }
-
-    // ── 水しぶき: 貯水タンク ─────────────────────────────
-    if (bld.size === 'water_tower') {
-      this.particles.spawnWater(cx, cy, 20);
-    }
-
-    // ── 泡 + 蒸気: コインランドリー ──────────────────────
-    if (bld.size === 'laundromat') {
-      this.particles.spawnBubbles(cx, cy, 14);
-      this.particles.spawnSteam(cx, cy, 10);
-    }
-
-    // ── 紙吹雪: 娯楽・お祝い ────────────────────────────
-    if (bld.size === 'school'       || bld.size === 'movie_theater' ||
-        bld.size === 'pachinko'     || bld.size === 'karaoke'       ||
-        bld.size === 'department_store') {
-      this.particles.spawnConfetti(cx, cy, 20);
-    }
-
-    // ── 風船: 遊園地・子ども施設 ─────────────────────────
-    if (bld.size === 'ferris_wheel' || bld.size === 'stadium' ||
-        bld.size === 'daycare'      || bld.size === 'karaoke') {
-      this.particles.spawnBalloons(cx, cy, 12);
-    }
-
-    // ── ポップコーン: 映画館・スタジアム ─────────────────
-    if (bld.size === 'movie_theater' || bld.size === 'stadium') {
-      this.particles.spawnPopcorn(cx, cy, 12);
-    }
+    // ── 種別別テーマパーティクル ─────────────────────────
+    this.spawnThemedDestructionFx(bld.size, cx, cy, sc);
 
     // ── 救急車: 病院 ─────────────────────────────────────
     if (bld.size === 'hospital') {
@@ -541,6 +505,422 @@ export class Game {
     // 建物種別に応じた人間プールを取得 (学校 → 子供、病院 → 看護師など)
     const kindWeights = getHumanWeightsForBuilding(bld.size);
     this.humans.spawnBlast(cx, cy, randInt(bld.humanMin, bld.humanMax), kindWeights);
+  }
+
+  /** 素材別の基本破壊パーティクル — 木造 / コンクリ / 金属 / ガラス張り 等で異なる */
+  private spawnBaseDestructionFx(
+    size: C.BuildingSize, cx: number, cy: number, top: number,
+    sc: number, isLarge: boolean, dr: number, dg: number, db: number
+  ) {
+    const profile = BUILDING_MATERIAL[size] ?? 'concrete_small';
+    const debrisN = 14 + sc * 10;
+    const p = this.particles;
+
+    switch (profile) {
+      case 'wood': // 木造 (戸建て・町屋・小店舗) — 木っ端 + 砂塵 + わずかな燃えさし
+        p.spawnWoodChips(cx, cy, 14 + sc * 8);
+        p.spawnDust    (cx, cy, 10 + sc * 5);
+        p.spawnEmbers  (cx, cy,  6 + sc * 3);
+        break;
+
+      case 'wood_traditional': // 神社・寺社・古民家 — 木っ端 + 落ち葉 + 燃えさし
+        p.spawnWoodChips(cx, cy, 12 + sc * 8);
+        p.spawnLeaves   (cx, cy, 10 + sc * 4);
+        p.spawnEmbers   (cx, cy,  8 + sc * 3);
+        p.spawnDust     (cx, cy,  6);
+        break;
+
+      case 'concrete_small': // 小型コンクリ・店舗 — がれき + 砂塵 + 火花
+        p.spawnDebris(cx, cy, debrisN, dr, dg, db);
+        p.spawnDust  (cx, cy, 10 + sc * 4);
+        p.spawnSpark (cx, cy,  8 + sc * 5);
+        break;
+
+      case 'concrete_medium': // 中型コンクリ・公共 — がれき + 煙 + ガラス + 火花
+        p.spawnDebris(cx, cy, debrisN, dr, dg, db);
+        p.spawnSmoke (cx, cy,  8 + sc * 4);
+        p.spawnGlass (cx, cy,  6 + sc * 3);
+        p.spawnSpark (cx, cy, 10 + sc * 5);
+        break;
+
+      case 'glass_tower': // 高層ガラス張り — ガラス山盛り + 煙 + がれき + きらめき
+        p.spawnGlass (cx, cy, 18 + sc * 8, );
+        p.spawnDebris(cx, cy, 10 + sc * 6, dr, dg, db);
+        p.spawnSmoke (cx, cy, 12 + sc * 5);
+        p.spawnSparkle(cx, cy, 6 + sc * 2);
+        if (isLarge) {
+          p.spawnGlass(cx, top, 14);
+          p.spawnSmoke(cx, top, 10);
+        }
+        break;
+
+      case 'metal_industrial': // 工場・倉庫・タンク — 金属片 + 煙 + 火花 + 歯車
+        p.spawnMetalDebris(cx, cy, 14 + sc * 8);
+        p.spawnSmoke      (cx, cy, 10 + sc * 5);
+        p.spawnSpark      (cx, cy, 12 + sc * 5);
+        p.spawnGears      (cx, cy,  6 + sc * 3);
+        break;
+
+      case 'landmark': // ランドマーク・観覧車・スタジアム — がれき + きらめき + 紙吹雪 + 炎
+        p.spawnDebris  (cx, cy, debrisN, dr, dg, db);
+        p.spawnSparkle (cx, cy, 14 + sc * 5);
+        p.spawnConfetti(cx, cy, 12 + sc * 4);
+        p.spawnFire    (cx, cy,  8 + sc * 3);
+        if (isLarge) {
+          p.spawnSparkle (cx, top, 12);
+          p.spawnConfetti(cx, top, 10);
+        }
+        break;
+
+      case 'explosive': // ガソリンスタンド・燃料 — 大爆発
+        p.spawnFire  (cx, cy, 28 + sc * 6);
+        p.spawnSpark (cx, cy, 22 + sc * 6);
+        p.spawnSmoke (cx, cy, 18);
+        p.spawnEmbers(cx, cy, 16);
+        p.spawnDebris(cx, cy, 10, dr, dg, db);
+        break;
+
+      case 'castle': // ラスボス天守閣 — 花火 + 桜 + 煙 + がれき
+        p.spawnFireworks   (cx, cy, 50);
+        p.spawnSakuraPetals(cx, cy, 30);
+        p.spawnSparkle     (cx, cy, 24);
+        p.spawnDebris      (cx, cy, 30, dr, dg, db);
+        p.spawnSmoke       (cx, cy, 20);
+        p.spawnFireworks   (cx, top, 40);
+        p.spawnFireworks   (cx + 30, top - 10, 30);
+        p.spawnFireworks   (cx - 30, top - 10, 30);
+        break;
+
+      default:
+        p.spawnDebris(cx, cy, debrisN, dr, dg, db);
+        p.spawnSpark (cx, cy, 12 + sc * 5);
+        p.spawnSmoke (cx, cy,  6 + sc * 3);
+    }
+
+    // 大型ビル共通: 頂部からも追加演出 (爆発・城は専用処理済みなのでスキップ)
+    if (isLarge && profile !== 'glass_tower' && profile !== 'castle' &&
+        profile !== 'explosive' && profile !== 'landmark') {
+      this.particles.spawnDebris(cx, top, 12, dr, dg, db);
+      this.particles.spawnSmoke (cx, top, 10);
+      this.particles.spawnSpark (cx, top, 12);
+    }
+  }
+
+  /** 種別別テーマパーティクル — 建物の用途・業種に応じた演出 */
+  private spawnThemedDestructionFx(size: C.BuildingSize, cx: number, cy: number, sc: number) {
+    const p = this.particles;
+    switch (size) {
+      // ── 金融・現金 ──
+      case 'bank':              p.spawnCash(cx, cy, 16 + sc * 4); p.spawnCoins(cx, cy, 14); break;
+      case 'department_store':  p.spawnCash(cx, cy, 12); p.spawnConfetti(cx, cy, 18); p.spawnBalloons(cx, cy, 8); break;
+
+      // ── 本・知識 ──
+      case 'library':           p.spawnBooks(cx, cy, 18 + sc * 3); break;
+      case 'bookstore':         p.spawnBooks(cx, cy, 14); break;
+
+      // ── 花・植物 ──
+      case 'florist':           p.spawnFlower(cx, cy, 18); p.spawnLeaves(cx, cy, 8); break;
+      case 'greenhouse':        p.spawnFlower(cx, cy, 14); p.spawnLeaves(cx, cy, 14); p.spawnWater(cx, cy, 6); break;
+
+      // ── 和風・神社仏閣 ──
+      case 'shrine':            p.spawnSakuraPetals(cx, cy, 22); p.spawnRibbons(cx, cy, 8); break;
+      case 'temple':            p.spawnSakuraPetals(cx, cy, 14); p.spawnEmbers(cx, cy, 10); this.juice.flash(1.0, 0.7, 0.2, 0.30); break;
+      case 'pagoda':            p.spawnSakuraPetals(cx, cy, 18); p.spawnEmbers(cx, cy, 12); break;
+      case 'tahoto':            p.spawnSakuraPetals(cx, cy, 14); p.spawnSparkle(cx, cy, 10); break;
+      case 'ryokan':
+      case 'onsen_inn':         p.spawnSteam(cx, cy, 14); p.spawnSakuraPetals(cx, cy, 8); p.spawnRibbons(cx, cy, 6); break;
+      case 'kominka':
+      case 'machiya':
+      case 'kura':              p.spawnLeaves(cx, cy, 8); p.spawnRice(cx, cy, 6); break;
+      case 'chaya':             p.spawnSteam(cx, cy, 8); p.spawnRibbons(cx, cy, 6); break;
+      case 'dojo':              p.spawnDust(cx, cy, 12); p.spawnRibbons(cx, cy, 6); break;
+      case 'wagashi':           p.spawnRice(cx, cy, 12); p.spawnFlower(cx, cy, 8); break;
+      case 'kimono_shop':       p.spawnRibbons(cx, cy, 14); p.spawnSakuraPetals(cx, cy, 8); break;
+      case 'sushi_ya':          p.spawnRice(cx, cy, 14); p.spawnFood(cx, cy, 8); break;
+
+      // ── 電気・デジタル ──
+      case 'game_center':       p.spawnPixels(cx, cy, 18); p.spawnElectric(cx, cy, 10); p.spawnNeonShards(cx, cy, 8); break;
+      case 'pachinko':          p.spawnCoins(cx, cy, 16); p.spawnPixels(cx, cy, 14); p.spawnNeonShards(cx, cy, 8); p.spawnConfetti(cx, cy, 10); break;
+      case 'police_station':    p.spawnElectric(cx, cy, 12); p.spawnPixels(cx, cy, 6); break;
+      case 'fire_station':      p.spawnEmbers(cx, cy, 14); p.spawnSpark(cx, cy, 10); break;
+
+      // ── 食事・喫茶 ──
+      case 'restaurant':
+      case 'cafe':
+      case 'bakery':            p.spawnFood(cx, cy, 14); p.spawnSteam(cx, cy, 6); break;
+      case 'ramen':             p.spawnNoodles(cx, cy, 16); p.spawnSteam(cx, cy, 12); p.spawnFood(cx, cy, 6); break;
+      case 'izakaya':           p.spawnFood(cx, cy, 12); p.spawnEmbers(cx, cy, 8); p.spawnSteam(cx, cy, 8); p.spawnRibbons(cx, cy, 6); break;
+      case 'supermarket':
+      case 'convenience':       p.spawnFood(cx, cy, 16); p.spawnConfetti(cx, cy, 6); break;
+
+      // ── 水・蒸気 ──
+      case 'water_tower':       p.spawnWater(cx, cy, 24); p.spawnBubbles(cx, cy, 12); break;
+      case 'laundromat':        p.spawnBubbles(cx, cy, 18); p.spawnSteam(cx, cy, 10); break;
+      case 'train_station':     p.spawnSteam(cx, cy, 14); p.spawnGears(cx, cy, 8); p.spawnSpark(cx, cy, 10); break;
+
+      // ── 娯楽・祝祭 ──
+      case 'school':            p.spawnConfetti(cx, cy, 20); p.spawnBalloons(cx, cy, 8); break;
+      case 'movie_theater':     p.spawnConfetti(cx, cy, 18); p.spawnPopcorn(cx, cy, 14); p.spawnBalloons(cx, cy, 6); break;
+      case 'karaoke':           p.spawnConfetti(cx, cy, 14); p.spawnBalloons(cx, cy, 10); p.spawnNeonShards(cx, cy, 8); break;
+      case 'ferris_wheel':      p.spawnBalloons(cx, cy, 18); p.spawnSparkle(cx, cy, 14); p.spawnFireworks(cx, cy, 16); break;
+      case 'stadium':           p.spawnConfetti(cx, cy, 24); p.spawnBalloons(cx, cy, 14); p.spawnPopcorn(cx, cy, 14); p.spawnRibbons(cx, cy, 10); break;
+      case 'daycare':           p.spawnBalloons(cx, cy, 14); p.spawnConfetti(cx, cy, 10); p.spawnFlower(cx, cy, 8); break;
+      case 'carousel':          p.spawnBalloons(cx, cy, 14); p.spawnSparkle(cx, cy, 12); p.spawnConfetti(cx, cy, 10); break;
+      case 'roller_coaster':    p.spawnSparkle(cx, cy, 16); p.spawnConfetti(cx, cy, 14); p.spawnFireworks(cx, cy, 18); break;
+      case 'big_tent':          p.spawnConfetti(cx, cy, 22); p.spawnBalloons(cx, cy, 12); p.spawnRibbons(cx, cy, 12); p.spawnPopcorn(cx, cy, 10); break;
+      case 'yatai':             p.spawnPopcorn(cx, cy, 8); p.spawnSteam(cx, cy, 6); p.spawnRibbons(cx, cy, 6); break;
+
+      // ── 医療 ──
+      case 'hospital':          p.spawnPills(cx, cy, 14); p.spawnGlass(cx, cy, 8); break;
+      case 'clinic':            p.spawnPills(cx, cy, 10); break;
+      case 'pharmacy':          p.spawnPills(cx, cy, 16); break;
+
+      // ── 工業 ──
+      case 'factory_stack':     p.spawnGears(cx, cy, 12); p.spawnEmbers(cx, cy, 10); p.spawnFire(cx, cy, 8); break;
+      case 'crane_gantry':      p.spawnGears(cx, cy, 14); p.spawnSpark(cx, cy, 12); break;
+      case 'warehouse':         p.spawnDust(cx, cy, 12); p.spawnGears(cx, cy, 6); break;
+      case 'silo':              p.spawnDust(cx, cy, 16); p.spawnFood(cx, cy, 8); break;
+      case 'container_stack':   p.spawnGears(cx, cy, 6); break;
+
+      // ── 夜街・繁華街 ──
+      case 'snack':             p.spawnHearts(cx, cy, 10); p.spawnNeonShards(cx, cy, 8); break;
+      case 'love_hotel':        p.spawnHearts(cx, cy, 18); p.spawnNeonShards(cx, cy, 10); break;
+      case 'business_hotel':    p.spawnGlass(cx, cy, 10); p.spawnCash(cx, cy, 6); break;
+      case 'mahjong_parlor':    p.spawnTiles(cx, cy, 16); p.spawnSmoke(cx, cy, 8); break;
+      case 'club':              p.spawnNeonShards(cx, cy, 16); p.spawnPixels(cx, cy, 14); p.spawnSparkle(cx, cy, 8); break;
+      case 'capsule_hotel':     p.spawnGlass(cx, cy, 8); p.spawnPixels(cx, cy, 8); break;
+
+      // ── 公共 ──
+      case 'museum':            p.spawnSparkle(cx, cy, 12); p.spawnDust(cx, cy, 10); p.spawnCoins(cx, cy, 6); break;
+      case 'city_hall':         p.spawnRibbons(cx, cy, 10); p.spawnConfetti(cx, cy, 14); break;
+      case 'post_office':       p.spawnCash(cx, cy, 8); p.spawnConfetti(cx, cy, 8); break;
+      case 'clock_tower':       p.spawnGears(cx, cy, 14); p.spawnSparkle(cx, cy, 10); break;
+      case 'radio_tower':       p.spawnElectric(cx, cy, 14); p.spawnSparkle(cx, cy, 8); break;
+
+      // ── 商店街・公共 ──
+      case 'shotengai_arcade':  p.spawnRibbons(cx, cy, 14); p.spawnConfetti(cx, cy, 8); break;
+      case 'fountain_pavilion': p.spawnWater(cx, cy, 18); p.spawnBubbles(cx, cy, 10); p.spawnSparkle(cx, cy, 6); break;
+      case 'bus_terminal_shelter': p.spawnGlass(cx, cy, 8); break;
+    }
+  }
+
+  /** 街路設備を破壊した時の種別別パーティクル */
+  private spawnFurnitureFx(type: FurnitureType, x: number, y: number, destroyed: boolean) {
+    const p = this.particles;
+    // 破壊されない (一撃で壊れない) ヒットは小さめのスパーク/砂塵で控えめに
+    if (!destroyed) {
+      switch (type) {
+        case 'tree': case 'bush': case 'hedge': case 'sakura_tree': case 'pine_tree':
+        case 'palm_tree': case 'bamboo_cluster': case 'bonsai':
+          p.spawnLeaves(x, y, 3); break;
+        case 'hydrant': case 'fountain': case 'koi_pond': case 'water_tank':
+        case 'fountain_large': case 'temizuya': case 'bamboo_water_fountain':
+        case 'puddle_reflection':
+          p.spawnWater(x, y, 4); break;
+        case 'flower_bed': case 'planter': case 'potted_plant': case 'flower_planter_row':
+          p.spawnFlower(x, y, 3); break;
+        case 'power_pole': case 'electric_box': case 'cable_junction_box':
+        case 'power_line': case 'signal_tower':
+          p.spawnElectric(x, y, 4); break;
+        case 'wood_fence': case 'bench': case 'bamboo_fence': case 'pallet_stack':
+        case 'torii': case 'shrine_fence_red': case 'ema_rack': case 'ema_wall':
+        case 'sando_stone_pillar':
+          p.spawnWoodChips(x, y, 3); break;
+        case 'rock': case 'stone_lantern': case 'stepping_stones': case 'koma_inu':
+        case 'statue': case 'sandbags': case 'manhole_cover':
+          p.spawnDust(x, y, 3); break;
+        default:
+          p.spawnSpark(x, y, 3);
+      }
+      return;
+    }
+
+    // 完全破壊時は素材・テーマに応じたパーティクル
+    switch (type) {
+      // ── 緑・植栽 ──
+      case 'tree': case 'pine_tree':
+        p.spawnLeaves(x, y, 12); p.spawnWoodChips(x, y, 6); break;
+      case 'sakura_tree':
+        p.spawnSakuraPetals(x, y, 14); p.spawnWoodChips(x, y, 4); break;
+      case 'palm_tree':
+        p.spawnLeaves(x, y, 10); p.spawnWoodChips(x, y, 4); break;
+      case 'bush': case 'hedge':
+        p.spawnLeaves(x, y, 12); break;
+      case 'bamboo_cluster': case 'bamboo_fence':
+        p.spawnLeaves(x, y, 8); p.spawnWoodChips(x, y, 8); break;
+      case 'bonsai': case 'planter': case 'potted_plant':
+        p.spawnLeaves(x, y, 6); p.spawnFlower(x, y, 4); p.spawnDust(x, y, 4); break;
+      case 'flower_bed': case 'flower_planter_row':
+        p.spawnFlower(x, y, 12); p.spawnLeaves(x, y, 4); break;
+
+      // ── 水 ──
+      case 'hydrant':
+        p.spawnWater(x, y, 14); p.spawnBubbles(x, y, 4); break;
+      case 'fountain': case 'fountain_large':
+        p.spawnWater(x, y, 18); p.spawnBubbles(x, y, 6); p.spawnSparkle(x, y, 4); break;
+      case 'koi_pond':
+        p.spawnWater(x, y, 14); p.spawnBubbles(x, y, 8); p.spawnLeaves(x, y, 4); break;
+      case 'water_tank':
+        p.spawnWater(x, y, 16); p.spawnMetalDebris(x, y, 6); break;
+      case 'temizuya': case 'bamboo_water_fountain':
+        p.spawnWater(x, y, 10); p.spawnWoodChips(x, y, 4); break;
+      case 'puddle_reflection':
+        p.spawnWater(x, y, 6); break;
+
+      // ── 看板・サイン ──
+      case 'sign_board': case 'a_frame_sign': case 'banner_pole': case 'taxi_rank_sign':
+        p.spawnConfetti(x, y, 8); p.spawnWoodChips(x, y, 4); break;
+
+      // ── 電気・ネオン ──
+      case 'power_pole': case 'power_line':
+        p.spawnElectric(x, y, 14); p.spawnSpark(x, y, 6); break;
+      case 'electric_box': case 'cable_junction_box':
+        p.spawnElectric(x, y, 10); p.spawnMetalDebris(x, y, 4); break;
+      case 'signal_tower': case 'railroad_crossing':
+        p.spawnElectric(x, y, 8); p.spawnSpark(x, y, 6); break;
+
+      // ── ゴミ・食 ──
+      case 'garbage':
+        p.spawnFood(x, y, 8); p.spawnDust(x, y, 4); break;
+      case 'dumpster':
+        p.spawnFood(x, y, 6); p.spawnMetalDebris(x, y, 6); break;
+      case 'recycling_bin':
+        p.spawnGlass(x, y, 6); p.spawnDust(x, y, 4); break;
+
+      // ── 自販機・ATM・電話ボックス ──
+      case 'vending':
+        p.spawnGlass(x, y, 6); p.spawnMetalDebris(x, y, 6); p.spawnCoins(x, y, 6); break;
+      case 'atm':
+        p.spawnCash(x, y, 12); p.spawnCoins(x, y, 8); p.spawnGlass(x, y, 4); break;
+      case 'telephone_booth':
+        p.spawnGlass(x, y, 12); p.spawnSpark(x, y, 4); break;
+      case 'newspaper_stand':
+        p.spawnConfetti(x, y, 8); p.spawnWoodChips(x, y, 4); break;
+      case 'post_box': case 'post_letter_box': case 'mailbox':
+        p.spawnCash(x, y, 6); p.spawnMetalDebris(x, y, 4); break;
+
+      // ── 自転車・乗り物 ──
+      case 'bicycle': case 'bicycle_rack': case 'bicycle_row':
+        p.spawnMetalDebris(x, y, 6); p.spawnSpark(x, y, 4); break;
+      case 'forklift':
+        p.spawnMetalDebris(x, y, 8); p.spawnGears(x, y, 6); p.spawnSpark(x, y, 4); break;
+
+      // ── 街路設備・金属系 ──
+      case 'street_lamp':
+        p.spawnGlass(x, y, 6); p.spawnSpark(x, y, 6); break;
+      case 'traffic_light':
+        p.spawnGlass(x, y, 4); p.spawnSpark(x, y, 6); p.spawnMetalDebris(x, y, 4); break;
+      case 'bollard': case 'traffic_cone':
+        p.spawnDust(x, y, 6); break;
+      case 'barrier': case 'guardrail': case 'guardrail_short': case 'platform_edge':
+      case 'pedestrian_bridge': case 'railway_track':
+        p.spawnMetalDebris(x, y, 8); p.spawnSpark(x, y, 4); break;
+      case 'fire_extinguisher':
+        p.spawnSmoke(x, y, 12); p.spawnDust(x, y, 6); break;
+      case 'bus_stop':
+        p.spawnGlass(x, y, 8); p.spawnDust(x, y, 4); break;
+      case 'flag_pole':
+        p.spawnRibbons(x, y, 8); break;
+      case 'street_mirror':
+        p.spawnGlass(x, y, 12); break;
+      case 'manhole_cover':
+        p.spawnMetalDebris(x, y, 6); p.spawnSpark(x, y, 6); break;
+
+      // ── 木造・伝統 ──
+      case 'wood_fence': case 'bench': case 'pallet_stack': case 'milk_crate_stack':
+      case 'play_structure': case 'slide': case 'swing_set': case 'jungle_gym':
+      case 'sandbox':
+        p.spawnWoodChips(x, y, 8); p.spawnDust(x, y, 4); break;
+      case 'parasol': case 'shop_awning':
+        p.spawnConfetti(x, y, 6); p.spawnRibbons(x, y, 4); break;
+      case 'noren': case 'shinto_rope': case 'tarp': case 'laundry_pole':
+      case 'laundry_balcony':
+        p.spawnRibbons(x, y, 10); break;
+      case 'chouchin':
+        p.spawnEmbers(x, y, 8); p.spawnRibbons(x, y, 4); break;
+      case 'torii': case 'shrine_fence_red':
+        p.spawnWoodChips(x, y, 8); p.spawnSakuraPetals(x, y, 4); break;
+      case 'ema_rack': case 'ema_wall': case 'omikuji_stand':
+        p.spawnWoodChips(x, y, 4); p.spawnConfetti(x, y, 6); break;
+      case 'offering_box':
+        p.spawnWoodChips(x, y, 6); p.spawnCoins(x, y, 8); break;
+      case 'stone_lantern': case 'koma_inu': case 'sando_stone_pillar':
+      case 'rock': case 'stepping_stones': case 'statue':
+        p.spawnDust(x, y, 10); p.spawnDebris(x, y, 6, 0.5, 0.5, 0.5); break;
+      case 'sandbags':
+        p.spawnDust(x, y, 14); break;
+
+      // ── 工業・港湾 ──
+      case 'drum_can':
+        p.spawnFire(x, y, 8); p.spawnSmoke(x, y, 6); p.spawnMetalDebris(x, y, 4); break;
+      case 'cargo_container':
+        p.spawnMetalDebris(x, y, 10); p.spawnSpark(x, y, 4); break;
+      case 'buoy':
+        p.spawnWater(x, y, 8); p.spawnDebris(x, y, 4, 0.95, 0.20, 0.20); break;
+      case 'gas_canister':
+        p.spawnFire(x, y, 10); p.spawnSpark(x, y, 8); p.spawnSmoke(x, y, 6); break;
+      case 'ac_unit': case 'ac_outdoor_cluster':
+        p.spawnMetalDebris(x, y, 8); p.spawnSpark(x, y, 4); p.spawnSteam(x, y, 4); break;
+
+      // ── お祭り・テーマ ──
+      case 'balloon_cluster':
+        p.spawnBalloons(x, y, 14); p.spawnConfetti(x, y, 6); break;
+      case 'ticket_booth':
+        p.spawnConfetti(x, y, 10); p.spawnCash(x, y, 6); break;
+      case 'matsuri_drum':
+        p.spawnWoodChips(x, y, 8); p.spawnDust(x, y, 6); p.spawnRibbons(x, y, 4); break;
+      case 'popcorn_cart':
+        p.spawnPopcorn(x, y, 14); p.spawnSteam(x, y, 6); break;
+      case 'plaza_tile_circle':
+        p.spawnDust(x, y, 8); p.spawnDebris(x, y, 6, 0.7, 0.65, 0.55); break;
+      case 'bathhouse_chimney':
+        p.spawnSmoke(x, y, 14); p.spawnDust(x, y, 4); break;
+      case 'fire_watchtower':
+        p.spawnWoodChips(x, y, 10); p.spawnEmbers(x, y, 6); break;
+      case 'grain_silo':
+        p.spawnDust(x, y, 12); p.spawnFood(x, y, 6); break;
+
+      // ── 動物 ──
+      case 'cat':
+        p.spawnFlower(x, y, 8); p.spawnSparkle(x, y, 4); break;
+
+      // ── 建物の小型版 ──
+      case 'kerbside_vending_pair':
+        p.spawnGlass(x, y, 6); p.spawnCoins(x, y, 4); break;
+
+      default:
+        p.spawnDebris(x, y, 4, 0.55, 0.50, 0.45); p.spawnSpark(x, y, 3);
+    }
+  }
+
+  /** 車両を破壊した時の車種別パーティクル */
+  private spawnVehicleFx(type: VehicleType, x: number, y: number) {
+    const p = this.particles;
+    switch (type) {
+      case 'car':
+        p.spawnMetalDebris(x, y, 8); p.spawnGlass(x, y, 6); p.spawnSpark(x, y, 6);
+        p.spawnSmoke(x, y, 4); break;
+      case 'taxi':
+        p.spawnMetalDebris(x, y, 8); p.spawnGlass(x, y, 6); p.spawnCash(x, y, 6);
+        p.spawnSpark(x, y, 4); break;
+      case 'bus':
+        p.spawnMetalDebris(x, y, 12); p.spawnGlass(x, y, 10); p.spawnSmoke(x, y, 8);
+        p.spawnSpark(x, y, 6); break;
+      case 'truck':
+        p.spawnMetalDebris(x, y, 12); p.spawnDebris(x, y, 8, 0.55, 0.42, 0.30);
+        p.spawnSmoke(x, y, 6); p.spawnGears(x, y, 4); break;
+      case 'delivery': case 'van':
+        p.spawnMetalDebris(x, y, 10); p.spawnGlass(x, y, 4); p.spawnFood(x, y, 6);
+        p.spawnSpark(x, y, 4); break;
+      case 'motorcycle':
+        p.spawnMetalDebris(x, y, 6); p.spawnGears(x, y, 4); p.spawnSpark(x, y, 8);
+        p.spawnFire(x, y, 4); break;
+      case 'ambulance':
+        p.spawnMetalDebris(x, y, 10); p.spawnGlass(x, y, 8); p.spawnPills(x, y, 10);
+        p.spawnElectric(x, y, 4); break;
+      default:
+        p.spawnDebris(x, y, 8, 0.5, 0.5, 0.55); p.spawnSpark(x, y, 6);
+    }
   }
 
   // ===== チャンク管理 =====

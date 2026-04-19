@@ -476,6 +476,303 @@ export class ParticleManager {
     }
   }
 
+  /** 黒煙 — もくもくと立ち昇る濃い灰色〜黒の雲 */
+  spawnSmoke(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const v = rand(0.18, 0.42);
+      this.emit(
+        x + rand(-10, 10), y + rand(-5, 5),
+        rand(-25, 25), rand(30, 75),
+        v, v, v * 1.05,
+        rand(8, 16), rand(1.0, 2.2),
+        false, true, rand(-0.6, 0.6)
+      );
+    }
+  }
+
+  /** 砂塵 — ベージュ色の粉塵が広がる */
+  spawnDust(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = rand(0, Math.PI * 2);
+      const spd   = rand(40, 130);
+      const br    = rand(0.70, 0.92);
+      this.emit(
+        x + rand(-8, 8), y + rand(-4, 4),
+        Math.cos(angle) * spd, Math.sin(angle) * spd * 0.4 + rand(10, 35),
+        br, br * 0.92, br * 0.78,
+        rand(6, 14), rand(0.5, 1.2),
+        false, true
+      );
+    }
+  }
+
+  /** 木っ端 — 茶色の細長い木片が回転しながら散る */
+  spawnWoodChips(x: number, y: number, count: number) {
+    const tones: Array<[number,number,number]> = [
+      [0.55, 0.35, 0.18], [0.62, 0.42, 0.22], [0.45, 0.28, 0.14], [0.72, 0.55, 0.32],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(60, 220);
+      const c = tones[Math.floor(Math.random() * tones.length)];
+      this.emit(
+        x + rand(-10, 10), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
+        c[0], c[1], c[2],
+        rand(2, 4), rand(0.5, 1.0),
+        true, false, rand(-12, 12), rand(6, 14)
+      );
+    }
+  }
+
+  /** 落ち葉 — 緑〜黄〜橙の葉が舞い散る */
+  spawnLeaves(x: number, y: number, count: number) {
+    const palette: Array<[number,number,number]> = [
+      [0.32, 0.62, 0.22], [0.55, 0.75, 0.25], [0.85, 0.55, 0.15],
+      [0.92, 0.72, 0.20], [0.70, 0.30, 0.10],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(20, 90);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      this.emit(
+        x + rand(-12, 12), y + rand(-6, 8),
+        Math.cos(angle) * spd, Math.sin(angle) * spd - rand(5, 25),
+        c[0], c[1], c[2],
+        rand(4, 7), rand(1.0, 2.2),
+        true, false, rand(-3, 3), rand(2, 4)
+      );
+    }
+  }
+
+  /** 燃えさし — ふわふわ昇るオレンジ〜赤の小さな粒 */
+  spawnEmbers(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      this.emit(
+        x + rand(-8, 8), y + rand(-4, 4),
+        rand(-25, 25), rand(40, 110),
+        1.0, rand(0.45, 0.85), rand(0.05, 0.25),
+        rand(2, 4), rand(0.7, 1.6),
+        false, true
+      );
+    }
+  }
+
+  /** 歯車・ボルト — 銀色の小さな機械片 */
+  spawnGears(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(70, 220);
+      const br    = rand(0.55, 0.78);
+      this.emit(
+        x + rand(-8, 8), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
+        br, br, br * 1.05,
+        rand(3, 6), rand(0.5, 1.0),
+        true, false, rand(-12, 12)
+      );
+    }
+  }
+
+  /** ピクセル — カラフルなドット (デジタル機器) */
+  spawnPixels(x: number, y: number, count: number) {
+    const palette: Array<[number,number,number]> = [
+      [1.0, 0.25, 0.45], [0.25, 0.85, 1.0], [0.45, 1.0, 0.35],
+      [1.0, 0.85, 0.20], [0.75, 0.35, 1.0], [1.0, 1.0, 1.0],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(60, 220);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      const s = rand(2, 4);
+      this.emit(
+        x + rand(-6, 6), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        s, rand(0.3, 0.7),
+        false, false, 0, s, 0
+      );
+    }
+  }
+
+  /** コイン — 金色の円が飛び散って落ちる */
+  spawnCoins(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-1.0, 1.0);
+      const spd   = rand(70, 180);
+      const gold  = rand(0.85, 1.0);
+      this.emit(
+        x + rand(-8, 8), y,
+        Math.cos(angle) * spd + rand(-30, 30), Math.sin(angle) * spd,
+        gold, gold * 0.78, rand(0.05, 0.20),
+        rand(3, 5), rand(0.8, 1.5),
+        true, true
+      );
+    }
+  }
+
+  /** 麻雀牌・タイル — 白い小さな矩形 */
+  spawnTiles(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(60, 180);
+      const tone  = rand(0.88, 0.98);
+      this.emit(
+        x + rand(-10, 10), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
+        tone, tone, tone * 0.95,
+        rand(3, 5), rand(0.6, 1.2),
+        true, false, rand(-6, 6), rand(4, 6)
+      );
+    }
+  }
+
+  /** 麺 — 黄色い細長いストリーク (ラーメン) */
+  spawnNoodles(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(50, 160);
+      const w     = rand(1.5, 2.5);
+      const h     = rand(8, 18);
+      this.emit(
+        x + rand(-6, 6), y + rand(-4, 4),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(15, 50),
+        rand(0.95, 1.0), rand(0.85, 0.95), rand(0.35, 0.55),
+        w, rand(0.5, 1.0),
+        true, false, rand(-4, 4), h, angle + Math.PI * 0.5
+      );
+    }
+  }
+
+  /** ハート — ピンクの円 (ラブホ・スナック) */
+  spawnHearts(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-0.9, 0.9);
+      const spd   = rand(30, 90);
+      this.emit(
+        x + rand(-10, 10), y + rand(-6, 6),
+        Math.cos(angle) * spd + rand(-20, 20), Math.sin(angle) * spd,
+        rand(0.95, 1.0), rand(0.30, 0.55), rand(0.55, 0.78),
+        rand(4, 7), rand(1.0, 2.0),
+        false, true
+      );
+    }
+  }
+
+  /** ネオン破片 — 鮮やかなネオン色のガラス片 */
+  spawnNeonShards(x: number, y: number, count: number) {
+    const palette: Array<[number,number,number]> = [
+      [1.0, 0.20, 0.65], [0.20, 0.95, 1.0], [0.55, 0.20, 1.0],
+      [0.20, 1.0, 0.55], [1.0, 0.85, 0.20],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(80, 240);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      this.emit(
+        x + rand(-8, 8), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(2, 5), rand(0.4, 0.9),
+        true, false, rand(-10, 10)
+      );
+    }
+  }
+
+  /** 米粒 — 白い小さなドット (寿司・和菓子) */
+  spawnRice(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(40, 140);
+      this.emit(
+        x + rand(-5, 5), y + rand(-4, 4),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(10, 40),
+        rand(0.94, 1.0), rand(0.94, 1.0), rand(0.86, 0.95),
+        rand(1.5, 2.5), rand(0.5, 1.0),
+        true, true
+      );
+    }
+  }
+
+  /** リボン・幟 — 細長いひらひらした布 */
+  spawnRibbons(x: number, y: number, count: number) {
+    const palette: Array<[number,number,number]> = [
+      [1.0, 0.25, 0.25], [1.0, 0.85, 0.25], [0.25, 0.65, 1.0],
+      [1.0, 1.0, 1.0], [0.95, 0.45, 0.75],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 0.5 + rand(-1.1, 1.1);
+      const spd   = rand(40, 120);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      this.emit(
+        x + rand(-10, 10), y + rand(-4, 4),
+        Math.cos(angle) * spd + rand(-25, 25), Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(2, 4), rand(1.0, 2.0),
+        true, false, rand(-3, 3), rand(10, 18)
+      );
+    }
+  }
+
+  /** きらめき星 — 金色のスパークル (ランドマーク・お祝い) */
+  spawnSparkle(x: number, y: number, count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(40, 160);
+      const palette: Array<[number,number,number]> = [
+        [1.0, 0.95, 0.35], [1.0, 1.0, 0.85], [1.0, 0.78, 0.25],
+      ];
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      this.emit(
+        x + rand(-8, 8), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(3, 6), rand(0.5, 1.2),
+        false, true
+      );
+    }
+  }
+
+  /** 花火 — 大きな多色の爆発 (カーニバル・フィナーレ) */
+  spawnFireworks(x: number, y: number, count: number) {
+    const palette: Array<[number,number,number]> = [
+      [1.0, 0.25, 0.25], [0.25, 0.55, 1.0], [0.95, 0.95, 0.20],
+      [0.85, 0.25, 1.0], [0.25, 1.0, 0.55], [1.0, 1.0, 1.0],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(150, 380);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      this.emit(
+        x + rand(-4, 4), y + rand(-4, 4),
+        Math.cos(angle) * spd, Math.sin(angle) * spd,
+        c[0], c[1], c[2],
+        rand(3, 5), rand(0.7, 1.4),
+        true, true
+      );
+    }
+  }
+
+  /** ピル・カプセル — カラフルな小さな丸薬 (薬局・病院) */
+  spawnPills(x: number, y: number, count: number) {
+    const palette: Array<[number,number,number]> = [
+      [0.95, 0.30, 0.30], [0.30, 0.60, 0.95], [0.95, 0.85, 0.25],
+      [0.95, 0.95, 0.95], [0.60, 0.95, 0.55],
+    ];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(60, 170);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      this.emit(
+        x + rand(-6, 6), y + rand(-4, 4),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(15, 45),
+        c[0], c[1], c[2],
+        rand(2.5, 4), rand(0.5, 1.0),
+        true, true
+      );
+    }
+  }
+
   update(dt: number) {
     for (let k = 0; k < this.activeLen; k++) {
       const i = this.activeIndices[k];
