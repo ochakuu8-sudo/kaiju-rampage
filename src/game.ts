@@ -238,6 +238,11 @@ export class Game {
     // === playing ===
     const dt = this.juice.getGameDt(rawDt);
 
+    // 燃料ゲージ比率 (0..1) に応じたスクロール速度とドレイン倍率を算出
+    const fuelRatio = Math.max(0, Math.min(1, this.fuel / C.FUEL_MAX));
+    this.camera.scrollSpeed = C.SCROLL_SPEED_MIN + (C.SCROLL_SPEED_MAX - C.SCROLL_SPEED_MIN) * fuelRatio;
+    const drainMult = C.FUEL_DRAIN_MULT_MIN + (C.FUEL_DRAIN_MULT_MAX - C.FUEL_DRAIN_MULT_MIN) * fuelRatio;
+
     // カメラ更新 (スクロール) — 初期演出中は停止
     if (!this.introActive) this.camera.update(dt);
 
@@ -268,9 +273,9 @@ export class Game {
     // ポップアップレイヤーをカメラ追従 (コンテナ1つだけ更新)
     this.ui.updatePopupLayer(this.camera.y);
 
-    // 燃料ドレイン (hitstop で止まらないよう rawDt を使用) — 初期演出中は停止
+    // 燃料ドレイン — ゲージ量に応じた倍率を掛ける (100% で最大、0% で最小)
     if (!this.introActive) {
-      this.fuel = Math.max(0, this.fuel - rawDt * C.FUEL_DRAIN_PER_SEC);
+      this.fuel = Math.max(0, this.fuel - rawDt * C.FUEL_DRAIN_PER_SEC * drainMult);
     }
     this.ui.setFuel(this.fuel);
 

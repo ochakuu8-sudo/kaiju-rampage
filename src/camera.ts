@@ -1,15 +1,17 @@
 /**
- * camera.ts — カメラ管理 (固定速で上方向スクロール)
+ * camera.ts — カメラ管理 (燃料ゲージ量に連動した可変速スクロール)
  */
 import * as C from './constants';
 
 export class Camera {
   y = 0;
+  /** 現在のスクロール速度 (px/s)。ゲーム側で燃料に応じて毎フレーム更新 */
+  scrollSpeed = C.SCROLL_SPEED_MAX;
   /** 指定 Y でスクロールを停止 (null = 制限なし、number = y がこの値を超えない) */
   lockY: number | null = null;
 
   update(dt: number) {
-    this.y += C.SCROLL_SPEED * dt;
+    this.y += this.scrollSpeed * dt;
     if (this.lockY !== null && this.y >= this.lockY) {
       this.y = this.lockY;
     }
@@ -26,6 +28,7 @@ export class Camera {
 
   reset() {
     this.y = 0;
+    this.scrollSpeed = C.SCROLL_SPEED_MAX;
     this.lockY = null;
   }
 }
