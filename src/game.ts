@@ -398,11 +398,15 @@ export class Game {
       // normalDamping=0.35 で跳ねすぎない程度に保持、tangentFriction=0.998 でほぼ無摩擦。
       // 押されたら applyImpulse で追加の強打ち出し。
       for (const fl of this.flippers) {
-        // 先端の小さな突起 (バンパー): 半径 4。ボールが先端から滑り落ちないよう壁の役目。
-        const TIP_BUMP_R = 4;
+        // 先端の小さな半円突起 (バンパー): 半径 3。中心は先端の top edge 上 = 半分が
+        // フリッパー本体に埋もれ、上半分だけが半円として表面から飛び出す形。
+        const TIP_BUMP_R = 3;
         const ftCos = Math.cos(fl.angle), ftSin = Math.sin(fl.angle);
-        const tipBX = fl.cx + (C.FLIPPER_W / 2) * ftCos;
-        const tipBY = fl.cy + (C.FLIPPER_W / 2) * ftSin;
+        const yDirT = fl.isLeft ? 1 : -1;
+        const bumpLocalX = C.FLIPPER_W / 2;
+        const bumpLocalY = 6 * yDirT;     // 上面 (top edge) の高さ ≈ BASE_THICK/2
+        const tipBX = fl.cx + bumpLocalX * ftCos - bumpLocalY * ftSin;
+        const tipBY = fl.cy + bumpLocalX * ftSin + bumpLocalY * ftCos;
         const tdx = b.x - tipBX, tdy = b.y - tipBY;
         const sumR = r + TIP_BUMP_R;
         if (tdx * tdx + tdy * tdy < sumR * sumR) {
@@ -1969,10 +1973,11 @@ export class Game {
         const segCy = fl.cy + localX * sinA + localY * cosA;
         writeInst(buf, n++, segCx, segCy, segLen * 1.04, segH, gr, gg, gb, 1, fl.angle);
       }
-      // 先端の小さな突起 (バンパー、物理側と同位置)
-      const tipBX = fl.cx + hw * cosA;
-      const tipBY = fl.cy + hw * sinA;
-      writeInst(buf, n++, tipBX, tipBY, 8, 8, gr * 0.85, gg * 0.85, gb * 1.0, 1, 0, 1);
+      // 先端の小さな半円突起 (物理側と同位置: 中心が top edge 上で、半円が上面から飛び出す)
+      const bumpLocalY_v = 6 * yDir;
+      const bumpVX = fl.cx + hw * cosA - bumpLocalY_v * sinA;
+      const bumpVY = fl.cy + hw * sinA + bumpLocalY_v * cosA;
+      writeInst(buf, n++, bumpVX, bumpVY, 6, 6, gr * 0.9, gg * 0.9, gb * 1.05, 1, 0, 1);
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
