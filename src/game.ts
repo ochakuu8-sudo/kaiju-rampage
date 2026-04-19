@@ -400,7 +400,7 @@ export class Game {
       for (const fl of this.flippers) {
         // 先端の小さな半円突起 (バンパー): 半径 3。中心は先端の top edge 上 = 半分が
         // フリッパー本体に埋もれ、上半分だけが半円として表面から飛び出す形。
-        const TIP_BUMP_R = 19;   // 半径 19 (ボール直径 32 × 1.2 / 2 ≈ 19.2)
+        const TIP_BUMP_R = 2;
         const ftCos = Math.cos(fl.angle), ftSin = Math.sin(fl.angle);
         const yDirT = fl.isLeft ? 1 : -1;
         const bumpLocalX = C.FLIPPER_W / 2;
@@ -1977,7 +1977,7 @@ export class Game {
       const bumpLocalY_v = 6 * yDir;
       const bumpVX = fl.cx + hw * cosA - bumpLocalY_v * sinA;
       const bumpVY = fl.cy + hw * sinA + bumpLocalY_v * cosA;
-      writeInst(buf, n++, bumpVX, bumpVY, 38, 38, gr * 0.9, gg * 0.9, gb * 1.05, 1, 0, 1);
+      writeInst(buf, n++, bumpVX, bumpVY, 4, 4, gr * 0.9, gg * 0.9, gb * 1.05, 1, 0, 1);
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
