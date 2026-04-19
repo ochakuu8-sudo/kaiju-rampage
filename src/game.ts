@@ -565,11 +565,12 @@ export class Game {
         }
         break;
 
-      case 'metal_industrial': // 工業 — 金属大塊 + 金属片 + 歯車 + 煙 + 火花 (煙は工業特権)
+      case 'metal_industrial': // 工業 — 金属大塊 + 金属片 + 歯車 + 火花 (+ ステージ4のみ煙)
         p.spawnImpactBurst (cx, cy, burstN);
         p.spawnRubbleChunks(cx, cy, rubbleN, 0.62, 0.62, 0.66);
         p.spawnMetalDebris (cx, cy, 14 + sc * 8);
-        p.spawnSmoke       (cx, cy, 12 + sc * 5);
+        if (this.currentStageIndex === 3) p.spawnSmoke(cx, cy, 12 + sc * 5);
+        else p.spawnDust(cx, cy, 10 + sc * 4);
         p.spawnSpark       (cx, cy, 12 + sc * 5);
         p.spawnGears       (cx, cy,  6 + sc * 3);
         break;
@@ -588,13 +589,13 @@ export class Game {
         }
         break;
 
-      case 'explosive': // 爆発 (ガソスタ) — 砂塵 + 大塊 + 大量炎 + 黒煙 + 細片
+      case 'explosive': // 爆発 (ガソスタ) — 砂塵 + 大塊 + 大量炎 + 燃えさし + 細片
         p.spawnImpactBurst (cx, cy, burstN + 8);
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnFire        (cx, cy, 28 + sc * 6);
         p.spawnSpark       (cx, cy, 22 + sc * 6);
-        p.spawnSmoke       (cx, cy, 18);
-        p.spawnEmbers      (cx, cy, 16);
+        if (this.currentStageIndex === 3) p.spawnSmoke(cx, cy, 18);
+        p.spawnEmbers      (cx, cy, 24);
         p.spawnDebris      (cx, cy, 14, dr, dg, db);
         break;
 
@@ -840,7 +841,9 @@ export class Game {
       case 'pedestrian_bridge': case 'railway_track':
         p.spawnMetalDebris(x, y, 8); p.spawnSpark(x, y, 4); break;
       case 'fire_extinguisher':
-        p.spawnSmoke(x, y, 12); p.spawnDust(x, y, 6); break;
+        p.spawnDust(x, y, 14); p.spawnSpark(x, y, 4);
+        if (this.currentStageIndex === 3) p.spawnSmoke(x, y, 8);
+        break;
       case 'bus_stop':
         p.spawnGlass(x, y, 8); p.spawnDust(x, y, 4); break;
       case 'flag_pole':
@@ -876,13 +879,17 @@ export class Game {
 
       // ── 工業・港湾 ──
       case 'drum_can':
-        p.spawnFire(x, y, 8); p.spawnSmoke(x, y, 6); p.spawnMetalDebris(x, y, 4); break;
+        p.spawnFire(x, y, 8); p.spawnMetalDebris(x, y, 4); p.spawnEmbers(x, y, 6);
+        if (this.currentStageIndex === 3) p.spawnSmoke(x, y, 6);
+        break;
       case 'cargo_container':
         p.spawnMetalDebris(x, y, 10); p.spawnSpark(x, y, 4); break;
       case 'buoy':
         p.spawnWater(x, y, 8); p.spawnDebris(x, y, 4, 0.95, 0.20, 0.20); break;
       case 'gas_canister':
-        p.spawnFire(x, y, 10); p.spawnSpark(x, y, 8); p.spawnSmoke(x, y, 6); break;
+        p.spawnFire(x, y, 10); p.spawnSpark(x, y, 8); p.spawnEmbers(x, y, 6);
+        if (this.currentStageIndex === 3) p.spawnSmoke(x, y, 6);
+        break;
       case 'ac_unit': case 'ac_outdoor_cluster':
         p.spawnMetalDebris(x, y, 8); p.spawnSpark(x, y, 4); p.spawnSteam(x, y, 4); break;
 
@@ -898,7 +905,9 @@ export class Game {
       case 'plaza_tile_circle':
         p.spawnDust(x, y, 8); p.spawnDebris(x, y, 6, 0.7, 0.65, 0.55); break;
       case 'bathhouse_chimney':
-        p.spawnSmoke(x, y, 14); p.spawnDust(x, y, 4); break;
+        p.spawnDust(x, y, 14); p.spawnEmbers(x, y, 6); p.spawnDebris(x, y, 6, 0.55, 0.30, 0.20);
+        if (this.currentStageIndex === 3) p.spawnSmoke(x, y, 8);
+        break;
       case 'fire_watchtower':
         p.spawnWoodChips(x, y, 10); p.spawnEmbers(x, y, 6); break;
       case 'grain_silo':
