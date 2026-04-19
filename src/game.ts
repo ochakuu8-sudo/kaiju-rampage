@@ -1925,16 +1925,20 @@ export class Game {
     for (const fl of this.flippers) {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.60, gg = isFlash ? 1 : 0.60, gb = isFlash ? 1 : 0.70;
-      // 本体の矩形
-      writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
-      // 先端とピボット端を円で丸める (物理側のカプセル判定に視覚を合わせる)
       const armHalf = C.FLIPPER_W / 2;
-      const capD = C.FLIPPER_H;
       const cosA = Math.cos(fl.angle), sinA = Math.sin(fl.angle);
       const tipX = fl.cx + armHalf * cosA, tipY = fl.cy + armHalf * sinA;
       const baseX = fl.cx - armHalf * cosA, baseY = fl.cy - armHalf * sinA;
-      writeInst(buf, n++, tipX,  tipY,  capD, capD, gr, gg, gb, 1, 0, 1);
-      writeInst(buf, n++, baseX, baseY, capD, capD, gr, gg, gb, 1, 0, 1);
+      // 本体の矩形 (細いストリップ)
+      writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
+      // テーパー見た目: 根本寄りに重ねて描くことで徐々に太く見せる
+      const midBackCx = fl.cx - armHalf * 0.3 * cosA;
+      const midBackCy = fl.cy - armHalf * 0.3 * sinA;
+      writeInst(buf, n++, midBackCx, midBackCy, C.FLIPPER_W * 0.7, C.FLIPPER_H * 1.6, gr, gg, gb, 1, fl.angle);
+      // 根本側の太い円 (三角形の底辺に相当)
+      writeInst(buf, n++, baseX, baseY, C.FLIPPER_H * 2.4, C.FLIPPER_H * 2.4, gr, gg, gb, 1, 0, 1);
+      // 先端の細い丸 (三角形の頂点に相当)
+      writeInst(buf, n++, tipX, tipY, C.FLIPPER_H, C.FLIPPER_H, gr, gg, gb, 1, 0, 1);
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
