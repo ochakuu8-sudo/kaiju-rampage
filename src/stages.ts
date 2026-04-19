@@ -439,12 +439,23 @@ export function placeCity(): ScenePlacement {
   //   originX = -180 (世界左壁), originY = -80 (RIVER 中心)
   const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 107);
   const placement = placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
-  // HILLTOP 上 (y≈245) から最初のチャンク開始 (WORLD_MAX_Y=290) までの空隙を
-  // residential_tile で埋めて、初期都市と Stage 1 の境目の緑地を解消する。
-  const gapY = (245 + C.WORLD_MAX_Y) / 2;
-  const gapH = C.WORLD_MAX_Y - 245;
+  // HILLTOP (y=245 上端) から Stage 1 最初のチャンク (WORLD_MAX_Y=290) までの
+  // 約 45 px の帯を「住宅街への導入緩衝帯」として構造的に埋める。
+  //   - 全幅に residential_tile のベース
+  //   - 垂直道路 (x=±90, 0) の軌道に合わせて asphalt を重ねて road continuity
+  //   - x=±180 (世界壁側の歩道) の軌道にも asphalt を重ねる
+  // これによりチャンクの _SPINE_V とスムーズに繋がる。
+  const gapY0 = 245, gapY1 = C.WORLD_MAX_Y;
+  const bandCy = (gapY0 + gapY1) / 2;
+  const bandH  = gapY1 - gapY0;
   if (!placement.grounds) placement.grounds = [];
-  placement.grounds.push({ type: 'residential_tile', x: 0, y: gapY, w: 360, h: gapH });
+  // ベース: residential_tile (周辺チャンクの基調と揃える)
+  placement.grounds.push({ type: 'residential_tile', x: 0, y: bandCy, w: 360, h: bandH });
+  // 垂直道路に合わせた asphalt 帯 (x=-90, 0, 90): チャンクの _SPINE_V と軌道一致
+  const VR_W = 14;
+  for (const vx of [-90, 0, 90]) {
+    placement.grounds.push({ type: 'asphalt', x: vx, y: bandCy, w: VR_W, h: bandH });
+  }
   return placement;
 }
 
