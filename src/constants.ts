@@ -280,7 +280,7 @@ export const SCROLL_SPEED = 50;   // 固定スクロール速度 (px/s)
 // 時間経過で線形に減少し、人間を踏むと線形に回復する。0 でゲームオーバー。
 export const FUEL_MAX             = 100;
 export const FUEL_INITIAL         = 70;
-export const FUEL_DRAIN_PER_SEC   = 1.8;
+export const FUEL_DRAIN_PER_SEC   = 10;   // 満タンから約 10 秒で空になる (何も踏めなければゲームオーバー)
 export const FUEL_GAIN_PER_HUMAN  = 2.5;
 export const FUEL_LOW_THRESHOLD   = 20;   // この値を下回ると赤く点滅
 
