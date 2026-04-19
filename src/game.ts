@@ -171,7 +171,6 @@ export class Game {
     this.clearTriggered   = false;
     this.ui.setDistance(0);
     this.ui.setZone(0, STAGES[0].name);
-    this.ui.setSpeedMeter(0, C.SCROLL_MAX);
     this.ui.setFuel(C.FUEL_INITIAL);
   }
 
@@ -257,8 +256,7 @@ export class Game {
     this.particles.update(dt);
     this.updateChunks();
 
-    // スクロール速度・距離 表示を更新
-    this.ui.setSpeedMeter(this.camera.scrollSpeed, C.SCROLL_MAX);
+    // 距離表示を更新
     this.ui.setDistance(this.camera.distanceMeters);
 
     // 現在ステージを追跡して HUD / 背景を更新
@@ -464,9 +462,8 @@ export class Game {
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
       }
       this.totalHumans += crushed.length;
-      // 人間は燃料: スコアには加算せず、燃料を回復しつつスクロールも加速
+      // 人間は燃料: 線形に回復
       this.fuel = Math.min(C.FUEL_MAX, this.fuel + crushed.length * C.FUEL_GAIN_PER_HUMAN);
-      this.camera.addScrollSpeed(crushed.length * C.HUMAN_SCROLL_GAIN);
       this.sound.humanCrush(1);
       this.juice.shake(C.SHAKE_HUMAN_AMP, C.SHAKE_HUMAN_DUR);
     }
@@ -1891,16 +1888,8 @@ export class Game {
     const isFl = this.juice.isBallFlashing();
     const radius = C.BALL_RADIUS;
 
-    // スクロール速度に応じた色: orange(base) → red(+50) → electric blue(+100)
-    const pt = Math.min(1, (this.camera.scrollSpeed - C.SCROLL_BASE_SPEED) / 100);
-    let cr: number, cg: number, cb: number;
-    if (pt < 0.5) {
-      const s = pt * 2;
-      cr = 1.0; cg = 0.55 - s * 0.45; cb = 0.05 + s * 0.05;
-    } else {
-      const s = (pt - 0.5) * 2;
-      cr = 1.0 - s * 0.8; cg = 0.10 + s * 0.40; cb = 0.10 + s * 0.90;
-    }
+    // ボール色: 固定のオレンジ
+    const cr = 1.0, cg = 0.55, cb = 0.05;
 
     // トレイル
     for (let ti = 0; ti < C.TRAIL_LEN; ti++) {

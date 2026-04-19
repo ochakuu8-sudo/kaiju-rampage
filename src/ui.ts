@@ -1,28 +1,25 @@
 /**
- * ui.ts — DOM UI 更新 (スピードメーター + 燃料ゲージ + ステージ + CLEAR/GAMEOVER)
+ * ui.ts — DOM UI 更新 (燃料ゲージ + ステージ + CLEAR/GAMEOVER)
  */
 
 import * as C from './constants';
 
 export class UIManager {
-  private elDistance    = document.getElementById('distance-display')!;
-  private elZone        = document.getElementById('zone-display')!;
-  private elSpeedFill   = document.getElementById('life-fill')!;
-  private elSpeedNumber = document.getElementById('speed-number')!;
-  private elFuelWrap    = document.getElementById('fuel-wrap')!;
-  private elFuelFill    = document.getElementById('fuel-fill')!;
-  private elGameover    = document.getElementById('gameover')!;
-  private elFinalBest   = document.getElementById('final-best')!;
-  private elFinalStats  = document.getElementById('final-stats')!;
-  private elClear       = document.getElementById('clear')!;
-  private elClearDist   = document.getElementById('clear-dist')!;
-  private elClearStats  = document.getElementById('clear-stats')!;
-  private elPopupLayer  = document.getElementById('popup-layer')!;
+  private elDistance   = document.getElementById('distance-display')!;
+  private elZone       = document.getElementById('zone-display')!;
+  private elFuelWrap   = document.getElementById('life-wrap')!;
+  private elFuelFill   = document.getElementById('life-fill')!;
+  private elGameover   = document.getElementById('gameover')!;
+  private elFinalBest  = document.getElementById('final-best')!;
+  private elFinalStats = document.getElementById('final-stats')!;
+  private elClear      = document.getElementById('clear')!;
+  private elClearDist  = document.getElementById('clear-dist')!;
+  private elClearStats = document.getElementById('clear-stats')!;
+  private elPopupLayer = document.getElementById('popup-layer')!;
 
   constructor() {
-    // スピードメーターのグラデーションはメーター実幅 (px) で固定する。
-    const wrap = document.getElementById('life-wrap')!;
-    this.elSpeedFill.style.backgroundSize = `${wrap.clientWidth}px 100%`;
+    // カラフルなグラデーションはメーター実幅 (px) で固定描画する。
+    this.elFuelFill.style.backgroundSize = `${this.elFuelWrap.clientWidth}px 100%`;
   }
 
   setDistance(meters: number) {
@@ -34,15 +31,7 @@ export class UIManager {
     this.elZone.textContent = `Stage ${stageIndex + 1} — ${stageName}`;
   }
 
-  /** レースゲーム風スピードメーター */
-  setSpeedMeter(speed: number, maxSpeed: number) {
-    const pct = maxSpeed > 0 ? Math.min(100, (speed / maxSpeed) * 100) : 0;
-    this.elSpeedFill.style.width = `${pct}%`;
-    this.elSpeedFill.classList.toggle('high', pct >= 80);
-    this.elSpeedNumber.textContent = String(Math.round(speed));
-  }
-
-  /** 燃料ゲージ (0-FUEL_MAX): バーの width を % にマップ + 閾値で色を切り替え */
+  /** 燃料ゲージ (0-FUEL_MAX): バーの width を % にマップ + 閾値で警告表示 */
   setFuel(fuel: number) {
     const pct = Math.max(0, Math.min(100, (fuel / C.FUEL_MAX) * 100));
     this.elFuelFill.style.width = `${pct}%`;

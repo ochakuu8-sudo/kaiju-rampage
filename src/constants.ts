@@ -273,15 +273,11 @@ export const INTERSECTION_COLOR: readonly [number,number,number,number] = [0.46,
 export const BRIDGE_COLOR:     readonly [number,number,number,number] = [0.58, 0.48, 0.38, 1];
 export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 0.32, 0.26, 1];
 
-// ===== 自動スクロール (レースゲーム風) =====
-export const SCROLL_BASE_SPEED   = 0;    // 初期速度 (0 = 停止状態スタート)
-export const SCROLL_LINEAR_DRAIN = 30;   // 線形減衰 (px/s²): 毎秒一定量ずつ減速
-export const SCROLL_MAX          = 200;  // スクロール速度上限 (px/s)
-export const HUMAN_SCROLL_GAIN   = 8;    // 人間 1 体の基礎ゲイン (px/s)
-export const SCROLL_GAIN_DECAY   = 3;    // ゲイン指数減衰: gain = base * exp(-speed / (MAX / DECAY))
+// ===== 自動スクロール =====
+export const SCROLL_SPEED = 50;   // 固定スクロール速度 (px/s)
 
-// ===== 燃料ゲージ (タイマーの代替) =====
-// 時間経過で減少し、人間を踏むと回復する。0 でゲームオーバー。
+// ===== 燃料ゲージ (ゲームオーバー条件) =====
+// 時間経過で線形に減少し、人間を踏むと線形に回復する。0 でゲームオーバー。
 export const FUEL_MAX             = 100;
 export const FUEL_INITIAL         = 70;
 export const FUEL_DRAIN_PER_SEC   = 1.8;
