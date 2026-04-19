@@ -415,10 +415,10 @@ export class Game {
           // 押し出し
           b.x = tipBX + tnx * (sumR + 0.5);
           b.y = tipBY + tny * (sumR + 0.5);
-          // 反射 (restitution = 0.55、しっかり跳ね返る)
+          // 反射 (restitution = 0.18、控えめに跳ね返る)
           const tdot = b.vx * tnx + b.vy * tny;
           if (tdot < 0) {
-            const e = 0.55;
+            const e = 0.18;
             b.vx -= (1 + e) * tdot * tnx;
             b.vy -= (1 + e) * tdot * tny;
             flipperSoundNeeded = true;
