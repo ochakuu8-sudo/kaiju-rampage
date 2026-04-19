@@ -126,16 +126,28 @@ export class Game {
   //   完全平行だと坂→フリッパー→ドレインを一直線に転がって即落ちしてしまうため、
   //   角度差で「キャッチ」を作り、ボールが接点で微バウンドして滞空時間を生む。
   //   急すぎないので上から落ちてきた時の加速も穏やか。
-  // ★ hw=54, 右下端=(-85, camera.y-210) でフリッパーピボット直結、左上端=(-180, camera.y-160)
-  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -185, hw: 54, hh: 6, angle: -0.489 }; // -28°
-  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -185, hw: 54, hh: 6, angle:  0.489 };
+  // ★ 2段構成のジャンプ台型 — 上段が steep (-34.6°)、下段は near-horizontal (-10°) で
+  //    ボールを水平方向に打ち出す。上段→下段の継ぎ目は (-114.5, -204.8)、下段の出口が
+  //    ピボット (-85, -210)。
+  private readonly SLOPE_L_UPPER_BASE = { cx: -147.27, cy_off: -182.2, hw: 39.77, hh: 6, angle: -0.604 };
+  private readonly SLOPE_L_LOWER_BASE = { cx:  -99.77, cy_off: -207.4, hw: 15.0,  hh: 6, angle: -0.175 };
+  private readonly SLOPE_R_UPPER_BASE = { cx:  147.27, cy_off: -182.2, hw: 39.77, hh: 6, angle:  0.604 };
+  private readonly SLOPE_R_LOWER_BASE = { cx:   99.77, cy_off: -207.4, hw: 15.0,  hh: 6, angle:  0.175 };
 
-  private getSlopeL() {
-    const b = this.SLOPE_L_BASE;
+  private getSlopeLU() {
+    const b = this.SLOPE_L_UPPER_BASE;
     return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
   }
-  private getSlopeR() {
-    const b = this.SLOPE_R_BASE;
+  private getSlopeLL() {
+    const b = this.SLOPE_L_LOWER_BASE;
+    return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
+  }
+  private getSlopeRU() {
+    const b = this.SLOPE_R_UPPER_BASE;
+    return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
+  }
+  private getSlopeRL() {
+    const b = this.SLOPE_R_LOWER_BASE;
     return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
   }
 
@@ -381,9 +393,9 @@ export class Game {
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      // 坂: normalDamping=0.22 で跳ねにくく、tangentFriction=0.965 で転がりながら
-      // そこそこエネルギーを削ぐ (往復 1 回くらいで穴に落ちる挙動を狙う)。
-      for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
+      // 坂: 上段 steep + 下段 near-horizontal (ジャンプ台)。
+      // normalDamping=0.22 で跳ねにくく、tangentFriction=0.965 で転がりながら摩擦。
+      for (const slope of [this.getSlopeLU(), this.getSlopeLL(), this.getSlopeRU(), this.getSlopeRL()]) {
         const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.22, 0.965);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
@@ -1904,19 +1916,16 @@ export class Game {
     return n - start;
   }
 
-  /** 坂 (左右) を最前面レイヤで描画。建物・道路に覆われないよう第 2 パスで呼ぶ */
+  /** 坂 (左右) を最前面レイヤで描画。上段と下段の 2 セグメント x 2 側。 */
   private fillSlopes(buf: Float32Array, start: number): number {
     let n = start;
-    const sL = this.getSlopeL(), sR = this.getSlopeR();
+    const segs = [this.getSlopeLU(), this.getSlopeLL(), this.getSlopeRU(), this.getSlopeRL()];
     // 本体 (緑)
-    writeInst(buf, n++, sL.cx, sL.cy, sL.hw * 2, sL.hh * 2, 0.38, 0.58, 0.30, 1, sL.angle);
-    writeInst(buf, n++, sR.cx, sR.cy, sR.hw * 2, sR.hh * 2, 0.38, 0.58, 0.30, 1, sR.angle);
+    for (const s of segs) writeInst(buf, n++, s.cx, s.cy, s.hw * 2, s.hh * 2, 0.38, 0.58, 0.30, 1, s.angle);
     // 上辺ハイライト (ボールが滑る面を示す、白ライン)
-    writeInst(buf, n++, sL.cx, sL.cy + sL.hh - 0.5, sL.hw * 2, 1.2, 0.92, 0.92, 0.88, 0.85, sL.angle);
-    writeInst(buf, n++, sR.cx, sR.cy + sR.hh - 0.5, sR.hw * 2, 1.2, 0.92, 0.92, 0.88, 0.85, sR.angle);
+    for (const s of segs) writeInst(buf, n++, s.cx, s.cy + s.hh - 0.5, s.hw * 2, 1.2, 0.92, 0.92, 0.88, 0.85, s.angle);
     // 下辺の影 (立体感、暗)
-    writeInst(buf, n++, sL.cx, sL.cy - sL.hh + 0.5, sL.hw * 2, 1.0, 0.22, 0.34, 0.18, 0.85, sL.angle);
-    writeInst(buf, n++, sR.cx, sR.cy - sR.hh + 0.5, sR.hw * 2, 1.0, 0.22, 0.34, 0.18, 0.85, sR.angle);
+    for (const s of segs) writeInst(buf, n++, s.cx, s.cy - s.hh + 0.5, s.hw * 2, 1.0, 0.22, 0.34, 0.18, 0.85, s.angle);
     return n - start;
   }
 
