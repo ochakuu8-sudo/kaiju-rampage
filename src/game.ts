@@ -1922,23 +1922,24 @@ export class Game {
 
   private fillFlippers(buf: Float32Array, start: number): number {
     let n = start;
+    const N = 8;              // 三角形近似の分割数
+    const BASE_THICK = 12;    // 根本の太さ
+    const TIP_THICK  = 1.5;   // 先端の太さ (ほぼ点)
     for (const fl of this.flippers) {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.60, gg = isFlash ? 1 : 0.60, gb = isFlash ? 1 : 0.70;
-      const armHalf = C.FLIPPER_W / 2;
+      const hw = C.FLIPPER_W / 2;
       const cosA = Math.cos(fl.angle), sinA = Math.sin(fl.angle);
-      const tipX = fl.cx + armHalf * cosA, tipY = fl.cy + armHalf * sinA;
-      const baseX = fl.cx - armHalf * cosA, baseY = fl.cy - armHalf * sinA;
-      // 本体の矩形 (細いストリップ)
-      writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
-      // テーパー見た目: 根本寄りに重ねて描くことで徐々に太く見せる
-      const midBackCx = fl.cx - armHalf * 0.3 * cosA;
-      const midBackCy = fl.cy - armHalf * 0.3 * sinA;
-      writeInst(buf, n++, midBackCx, midBackCy, C.FLIPPER_W * 0.7, C.FLIPPER_H * 1.6, gr, gg, gb, 1, fl.angle);
-      // 根本側の太い円 (三角形の底辺に相当)
-      writeInst(buf, n++, baseX, baseY, C.FLIPPER_H * 2.4, C.FLIPPER_H * 2.4, gr, gg, gb, 1, 0, 1);
-      // 先端の細い丸 (三角形の頂点に相当)
-      writeInst(buf, n++, tipX, tipY, C.FLIPPER_H, C.FLIPPER_H, gr, gg, gb, 1, 0, 1);
+      const segLen = C.FLIPPER_W / N;
+      // 根本 (pivot 側) から先端 (tip 側) へ線形テーパーする矩形スライス
+      for (let i = 0; i < N; i++) {
+        const t = (i + 0.5) / N;                          // 0..1
+        const localX = -hw + (i + 0.5) * segLen;          // セグメントの中心 X (local)
+        const segCx = fl.cx + localX * cosA;
+        const segCy = fl.cy + localX * sinA;
+        const segH = BASE_THICK * (1 - t) + TIP_THICK * t;
+        writeInst(buf, n++, segCx, segCy, segLen * 1.02, segH, gr, gg, gb, 1, fl.angle);
+      }
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
