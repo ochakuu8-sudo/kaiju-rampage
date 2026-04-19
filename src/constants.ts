@@ -29,9 +29,9 @@ export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーショ
 export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 
 // ===== フリッパー =====
-export const FLIPPER_W = 72;       // 視覚ギャップ ≈27 px (ボール径 32 の約0.83倍)
+export const FLIPPER_W = 76;       // 視覚ギャップ ≈27 px (ボール径 32 の約0.85倍) を維持 (-28° 化に合わせて延長)
 export const FLIPPER_H = 8;        // フリッパー厚 (先端の丸み半径 = FLIPPER_H/2 = 4)
-export const FLIPPER_REST_DEG = -20;
+export const FLIPPER_REST_DEG = -28;   // 坂と同じ角度に揃える (段差解消)
 export const FLIPPER_ACTIVE_DEG = 25;
 export const FLIPPER_POWER = 14;     // リアルピンボール寄りの穏やかな蹴り出し
 export const FLIPPER_SPEED_DEG = 420; // deg/s
