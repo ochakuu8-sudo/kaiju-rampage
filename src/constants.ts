@@ -31,8 +31,8 @@ export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 // ===== フリッパー =====
 export const FLIPPER_W = 80;
 export const FLIPPER_H = 12;
-export const FLIPPER_REST_DEG = -30;
-export const FLIPPER_ACTIVE_DEG = 30;
+export const FLIPPER_REST_DEG = -20;
+export const FLIPPER_ACTIVE_DEG = 25;
 export const FLIPPER_POWER = 14;     // リアルピンボール寄りの穏やかな蹴り出し
 export const FLIPPER_SPEED_DEG = 420; // deg/s
 

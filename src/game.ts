@@ -126,9 +126,9 @@ export class Game {
   //   完全平行だと坂→フリッパー→ドレインを一直線に転がって即落ちしてしまうため、
   //   角度差で「キャッチ」を作り、ボールが接点で微バウンドして滞空時間を生む。
   //   急すぎないので上から落ちてきた時の加速も穏やか。
-  // ★ hw=60, 右下端=(-85, camera.y-210) でフリッパーピボット直結、左上端=(-180, camera.y-136)
-  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -173, hw: 60, hh: 6, angle: -0.663 }; // -38°
-  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -173, hw: 60, hh: 6, angle:  0.663 };
+  // ★ hw=54, 右下端=(-85, camera.y-210) でフリッパーピボット直結、左上端=(-180, camera.y-160)
+  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -185, hw: 54, hh: 6, angle: -0.489 }; // -28°
+  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -185, hw: 54, hh: 6, angle:  0.489 };
 
   private getSlopeL() {
     const b = this.SLOPE_L_BASE;
@@ -381,10 +381,10 @@ export class Game {
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      // 坂: normalDamping=0.50 で半分の勢いで跳ね返り (ピンボールらしい弾性)。
+      // 坂: normalDamping=0.30 で控えめな跳ね返り (弾性低めで転がり感を強調)。
       // tangentFriction=0.995 で接線方向も極ごくわずかに減速。
       for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.50, 0.995);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.30, 0.995);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
@@ -394,11 +394,11 @@ export class Game {
           break;
         }
       }
-      // フリッパー: normalDamping=0.60 でしっかり跳ねる (ピンボールのラバーっぽい弾性)。
+      // フリッパー: normalDamping=0.40 で控えめな跳ね返り (弾性低めで転がり感を出す)。
       // tangentFriction=0.998 でほぼ無摩擦 (フリッパーはよく走る)。
       // 押されたら applyImpulse で追加の強打ち出し。
       for (const fl of this.flippers) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.60, 0.998);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.40, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
