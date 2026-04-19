@@ -102,6 +102,8 @@ export class Game {
 
   private state: GameState = 'playing';
   private stateTimer = 0;
+  /** 初期演出: true の間はスクロールとドレインが止まる。燃料が 100% になると解除 */
+  private introActive = true;
 
   // 燃料 (時間で減少、人間を踏むと回復)
   private fuel = C.FUEL_INITIAL;
@@ -169,6 +171,7 @@ export class Game {
     this.fuel             = C.FUEL_INITIAL;
     this.currentStageIndex = 0;
     this.clearTriggered   = false;
+    this.introActive      = true;
     this.ui.setDistance(0);
     this.ui.setZone(0, STAGES[0].name);
     this.ui.setFuel(C.FUEL_INITIAL);
@@ -235,8 +238,8 @@ export class Game {
     // === playing ===
     const dt = this.juice.getGameDt(rawDt);
 
-    // カメラ更新（スクロール）
-    this.camera.update(dt);
+    // カメラ更新 (スクロール) — 初期演出中は停止
+    if (!this.introActive) this.camera.update(dt);
 
     this.flippers[0].setPressed(this.input.leftPressed);
     this.flippers[1].setPressed(this.input.rightPressed);
@@ -265,11 +268,20 @@ export class Game {
     // ポップアップレイヤーをカメラ追従 (コンテナ1つだけ更新)
     this.ui.updatePopupLayer(this.camera.y);
 
-    // 燃料ドレイン (hitstop で止まらないよう rawDt を使用)
-    this.fuel = Math.max(0, this.fuel - rawDt * C.FUEL_DRAIN_PER_SEC);
+    // 燃料ドレイン (hitstop で止まらないよう rawDt を使用) — 初期演出中は停止
+    if (!this.introActive) {
+      this.fuel = Math.max(0, this.fuel - rawDt * C.FUEL_DRAIN_PER_SEC);
+    }
     this.ui.setFuel(this.fuel);
 
-    // 燃料切れ → ゲームオーバー
+    // 初期演出: 満タンになったらスクロール/ドレイン開始
+    if (this.introActive && this.fuel >= C.FUEL_MAX) {
+      this.introActive = false;
+      this.juice.flash(1, 1, 0.4, 0.50);
+      this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR);
+    }
+
+    // 燃料切れ → ゲームオーバー (初期演出中は起きない)
     if (this.fuel <= 0) {
       this.onGameOver();
       return;
