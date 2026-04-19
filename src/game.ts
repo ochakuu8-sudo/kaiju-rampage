@@ -1349,10 +1349,10 @@ export class Game {
         break;
       }
 
-      // ─── 住宅街インターロッキング: ベージュの細かいレンガ敷き ───
+      // ─── 住宅街インターロッキング: コンクリート系グレーのレンガ敷き ───
       case 'residential_tile': {
-        // 目地の濃いベージュ下地
-        writeInst(buf, n++, x, y, w, h, 0.50, 0.44, 0.36, 1);
+        // 目地の暗いグレー下地
+        writeInst(buf, n++, x, y, w, h, 0.40, 0.40, 0.39, 1);
         // 5 行 × 4 列のレンガを煉瓦積み (交互オフセット) で敷き詰める
         const rows = 5;
         const cols = 4;
@@ -1365,14 +1365,14 @@ export class Game {
             const by = y - h / 2 + (r + 0.5) * bh;
             if (bx < x - w / 2 - bw * 0.2 || bx > x + w / 2 + bw * 0.2) continue;
             const hv = hash(r * 11 + c * 23 + 3);
-            // ベージュ〜クリームのブロックバリエーション
-            const shade = 0.78 + hv * 0.14;
-            const warm  = 0.02 + hash(r * 7 + c * 13) * 0.05;
+            // コンクリート色のブロックバリエーション (冷たい灰色系)
+            const shade = 0.62 + hv * 0.12;
+            const cool  = hash(r * 7 + c * 13) * 0.03;   // 微かな冷たい色ムラ
             writeInst(buf, n++, bx, by, bw * 0.92, bh * 0.84,
-              shade + warm, shade - 0.04, shade - 0.18, 1);
+              shade - cool, shade, shade + cool, 1);
             // ブロック上辺の明るい縁 (立体感)
             writeInst(buf, n++, bx, by - bh * 0.34, bw * 0.82, 0.35,
-              Math.min(1, shade + 0.18 + warm), Math.min(1, shade + 0.12), shade - 0.10, 0.75);
+              Math.min(1, shade + 0.15), Math.min(1, shade + 0.15), Math.min(1, shade + 0.16), 0.75);
           }
         }
         break;
