@@ -438,7 +438,14 @@ export function placeCity(): ScenePlacement {
   //   rows: 3, cols: 4
   //   originX = -180 (世界左壁), originY = -80 (RIVER 中心)
   const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 107);
-  return placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
+  const placement = placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
+  // HILLTOP 上 (y≈245) から最初のチャンク開始 (WORLD_MAX_Y=290) までの空隙を
+  // residential_tile で埋めて、初期都市と Stage 1 の境目の緑地を解消する。
+  const gapY = (245 + C.WORLD_MAX_Y) / 2;
+  const gapH = C.WORLD_MAX_Y - 245;
+  if (!placement.grounds) placement.grounds = [];
+  placement.grounds.push({ type: 'residential_tile', x: 0, y: gapY, w: 360, h: gapH });
+  return placement;
 }
 
 /** 初期都市の resolved roads と交差点 (描画用、fillWalls で使う) */
