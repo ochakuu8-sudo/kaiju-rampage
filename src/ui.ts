@@ -18,8 +18,7 @@ export class UIManager {
   private elPopupLayer = document.getElementById('popup-layer')!;
 
   constructor() {
-    // カラフルなグラデーションはメーター実幅 (px) で固定描画する。
-    this.elFuelFill.style.backgroundSize = `${this.elFuelWrap.clientWidth}px 100%`;
+    // 黄色ベースの fill (ピンチ時は CSS class で赤に切り替え)
   }
 
   setDistance(meters: number) {
