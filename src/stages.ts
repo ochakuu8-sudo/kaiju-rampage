@@ -440,18 +440,17 @@ export function placeCity(): ScenePlacement {
   const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 107);
   const placement = placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
   // HILLTOP (y=245 上端) から Stage 1 最初のチャンク (WORLD_MAX_Y=290) までの
-  // 約 45 px の帯を「住宅街への導入緩衝帯」として構造的に埋める。
-  //   - 全幅に residential_tile のベース
-  //   - 垂直道路 (x=±90, 0) の軌道に合わせて asphalt を重ねて road continuity
-  //   - x=±180 (世界壁側の歩道) の軌道にも asphalt を重ねる
-  // これによりチャンクの _SPINE_V とスムーズに繋がる。
+  // 約 45 px の帯を清潔な concrete 歩道として敷く。
+  //   - ベースは concrete (煉瓦パターンのような目地が出ないのでフラットに見える)
+  //   - チャンクの _SPINE_V に繋がる 3 本の asphalt 縦道を通す
+  //   - 道路と歩道の境に dark な縁石ラインを引いて車道/歩道の区別を明示
   const gapY0 = 245, gapY1 = C.WORLD_MAX_Y;
   const bandCy = (gapY0 + gapY1) / 2;
   const bandH  = gapY1 - gapY0;
   if (!placement.grounds) placement.grounds = [];
-  // ベース: residential_tile (周辺チャンクの基調と揃える)
-  placement.grounds.push({ type: 'residential_tile', x: 0, y: bandCy, w: 360, h: bandH });
-  // 垂直道路に合わせた asphalt 帯 (x=-90, 0, 90): チャンクの _SPINE_V と軌道一致
+  // ベース: concrete (歩道としての清潔感)
+  placement.grounds.push({ type: 'concrete', x: 0, y: bandCy, w: 360, h: bandH });
+  // 垂直道路: チャンクの _SPINE_V (x=-90/0/90) に沿って asphalt を通す
   const VR_W = 14;
   for (const vx of [-90, 0, 90]) {
     placement.grounds.push({ type: 'asphalt', x: vx, y: bandCy, w: VR_W, h: bandH });
