@@ -30,7 +30,7 @@ export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 
 // ===== フリッパー =====
 export const FLIPPER_W = 68;       // 先端の丸みを考慮した視覚ギャップがボール径の約0.95倍 (≈30 px) になる長さ
-export const FLIPPER_H = 12;
+export const FLIPPER_H = 8;        // フリッパー厚 (先端の丸み半径 = FLIPPER_H/2 = 4)
 export const FLIPPER_REST_DEG = -20;
 export const FLIPPER_ACTIVE_DEG = 25;
 export const FLIPPER_POWER = 14;     // リアルピンボール寄りの穏やかな蹴り出し
