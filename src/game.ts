@@ -1922,31 +1922,29 @@ export class Game {
 
   private fillFlippers(buf: Float32Array, start: number): number {
     let n = start;
-    const N = 10;             // 三角形近似の分割数 (多めにして滑らかな曲線に)
+    const N = 10;             // 三角形近似の分割数
     const BASE_THICK = 12;    // 根本の太さ
     const TIP_THICK  = 1.5;   // 先端の太さ (ほぼ点)
-    const MAX_CURL   = 0.15;  // 先端到達時点の反り角 (≈8.6°、よく見ないと分からない程度)
     for (const fl of this.flippers) {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.60, gg = isFlash ? 1 : 0.60, gb = isFlash ? 1 : 0.70;
       const hw = C.FLIPPER_W / 2;
       const cosA = Math.cos(fl.angle), sinA = Math.sin(fl.angle);
       const segLen = C.FLIPPER_W / N;
-      // 各セグメントを前のセグメントの先端に連結して配置し、ジャンプ台の曲線を描く
-      let startX = fl.cx - hw * cosA;
-      let startY = fl.cy - hw * sinA;
+      // 各セグメントを線形テーパー + 上面 (ball-facing 面) は直線のまま保つ。
+      // 上面が直線 = 各セグメントの top edge が同一の local Y にある
+      // → セグメント中心を local Y 方向に (BASE_THICK - segH) / 2 だけオフセット。
+      // 左フリッパーの local +Y 方向が world 上向き、右は逆なので isLeft で符号を反転。
+      const yDir = fl.isLeft ? 1 : -1;
       for (let i = 0; i < N; i++) {
-        const tPos = i / (N - 1);                    // 0..1 (根本→先端)
-        const curl = tPos * tPos * (fl.isLeft ? MAX_CURL : -MAX_CURL); // 二次曲線で先端ほど強く反る
-        const segAngle = fl.angle + curl;
-        const segCx = startX + (segLen / 2) * Math.cos(segAngle);
-        const segCy = startY + (segLen / 2) * Math.sin(segAngle);
-        const tT = (i + 0.5) / N;
-        const segH = BASE_THICK * (1 - tT) + TIP_THICK * tT;
-        writeInst(buf, n++, segCx, segCy, segLen * 1.04, segH, gr, gg, gb, 1, segAngle);
-        // 次のセグメントの開始位置 = このセグメントの先端
-        startX += segLen * Math.cos(segAngle);
-        startY += segLen * Math.sin(segAngle);
+        const t = (i + 0.5) / N;
+        const segH = BASE_THICK * (1 - t) + TIP_THICK * t;
+        const localX = -hw + (i + 0.5) * segLen;
+        const localY = ((BASE_THICK - segH) / 2) * yDir;
+        // local (x, y) を fl.angle で回転して world 位置に
+        const segCx = fl.cx + localX * cosA - localY * sinA;
+        const segCy = fl.cy + localX * sinA + localY * cosA;
+        writeInst(buf, n++, segCx, segCy, segLen * 1.04, segH, gr, gg, gb, 1, fl.angle);
       }
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
