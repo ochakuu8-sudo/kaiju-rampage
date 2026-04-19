@@ -398,6 +398,29 @@ export class Game {
       // normalDamping=0.35 で跳ねすぎない程度に保持、tangentFriction=0.998 でほぼ無摩擦。
       // 押されたら applyImpulse で追加の強打ち出し。
       for (const fl of this.flippers) {
+        // 先端の小さな突起 (バンパー): 半径 4。ボールが先端から滑り落ちないよう壁の役目。
+        const TIP_BUMP_R = 4;
+        const ftCos = Math.cos(fl.angle), ftSin = Math.sin(fl.angle);
+        const tipBX = fl.cx + (C.FLIPPER_W / 2) * ftCos;
+        const tipBY = fl.cy + (C.FLIPPER_W / 2) * ftSin;
+        const tdx = b.x - tipBX, tdy = b.y - tipBY;
+        const sumR = r + TIP_BUMP_R;
+        if (tdx * tdx + tdy * tdy < sumR * sumR) {
+          const td = Math.sqrt(tdx * tdx + tdy * tdy) || 0.001;
+          const tnx = tdx / td, tny = tdy / td;
+          // 押し出し
+          b.x = tipBX + tnx * (sumR + 0.5);
+          b.y = tipBY + tny * (sumR + 0.5);
+          // 反射 (restitution = 0.55、しっかり跳ね返る)
+          const tdot = b.vx * tnx + b.vy * tny;
+          if (tdot < 0) {
+            const e = 0.55;
+            b.vx -= (1 + e) * tdot * tnx;
+            b.vy -= (1 + e) * tdot * tny;
+            flipperSoundNeeded = true;
+          }
+          break;  // バンパーで処理したのでこのフリッパーの本体は飛ばす
+        }
         const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.35, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
@@ -1946,6 +1969,10 @@ export class Game {
         const segCy = fl.cy + localX * sinA + localY * cosA;
         writeInst(buf, n++, segCx, segCy, segLen * 1.04, segH, gr, gg, gb, 1, fl.angle);
       }
+      // 先端の小さな突起 (バンパー、物理側と同位置)
+      const tipBX = fl.cx + hw * cosA;
+      const tipBY = fl.cy + hw * sinA;
+      writeInst(buf, n++, tipBX, tipBY, 8, 8, gr * 0.85, gg * 0.85, gb * 1.0, 1, 0, 1);
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
