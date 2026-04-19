@@ -512,6 +512,7 @@ export class Game {
       for (const idx of crushed) {
         const [hx, hy] = this.humans.getPos(idx);
         this.particles.spawnBlood(hx, hy, randInt(18, 28));
+        this.particles.spawnBloodPool(hx, hy);
       }
       this.totalHumans += crushed.length;
       // 人間は燃料: 線形に回復

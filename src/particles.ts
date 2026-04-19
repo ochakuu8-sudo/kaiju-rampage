@@ -212,6 +212,20 @@ export class ParticleManager {
     }
   }
 
+  /** 血溜まり — 人間が潰れた跡地にしばらく残る暗い小円 (静止・重力なし・ゆっくりフェード) */
+  spawnBloodPool(x: number, y: number) {
+    const n = 2 + Math.floor(Math.random() * 2); // 2-3 滴
+    for (let i = 0; i < n; i++) {
+      this.emit(
+        x + rand(-3, 3), y + rand(-2, 2),
+        0, 0,
+        rand(0.45, 0.65), 0, 0,
+        rand(3, 6), rand(1.5, 2.5),
+        false, true
+      );
+    }
+  }
+
   /** 火花 */
   spawnSpark(x: number, y: number, count: number) {
     for (let i = 0; i < count; i++) {
