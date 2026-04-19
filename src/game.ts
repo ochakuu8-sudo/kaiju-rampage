@@ -381,10 +381,10 @@ export class Game {
       if (b.x - r < C.WORLD_MIN_X) { b.x = C.WORLD_MIN_X + r; b.vx = Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.x + r > C.WORLD_MAX_X) { b.x = C.WORLD_MAX_X - r; b.vx = -Math.abs(b.vx) * C.WALL_DAMPING; wallSoundNeeded = true; }
       if (b.y + r > camTop - 40) { b.y = camTop - 40 - r; b.vy = -Math.abs(b.vy) * C.WALL_DAMPING; wallSoundNeeded = true; }
-      // 坂: normalDamping=0.30 で控えめな跳ね返り (弾性低めで転がり感を強調)。
-      // tangentFriction=0.995 で接線方向も極ごくわずかに減速。
+      // 坂: normalDamping=0.22 で跳ねにくく、tangentFriction=0.965 で転がりながら
+      // そこそこエネルギーを削ぐ (往復 1 回くらいで穴に落ちる挙動を狙う)。
       for (const slope of [this.getSlopeL(), this.getSlopeR()]) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.30, 0.995);
+        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, slope, 0.22, 0.965);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
