@@ -402,8 +402,9 @@ export class Game {
         // 静止位置で固定。位置は最先端より僅かに外側 (+2 px) なので、
         // フリッパー本体上を擦る程度では当たらず、最先端まで滑ってきた時にだけ反応する。
         const TIP_BUMP_R = 1;   // 突起の半径 (半分に縮小)
-        // フリッパーの動きに追従させる: fl.angle (動的) を使う
-        const rCos = Math.cos(fl.angle), rSin = Math.sin(fl.angle);
+        // 突起は静止位置で固定 (フリッパーが振っても動かない): REST 角度ベース
+        const restRad = (fl.isLeft ? C.FLIPPER_REST_DEG : (180 - C.FLIPPER_REST_DEG)) * Math.PI / 180;
+        const rCos = Math.cos(restRad), rSin = Math.sin(restRad);
         const yDirT = fl.isLeft ? 1 : -1;
         const bumpLocalX = C.FLIPPER_W + TIP_BUMP_R;           // 突起の内側端が最先端に揃う
         const bumpLocalY = (4 + TIP_BUMP_R) * yDirT;           // さらに 1 px 下げる
@@ -1975,8 +1976,9 @@ export class Game {
         const segCy = fl.cy + localX * sinA + localY * cosA;
         writeInst(buf, n++, segCx, segCy, segLen * 1.04, segH, gr, gg, gb, 1, fl.angle);
       }
-      // 先端の小さな半円突起 (物理側と同位置・フリッパーに追従)
-      const rCosV = cosA, rSinV = sinA;
+      // 先端の小さな半円突起 (物理側と同位置・静止固定)
+      const restRadV = (fl.isLeft ? C.FLIPPER_REST_DEG : (180 - C.FLIPPER_REST_DEG)) * Math.PI / 180;
+      const rCosV = Math.cos(restRadV), rSinV = Math.sin(restRadV);
       const bumpLocalY_v = 5 * yDir;                 // さらに 1 px 下げる
       const bumpLocalX_v = C.FLIPPER_W + 1;          // 突起の内側端が最先端
       const bumpVX = fl.pivotX + bumpLocalX_v * rCosV - bumpLocalY_v * rSinV;
