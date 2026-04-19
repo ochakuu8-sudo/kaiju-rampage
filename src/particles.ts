@@ -212,28 +212,34 @@ export class ParticleManager {
     }
   }
 
-  /** 血溜まり — 潰れた跡地に広がる真っ赤な血のり (複数の不揃いな飛沫で splatter 感) */
+  /** 血溜まり — 潰れた跡地に広がる真っ赤な血のり (矩形でグロー無しの濃い赤)
+   * 注: 円描画はシェーダーで中央に +0.4 のグロー加算があり赤がピンク化するため
+   *     矩形 (isCircle=false) を使う。ランダム回転と縦横比で血飛沫感を出す。 */
   spawnBloodPool(x: number, y: number) {
     // 中央の大きめの溜まり
     const main = 2 + Math.floor(Math.random() * 2); // 2-3 個
     for (let i = 0; i < main; i++) {
+      const w = rand(5, 9);
+      const h = w * rand(0.7, 1.1);   // ほぼ正方形〜やや横長
       this.emit(
         x + rand(-3, 3), y + rand(-2, 2),
         0, 0,
         1.0, 0, 0,
-        rand(5, 9), rand(1.6, 2.6),
-        false, true
+        w, rand(1.6, 2.6),
+        false, false, 0, h
       );
     }
     // 周辺に飛び散った小さな飛沫
     const spatter = 4 + Math.floor(Math.random() * 3); // 4-6 個
     for (let i = 0; i < spatter; i++) {
+      const w = rand(2, 4.5);
+      const h = w * rand(0.6, 1.4);
       this.emit(
         x + rand(-10, 10), y + rand(-7, 7),
         0, 0,
         1.0, 0, 0,
-        rand(2, 4.5), rand(1.4, 2.4),
-        false, true
+        w, rand(1.4, 2.4),
+        false, false, 0, h
       );
     }
   }
