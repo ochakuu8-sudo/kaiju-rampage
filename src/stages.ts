@@ -440,21 +440,12 @@ export function placeCity(): ScenePlacement {
   const block = buildBlock(INITIAL_CITY_PATTERN, -180, -80, C.CELL_W, 107);
   const placement = placeGridBlock(block, INITIAL_CITY_PATTERN, 0);
   // HILLTOP (y=245 上端) から Stage 1 最初のチャンク (WORLD_MAX_Y=290) までの
-  // 約 45 px の帯を清潔な concrete 歩道として敷く。
-  //   - ベースは concrete (煉瓦パターンのような目地が出ないのでフラットに見える)
-  //   - チャンクの _SPINE_V に繋がる 3 本の asphalt 縦道を通す
-  //   - 道路と歩道の境に dark な縁石ラインを引いて車道/歩道の区別を明示
-  const gapY0 = 245, gapY1 = C.WORLD_MAX_Y;
-  const bandCy = (gapY0 + gapY1) / 2;
-  const bandH  = gapY1 - gapY0;
+  // 約 45 px の歩道帯は concrete ベース。垂直道路は getInitialCityRoadData で
+  // 正規の drawVRoad により描画される (他の道路と同じマーキングで一貫)。
+  const bandCy = (245 + C.WORLD_MAX_Y) / 2;
+  const bandH  = C.WORLD_MAX_Y - 245;
   if (!placement.grounds) placement.grounds = [];
-  // ベース: concrete (歩道としての清潔感)
   placement.grounds.push({ type: 'concrete', x: 0, y: bandCy, w: 360, h: bandH });
-  // 垂直道路: チャンクの _SPINE_V (x=-90/0/90) に沿って asphalt を通す
-  const VR_W = 14;
-  for (const vx of [-90, 0, 90]) {
-    placement.grounds.push({ type: 'asphalt', x: vx, y: bandCy, w: VR_W, h: bandH });
-  }
   return placement;
 }
 
@@ -497,6 +488,18 @@ export function getInitialCityRoadData(): {
     yMax: lineYs[seg.endCell],
     cls: seg.cls,
   }));
+  // HILLTOP から最初のチャンク (WORLD_MAX_Y) までの緩衝帯にもチャンクの
+  // _SPINE_V (x=-90/0/90) と揃う垂直道路セグメントを追加して、正規の
+  // drawVRoad で描画させる (他の道路と同じレーンマーキング・側線)。
+  for (const cx of [-90, 0, 90]) {
+    verticalRoads.push({
+      cx,
+      w: cx === 0 ? 18 : 14,
+      yMin: C.HILLTOP_STREET_Y,
+      yMax: C.WORLD_MAX_Y,
+      cls: cx === 0 ? 'avenue' : 'street',
+    });
+  }
   // 交差点は水平 * 垂直の全組み合わせから生成
   const intersections: Intersection[] = [];
   for (const h of horizontalRoads) {
