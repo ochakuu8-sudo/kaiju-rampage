@@ -29,7 +29,7 @@ export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーショ
 export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 
 // ===== フリッパー =====
-export const FLIPPER_W = 80;
+export const FLIPPER_W = 70;       // 先端間の隙間がボール径の約1.2倍 (≈38 px) になる長さ
 export const FLIPPER_H = 12;
 export const FLIPPER_REST_DEG = -20;
 export const FLIPPER_ACTIVE_DEG = 25;

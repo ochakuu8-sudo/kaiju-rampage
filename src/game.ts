@@ -286,8 +286,8 @@ export class Game {
       this.juice.shake(C.SHAKE_LARGE_AMP, C.SHAKE_LARGE_DUR);
     }
 
-    // 燃料切れ → ゲームオーバー (初期演出中は起きない)
-    if (this.fuel <= 0) {
+    // 燃料切れ → ゲームオーバー (初期演出中はペナルティで 0 になっても終わらない)
+    if (!this.introActive && this.fuel <= 0) {
       this.onGameOver();
       return;
     }
@@ -1019,6 +1019,9 @@ export class Game {
     this.ball.active = false;
     this.sound.ballLost();
     this.juice.shake(C.SHAKE_DEST_AMP, C.SHAKE_DEST_DUR);
+    // 穴に落ちたペナルティ: 燃料 20% (FUEL_MAX の 20%) を失う
+    this.fuel = Math.max(0, this.fuel - C.FUEL_MAX * 0.20);
+    this.ui.setFuel(this.fuel);
     this.state = 'ball_lost';
     this.stateTimer = 1.0;
   }
