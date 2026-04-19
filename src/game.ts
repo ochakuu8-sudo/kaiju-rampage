@@ -15,7 +15,7 @@ import { Camera } from './camera';
 import { getStage, generateChunk, getInitialCityRoadData, chunkInfoFor, TOTAL_CHUNKS, STAGES } from './stages';
 import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerticalRoad, GroundTile } from './stages';
 import type { Intersection } from './grid';
-import { resolveCircleOBB, resolveCircleOBBSlide, clampSpeed, rand, randInt, circleAABB } from './physics';
+import { resolveCircleOBB, resolveCircleOBBSlide, resolveCircleCapsule, clampSpeed, rand, randInt, circleAABB } from './physics';
 import type { BuildingData, FurnitureType, VehicleType } from './entities';
 
 // 60000 instance 分の共有バッファ (renderer.ts の MAX_INST と一致させる)
@@ -394,11 +394,11 @@ export class Game {
           break;
         }
       }
-      // フリッパー: normalDamping=0.40 で控えめな跳ね返り (弾性低めで転がり感を出す)。
-      // tangentFriction=0.998 でほぼ無摩擦 (フリッパーはよく走る)。
+      // フリッパー: カプセル判定で先端を丸めて引っ掛かりを排除。
+      // normalDamping=0.40 で控えめな跳ね返り、tangentFriction=0.998 でほぼ無摩擦。
       // 押されたら applyImpulse で追加の強打ち出し。
       for (const fl of this.flippers) {
-        const res = resolveCircleOBBSlide(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.40, 0.998);
+        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.40, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
@@ -1925,7 +1925,17 @@ export class Game {
     for (const fl of this.flippers) {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.60, gg = isFlash ? 1 : 0.60, gb = isFlash ? 1 : 0.70;
+      // 本体の矩形
       writeInst(buf, n++, fl.cx, fl.cy, C.FLIPPER_W, C.FLIPPER_H, gr, gg, gb, 1, fl.angle);
+      // 先端とピボット端を円で丸める (物理側のカプセル判定に視覚を合わせる)
+      const armHalf = C.FLIPPER_W / 2;
+      const capD = C.FLIPPER_H;
+      const cosA = Math.cos(fl.angle), sinA = Math.sin(fl.angle);
+      const tipX = fl.cx + armHalf * cosA, tipY = fl.cy + armHalf * sinA;
+      const baseX = fl.cx - armHalf * cosA, baseY = fl.cy - armHalf * sinA;
+      writeInst(buf, n++, tipX,  tipY,  capD, capD, gr, gg, gb, 1, 0, 1);
+      writeInst(buf, n++, baseX, baseY, capD, capD, gr, gg, gb, 1, 0, 1);
+      // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
     }
     return n - start;

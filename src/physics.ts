@@ -178,6 +178,42 @@ export function resolveCircleOBBSlide(
   return [newBx, newBy, newVx, newVy];
 }
 
+/** 円 vs カプセル (丸端矩形) 衝突解決 — 両端が hh 半径で丸められた OBB。
+ * フリッパーのように先端角の引っ掛かりを回避したい場合に使う。
+ * 内部的には「中心軸セグメント (長さ 2*(hw-hh)) への最短点 + ボール/hh 合算半径」の円-円判定。 */
+export function resolveCircleCapsule(
+  bx: number, by: number, br: number,
+  vx: number, vy: number,
+  obb: OBB,
+  normalDamping = 0.15,
+  tangentFriction = 1.0
+): [number, number, number, number] | null {
+  const [lx, ly] = worldToOBBLocal(bx, by, obb);
+  // 中心軸セグメントは local 座標の (-(hw-hh), 0) 〜 (+(hw-hh), 0)
+  const segHalf = Math.max(0, obb.hw - obb.hh);
+  const nearX = Math.max(-segHalf, Math.min(lx, segHalf));
+  const nearY = 0;
+  const dlx = lx - nearX, dly = ly - nearY;
+  const dist2 = dlx * dlx + dly * dly;
+  const combinedR = br + obb.hh;
+  if (dist2 >= combinedR * combinedR) return null;
+  const dist = Math.sqrt(dist2) || 0.001;
+  const lnx = dlx / dist, lny = dly / dist;
+  const c = Math.cos(obb.angle), s = Math.sin(obb.angle);
+  const nx = c * lnx - s * lny;
+  const ny = s * lnx + c * lny;
+  const pen = combinedR - dist;
+  const newBx = bx + nx * (pen + 0.5);
+  const newBy = by + ny * (pen + 0.5);
+  const vNormal = vx * nx + vy * ny;
+  const vTx = (vx - vNormal * nx) * tangentFriction;
+  const vTy = (vy - vNormal * ny) * tangentFriction;
+  const newVNormal = vNormal < 0 ? -vNormal * normalDamping : 0;
+  const newVx = vTx + newVNormal * nx;
+  const newVy = vTy + newVNormal * ny;
+  return [newBx, newBy, newVx, newVy];
+}
+
 /** 速度制限 */
 export function clampSpeed(vx: number, vy: number, maxSpeed: number): [number, number] {
   const spd = Math.sqrt(vx * vx + vy * vy);
