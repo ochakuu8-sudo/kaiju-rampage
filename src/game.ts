@@ -1353,9 +1353,12 @@ export class Game {
       case 'residential_tile': {
         // 目地の暗いグレー下地 (僅かに暖色)
         writeInst(buf, n++, x, y, w, h, 0.45, 0.42, 0.38, 1);
-        // 5 行 × 4 列のレンガを煉瓦積み (交互オフセット) で敷き詰める
-        const rows = 5;
-        const cols = 4;
+        // タイルサイズを概ね一定 (≈90×18) に保つよう、パッチのサイズから
+        // 行数・列数を算出 (薄い帯でもタイルが潰れないようにする)
+        const targetTileW = 90;
+        const targetTileH = 18;
+        const cols = Math.max(1, Math.round(w / targetTileW));
+        const rows = Math.max(1, Math.round(h / targetTileH));
         const bw = w / cols;
         const bh = h / rows;
         for (let r = 0; r < rows; r++) {
