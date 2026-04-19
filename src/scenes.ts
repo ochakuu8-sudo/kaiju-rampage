@@ -27,6 +27,7 @@ export type GroundType =
   | 'asphalt'         // 舗装道路 (ガソリンスタンド・駐車場)
   | 'wood_deck'       // ウッドデッキ (カフェ・書店)
   | 'tile'            // タイル (病院・銀行・百貨店)
+  | 'residential_tile' // インターロッキングブロック (住宅街の路面)
   | 'grass'           // 芝 (住宅街・公園)
   | 'dirt'            // 土 (農家・校庭・バックアレイ)
   | 'fallen_leaves'   // 落ち葉 (寺の庭・森)

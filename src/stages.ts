@@ -675,6 +675,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('mansion', 118, 132),                                  // Cell H 桜古木の家 (大)
       _B('greenhouse', 158, 138),
       _B('greenhouse', 115, 178), _B('shed', 160, 175),
+
+      // === ★ 住宅街の密集化: 追加 HP1 小住宅 (空きを埋める) ===
+      _B('house', -85, 42),   _B('house', 165, 40),               // 上段 facade の隙間
+      _B('townhouse', -22, 76), _B('house', 0, 76),               // 上段裏庭の空き
+      _B('house', 92, 76),                                         // 上段裏中央
+      _B('house', -85, 138),  _B('townhouse', 0, 138),            // 下段 facade
+      _B('house', 92, 138),   _B('house', 178, 134),               // 下段右端
+      _B('shed', 0, 178),     _B('house', 45, 172),                // 下段裏
     ],
     furniture: [
       // ─── ★★ C0 固有: 古民家の日本庭園 (Cell B 上段・Cell F 下段) ★★ ───
@@ -742,8 +750,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(32, 178),                                              // 広場のベンチの老人
     ],
     grounds: [
-      _G('grass', 0, 46.5, 360, 93),
-      _G('grass', 0, 153.5, 360, 93),
+      _G('residential_tile', 0, 46.5, 360, 93),
+      _G('residential_tile', 0, 153.5, 360, 93),
 
       // ─── 軸: stone_pavement 歩道 ───
       _G('stone_pavement', -65, 46.5, 24, 93),
@@ -802,6 +810,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', 30, 175),
       _B('townhouse', 108, 132), _B('house', 148, 136),         // Cell H 住宅連
       _B('garage', 115, 175), _B('shed', 160, 178),
+
+      // === ★ 住宅街の密集化: 追加 HP1 小住宅 ===
+      _B('house', -85, 42),   _B('townhouse', 175, 44),           // 上段 facade 隙間
+      _B('house', -25, 76),   _B('house', 95, 76),                // 上段裏庭
+      _B('house', 172, 78),
+      _B('house', -88, 132),  _B('house', -10, 138),              // 下段 facade
+      _B('house', 90, 138),
+      _B('townhouse', 90, 172), _B('house', 0, 172),              // 下段裏
     ],
     furniture: [
       // ─── 軸 1: wood_fence / hedge リボン (x=±178) ───
@@ -886,8 +902,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 158),                                               // 主要通り歩行者 (下段)
     ],
     grounds: [
-      // ─── ベース: 上段 grass / 下段 asphalt (コンビニ駐車帯) ───
-      _G('grass', 0, 46.5, 360, 93),
+      // ─── ベース: 上段 住宅タイル / 下段 asphalt (コンビニ駐車帯) ───
+      _G('residential_tile', 0, 46.5, 360, 93),
       _G('asphalt', 0, 153.5, 360, 93),
 
       // ─── 軸 2: stone_pavement 歩道 (x=-65 連続) ───
@@ -955,6 +971,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('duplex', 115, 132),                                   // ★ 2 世帯
       _B('townhouse', 148, 138),
       _B('garage', 170, 178), _B('shed', 118, 175),
+
+      // === ★ 住宅街の密集化: 追加 HP1 小住宅 ===
+      _B('house', -85, 42),   _B('house', 0, 72),                 // 上段 facade 隙間 + 裏庭
+      _B('house', 90, 76),
+      _B('townhouse', 85, 134), _B('house', -75, 172),            // 下段追加住宅
+      _B('house', 0, 172),    _B('townhouse', 65, 172),
     ],
     furniture: [
       // ─── 軸 1: wood_fence / hedge リボン ───
@@ -1026,8 +1048,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 160),                                               // 主要通り歩行者
     ],
     grounds: [
-      // ─── ベース: 上段 grass / 下段 concrete (Act II へ橋渡し) ───
-      _G('grass', 0, 46.5, 360, 93),
+      // ─── ベース: 上段 住宅タイル / 下段 concrete (Act II へ橋渡し) ───
+      _G('residential_tile', 0, 46.5, 360, 93),
       _G('concrete', 0, 153.5, 360, 93),
 
       // ─── 軸 2: stone_pavement 歩道 (x=-65 連続、Act I 最後) ───
