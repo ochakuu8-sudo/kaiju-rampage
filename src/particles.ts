@@ -99,7 +99,7 @@ export class ParticleManager {
         x + rand(-22, 22), y + rand(-16, 16),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(30, 110),
         buildingR * rand(0.45, 1.1), buildingG * rand(0.45, 1.1), buildingB * rand(0.45, 1.1),
-        w, rand(0.7, 1.5),
+        w, rand(0.4, 0.9),
         true, false, rand(-14, 14), hH
       );
     }
@@ -135,7 +135,7 @@ export class ParticleManager {
         x + rand(-12, 12), y + rand(-8, 8),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(50, 140),
         r, g, b,
-        w, rand(1.4, 2.6),
+        w, rand(0.8, 1.5),
         true, false, rand(-10, 10), h
       );
     }
@@ -153,7 +153,7 @@ export class ParticleManager {
         (buildingR * tone) * (1 - blend) + gray * blend,
         (buildingG * tone) * (1 - blend) + gray * blend,
         (buildingB * tone) * (1 - blend) + gray * blend,
-        rand(2, 5), rand(0.5, 1.1),
+        rand(2, 5), rand(0.3, 0.65),
         true, false, rand(-14, 14)
       );
     }
@@ -205,7 +205,7 @@ export class ParticleManager {
         x + rand(-6, 6), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         1.0, 0, 0,
-        rand(2, 5), rand(0.4, 0.8),
+        rand(2, 5), rand(0.25, 0.5),
         true, true,
         0, 0, undefined, true
       );
@@ -283,7 +283,7 @@ export class ParticleManager {
         x + rand(-4, 4), y,
         rand(-10, 10), rand(40, 80),
         1, 1, 0,
-        3, 0.8,
+        3, 0.5,
         false, true
       );
     }
@@ -298,7 +298,7 @@ export class ParticleManager {
         x + rand(-5, 5), y + rand(-5, 5),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         0.85, 0.95, 1.0,
-        rand(2, 5), rand(0.3, 0.7),
+        rand(2, 5), rand(0.2, 0.45),
         true, false, rand(-4, 4)
       );
     }
@@ -313,7 +313,7 @@ export class ParticleManager {
         x + rand(-4, 4), y,
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         0.30, 0.65, 1.0,
-        rand(3, 6), rand(0.4, 0.9),
+        rand(3, 6), rand(0.25, 0.55),
         true, true
       );
     }
@@ -335,7 +335,7 @@ export class ParticleManager {
         x + rand(-6, 6), y + rand(-2, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd + 30,
         c[0], c[1], c[2],
-        rand(3, 6), rand(0.6, 1.4),
+        rand(3, 6), rand(0.4, 0.85),
         true, true, rand(-2, 2)
       );
     }
@@ -355,7 +355,7 @@ export class ParticleManager {
         x + rand(-8, 8), y,
         Math.cos(angle) * spd + rand(-30, 30), Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        rand(3, 6), rand(0.8, 1.5),
+        rand(3, 6), rand(0.5, 0.9),
         true, false, rand(-5, 5)
       );
     }
@@ -374,7 +374,7 @@ export class ParticleManager {
         x + rand(-5, 5), y + rand(-5, 5),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        rand(3, 7), rand(0.4, 0.9),
+        rand(3, 7), rand(0.25, 0.55),
         true, false, rand(-4, 4)
       );
     }
@@ -407,7 +407,7 @@ export class ParticleManager {
         x + rand(-8, 8), y,
         rand(-15, 15), spd,
         rand(0.72, 0.90), rand(0.72, 0.90), rand(0.75, 0.92),
-        rand(5, 12), rand(0.6, 1.4),
+        rand(5, 12), rand(0.4, 0.85),
         false, true, 0
       );
     }
@@ -423,7 +423,7 @@ export class ParticleManager {
         x + rand(-20, 20), y + rand(-10, 10),
         Math.cos(angle) * spd + rand(-10, 10), Math.sin(angle) * spd - rand(5, 20),
         r, g, b,
-        rand(3, 6), rand(1.0, 2.5),
+        rand(3, 6), rand(0.6, 1.5),
         true, true, rand(-1.5, 1.5)
       );
     }
@@ -439,7 +439,7 @@ export class ParticleManager {
         x + rand(-15, 15), y + rand(-10, 10),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
         br, br * 0.98, br * 0.95,
-        rand(4, 10), rand(0.4, 1.0),
+        rand(4, 10), rand(0.25, 0.6),
         true, false, rand(-8, 8)
       );
     }
@@ -458,7 +458,7 @@ export class ParticleManager {
         x + rand(-10, 10), y,
         Math.cos(angle) * spd + rand(-30, 30), Math.sin(angle) * spd,
         r, g, b2,
-        rand(5, 9), rand(0.8, 1.6),
+        rand(5, 9), rand(0.5, 1.0),
         true, false, rand(-4, 4), rand(4, 7)
       );
     }
@@ -478,7 +478,7 @@ export class ParticleManager {
         x + rand(-12, 12), y + rand(-8, 8),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 50),
         c[0], c[1], c[2],
-        rand(5, 9), rand(0.5, 1.0),
+        rand(5, 9), rand(0.3, 0.6),
         true, false, rand(-6, 6), rand(3, 7)
       );
     }
@@ -492,7 +492,7 @@ export class ParticleManager {
         x + rand(-12, 12), y + rand(-5, 5),
         rand(-20, 20), spd,
         0.62, 0.88, 1.0,
-        rand(3, 7), rand(0.5, 1.2),
+        rand(3, 7), rand(0.3, 0.75),
         false, true
       );
     }
@@ -509,7 +509,7 @@ export class ParticleManager {
         x + rand(-8, 8), y,
         Math.cos(angle) * spd + rand(-40, 40), Math.sin(angle) * spd,
         r, g, b,
-        rand(3, 5), rand(0.6, 1.2),
+        rand(3, 5), rand(0.4, 0.75),
         true, true
       );
     }
@@ -528,7 +528,7 @@ export class ParticleManager {
         x + rand(-15, 15), y + rand(-5, 5),
         rand(-15, 15), spd,
         c[0], c[1], c[2],
-        rand(6, 11), rand(1.5, 3.0),
+        rand(6, 11), rand(0.9, 1.8),
         false, true
       );
     }
@@ -542,7 +542,7 @@ export class ParticleManager {
         x + rand(-10, 10), y + rand(-5, 5),
         rand(-25, 25), rand(30, 75),
         v, v, v * 1.05,
-        rand(8, 16), rand(1.0, 2.2),
+        rand(8, 16), rand(0.6, 1.3),
         false, true, rand(-0.6, 0.6)
       );
     }
@@ -561,7 +561,7 @@ export class ParticleManager {
         x + rand(-10, 10), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
         c[0], c[1], c[2],
-        rand(2, 4), rand(0.5, 1.0),
+        rand(2, 4), rand(0.3, 0.6),
         true, false, rand(-12, 12), rand(6, 14)
       );
     }
@@ -581,7 +581,7 @@ export class ParticleManager {
         x + rand(-12, 12), y + rand(-6, 8),
         Math.cos(angle) * spd, Math.sin(angle) * spd - rand(5, 25),
         c[0], c[1], c[2],
-        rand(4, 7), rand(1.0, 2.2),
+        rand(4, 7), rand(0.6, 1.3),
         true, false, rand(-3, 3), rand(2, 4)
       );
     }
@@ -594,7 +594,7 @@ export class ParticleManager {
         x + rand(-8, 8), y + rand(-4, 4),
         rand(-25, 25), rand(40, 110),
         1.0, rand(0.45, 0.85), rand(0.05, 0.25),
-        rand(2, 4), rand(0.7, 1.6),
+        rand(2, 4), rand(0.4, 1.0),
         false, true
       );
     }
@@ -610,7 +610,7 @@ export class ParticleManager {
         x + rand(-8, 8), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
         br, br, br * 1.05,
-        rand(3, 6), rand(0.5, 1.0),
+        rand(3, 6), rand(0.3, 0.6),
         true, false, rand(-12, 12)
       );
     }
@@ -631,7 +631,7 @@ export class ParticleManager {
         x + rand(-6, 6), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        s, rand(0.3, 0.7),
+        s, rand(0.2, 0.45),
         false, false, 0, s, 0
       );
     }
@@ -647,7 +647,7 @@ export class ParticleManager {
         x + rand(-8, 8), y,
         Math.cos(angle) * spd + rand(-30, 30), Math.sin(angle) * spd,
         gold, gold * 0.78, rand(0.05, 0.20),
-        rand(3, 5), rand(0.8, 1.5),
+        rand(3, 5), rand(0.5, 0.9),
         true, true
       );
     }
@@ -663,7 +663,7 @@ export class ParticleManager {
         x + rand(-10, 10), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(20, 60),
         tone, tone, tone * 0.95,
-        rand(3, 5), rand(0.6, 1.2),
+        rand(3, 5), rand(0.4, 0.75),
         true, false, rand(-6, 6), rand(4, 6)
       );
     }
@@ -680,7 +680,7 @@ export class ParticleManager {
         x + rand(-6, 6), y + rand(-4, 4),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(15, 50),
         rand(0.95, 1.0), rand(0.85, 0.95), rand(0.35, 0.55),
-        w, rand(0.5, 1.0),
+        w, rand(0.3, 0.6),
         true, false, rand(-4, 4), h, angle + Math.PI * 0.5
       );
     }
@@ -695,7 +695,7 @@ export class ParticleManager {
         x + rand(-10, 10), y + rand(-6, 6),
         Math.cos(angle) * spd + rand(-20, 20), Math.sin(angle) * spd,
         rand(0.95, 1.0), rand(0.30, 0.55), rand(0.55, 0.78),
-        rand(4, 7), rand(1.0, 2.0),
+        rand(4, 7), rand(0.6, 1.2),
         false, true
       );
     }
@@ -715,7 +715,7 @@ export class ParticleManager {
         x + rand(-8, 8), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        rand(2, 5), rand(0.4, 0.9),
+        rand(2, 5), rand(0.25, 0.55),
         true, false, rand(-10, 10)
       );
     }
@@ -730,7 +730,7 @@ export class ParticleManager {
         x + rand(-5, 5), y + rand(-4, 4),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(10, 40),
         rand(0.94, 1.0), rand(0.94, 1.0), rand(0.86, 0.95),
-        rand(1.5, 2.5), rand(0.5, 1.0),
+        rand(1.5, 2.5), rand(0.3, 0.6),
         true, true
       );
     }
@@ -750,7 +750,7 @@ export class ParticleManager {
         x + rand(-10, 10), y + rand(-4, 4),
         Math.cos(angle) * spd + rand(-25, 25), Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        rand(2, 4), rand(1.0, 2.0),
+        rand(2, 4), rand(0.6, 1.2),
         true, false, rand(-3, 3), rand(10, 18)
       );
     }
@@ -769,7 +769,7 @@ export class ParticleManager {
         x + rand(-8, 8), y + rand(-6, 6),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        rand(3, 6), rand(0.5, 1.2),
+        rand(3, 6), rand(0.3, 0.75),
         false, true
       );
     }
@@ -789,7 +789,7 @@ export class ParticleManager {
         x + rand(-4, 4), y + rand(-4, 4),
         Math.cos(angle) * spd, Math.sin(angle) * spd,
         c[0], c[1], c[2],
-        rand(3, 5), rand(0.7, 1.4),
+        rand(3, 5), rand(0.45, 0.9),
         true, true
       );
     }
@@ -809,7 +809,7 @@ export class ParticleManager {
         x + rand(-6, 6), y + rand(-4, 4),
         Math.cos(angle) * spd, Math.sin(angle) * spd + rand(15, 45),
         c[0], c[1], c[2],
-        rand(2.5, 4), rand(0.5, 1.0),
+        rand(2.5, 4), rand(0.3, 0.6),
         true, true
       );
     }
