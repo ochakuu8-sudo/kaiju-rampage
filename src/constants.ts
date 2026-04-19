@@ -29,7 +29,7 @@ export const SPAWN_ANIM_DURATION = 0.35; // 建物スポーンアニメーショ
 export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 
 // ===== フリッパー =====
-export const FLIPPER_W = 74;       // 視覚ギャップ ≈26 px (ボール径 32 の約0.82倍)
+export const FLIPPER_W = 71;       // 視覚ギャップ ≈32 px (ボール直径と同サイズ)
 export const FLIPPER_H = 5;        // フリッパー本体の厚み。先端の丸み半径 = 2.5 で細く、根本は描画で太く見せる
 export const FLIPPER_REST_DEG = -20;
 export const FLIPPER_ACTIVE_DEG = 25;
