@@ -514,73 +514,94 @@ export class Game {
   ) {
     const profile = BUILDING_MATERIAL[size] ?? 'concrete_small';
     const debrisN = 14 + sc * 10;
+    const rubbleN = 4 + sc * 2;          // 大きな塊 (4-12個)
+    const burstN  = 10 + sc * 2;          // 衝撃の砂塵リング (12-18本)
     const p = this.particles;
 
     switch (profile) {
-      case 'wood': // 木造 (戸建て・町屋・小店舗) — 木っ端 + 砂塵 + わずかな燃えさし
-        p.spawnWoodChips(cx, cy, 14 + sc * 8);
-        p.spawnDust    (cx, cy, 10 + sc * 5);
-        p.spawnEmbers  (cx, cy,  6 + sc * 3);
+      case 'wood': // 木造 — 木っ端山盛り + 木質塊 + 砂塵バースト + 燃えさし
+        p.spawnImpactBurst(cx, cy, burstN);
+        p.spawnWoodChips  (cx, cy, 18 + sc * 10);
+        p.spawnRubbleChunks(cx, cy, rubbleN, 0.55, 0.38, 0.22);
+        p.spawnDust       (cx, cy, 10 + sc * 4);
+        p.spawnEmbers     (cx, cy,  6 + sc * 3);
         break;
 
-      case 'wood_traditional': // 神社・寺社・古民家 — 木っ端 + 落ち葉 + 燃えさし
-        p.spawnWoodChips(cx, cy, 12 + sc * 8);
-        p.spawnLeaves   (cx, cy, 10 + sc * 4);
-        p.spawnEmbers   (cx, cy,  8 + sc * 3);
-        p.spawnDust     (cx, cy,  6);
+      case 'wood_traditional': // 伝統木造 — 木っ端 + 木質塊 + 落葉 + 燃えさし + 砂塵
+        p.spawnImpactBurst(cx, cy, burstN);
+        p.spawnWoodChips  (cx, cy, 16 + sc * 10);
+        p.spawnRubbleChunks(cx, cy, rubbleN, 0.50, 0.32, 0.20);
+        p.spawnLeaves     (cx, cy, 10 + sc * 4);
+        p.spawnEmbers     (cx, cy,  8 + sc * 3);
         break;
 
-      case 'concrete_small': // 小型コンクリ・店舗 — がれき + 砂塵 + 火花
-        p.spawnDebris(cx, cy, debrisN, dr, dg, db);
-        p.spawnDust  (cx, cy, 10 + sc * 4);
-        p.spawnSpark (cx, cy,  8 + sc * 5);
+      case 'concrete_small': // 小型コンクリ — 砂塵バースト + 大塊 + 細片 + 火花
+        p.spawnImpactBurst (cx, cy, burstN);
+        p.spawnRubbleChunks(cx, cy, rubbleN, dr, dg, db);
+        p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
+        p.spawnSpark       (cx, cy,  8 + sc * 5);
         break;
 
-      case 'concrete_medium': // 中型コンクリ・公共 — がれき + 煙 + ガラス + 火花
-        p.spawnDebris(cx, cy, debrisN, dr, dg, db);
-        p.spawnSmoke (cx, cy,  8 + sc * 4);
-        p.spawnGlass (cx, cy,  6 + sc * 3);
-        p.spawnSpark (cx, cy, 10 + sc * 5);
+      case 'concrete_medium': // 中型コンクリ — より豪快に: 砂塵 + 大塊 + 細片 + ガラス + 火花
+        p.spawnImpactBurst (cx, cy, burstN + 4);
+        p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
+        p.spawnDebris      (cx, cy, debrisN + 4, dr, dg, db);
+        p.spawnSmoke       (cx, cy,  8 + sc * 4);
+        p.spawnGlass       (cx, cy,  6 + sc * 3);
+        p.spawnSpark       (cx, cy, 10 + sc * 5);
         break;
 
-      case 'glass_tower': // 高層ガラス張り — ガラス山盛り + 煙 + がれき + きらめき
-        p.spawnGlass (cx, cy, 18 + sc * 8, );
-        p.spawnDebris(cx, cy, 10 + sc * 6, dr, dg, db);
-        p.spawnSmoke (cx, cy, 12 + sc * 5);
-        p.spawnSparkle(cx, cy, 6 + sc * 2);
+      case 'glass_tower': // ガラス高層 — 砂塵 + 大塊 + ガラス山盛り + 細片 + 煙
+        p.spawnImpactBurst (cx, cy, burstN + 6);
+        p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
+        p.spawnGlass       (cx, cy, 22 + sc * 10);
+        p.spawnDebris      (cx, cy, 12 + sc * 8, dr, dg, db);
+        p.spawnSmoke       (cx, cy, 12 + sc * 5);
+        p.spawnSparkle     (cx, cy,  6 + sc * 2);
         if (isLarge) {
-          p.spawnGlass(cx, top, 14);
-          p.spawnSmoke(cx, top, 10);
+          p.spawnGlass       (cx, top, 16);
+          p.spawnRubbleChunks(cx, top, 4, dr, dg, db);
+          p.spawnSmoke       (cx, top, 10);
         }
         break;
 
-      case 'metal_industrial': // 工場・倉庫・タンク — 金属片 + 煙 + 火花 + 歯車
-        p.spawnMetalDebris(cx, cy, 14 + sc * 8);
-        p.spawnSmoke      (cx, cy, 10 + sc * 5);
-        p.spawnSpark      (cx, cy, 12 + sc * 5);
-        p.spawnGears      (cx, cy,  6 + sc * 3);
+      case 'metal_industrial': // 工業 — 砂塵 + 金属大塊 + 金属片 + 歯車 + 煙 + 火花
+        p.spawnImpactBurst (cx, cy, burstN);
+        p.spawnRubbleChunks(cx, cy, rubbleN, 0.62, 0.62, 0.66);
+        p.spawnMetalDebris (cx, cy, 14 + sc * 8);
+        p.spawnSmoke       (cx, cy, 10 + sc * 5);
+        p.spawnSpark       (cx, cy, 12 + sc * 5);
+        p.spawnGears       (cx, cy,  6 + sc * 3);
         break;
 
-      case 'landmark': // ランドマーク・観覧車・スタジアム — がれき + きらめき + 紙吹雪 + 炎
-        p.spawnDebris  (cx, cy, debrisN, dr, dg, db);
-        p.spawnSparkle (cx, cy, 14 + sc * 5);
-        p.spawnConfetti(cx, cy, 12 + sc * 4);
-        p.spawnFire    (cx, cy,  8 + sc * 3);
+      case 'landmark': // ランドマーク — 砂塵 + 大塊 + 細片 + きらめき + 紙吹雪 + 炎
+        p.spawnImpactBurst (cx, cy, burstN + 6);
+        p.spawnRubbleChunks(cx, cy, rubbleN + 3, dr, dg, db);
+        p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
+        p.spawnSparkle     (cx, cy, 14 + sc * 5);
+        p.spawnConfetti    (cx, cy, 12 + sc * 4);
+        p.spawnFire        (cx, cy,  8 + sc * 3);
         if (isLarge) {
-          p.spawnSparkle (cx, top, 12);
-          p.spawnConfetti(cx, top, 10);
+          p.spawnRubbleChunks(cx, top, 4, dr, dg, db);
+          p.spawnSparkle     (cx, top, 12);
+          p.spawnConfetti    (cx, top, 10);
         }
         break;
 
-      case 'explosive': // ガソリンスタンド・燃料 — 大爆発
-        p.spawnFire  (cx, cy, 28 + sc * 6);
-        p.spawnSpark (cx, cy, 22 + sc * 6);
-        p.spawnSmoke (cx, cy, 18);
-        p.spawnEmbers(cx, cy, 16);
-        p.spawnDebris(cx, cy, 10, dr, dg, db);
+      case 'explosive': // 爆発 — 砂塵 + 大塊 + 大量炎 + 細片
+        p.spawnImpactBurst (cx, cy, burstN + 8);
+        p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
+        p.spawnFire        (cx, cy, 28 + sc * 6);
+        p.spawnSpark       (cx, cy, 22 + sc * 6);
+        p.spawnSmoke       (cx, cy, 18);
+        p.spawnEmbers      (cx, cy, 16);
+        p.spawnDebris      (cx, cy, 14, dr, dg, db);
         break;
 
-      case 'castle': // ラスボス天守閣 — 花火 + 桜 + 煙 + がれき
+      case 'castle': // 天守閣 — 巨大瓦礫雨 + 砂塵 + 花火 + 桜 + 煙
+        p.spawnImpactBurst (cx, cy, 24);
+        p.spawnRubbleChunks(cx, cy, 16, dr, dg, db);
+        p.spawnRubbleChunks(cx, top, 12, dr, dg, db);
         p.spawnFireworks   (cx, cy, 50);
         p.spawnSakuraPetals(cx, cy, 30);
         p.spawnSparkle     (cx, cy, 24);
@@ -592,17 +613,20 @@ export class Game {
         break;
 
       default:
-        p.spawnDebris(cx, cy, debrisN, dr, dg, db);
-        p.spawnSpark (cx, cy, 12 + sc * 5);
-        p.spawnSmoke (cx, cy,  6 + sc * 3);
+        p.spawnImpactBurst (cx, cy, burstN);
+        p.spawnRubbleChunks(cx, cy, rubbleN, dr, dg, db);
+        p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
+        p.spawnSpark       (cx, cy, 12 + sc * 5);
+        p.spawnSmoke       (cx, cy,  6 + sc * 3);
     }
 
-    // 大型ビル共通: 頂部からも追加演出 (爆発・城は専用処理済みなのでスキップ)
+    // 大型ビル共通: 頂部からも追加演出 (専用処理済みのプロファイルはスキップ)
     if (isLarge && profile !== 'glass_tower' && profile !== 'castle' &&
         profile !== 'explosive' && profile !== 'landmark') {
-      this.particles.spawnDebris(cx, top, 12, dr, dg, db);
-      this.particles.spawnSmoke (cx, top, 10);
-      this.particles.spawnSpark (cx, top, 12);
+      this.particles.spawnRubbleChunks(cx, top, 4, dr, dg, db);
+      this.particles.spawnDebris      (cx, top, 12, dr, dg, db);
+      this.particles.spawnSmoke       (cx, top, 10);
+      this.particles.spawnSpark       (cx, top, 12);
     }
   }
 
