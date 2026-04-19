@@ -395,10 +395,10 @@ export class Game {
         }
       }
       // フリッパー: カプセル判定で先端を丸めて引っ掛かりを排除。
-      // normalDamping=0.60 でしっかり跳ね返って吸収されにくい、tangentFriction=0.998 でほぼ無摩擦。
+      // normalDamping=0.35 で跳ねすぎない程度に保持、tangentFriction=0.998 でほぼ無摩擦。
       // 押されたら applyImpulse で追加の強打ち出し。
       for (const fl of this.flippers) {
-        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.60, 0.998);
+        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.35, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
