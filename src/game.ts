@@ -406,7 +406,7 @@ export class Game {
         const rCos = Math.cos(restRad), rSin = Math.sin(restRad);
         const yDirT = fl.isLeft ? 1 : -1;
         const bumpLocalX = C.FLIPPER_W + TIP_BUMP_R;           // 突起の内側端が最先端に揃う
-        const bumpLocalY = (6 + TIP_BUMP_R) * yDirT;           // 突起の底が上面と接する (ギリギリ外側)
+        const bumpLocalY = (5 + TIP_BUMP_R) * yDirT;           // 1 px 下げて上面に少し埋める
         const tipBX = fl.pivotX + bumpLocalX * rCos - bumpLocalY * rSin;
         const tipBY = fl.pivotY + bumpLocalX * rSin + bumpLocalY * rCos;
         const tdx = b.x - tipBX, tdy = b.y - tipBY;
@@ -1978,7 +1978,7 @@ export class Game {
       // 先端の小さな半円突起 (物理側と同位置・静止固定)
       const restRadV = (fl.isLeft ? C.FLIPPER_REST_DEG : (180 - C.FLIPPER_REST_DEG)) * Math.PI / 180;
       const rCosV = Math.cos(restRadV), rSinV = Math.sin(restRadV);
-      const bumpLocalY_v = 7 * yDir;                 // 底が上面と接するよう +TIP_BUMP_R だけ浮かせる
+      const bumpLocalY_v = 6 * yDir;                 // 1 px 下げて上面に少し埋める
       const bumpLocalX_v = C.FLIPPER_W + 1;          // 突起の内側端が最先端
       const bumpVX = fl.pivotX + bumpLocalX_v * rCosV - bumpLocalY_v * rSinV;
       const bumpVY = fl.pivotY + bumpLocalX_v * rSinV + bumpLocalY_v * rCosV;
