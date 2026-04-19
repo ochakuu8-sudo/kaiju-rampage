@@ -159,34 +159,6 @@ export class ParticleManager {
     }
   }
 
-  /** 衝撃の砂塵リング — 着弾点から放射状に広がる大きな砂煙 */
-  spawnImpactBurst(x: number, y: number, count: number) {
-    // 外向きに広がる砂塵の輪 (重力なし・大きい円)
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i / count) + rand(-0.15, 0.15);
-      const spd   = rand(140, 260);
-      const br    = rand(0.62, 0.88);
-      this.emit(
-        x + rand(-3, 3), y + rand(-3, 3),
-        Math.cos(angle) * spd, Math.sin(angle) * spd * 0.4,
-        br, br * 0.95, br * 0.82,
-        rand(10, 20), rand(0.5, 0.9),
-        false, true
-      );
-    }
-    // 中心の重い噴煙ドーム
-    for (let i = 0; i < Math.ceil(count * 0.5); i++) {
-      const v = rand(0.30, 0.55);
-      this.emit(
-        x + rand(-10, 10), y + rand(-5, 8),
-        rand(-30, 30), rand(40, 110),
-        v, v, v * 1.05,
-        rand(14, 24), rand(0.8, 1.6),
-        false, true
-      );
-    }
-  }
-
   /** 血しぶき — 速度方向に伸びたストリーク形状 */
   spawnBlood(x: number, y: number, count: number) {
     // 大粒のストリーク（速度方向に長い楕円、重力あり）
@@ -572,22 +544,6 @@ export class ParticleManager {
         v, v, v * 1.05,
         rand(8, 16), rand(1.0, 2.2),
         false, true, rand(-0.6, 0.6)
-      );
-    }
-  }
-
-  /** 砂塵 — ベージュ色の粉塵が広がる */
-  spawnDust(x: number, y: number, count: number) {
-    for (let i = 0; i < count; i++) {
-      const angle = rand(0, Math.PI * 2);
-      const spd   = rand(40, 130);
-      const br    = rand(0.70, 0.92);
-      this.emit(
-        x + rand(-8, 8), y + rand(-4, 4),
-        Math.cos(angle) * spd, Math.sin(angle) * spd * 0.4 + rand(10, 35),
-        br, br * 0.92, br * 0.78,
-        rand(6, 14), rand(0.5, 1.2),
-        false, true
       );
     }
   }

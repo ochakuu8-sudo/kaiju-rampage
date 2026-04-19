@@ -515,68 +515,55 @@ export class Game {
     const profile = BUILDING_MATERIAL[size] ?? 'concrete_small';
     const debrisN = 14 + sc * 10;
     const rubbleN = 4 + sc * 2;          // 大きな塊 (4-12個)
-    const burstN  = 10 + sc * 2;          // 衝撃の砂塵リング (12-18本)
     const p = this.particles;
 
     switch (profile) {
-      case 'wood': // 木造 — 木っ端山盛り + 木質塊 + 砂塵バースト + 燃えさし
-        p.spawnImpactBurst(cx, cy, burstN);
+      case 'wood': // 木造 — 木っ端山盛り + 木質塊 + 燃えさし
         p.spawnWoodChips  (cx, cy, 18 + sc * 10);
         p.spawnRubbleChunks(cx, cy, rubbleN, 0.55, 0.38, 0.22);
-        p.spawnDust       (cx, cy, 10 + sc * 4);
         p.spawnEmbers     (cx, cy,  6 + sc * 3);
         break;
 
-      case 'wood_traditional': // 伝統木造 — 木っ端 + 木質塊 + 落葉 + 燃えさし + 砂塵
-        p.spawnImpactBurst(cx, cy, burstN);
+      case 'wood_traditional': // 伝統木造 — 木っ端 + 木質塊 + 落葉 + 燃えさし
         p.spawnWoodChips  (cx, cy, 16 + sc * 10);
         p.spawnRubbleChunks(cx, cy, rubbleN, 0.50, 0.32, 0.20);
         p.spawnLeaves     (cx, cy, 10 + sc * 4);
         p.spawnEmbers     (cx, cy,  8 + sc * 3);
         break;
 
-      case 'concrete_small': // 小型コンクリ — 砂塵バースト + 大塊 + 細片 + 火花
-        p.spawnImpactBurst (cx, cy, burstN);
+      case 'concrete_small': // 小型コンクリ — 大塊 + 細片 + 火花
         p.spawnRubbleChunks(cx, cy, rubbleN, dr, dg, db);
         p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
         p.spawnSpark       (cx, cy,  8 + sc * 5);
         break;
 
-      case 'concrete_medium': // 中型コンクリ — 砂塵 + 大塊 + 細片 + ガラス + 火花
-        p.spawnImpactBurst (cx, cy, burstN + 4);
+      case 'concrete_medium': // 中型コンクリ — 大塊 + 細片 + ガラス + 火花
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnDebris      (cx, cy, debrisN + 4, dr, dg, db);
-        p.spawnDust        (cx, cy, 10 + sc * 4);
         p.spawnGlass       (cx, cy,  6 + sc * 3);
         p.spawnSpark       (cx, cy, 10 + sc * 5);
         break;
 
-      case 'glass_tower': // ガラス高層 — 砂塵 + 大塊 + ガラス山盛り + 細片 + きらめき
-        p.spawnImpactBurst (cx, cy, burstN + 6);
+      case 'glass_tower': // ガラス高層 — 大塊 + ガラス山盛り + 細片 + きらめき
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnGlass       (cx, cy, 22 + sc * 10);
         p.spawnDebris      (cx, cy, 12 + sc * 8, dr, dg, db);
-        p.spawnDust        (cx, cy, 12 + sc * 5);
         p.spawnSparkle     (cx, cy,  6 + sc * 2);
         if (isLarge) {
           p.spawnGlass       (cx, top, 16);
           p.spawnRubbleChunks(cx, top, 4, dr, dg, db);
-          p.spawnDust        (cx, top, 10);
         }
         break;
 
       case 'metal_industrial': // 工業 — 金属大塊 + 金属片 + 歯車 + 火花 (+ ステージ4のみ煙)
-        p.spawnImpactBurst (cx, cy, burstN);
         p.spawnRubbleChunks(cx, cy, rubbleN, 0.62, 0.62, 0.66);
         p.spawnMetalDebris (cx, cy, 14 + sc * 8);
         if (this.currentStageIndex === 3) p.spawnSmoke(cx, cy, 12 + sc * 5);
-        else p.spawnDust(cx, cy, 10 + sc * 4);
         p.spawnSpark       (cx, cy, 12 + sc * 5);
         p.spawnGears       (cx, cy,  6 + sc * 3);
         break;
 
-      case 'landmark': // ランドマーク — 砂塵 + 大塊 + 細片 + きらめき + 紙吹雪 + 炎
-        p.spawnImpactBurst (cx, cy, burstN + 6);
+      case 'landmark': // ランドマーク — 大塊 + 細片 + きらめき + 紙吹雪 + 炎
         p.spawnRubbleChunks(cx, cy, rubbleN + 3, dr, dg, db);
         p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
         p.spawnSparkle     (cx, cy, 14 + sc * 5);
@@ -589,8 +576,7 @@ export class Game {
         }
         break;
 
-      case 'explosive': // 爆発 (ガソスタ) — 砂塵 + 大塊 + 大量炎 + 燃えさし + 細片
-        p.spawnImpactBurst (cx, cy, burstN + 8);
+      case 'explosive': // 爆発 (ガソスタ) — 大塊 + 大量炎 + 燃えさし + 細片
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnFire        (cx, cy, 28 + sc * 6);
         p.spawnSpark       (cx, cy, 22 + sc * 6);
@@ -599,26 +585,22 @@ export class Game {
         p.spawnDebris      (cx, cy, 14, dr, dg, db);
         break;
 
-      case 'castle': // 天守閣 — 巨大瓦礫雨 + 砂塵 + 花火 + 桜
-        p.spawnImpactBurst (cx, cy, 24);
+      case 'castle': // 天守閣 — 巨大瓦礫雨 + 花火 + 桜 + きらめき
         p.spawnRubbleChunks(cx, cy, 16, dr, dg, db);
         p.spawnRubbleChunks(cx, top, 12, dr, dg, db);
         p.spawnFireworks   (cx, cy, 50);
         p.spawnSakuraPetals(cx, cy, 30);
         p.spawnSparkle     (cx, cy, 24);
         p.spawnDebris      (cx, cy, 30, dr, dg, db);
-        p.spawnDust        (cx, cy, 18);
         p.spawnFireworks   (cx, top, 40);
         p.spawnFireworks   (cx + 30, top - 10, 30);
         p.spawnFireworks   (cx - 30, top - 10, 30);
         break;
 
       default:
-        p.spawnImpactBurst (cx, cy, burstN);
         p.spawnRubbleChunks(cx, cy, rubbleN, dr, dg, db);
         p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
         p.spawnSpark       (cx, cy, 12 + sc * 5);
-        p.spawnDust        (cx, cy,  6 + sc * 3);
     }
 
     // 大型ビル共通: 頂部からも追加演出 (専用処理済みのプロファイルはスキップ)
@@ -626,7 +608,6 @@ export class Game {
         profile !== 'explosive' && profile !== 'landmark') {
       this.particles.spawnRubbleChunks(cx, top, 4, dr, dg, db);
       this.particles.spawnDebris      (cx, top, 12, dr, dg, db);
-      this.particles.spawnDust        (cx, top, 10);
       this.particles.spawnSpark       (cx, top, 12);
     }
   }
@@ -658,7 +639,7 @@ export class Game {
       case 'machiya':
       case 'kura':              p.spawnLeaves(cx, cy, 8); p.spawnRice(cx, cy, 6); break;
       case 'chaya':             p.spawnSteam(cx, cy, 8); p.spawnRibbons(cx, cy, 6); break;
-      case 'dojo':              p.spawnDust(cx, cy, 12); p.spawnRibbons(cx, cy, 6); break;
+      case 'dojo':              p.spawnWoodChips(cx, cy, 10); p.spawnRibbons(cx, cy, 6); break;
       case 'wagashi':           p.spawnRice(cx, cy, 12); p.spawnFlower(cx, cy, 8); break;
       case 'kimono_shop':       p.spawnRibbons(cx, cy, 14); p.spawnSakuraPetals(cx, cy, 8); break;
       case 'sushi_ya':          p.spawnRice(cx, cy, 14); p.spawnFood(cx, cy, 8); break;
@@ -703,20 +684,20 @@ export class Game {
       // ── 工業 ──
       case 'factory_stack':     p.spawnGears(cx, cy, 12); p.spawnEmbers(cx, cy, 10); p.spawnFire(cx, cy, 8); break;
       case 'crane_gantry':      p.spawnGears(cx, cy, 14); p.spawnSpark(cx, cy, 12); break;
-      case 'warehouse':         p.spawnDust(cx, cy, 12); p.spawnGears(cx, cy, 6); break;
-      case 'silo':              p.spawnDust(cx, cy, 16); p.spawnFood(cx, cy, 8); break;
+      case 'warehouse':         p.spawnGears(cx, cy, 8); p.spawnDebris(cx, cy, 6, 0.7, 0.55, 0.40); break;
+      case 'silo':              p.spawnFood(cx, cy, 14); p.spawnDebris(cx, cy, 6, 0.85, 0.78, 0.55); break;
       case 'container_stack':   p.spawnGears(cx, cy, 6); break;
 
       // ── 夜街・繁華街 ──
       case 'snack':             p.spawnHearts(cx, cy, 10); p.spawnNeonShards(cx, cy, 8); break;
       case 'love_hotel':        p.spawnHearts(cx, cy, 18); p.spawnNeonShards(cx, cy, 10); break;
       case 'business_hotel':    p.spawnGlass(cx, cy, 10); p.spawnCash(cx, cy, 6); break;
-      case 'mahjong_parlor':    p.spawnTiles(cx, cy, 16); p.spawnDust(cx, cy, 6); break;
+      case 'mahjong_parlor':    p.spawnTiles(cx, cy, 18); break;
       case 'club':              p.spawnNeonShards(cx, cy, 16); p.spawnPixels(cx, cy, 14); p.spawnSparkle(cx, cy, 8); break;
       case 'capsule_hotel':     p.spawnGlass(cx, cy, 8); p.spawnPixels(cx, cy, 8); break;
 
       // ── 公共 ──
-      case 'museum':            p.spawnSparkle(cx, cy, 12); p.spawnDust(cx, cy, 10); p.spawnCoins(cx, cy, 6); break;
+      case 'museum':            p.spawnSparkle(cx, cy, 14); p.spawnCoins(cx, cy, 8); break;
       case 'city_hall':         p.spawnRibbons(cx, cy, 10); p.spawnConfetti(cx, cy, 14); break;
       case 'post_office':       p.spawnCash(cx, cy, 8); p.spawnConfetti(cx, cy, 8); break;
       case 'clock_tower':       p.spawnGears(cx, cy, 14); p.spawnSparkle(cx, cy, 10); break;
@@ -753,7 +734,7 @@ export class Game {
           p.spawnWoodChips(x, y, 3); break;
         case 'rock': case 'stone_lantern': case 'stepping_stones': case 'koma_inu':
         case 'statue': case 'sandbags': case 'manhole_cover':
-          p.spawnDust(x, y, 3); break;
+          p.spawnDebris(x, y, 3, 0.62, 0.58, 0.50); break;
         default:
           p.spawnSpark(x, y, 3);
       }
@@ -774,7 +755,7 @@ export class Game {
       case 'bamboo_cluster': case 'bamboo_fence':
         p.spawnLeaves(x, y, 8); p.spawnWoodChips(x, y, 8); break;
       case 'bonsai': case 'planter': case 'potted_plant':
-        p.spawnLeaves(x, y, 6); p.spawnFlower(x, y, 4); p.spawnDust(x, y, 4); break;
+        p.spawnLeaves(x, y, 6); p.spawnFlower(x, y, 4); p.spawnDebris(x, y, 4, 0.55, 0.42, 0.32); break;
       case 'flower_bed': case 'flower_planter_row':
         p.spawnFlower(x, y, 12); p.spawnLeaves(x, y, 4); break;
 
@@ -806,11 +787,11 @@ export class Game {
 
       // ── ゴミ・食 ──
       case 'garbage':
-        p.spawnFood(x, y, 8); p.spawnDust(x, y, 4); break;
+        p.spawnFood(x, y, 10); break;
       case 'dumpster':
         p.spawnFood(x, y, 6); p.spawnMetalDebris(x, y, 6); break;
       case 'recycling_bin':
-        p.spawnGlass(x, y, 6); p.spawnDust(x, y, 4); break;
+        p.spawnGlass(x, y, 8); p.spawnMetalDebris(x, y, 4); break;
 
       // ── 自販機・ATM・電話ボックス ──
       case 'vending':
@@ -836,16 +817,16 @@ export class Game {
       case 'traffic_light':
         p.spawnGlass(x, y, 4); p.spawnSpark(x, y, 6); p.spawnMetalDebris(x, y, 4); break;
       case 'bollard': case 'traffic_cone':
-        p.spawnDust(x, y, 6); break;
+        p.spawnDebris(x, y, 6, 0.85, 0.55, 0.20); break;
       case 'barrier': case 'guardrail': case 'guardrail_short': case 'platform_edge':
       case 'pedestrian_bridge': case 'railway_track':
         p.spawnMetalDebris(x, y, 8); p.spawnSpark(x, y, 4); break;
       case 'fire_extinguisher':
-        p.spawnDust(x, y, 14); p.spawnSpark(x, y, 4);
+        p.spawnSpark(x, y, 6); p.spawnMetalDebris(x, y, 6);
         if (this.currentStageIndex === 3) p.spawnSmoke(x, y, 8);
         break;
       case 'bus_stop':
-        p.spawnGlass(x, y, 8); p.spawnDust(x, y, 4); break;
+        p.spawnGlass(x, y, 10); p.spawnMetalDebris(x, y, 4); break;
       case 'flag_pole':
         p.spawnRibbons(x, y, 8); break;
       case 'street_mirror':
@@ -857,7 +838,7 @@ export class Game {
       case 'wood_fence': case 'bench': case 'pallet_stack': case 'milk_crate_stack':
       case 'play_structure': case 'slide': case 'swing_set': case 'jungle_gym':
       case 'sandbox':
-        p.spawnWoodChips(x, y, 8); p.spawnDust(x, y, 4); break;
+        p.spawnWoodChips(x, y, 10); p.spawnDebris(x, y, 3, 0.55, 0.42, 0.30); break;
       case 'parasol': case 'shop_awning':
         p.spawnConfetti(x, y, 6); p.spawnRibbons(x, y, 4); break;
       case 'noren': case 'shinto_rope': case 'tarp': case 'laundry_pole':
@@ -873,9 +854,9 @@ export class Game {
         p.spawnWoodChips(x, y, 6); p.spawnCoins(x, y, 8); break;
       case 'stone_lantern': case 'koma_inu': case 'sando_stone_pillar':
       case 'rock': case 'stepping_stones': case 'statue':
-        p.spawnDust(x, y, 10); p.spawnDebris(x, y, 6, 0.5, 0.5, 0.5); break;
+        p.spawnRubbleChunks(x, y, 3, 0.55, 0.52, 0.48); p.spawnDebris(x, y, 8, 0.5, 0.5, 0.5); break;
       case 'sandbags':
-        p.spawnDust(x, y, 14); break;
+        p.spawnDebris(x, y, 14, 0.78, 0.65, 0.42); break;
 
       // ── 工業・港湾 ──
       case 'drum_can':
@@ -899,19 +880,19 @@ export class Game {
       case 'ticket_booth':
         p.spawnConfetti(x, y, 10); p.spawnCash(x, y, 6); break;
       case 'matsuri_drum':
-        p.spawnWoodChips(x, y, 8); p.spawnDust(x, y, 6); p.spawnRibbons(x, y, 4); break;
+        p.spawnWoodChips(x, y, 10); p.spawnRibbons(x, y, 6); break;
       case 'popcorn_cart':
         p.spawnPopcorn(x, y, 14); p.spawnSteam(x, y, 6); break;
       case 'plaza_tile_circle':
-        p.spawnDust(x, y, 8); p.spawnDebris(x, y, 6, 0.7, 0.65, 0.55); break;
+        p.spawnDebris(x, y, 10, 0.7, 0.65, 0.55); break;
       case 'bathhouse_chimney':
-        p.spawnDust(x, y, 14); p.spawnEmbers(x, y, 6); p.spawnDebris(x, y, 6, 0.55, 0.30, 0.20);
+        p.spawnEmbers(x, y, 8); p.spawnDebris(x, y, 10, 0.55, 0.30, 0.20);
         if (this.currentStageIndex === 3) p.spawnSmoke(x, y, 8);
         break;
       case 'fire_watchtower':
         p.spawnWoodChips(x, y, 10); p.spawnEmbers(x, y, 6); break;
       case 'grain_silo':
-        p.spawnDust(x, y, 12); p.spawnFood(x, y, 6); break;
+        p.spawnFood(x, y, 12); p.spawnDebris(x, y, 6, 0.85, 0.78, 0.55); break;
 
       // ── 動物 ──
       case 'cat':
@@ -937,11 +918,11 @@ export class Game {
         p.spawnMetalDebris(x, y, 8); p.spawnGlass(x, y, 6); p.spawnCash(x, y, 6);
         p.spawnSpark(x, y, 4); break;
       case 'bus':
-        p.spawnMetalDebris(x, y, 12); p.spawnGlass(x, y, 10); p.spawnEmbers(x, y, 8);
-        p.spawnSpark(x, y, 6); p.spawnDust(x, y, 6); break;
+        p.spawnMetalDebris(x, y, 14); p.spawnGlass(x, y, 12); p.spawnEmbers(x, y, 8);
+        p.spawnSpark(x, y, 6); break;
       case 'truck':
-        p.spawnMetalDebris(x, y, 12); p.spawnDebris(x, y, 8, 0.55, 0.42, 0.30);
-        p.spawnEmbers(x, y, 6); p.spawnGears(x, y, 4); p.spawnDust(x, y, 4); break;
+        p.spawnMetalDebris(x, y, 12); p.spawnDebris(x, y, 10, 0.55, 0.42, 0.30);
+        p.spawnEmbers(x, y, 6); p.spawnGears(x, y, 4); break;
       case 'delivery': case 'van':
         p.spawnMetalDebris(x, y, 10); p.spawnGlass(x, y, 4); p.spawnFood(x, y, 6);
         p.spawnSpark(x, y, 4); break;
