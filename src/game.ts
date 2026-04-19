@@ -126,9 +126,9 @@ export class Game {
   //   完全平行だと坂→フリッパー→ドレインを一直線に転がって即落ちしてしまうため、
   //   角度差で「キャッチ」を作り、ボールが接点で微バウンドして滞空時間を生む。
   //   急すぎないので上から落ちてきた時の加速も穏やか。
-  // ★ hw=54, 右下端=(-85, camera.y-210) でフリッパーピボット直結、左上端=(-180, camera.y-160)
-  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -185, hw: 54, hh: 6, angle: -0.489 }; // -28°
-  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -185, hw: 54, hh: 6, angle:  0.489 };
+  // ★ hw=55.4, 右下端=(-85, camera.y-210) でフリッパーピボット直結、左上端=(-180, camera.y-153)
+  private readonly SLOPE_L_BASE = { cx: -132.5, cy_off: -181.5, hw: 55.4, hh: 6, angle: -0.541 }; // -31°
+  private readonly SLOPE_R_BASE = { cx:  132.5, cy_off: -181.5, hw: 55.4, hh: 6, angle:  0.541 };
 
   private getSlopeL() {
     const b = this.SLOPE_L_BASE;
