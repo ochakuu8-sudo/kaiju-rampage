@@ -275,17 +275,17 @@ export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 
 
 // ===== 自動スクロール =====
 // 現在の燃料ゲージ量に応じて線形に変化 (100% = MAX, 0% = MIN)
-export const SCROLL_SPEED_MAX = 50;   // 燃料 100% 時の px/s
-export const SCROLL_SPEED_MIN = 10;   // 燃料 0% 時の px/s
+export const SCROLL_SPEED_MAX = 45;   // 燃料 100% 時の px/s
+export const SCROLL_SPEED_MIN = 15;   // 燃料 0% 時の px/s
 
 // ===== 燃料ゲージ (ゲームオーバー条件) =====
 // 時間経過で線形に減少し、人間を踏むと線形に回復する。0 でゲームオーバー。
 // ドレインレートは燃料ゲージ量に応じた倍率が掛かる (100% = MAX, 0% = MIN)
 export const FUEL_MAX             = 100;
 export const FUEL_INITIAL         = 1;    // 初期演出: 1% スタート、100% になるまでスクロールとドレインは止まる
-export const FUEL_DRAIN_PER_SEC   = 10;   // ベースドレイン; ゲージ量に応じて倍率が掛かる (50% 時 = 10/s の基準)
-export const FUEL_DRAIN_MULT_MAX  = 1.8;  // 燃料 100% 時の倍率 → 18/s (満タンほど激しく消費)
-export const FUEL_DRAIN_MULT_MIN  = 0.2;  // 燃料 0% 時の倍率 → 2/s (空に近いほど節約)
+export const FUEL_DRAIN_PER_SEC   = 10;   // ベースドレイン; ゲージ量に応じて倍率が掛かる
+export const FUEL_DRAIN_MULT_MAX  = 1.5;  // 燃料 100% 時の倍率 → 15/s (満タンほど激しく消費)
+export const FUEL_DRAIN_MULT_MIN  = 0.5;  // 燃料 0% 時の倍率 → 5/s (空に近いほど節約)
 export const FUEL_GAIN_PER_HUMAN  = 0.7;
 export const FUEL_LOW_THRESHOLD   = 20;   // この値を下回ると赤く点滅
 
