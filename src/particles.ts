@@ -109,17 +109,52 @@ export class ParticleManager {
   spawnRubbleChunks(x: number, y: number, count: number, buildingR: number, buildingG: number, buildingB: number) {
     for (let i = 0; i < count; i++) {
       const angle = rand(-Math.PI, 0); // 主に上向き〜横へ放出
-      const spd   = rand(180, 380);
-      const tone  = rand(0.55, 1.05);
-      const w     = rand(12, 26);
-      // 不揃いな矩形塊 (縦横比をランダム化)
-      const h     = w * rand(0.55, 1.1);
+      const spd   = rand(140, 340);
+      // 形状を3種混合 — 壁スラブ / 角ばったブロック / 柱の破片
+      const shape = Math.random();
+      let w: number, h: number;
+      if (shape < 0.40) {        // スラブ (横長の壁片)
+        w = rand(18, 32);
+        h = rand(5, 11);
+      } else if (shape < 0.78) { // ブロック (角ばった塊)
+        w = rand(10, 18);
+        h = rand(10, 18);
+      } else {                   // ピラー (柱の破片)
+        w = rand(6, 10);
+        h = rand(18, 28);
+      }
+      // 色: 建物色 × コンクリ灰のブレンド (粉塵をかぶった瓦礫感)
+      const blend = rand(0.30, 0.65);
+      const tone  = rand(0.85, 1.05);
+      const gray  = rand(0.50, 0.72);
+      const r = (buildingR * tone) * (1 - blend) + gray * blend;
+      const g = (buildingG * tone) * (1 - blend) + gray * blend;
+      const b = (buildingB * tone) * (1 - blend) + gray * blend * 0.95;
+      // ゴロンと残る塊感: 寿命長め + alpha フェード (noFade=false で半サイズまで残る)
       this.emit(
         x + rand(-12, 12), y + rand(-8, 8),
-        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(60, 160),
-        buildingR * tone, buildingG * tone, buildingB * tone,
-        w, rand(1.0, 2.0),
-        true, false, rand(-6, 6), h, undefined, true
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(50, 140),
+        r, g, b,
+        w, rand(1.4, 2.6),
+        true, false, rand(-10, 10), h
+      );
+    }
+    // 各塊から削れた小破片 (リアルな粉砕感)
+    const chips = Math.ceil(count * 1.5);
+    for (let i = 0; i < chips; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = rand(120, 360);
+      const tone  = rand(0.55, 1.0);
+      const gray  = rand(0.55, 0.82);
+      const blend = rand(0.4, 0.8);
+      this.emit(
+        x + rand(-10, 10), y + rand(-6, 6),
+        Math.cos(angle) * spd, Math.sin(angle) * spd + rand(30, 100),
+        (buildingR * tone) * (1 - blend) + gray * blend,
+        (buildingG * tone) * (1 - blend) + gray * blend,
+        (buildingB * tone) * (1 - blend) + gray * blend,
+        rand(2, 5), rand(0.5, 1.1),
+        true, false, rand(-14, 14)
       );
     }
   }

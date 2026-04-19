@@ -542,34 +542,34 @@ export class Game {
         p.spawnSpark       (cx, cy,  8 + sc * 5);
         break;
 
-      case 'concrete_medium': // 中型コンクリ — より豪快に: 砂塵 + 大塊 + 細片 + ガラス + 火花
+      case 'concrete_medium': // 中型コンクリ — 砂塵 + 大塊 + 細片 + ガラス + 火花
         p.spawnImpactBurst (cx, cy, burstN + 4);
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnDebris      (cx, cy, debrisN + 4, dr, dg, db);
-        p.spawnSmoke       (cx, cy,  8 + sc * 4);
+        p.spawnDust        (cx, cy, 10 + sc * 4);
         p.spawnGlass       (cx, cy,  6 + sc * 3);
         p.spawnSpark       (cx, cy, 10 + sc * 5);
         break;
 
-      case 'glass_tower': // ガラス高層 — 砂塵 + 大塊 + ガラス山盛り + 細片 + 煙
+      case 'glass_tower': // ガラス高層 — 砂塵 + 大塊 + ガラス山盛り + 細片 + きらめき
         p.spawnImpactBurst (cx, cy, burstN + 6);
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnGlass       (cx, cy, 22 + sc * 10);
         p.spawnDebris      (cx, cy, 12 + sc * 8, dr, dg, db);
-        p.spawnSmoke       (cx, cy, 12 + sc * 5);
+        p.spawnDust        (cx, cy, 12 + sc * 5);
         p.spawnSparkle     (cx, cy,  6 + sc * 2);
         if (isLarge) {
           p.spawnGlass       (cx, top, 16);
           p.spawnRubbleChunks(cx, top, 4, dr, dg, db);
-          p.spawnSmoke       (cx, top, 10);
+          p.spawnDust        (cx, top, 10);
         }
         break;
 
-      case 'metal_industrial': // 工業 — 砂塵 + 金属大塊 + 金属片 + 歯車 + 煙 + 火花
+      case 'metal_industrial': // 工業 — 金属大塊 + 金属片 + 歯車 + 煙 + 火花 (煙は工業特権)
         p.spawnImpactBurst (cx, cy, burstN);
         p.spawnRubbleChunks(cx, cy, rubbleN, 0.62, 0.62, 0.66);
         p.spawnMetalDebris (cx, cy, 14 + sc * 8);
-        p.spawnSmoke       (cx, cy, 10 + sc * 5);
+        p.spawnSmoke       (cx, cy, 12 + sc * 5);
         p.spawnSpark       (cx, cy, 12 + sc * 5);
         p.spawnGears       (cx, cy,  6 + sc * 3);
         break;
@@ -588,7 +588,7 @@ export class Game {
         }
         break;
 
-      case 'explosive': // 爆発 — 砂塵 + 大塊 + 大量炎 + 細片
+      case 'explosive': // 爆発 (ガソスタ) — 砂塵 + 大塊 + 大量炎 + 黒煙 + 細片
         p.spawnImpactBurst (cx, cy, burstN + 8);
         p.spawnRubbleChunks(cx, cy, rubbleN + 2, dr, dg, db);
         p.spawnFire        (cx, cy, 28 + sc * 6);
@@ -598,7 +598,7 @@ export class Game {
         p.spawnDebris      (cx, cy, 14, dr, dg, db);
         break;
 
-      case 'castle': // 天守閣 — 巨大瓦礫雨 + 砂塵 + 花火 + 桜 + 煙
+      case 'castle': // 天守閣 — 巨大瓦礫雨 + 砂塵 + 花火 + 桜
         p.spawnImpactBurst (cx, cy, 24);
         p.spawnRubbleChunks(cx, cy, 16, dr, dg, db);
         p.spawnRubbleChunks(cx, top, 12, dr, dg, db);
@@ -606,7 +606,7 @@ export class Game {
         p.spawnSakuraPetals(cx, cy, 30);
         p.spawnSparkle     (cx, cy, 24);
         p.spawnDebris      (cx, cy, 30, dr, dg, db);
-        p.spawnSmoke       (cx, cy, 20);
+        p.spawnDust        (cx, cy, 18);
         p.spawnFireworks   (cx, top, 40);
         p.spawnFireworks   (cx + 30, top - 10, 30);
         p.spawnFireworks   (cx - 30, top - 10, 30);
@@ -617,7 +617,7 @@ export class Game {
         p.spawnRubbleChunks(cx, cy, rubbleN, dr, dg, db);
         p.spawnDebris      (cx, cy, debrisN, dr, dg, db);
         p.spawnSpark       (cx, cy, 12 + sc * 5);
-        p.spawnSmoke       (cx, cy,  6 + sc * 3);
+        p.spawnDust        (cx, cy,  6 + sc * 3);
     }
 
     // 大型ビル共通: 頂部からも追加演出 (専用処理済みのプロファイルはスキップ)
@@ -625,7 +625,7 @@ export class Game {
         profile !== 'explosive' && profile !== 'landmark') {
       this.particles.spawnRubbleChunks(cx, top, 4, dr, dg, db);
       this.particles.spawnDebris      (cx, top, 12, dr, dg, db);
-      this.particles.spawnSmoke       (cx, top, 10);
+      this.particles.spawnDust        (cx, top, 10);
       this.particles.spawnSpark       (cx, top, 12);
     }
   }
@@ -710,7 +710,7 @@ export class Game {
       case 'snack':             p.spawnHearts(cx, cy, 10); p.spawnNeonShards(cx, cy, 8); break;
       case 'love_hotel':        p.spawnHearts(cx, cy, 18); p.spawnNeonShards(cx, cy, 10); break;
       case 'business_hotel':    p.spawnGlass(cx, cy, 10); p.spawnCash(cx, cy, 6); break;
-      case 'mahjong_parlor':    p.spawnTiles(cx, cy, 16); p.spawnSmoke(cx, cy, 8); break;
+      case 'mahjong_parlor':    p.spawnTiles(cx, cy, 16); p.spawnDust(cx, cy, 6); break;
       case 'club':              p.spawnNeonShards(cx, cy, 16); p.spawnPixels(cx, cy, 14); p.spawnSparkle(cx, cy, 8); break;
       case 'capsule_hotel':     p.spawnGlass(cx, cy, 8); p.spawnPixels(cx, cy, 8); break;
 
@@ -923,16 +923,16 @@ export class Game {
     switch (type) {
       case 'car':
         p.spawnMetalDebris(x, y, 8); p.spawnGlass(x, y, 6); p.spawnSpark(x, y, 6);
-        p.spawnSmoke(x, y, 4); break;
+        p.spawnEmbers(x, y, 4); break;
       case 'taxi':
         p.spawnMetalDebris(x, y, 8); p.spawnGlass(x, y, 6); p.spawnCash(x, y, 6);
         p.spawnSpark(x, y, 4); break;
       case 'bus':
-        p.spawnMetalDebris(x, y, 12); p.spawnGlass(x, y, 10); p.spawnSmoke(x, y, 8);
-        p.spawnSpark(x, y, 6); break;
+        p.spawnMetalDebris(x, y, 12); p.spawnGlass(x, y, 10); p.spawnEmbers(x, y, 8);
+        p.spawnSpark(x, y, 6); p.spawnDust(x, y, 6); break;
       case 'truck':
         p.spawnMetalDebris(x, y, 12); p.spawnDebris(x, y, 8, 0.55, 0.42, 0.30);
-        p.spawnSmoke(x, y, 6); p.spawnGears(x, y, 4); break;
+        p.spawnEmbers(x, y, 6); p.spawnGears(x, y, 4); p.spawnDust(x, y, 4); break;
       case 'delivery': case 'van':
         p.spawnMetalDebris(x, y, 10); p.spawnGlass(x, y, 4); p.spawnFood(x, y, 6);
         p.spawnSpark(x, y, 4); break;
