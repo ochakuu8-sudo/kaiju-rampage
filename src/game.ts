@@ -1922,36 +1922,31 @@ export class Game {
 
   private fillFlippers(buf: Float32Array, start: number): number {
     let n = start;
-    const N = 8;              // 三角形近似の分割数
+    const N = 10;             // 三角形近似の分割数 (多めにして滑らかな曲線に)
     const BASE_THICK = 12;    // 根本の太さ
     const TIP_THICK  = 1.5;   // 先端の太さ (ほぼ点)
-    const TIP_CURL   = 0.10;  // 最先端の上反り (≈5.7°、目を凝らさないと分からない程度)
+    const MAX_CURL   = 0.15;  // 先端到達時点の反り角 (≈8.6°、よく見ないと分からない程度)
     for (const fl of this.flippers) {
       const isFlash = this.juice.isBallFlashing();
       const gr = isFlash ? 1 : 0.60, gg = isFlash ? 1 : 0.60, gb = isFlash ? 1 : 0.70;
       const hw = C.FLIPPER_W / 2;
       const cosA = Math.cos(fl.angle), sinA = Math.sin(fl.angle);
       const segLen = C.FLIPPER_W / N;
+      // 各セグメントを前のセグメントの先端に連結して配置し、ジャンプ台の曲線を描く
+      let startX = fl.cx - hw * cosA;
+      let startY = fl.cy - hw * sinA;
       for (let i = 0; i < N; i++) {
-        const t = (i + 0.5) / N;
-        const segH = BASE_THICK * (1 - t) + TIP_THICK * t;
-        let segCx: number, segCy: number, segAngle: number;
-        if (i === N - 1) {
-          // 最先端のみ 上向きに僅かに反らせる (前セグメントの先端を起点に回転)
-          const curl = fl.isLeft ? TIP_CURL : -TIP_CURL;
-          segAngle = fl.angle + curl;
-          const anchorLocalX = -hw + (N - 1) * segLen;   // 直前セグメントの先端位置
-          const anchorX = fl.cx + anchorLocalX * cosA;
-          const anchorY = fl.cy + anchorLocalX * sinA;
-          segCx = anchorX + (segLen / 2) * Math.cos(segAngle);
-          segCy = anchorY + (segLen / 2) * Math.sin(segAngle);
-        } else {
-          segAngle = fl.angle;
-          const localX = -hw + (i + 0.5) * segLen;
-          segCx = fl.cx + localX * cosA;
-          segCy = fl.cy + localX * sinA;
-        }
-        writeInst(buf, n++, segCx, segCy, segLen * 1.02, segH, gr, gg, gb, 1, segAngle);
+        const tPos = i / (N - 1);                    // 0..1 (根本→先端)
+        const curl = tPos * tPos * (fl.isLeft ? MAX_CURL : -MAX_CURL); // 二次曲線で先端ほど強く反る
+        const segAngle = fl.angle + curl;
+        const segCx = startX + (segLen / 2) * Math.cos(segAngle);
+        const segCy = startY + (segLen / 2) * Math.sin(segAngle);
+        const tT = (i + 0.5) / N;
+        const segH = BASE_THICK * (1 - tT) + TIP_THICK * tT;
+        writeInst(buf, n++, segCx, segCy, segLen * 1.04, segH, gr, gg, gb, 1, segAngle);
+        // 次のセグメントの開始位置 = このセグメントの先端
+        startX += segLen * Math.cos(segAngle);
+        startY += segLen * Math.sin(segAngle);
       }
       // ピボットの目印 (オレンジの小丸)
       writeInst(buf, n++, fl.pivotX, fl.pivotY, 6, 6, 0.90, 0.55, 0.20, 1, 0, 1);
