@@ -3,8 +3,8 @@
  * 外部ファイル不要。OscillatorNode + GainNode で合成。
  */
 
-const MASTER_VOLUME = 0.28;
-const MUSIC_VOLUME  = 0.07;   // SFX を潰さないよう控えめ
+const MASTER_VOLUME = 0.55;
+const MUSIC_VOLUME  = 0.14;   // SFX を潰さないよう控えめ
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
