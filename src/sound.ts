@@ -282,35 +282,55 @@ export class SoundEngine {
 
 
   // ═══════════════════════════════════════════════════════════════════
-  //  BGM  シンプル 8-bit レトロチップチューン
+  //  BGM  シンプル 8-bit 怪獣マーチ
   // ═══════════════════════════════════════════════════════════════════
-  // 16-step ループ = 2.0s @ 125ms/step (120 BPM)。
-  // NES 風 5 レイヤー: ベース(square) / リード(square) / キック(ノイズ) /
-  //                    スネア(ノイズ) / ハット(ノイズ)。
-  // ステージごとに root 音をずらして雰囲気を切替 (STAGE_ROOT_HZ)。
+  // 32-step ループ = 4.0s @ 125ms/step (120 BPM)。
+  // NES 風 5 レイヤー: ベース / リード / キック / スネア / ハット。
+  // 進行: Am - G - F - E (アンダルシア終止) — 怪獣映画/アクションゲームの
+  //        緊迫感と高揚感を両立する王道マイナー進行。
+  // E コードでの G# (Phrygian dominant) が B 級特撮的なヤバさを演出。
 
   /** ステージごとのキー (root 音)。A3=220Hz 起点。 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196];
 
-  // ベース: ルートと 5 度の往復 + 小節末にオクターブ上げでアクセント。
+  // ベース: 各コード 8step、root-5th 往復 + 末尾オクターブアクセント。
   private static readonly BASS_STEPS = [
-     0, 0, 7, 0,  0, 7, 0, 7,
+    // Am              G                F                E
      0, 0, 7, 0,  0, 7,12, 7,
+    -2,-2, 5,-2, -2, 5,10, 5,
+    -4,-4, 3,-4, -4, 3, 8, 3,
+    -5,-5, 2,-5, -5, 2, 7, 2,
   ];
-  // リード: A メジャーペンタトニック上行 → 下行のキャッチーなリフ。
+  // リード: 各コードで root-3rd-5th のミニアルペジオ。
+  //   Am→G→F は自然短音階、E だけ G# を使って Phrygian dominant の緊張を。
   private static readonly LEAD_STEPS = [
-    12,16,19,24,  19,16,12,16,
-    12,16,19,24,  21,19,16,12,
+    // Am: A C E C | D C A C
+    12,15,19,15, 17,15,12,15,
+    // G:  G Bb D Bb | C Bb G Bb
+    10,13,17,13, 15,13,10,13,
+    // F:  F A C A | Bb A F A
+     8,12,15,12, 13,12, 8,12,
+    // E:  E G# B G# | A G# E G#  (Phrygian dominant)
+     7,11,14,11, 12,11, 7,11,
   ];
-  // キック: 4 つ打ち + 軽いシンコペ。
-  private static readonly KICK_PATTERN  = [1,0,0,1, 1,0,0,0, 1,0,0,1, 1,0,0,0];
+  // キック: 4 つ打ち + 軽いシンコペ、2 小節目末尾にフィル。
+  private static readonly KICK_PATTERN = [
+    1,0,0,1, 1,0,0,0,  1,0,0,1, 1,0,1,0,
+    1,0,0,1, 1,0,0,0,  1,0,0,1, 1,0,1,1,
+  ];
   // スネア: 2/4 拍バックビート。
-  private static readonly SNARE_PATTERN = [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0];
+  private static readonly SNARE_PATTERN = [
+    0,0,1,0, 0,0,1,0,  0,0,1,0, 0,0,1,0,
+    0,0,1,0, 0,0,1,0,  0,0,1,0, 0,0,1,0,
+  ];
   // ハット: 8 分刻み。
-  private static readonly HAT_PATTERN   = [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0];
+  private static readonly HAT_PATTERN = [
+    1,0,1,0, 1,0,1,0,  1,0,1,0, 1,0,1,0,
+    1,0,1,0, 1,0,1,0,  1,0,1,0, 1,0,1,0,
+  ];
 
   private static readonly STEP_SEC = 0.125;   // 16分音符、120 BPM
-  private static readonly PATTERN_LEN = 16;   // 1 小節 = 2.0s ループ
+  private static readonly PATTERN_LEN = 32;   // 2 小節 = 4.0s ループ
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
   startMusic(stageIndex: number): void {
