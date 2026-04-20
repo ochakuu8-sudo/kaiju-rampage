@@ -287,12 +287,14 @@ export class SoundEngine {
   // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
   // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
 
-  /** A=220Hz 起点の半音テーブル */
+  /** A=220Hz 起点。A マイナー + 半音クリープ + トライトーンでパニックホラーな旋律 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
-  private static readonly BASS_STEPS = [0, 0, 0, 0,  5, 5, 3, 3,   7, 7, 5, 5,   -5, -5, 3, 3];
-  private static readonly LEAD_STEPS = [12, 15, 19, 15,  17, 15, 12, 10,  15, 19, 22, 19,  7, 10, 15, 12];
-  // ハーモニー (5度下または3度下のコード音、リードの厚み付け)
-  private static readonly HARM_STEPS = [ 7, 10, 12, 10,  12, 10,  7,  5,  10, 12, 15, 12,  3,  7, 10,  7];
+  // ベース: A ペダル → 5度下降 → C (b3) 短クライマックス → G#/G (半音下降の不吉な帰結)
+  private static readonly BASS_STEPS = [ 0, 0, 0, 0,  -5, -5,-5,-5,    3, 3, 3, 3,   -1,-2,-1,-2];
+  // リード: A マイナー + トライトーン (D#/Eb=6) で horror 的刺突、最後に半音下降創迫
+  private static readonly LEAD_STEPS = [12,15,13,15,   7,10, 8,13,   15,17,16,15,   13,11,10, 9];
+  // ハーモニー: リードと並行 3 度下、小 2 度の軋みを作る
+  private static readonly HARM_STEPS = [ 7,10, 8,10,   2, 5, 3, 8,   10,12,11,10,    8, 6, 5, 4];
   private static readonly KICK_PATTERN  = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
   private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 1];
   private static readonly HAT_PATTERN   = [1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 2, 2]; // 2=open
