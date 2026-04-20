@@ -81,12 +81,12 @@
       pointer-events: none;
       z-index: 2;
     }
-    #distance-display { top: 28px; left: 8px; font-size: 9px; color: #fff;    letter-spacing: 1px; }
-    #zone-display     { top: 42px; left: 8px; font-size: 7px; color: #ffd020; letter-spacing: 1px; }
-    /* 現在スコア (画面中央上に大きめで表示) */
+    #distance-display { top: 42px; left: 8px; font-size: 8px; color: #fff;    letter-spacing: 1px; }
+    #zone-display     { top: 54px; left: 8px; font-size: 7px; color: #ffd020; letter-spacing: 1px; }
+    /* 現在スコア + ベストスコア (左上で横並び) */
     #score-display {
       position: absolute;
-      top: 28px; left: 50%; transform: translateX(-50%);
+      top: 28px; left: 8px;
       font-family: 'Press Start 2P', monospace;
       font-size: 11px;
       color: #ffec8c;
@@ -96,12 +96,11 @@
       z-index: 2;
       white-space: nowrap;
     }
-    /* ベストスコア (プレイ中は score の右隣) */
     #best-display {
       position: absolute;
-      top: 44px; left: 50%; transform: translateX(-50%);
+      top: 31px; left: 140px;
       font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
+      font-size: 8px;
       color: #8cf;
       text-shadow: 1px 1px 0 #000;
       letter-spacing: 1px;

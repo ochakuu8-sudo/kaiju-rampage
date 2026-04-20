@@ -2924,56 +2924,56 @@ const FURNITURE_HH: Record<FurnitureType, number> = {
 const LIGHT_DURATIONS = [3.0, 0.8, 3.0]; // red, yellow, green
 
 /** 家具タイプごとの破壊スコア
- *  設計基準 (建物スコア 80-3000 と比較):
- *   - ごみ/柵/小物 (10-25): 多数あるので控えめ
- *   - 街路設備 (30-60): 自販機・電話ボックス・信号・ATM
- *   - 中型 (80-150): 銅像・石灯籠・遊具・鳥居・大型噴水
- *   - ランドマーク (200-400): 神社鳥居・風呂屋煙突・火の見櫓等
+ *  設計基準: 小家具 = 5 を基準単位。建物スコア 40-1500 と対比。
+ *   - 小物 (5-10): ごみ/柵/花壇/路面タイル等
+ *   - 街路設備 (15-30): 自販機・電話ボックス・信号・ATM
+ *   - 中型 (40-75): 銅像・石灯籠・遊具
+ *   - ランドマーク (100-200): 鳥居・大型噴水・風呂屋煙突
  */
 export const FURNITURE_SCORES: Record<FurnitureType, number> = {
   // ── オリジナル ──
-  tree: 20, vending: 50, bench: 15, car: 80, traffic_light: 40,
-  mailbox: 25, bicycle: 20, flower_bed: 15, parasol: 20,
-  sign_board: 15, garbage: 10, power_pole: 25, hydrant: 15, fountain: 80,
+  tree: 10, vending: 25, bench: 8, car: 40, traffic_light: 20,
+  mailbox: 12, bicycle: 10, flower_bed: 8, parasol: 10,
+  sign_board: 8, garbage: 5, power_pole: 12, hydrant: 8, fountain: 40,
   // ── 街路設備 ──
-  street_lamp: 30, bollard: 10, traffic_cone: 10, barrier: 15, guardrail: 15,
-  telephone_booth: 60, electric_box: 30, newspaper_stand: 25, atm: 80, post_box: 25,
-  bicycle_rack: 20, dumpster: 30, recycling_bin: 20, fire_extinguisher: 20, bus_stop: 45,
-  statue: 150, flag_pole: 25, banner_pole: 20,
+  street_lamp: 15, bollard: 5, traffic_cone: 5, barrier: 8, guardrail: 8,
+  telephone_booth: 30, electric_box: 15, newspaper_stand: 12, atm: 40, post_box: 12,
+  bicycle_rack: 10, dumpster: 15, recycling_bin: 10, fire_extinguisher: 10, bus_stop: 22,
+  statue: 75, flag_pole: 12, banner_pole: 10,
   // ── 植栽 ──
-  bush: 10, hedge: 15, planter: 15, sakura_tree: 40, pine_tree: 35,
-  palm_tree: 35, bamboo_cluster: 25,
+  bush: 5, hedge: 8, planter: 8, sakura_tree: 20, pine_tree: 18,
+  palm_tree: 18, bamboo_cluster: 12,
   // ── 神社・寺社 ──
-  torii: 200, stone_lantern: 80, shinto_rope: 50, offering_box: 60,
+  torii: 100, stone_lantern: 40, shinto_rope: 25, offering_box: 30,
   // ── 商店街 ──
-  chouchin: 20, noren: 15, a_frame_sign: 20, shop_awning: 30, milk_crate_stack: 20,
+  chouchin: 10, noren: 8, a_frame_sign: 10, shop_awning: 15, milk_crate_stack: 10,
   // ── 住宅 ──
-  wood_fence: 15, laundry_pole: 15, ac_unit: 25, gas_canister: 30, potted_plant: 10,
+  wood_fence: 8, laundry_pole: 8, ac_unit: 12, gas_canister: 15, potted_plant: 5,
   // ── 庭園 ──
-  rock: 25, stepping_stones: 20, koi_pond: 150, bonsai: 40,
+  rock: 12, stepping_stones: 10, koi_pond: 75, bonsai: 20,
   // ── 街路 / 工事 ──
-  street_mirror: 25, tarp: 15, sandbags: 20, water_tank: 80,
+  street_mirror: 12, tarp: 8, sandbags: 10, water_tank: 40,
   // ── 港湾・工業 (Stage 4) ──
-  drum_can: 40, cargo_container: 60, forklift: 120, buoy: 30, pallet_stack: 30,
+  drum_can: 20, cargo_container: 30, forklift: 60, buoy: 15, pallet_stack: 15,
   // ── 和風・古都 (Stage 3) ──
-  koma_inu: 150, ema_rack: 50, bamboo_fence: 20, temizuya: 80,
+  koma_inu: 75, ema_rack: 25, bamboo_fence: 10, temizuya: 40,
   // ── テーマパーク・祭り (Stage 5) ──
-  balloon_cluster: 60, ticket_booth: 100, matsuri_drum: 80, popcorn_cart: 60,
+  balloon_cluster: 30, ticket_booth: 50, matsuri_drum: 40, popcorn_cart: 30,
   // ── キャラ ──
-  cat: 100,
+  cat: 50,
   // ── Stage 1 ミニチュア強化 ──
-  ac_outdoor_cluster: 20, power_line: 15, laundry_balcony: 25,
-  kerbside_vending_pair: 70, post_letter_box: 30, flower_planter_row: 20,
-  guardrail_short: 15, railway_track: 30, platform_edge: 25, railroad_crossing: 80,
-  pedestrian_bridge: 120, signal_tower: 150, plaza_tile_circle: 60,
-  fountain_large: 200, taxi_rank_sign: 30,
-  sando_stone_pillar: 80, ema_wall: 60, omikuji_stand: 50, shrine_fence_red: 25,
-  bamboo_water_fountain: 80,
-  puddle_reflection: 5, manhole_cover: 15, cable_junction_box: 25, bicycle_row: 40,
+  ac_outdoor_cluster: 10, power_line: 8, laundry_balcony: 12,
+  kerbside_vending_pair: 35, post_letter_box: 15, flower_planter_row: 10,
+  guardrail_short: 8, railway_track: 15, platform_edge: 12, railroad_crossing: 40,
+  pedestrian_bridge: 60, signal_tower: 75, plaza_tile_circle: 30,
+  fountain_large: 100, taxi_rank_sign: 15,
+  sando_stone_pillar: 40, ema_wall: 30, omikuji_stand: 25, shrine_fence_red: 12,
+  bamboo_water_fountain: 40,
+  puddle_reflection: 5, manhole_cover: 8, cable_junction_box: 12, bicycle_row: 20,
   // ── Act signatures ──
-  play_structure: 150, slide: 100, swing_set: 80, sandbox: 50,
-  bathhouse_chimney: 250, jungle_gym: 120,
-  fire_watchtower: 250, grain_silo: 200,
+  play_structure: 75, slide: 50, swing_set: 40, sandbox: 25,
+  bathhouse_chimney: 125, jungle_gym: 60,
+  fire_watchtower: 125, grain_silo: 100,
 };
 
 export class FurnitureManager {
@@ -4046,17 +4046,17 @@ interface VehicleDef {
 }
 
 const VEHICLE_DEFS_DATA: Record<VehicleType, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
-  // score は建物 (80-3000) と比較してバランスを取っている。
-  // 通常車両 (乗用) = 小型建物 (80-200) 相当、特殊車両 (緊急/業務) は希少さで割増し。
-  car:          { w: 20, h: 10, maxHp: 1, score:   80, speedMin: 50,  speedMax: 70  },
-  bus:          { w: 28, h: 12, maxHp: 1, score:  180, speedMin: 35,  speedMax: 50  },
-  truck:        { w: 24, h: 12, maxHp: 1, score:  140, speedMin: 30,  speedMax: 45  },
-  ambulance:    { w: 22, h: 10, maxHp: 1, score:  500, speedMin: 100, speedMax: 120 },
-  taxi:         { w: 20, h: 10, maxHp: 1, score:   90, speedMin: 55,  speedMax: 75  },
-  motorcycle:   { w: 12, h:  7, maxHp: 1, score:   60, speedMin: 70,  speedMax: 100 },
-  delivery:     { w: 22, h: 11, maxHp: 1, score:  100, speedMin: 40,  speedMax: 60  },
-  van:          { w: 22, h: 11, maxHp: 1, score:  110, speedMin: 35,  speedMax: 55  },
-  worker_truck: { w: 26, h: 14, maxHp: 1, score:  300, speedMin: 25,  speedMax: 40  },
+  // score は小家具 5 を基準に建物スケール (40-1500) とバランスを取る。
+  // 通常車両 (乗用) = 小型建物 (40-100) 相当、特殊車両 (緊急/業務) は希少さで割増し。
+  car:          { w: 20, h: 10, maxHp: 1, score:  40, speedMin: 50,  speedMax: 70  },
+  bus:          { w: 28, h: 12, maxHp: 1, score:  90, speedMin: 35,  speedMax: 50  },
+  truck:        { w: 24, h: 12, maxHp: 1, score:  70, speedMin: 30,  speedMax: 45  },
+  ambulance:    { w: 22, h: 10, maxHp: 1, score: 250, speedMin: 100, speedMax: 120 },
+  taxi:         { w: 20, h: 10, maxHp: 1, score:  45, speedMin: 55,  speedMax: 75  },
+  motorcycle:   { w: 12, h:  7, maxHp: 1, score:  30, speedMin: 70,  speedMax: 100 },
+  delivery:     { w: 22, h: 11, maxHp: 1, score:  50, speedMin: 40,  speedMax: 60  },
+  van:          { w: 22, h: 11, maxHp: 1, score:  55, speedMin: 35,  speedMax: 55  },
+  worker_truck: { w: 26, h: 14, maxHp: 1, score: 150, speedMin: 25,  speedMax: 40  },
 };
 
 /** 破壊時に人間を吐く車種と人数レンジ (工業エリアの燃料補給源) */
