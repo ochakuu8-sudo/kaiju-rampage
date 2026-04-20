@@ -4,7 +4,7 @@
  */
 
 const MASTER_VOLUME = 0.9;
-const MUSIC_VOLUME  = 0.03;   // ゲーム(SE)音量の 0.2 倍を目安にした設定
+const MUSIC_VOLUME  = 0.015;  // SE 中心にするため BGM は背景レベルまで抑える
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
