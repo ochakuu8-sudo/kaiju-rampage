@@ -4,7 +4,7 @@
  */
 
 const MASTER_VOLUME = 0.55;
-const MUSIC_VOLUME  = 0.08;   // SE ピーク (≈0.22) の半分くらいを狙った設定
+const MUSIC_VOLUME  = 0.03;   // ゲーム(SE)音量の 0.2 倍を目安にした設定
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
