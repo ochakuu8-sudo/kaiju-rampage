@@ -287,14 +287,14 @@ export class SoundEngine {
   // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
   // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
 
-  /** A=220Hz 起点。A メジャーのアーケード系バウンス、「楽しい破壊」寄り */
+  /** A=220Hz 起点。A フリギアン (b2 = Bb) で火山/スペイン的な熱量・危険感 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
-  // ベース: A-A-E-A (polka/アーケード定番の oom-pah) → F#m → D → E7 → A (I-vi-IV-V)
-  private static readonly BASS_STEPS = [ 0, 0, 7, 0,    0, 0, 7, 0,    -3,-3, 4,-3,   -5,-5, 2, 0];
-  // リード: A メジャー トライアドのキャッチーなアッパーフック、2 小節で完結する hook を 2 回
-  private static readonly LEAD_STEPS = [12,16,19,16,  14,12, 9,12,   16,19,21,19,   16,12, 9,12];
-  // ハーモニー: リードの 3度下で追従
-  private static readonly HARM_STEPS = [ 7,11,14,11,   9, 7, 4, 7,   11,14,16,14,   11, 7, 4, 7];
+  // ベース: A の 8 分ポンプ駆動 + bII (Bb) の熱い衝突 + V (E) 帰還
+  private static readonly BASS_STEPS = [ 0, 0, 0, 0,    0, 0, 0, 0,    1, 1, 1, 1,   -5,-5, 0, 0];
+  // リード: フリギアン (A Bb C D E F G) の半音階的スケール、危険な昇降
+  private static readonly LEAD_STEPS = [12,13,15,17,  13,15,17,13,   20,17,15,13,   15,13,12,10];
+  // ハーモニー: b2/b6 を絡めたスペイン的緊張 (リード -3 度程度)
+  private static readonly HARM_STEPS = [ 7, 8,10,13,   8,10,13, 8,   15,12,10, 8,   10, 8, 7, 5];
   private static readonly KICK_PATTERN  = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
   private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 1];
   private static readonly HAT_PATTERN   = [1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 2, 2]; // 2=open
