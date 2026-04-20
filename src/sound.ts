@@ -4,7 +4,7 @@
  */
 
 const MASTER_VOLUME = 0.9;
-const MUSIC_VOLUME  = 0.015;  // SE 中心にするため BGM は背景レベルまで抑える
+const MUSIC_VOLUME  = 0.025;  // SE 中心、BGM は控えめな背景レベル
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
