@@ -281,60 +281,59 @@ export class SoundEngine {
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  BGM  "Kaiju March" — 怪獣が街を踏み潰すB級特撮アーケードBGM
+  //  BGM  "Sunny Kaiju Parade" — 真昼のお日様の下で暴れる怪獣パレード
   // ═══════════════════════════════════════════════════════════════════
-  // 32-step ループ = 4.0s/loop @ 125ms/step (120 BPM, 16分音符グリッド)。
-  // 進行: i - bVII - bVI - V (Am-G-F-E)  — アンダルシア終止で
-  //        怪獣映画の派手さ + アーケードのキャッチーさを両立。
-  // E コードで G# (Phrygian dominant) を使い B 級特撮っぽい「ヤバさ」を演出。
+  // 32-step ループ = 3.84s/loop @ 120ms/step (125 BPM、16分音符グリッド)。
+  // 進行: I - V - vi - IV (A - E - F#m - D)  — 王道「四つの和音」進行で
+  //        明るく伸びやかなカタルシス。暗さは残さず、昼の光を感じさせる。
+  // メジャーペンタトニック中心のリードで「お昼の爽快感」を演出。
   //
   // レイヤー構成:
-  //  - サブランブル(40Hz sine, LFO揺らし) : 地響き
-  //  - ステップキック(triangle 200→30Hz + ノイズ): 怪獣の足音
-  //  - ベース(square + sub sine) : 駆動するロックベース
-  //  - リード(square + LPフィルター) : チップチューン主旋律
+  //  - サンパッド(sine + 5度) : お日様の暖かい持続音 (地響きの代わり)
+  //  - ステップキック(triangle + noise) : 軽快な怪獣の足音
+  //  - ベース(square + sub sine) : 跳ねるロックベース
+  //  - リード(square + LP env) : 明るい主旋律
   //  - ハーモニースタブ(triangle 3声) : コード感
-  //  - スネア(ノイズ + サイン) : マーチ的スネア
+  //  - スネア(ノイズ+sine) : マーチ的スネア
   //  - ハット(HPノイズ) : 8分ドライブ
-  //  - 空襲サイレン(saw sweep) : B級特撮的非常感 (ループ末に1回)
+  //  - ベルスパークル(sine 2声) : ループ末のきらめき (サイレンの代わり)
 
   /** ステージごとのキー (root 音)。A3=220Hz 起点。 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
 
-  // ─── 進行: 8stepごとに Am(0) / G(-2) / F(-4) / E(-5) ───
+  // ─── 進行: 8stepごとに A(0) / E(-5) / F#m(-3) / D(-7) ───
   //
-  // ベース: ルート/5度/オクターブで跳ねる "pumping 8ths" ロックパターン。
-  //   Am → G → F → E の各 8step で root-5th-oct-5th ループ。
+  // ベース: ルート/5度/オクターブで跳ねる "pumping 8ths"。
+  //   A → E → F#m → D の各 8step で root-5th-oct-5th ループ。
   private static readonly BASS_STEPS = [
-    // Am              G                F                E
+    // A (I)            E (V)           F#m (vi)        D (IV)
      0, 0, 7, 0,  0, 7,12, 7,
-    -2,-2, 5,-2, -2, 5,10, 5,
-    -4,-4, 3,-4, -4, 3, 8, 3,
     -5,-5, 2,-5, -5, 2, 7, 2,
+    -3,-3, 4,-3, -3, 4, 9, 4,
+    -7,-7, 0,-7, -7, 0, 5, 0,
   ];
 
-  // リード: 2小節の呼びかけ→応答。1小節目は上昇でテンション上げ、
-  //   2小節目で高音 E(19 = E5) まで駆け上がり、E コードで Phrygian dominant
-  //   (E-F-G#-A-B) の下降で B 級特撮的に決める。
+  // リード: 2小節の呼びかけ→応答。メジャーペンタトニック中心、
+  //   2小節目で高音 A(24 = A5) にタッチして「お日様のピーク」を作る。
   private static readonly LEAD_STEPS = [
-    // Am: A A C D | C D E D   (上昇ジグザグ、フックの呼びかけ)
-    12,12,15,17, 15,17,19,17,
-    // G: D C Bb C | Bb A G A  (応答、下降開始)
-    17,15,13,15, 13,12,10,12,
-    // F: A Bb C D | C Bb A G  (再上昇→下降、振り子的勢い)
-    12,13,15,17, 15,13,12,10,
-    // E: E F G# A | B A G# F  (Phrygian dominant、怪獣マーチ的半音進行)
-     7, 8,11,12, 14,12,11, 8,
+    // A: A B C# E | F# E C# B   (ペンタトニック昇降、フックの呼びかけ)
+    12,14,16,19, 21,19,16,14,
+    // E: C# B G# B | C# B G# E  (E コードトーン中心、やわらかい下降)
+    16,14,11,14, 16,14,11, 7,
+    // F#m: B C# E F# | E F# A F# (上昇、F#m のセクシーさで高音域へ)
+    14,16,19,21, 19,21,24,21,
+    // D: E D B A | B A F# A     (解決、ルートAに戻るやさしい着地)
+    19,17,14,12, 14,12, 9,12,
   ];
 
   // ハーモニースタブ: 各コード頭 (step 0/8/16/24) で 3声コード。
   //   chord[0] = ルート (root からのセミトーン)、chord[1] = 3度、chord[2] = 5度。
-  //   Am(minor 3rd=3) / G,F,E はメジャー (3rd=4)。E の #3 = G# が怪獣マーチの味。
+  //   A / E / D はメジャー (3rd=4)、F#m はマイナー (3rd=3)。
   private static readonly CHORDS: Array<[number, number, number]> = [
-    [  0,  3,  7], // Am
-    [ -2,  2,  5], // G  (ルート-2、3度=B(+2)、5度=D(+5))
-    [ -4,  0,  3], // F  (ルート-4、3度=A(0)、5度=C(+3))
-    [ -5, -1,  2], // E  (ルート-5、3度=G#(-1)、5度=B(+2))
+    [  0,  4,  7], // A   (A, C#, E)
+    [ -5, -1,  2], // E   (E, G#, B)
+    [ -3,  0,  4], // F#m (F#, A, C#)
+    [ -7, -3,  0], // D   (D, F#, A)
   ];
 
   // キック: ルート/3拍目 + シンコペ、小節末はダブルキックでフィル。
@@ -347,18 +346,18 @@ export class SoundEngine {
     0,0,1,0, 0,0,1,0,  0,0,1,0, 0,0,1,0,
     0,0,1,0, 0,0,1,0,  0,0,1,1, 1,0,1,0,
   ];
-  // ハット: 基本 8 分 (1 = closed, 2 = open)。
+  // ハット: 基本 8 分 (1 = closed, 2 = open)。open 多めで空気感を軽く。
   private static readonly HAT_PATTERN = [
-    1,0,1,2, 1,0,1,0,  1,0,1,2, 1,0,1,0,
-    1,0,1,2, 1,0,1,0,  1,0,1,2, 1,0,2,2,
+    1,0,1,2, 1,0,1,2,  1,0,1,2, 1,0,1,0,
+    1,0,1,2, 1,0,1,2,  1,0,1,2, 1,0,2,2,
   ];
-  // 空襲サイレン: ループ末 1 回 (step 26 で発音、0.8s のアップダウンスイープ)。
-  private static readonly SIREN_STEP = 26;
-  // サブランブル (地響き): step 0 で 4 秒ぶんトリガ、次ループで自然に更新。
-  private static readonly RUMBLE_STEP = 0;
+  // ベルスパークル: ループ末 1 回 (step 28 で発音、2声sineのきらめき)。
+  private static readonly BELL_STEP = 28;
+  // サンパッド (お日様ドローン): step 0 で持続音をトリガ、ループ全体に渡る。
+  private static readonly SUNPAD_STEP = 0;
 
-  private static readonly STEP_SEC = 0.125;   // 16分音符、120 BPM
-  private static readonly PATTERN_LEN = 32;   // 2 小節 = 4.0s ループ
+  private static readonly STEP_SEC = 0.12;   // 16分音符、125 BPM (跳ねるように少し速め)
+  private static readonly PATTERN_LEN = 32;  // 2 小節 = 3.84s ループ
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
   startMusic(stageIndex: number): void {
@@ -406,52 +405,50 @@ export class SoundEngine {
     const step = SoundEngine.STEP_SEC;
     const loopSec = SoundEngine.PATTERN_LEN * step;
 
-    // ── (1) サブランブル: 地響きドローン。ループ先頭で 4s ぶんトリガ ──
-    if (i === SoundEngine.RUMBLE_STEP) {
-      const dur = loopSec + 0.1; // 次ループとわずかにクロスフェード
-      const o = ctx.createOscillator();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(root * 0.25, t); // root の -2oct = 超低域
-      // LFO で微妙に揺らして地揺れ感
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.value = 5.5; // 5.5Hz の重い揺れ
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 1.8;  // ±1.8Hz 振幅
-      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.001, t);
-      g.gain.exponentialRampToValueAtTime(0.30, t + 0.15);
-      g.gain.setValueAtTime(0.30, t + dur - 0.15);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      o.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + dur);
-      lfo.start(t); lfo.stop(t + dur);
+    // ── (1) サンパッド: お日様のドローン。ループ先頭で持続音をトリガ ──
+    //   root と 5度 (perfect 5th) の sine を重ねた "オープンフィフス" で、
+    //   全コード (A/E/F#m/D) に対して共通音になるよう設計。暖かい日差し感。
+    if (i === SoundEngine.SUNPAD_STEP) {
+      const dur = loopSec + 0.15; // 次ループとなめらかにクロスフェード
+      const pitches = [root, root * Math.pow(2, 7 / 12)]; // root + 5th
+      const gains = [0.09, 0.06];
+      for (let v = 0; v < pitches.length; v++) {
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = pitches[v];
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.exponentialRampToValueAtTime(gains[v], t + 0.35);
+        g.gain.setValueAtTime(gains[v], t + dur - 0.25);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g); g.connect(dst);
+        o.start(t); o.stop(t + dur);
+      }
     }
 
-    // ── (2) キック: triangle 高速ピッチドロップ + ノイズ thump ──
+    // ── (2) キック: triangle 軽いピッチドロップ + 明るいクリック ──
     if (SoundEngine.KICK_PATTERN[i]) {
-      const dur = 0.11;
-      // pitched body (怪獣の足音的な "ドゥゥン")
+      const dur = 0.075; // 短め、軽やか
+      // pitched body (跳ねる足音 "トゥン")
       const o = ctx.createOscillator();
       o.type = 'triangle';
-      o.frequency.setValueAtTime(210, t);
-      o.frequency.exponentialRampToValueAtTime(32, t + dur);
+      o.frequency.setValueAtTime(185, t);
+      o.frequency.exponentialRampToValueAtTime(58, t + dur); // 深沈みしない
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.95, t);
+      g.gain.setValueAtTime(0.75, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + dur);
-      // click layer (アタック強化)
-      const cDur = 0.015;
+      // click layer (明るいアタック)
+      const cDur = 0.012;
       const cBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * cDur), ctx.sampleRate);
       const cData = cBuf.getChannelData(0);
       for (let k = 0; k < cData.length; k++) cData[k] = Math.random() * 2 - 1;
       const cSrc = ctx.createBufferSource(); cSrc.buffer = cBuf;
       const cLp = ctx.createBiquadFilter();
-      cLp.type = 'lowpass'; cLp.frequency.value = 2500;
+      cLp.type = 'lowpass'; cLp.frequency.value = 4000; // 明るめ
       const cG = ctx.createGain();
-      cG.gain.setValueAtTime(0.5, t);
+      cG.gain.setValueAtTime(0.38, t);
       cG.gain.exponentialRampToValueAtTime(0.001, t + cDur);
       cSrc.connect(cLp); cLp.connect(cG); cG.connect(dst);
       cSrc.start(t); cSrc.stop(t + cDur);
@@ -492,11 +489,11 @@ export class SoundEngine {
       const o = ctx.createOscillator();
       o.type = 'square';
       o.frequency.value = freq;
-      // LP がアタックで開いて閉じる ("カッコイイ" 合成エンベロープ)
+      // LP がアタックで明るく開いてからやわらかく閉じる (お日様的ブライトネス)
       const lp = ctx.createBiquadFilter();
       lp.type = 'lowpass';
-      lp.frequency.setValueAtTime(3800, t);
-      lp.frequency.exponentialRampToValueAtTime(1400, t + step * 0.7);
+      lp.frequency.setValueAtTime(5200, t);
+      lp.frequency.exponentialRampToValueAtTime(2000, t + step * 0.7);
       const g = ctx.createGain();
       g.gain.setValueAtTime(0.20, t);
       g.gain.setValueAtTime(0.20, t + step * 0.55);
@@ -572,25 +569,24 @@ export class SoundEngine {
       src.start(t); src.stop(t + dur);
     }
 
-    // ── (8) 空襲サイレン: ループ末尾で 1 回、怪獣映画的な "ウィーーン" ──
-    if (i === SoundEngine.SIREN_STEP) {
-      const dur = 0.75;
-      const o = ctx.createOscillator();
-      o.type = 'sawtooth';
-      // up→down sweep: 低→高→低 で "警報" 感
-      o.frequency.setValueAtTime(root * 1.2, t);
-      o.frequency.exponentialRampToValueAtTime(root * 2.4, t + dur * 0.5);
-      o.frequency.exponentialRampToValueAtTime(root * 1.1, t + dur);
-      // やや潰すためのLP
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass'; lp.frequency.value = 2200;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.001, t);
-      g.gain.exponentialRampToValueAtTime(0.10, t + 0.08);
-      g.gain.setValueAtTime(0.10, t + dur - 0.15);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      o.connect(lp); lp.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + dur);
+    // ── (8) ベルスパークル: ループ末尾で 1 回、"チン♪" と光るきらめき ──
+    //   root * 4 (2oct上) と root * 6 (2oct+5th上) の sine 2 声で、
+    //   高域の鐘のような倍音を作り、お昼の日差しに似合う爽快感を演出。
+    if (i === SoundEngine.BELL_STEP) {
+      const dur = 0.7;
+      const freqs = [root * 4, root * 6];
+      const gains = [0.10, 0.06];
+      for (let v = 0; v < freqs.length; v++) {
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = freqs[v];
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.exponentialRampToValueAtTime(gains[v], t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g); g.connect(dst);
+        o.start(t); o.stop(t + dur);
+      }
     }
   }
 }
