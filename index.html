@@ -18,10 +18,37 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%; height: 100%;
-      background: #111;
+      background:
+        radial-gradient(ellipse at center, #1a1418 0%, #0a0608 70%),
+        #0a0608;
       display: flex; justify-content: center; align-items: center;
       overflow: hidden;
       touch-action: none;
+    }
+    /* デスクトップ向け装飾: 画面が横に広いとき左右に情報パネルを出す */
+    #side-left, #side-right {
+      display: none;
+      position: fixed;
+      top: 50%; transform: translateY(-50%);
+      font-family: 'Press Start 2P', monospace;
+      color: #e8a020;
+      pointer-events: none;
+      user-select: none;
+    }
+    #side-left  { left: 24px;  text-align: left;  }
+    #side-right { right: 24px; text-align: right; }
+    #side-left  .title-big, #side-right .title-big {
+      font-size: 22px; letter-spacing: 3px; line-height: 1.4;
+      text-shadow: 3px 3px 0 #000;
+      color: #ffd020;
+    }
+    #side-left  .sub, #side-right .sub {
+      font-size: 9px; letter-spacing: 1px; line-height: 1.8;
+      color: #888; margin-top: 14px;
+    }
+    #side-left  .controls { margin-top: 24px; font-size: 8px; color: #8cf; line-height: 1.8; }
+    @media (min-width: 800px) and (min-height: 620px) {
+      #side-left, #side-right { display: block; }
     }
     #wrap {
       position: relative;
@@ -235,6 +262,45 @@
       max-width: 320px;
     }
 
+    /* タイトル画面 */
+    #title {
+      position: absolute; inset: 0;
+      background: rgba(8, 6, 16, 0.94);
+      display: none;
+      flex-direction: column; justify-content: center; align-items: center;
+      padding: 20px; text-align: center; gap: 12px;
+      pointer-events: auto; z-index: 12;
+    }
+    #title.show { display: flex; }
+    #title h1 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 22px; color: #ffd020;
+      text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255, 220, 60, 0.5);
+      letter-spacing: 3px; line-height: 1.3;
+      animation: clearPulse 1.3s infinite alternate;
+    }
+    #title-sub {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px; color: #f88; letter-spacing: 1px;
+      line-height: 1.7; max-width: 300px;
+    }
+    #title-controls {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px; color: #8cf; letter-spacing: 1px;
+      line-height: 1.8; margin-top: 12px;
+    }
+    #title-tap {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px; color: #8f8; margin-top: 18px;
+      animation: blink 1s infinite;
+    }
+    #title-best {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px; color: #aaa; margin-top: 8px;
+      letter-spacing: 1px;
+    }
+    #title-best.hidden { display: none; }
+
     /* ゲームオーバー */
     #gameover {
       position: absolute; inset: 0;
@@ -271,9 +337,18 @@
     #clear-tap    { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
 
   </style>
-  <script type="module" crossorigin src="./assets/index-DKst6Kn8.js"></script>
+  <script type="module" crossorigin src="./assets/index-TiWI7QDX.js"></script>
 </head>
 <body>
+<div id="side-left">
+  <div class="title-big">KAIJU<br>PINBALL</div>
+  <div class="sub">CRUSH THE CITY<br>STOMP FOR FUEL</div>
+  <div class="controls">CONTROLS<br>ANY KEY<br>CLICK / TAP<br>= FLIP BOTH</div>
+</div>
+<div id="side-right">
+  <div class="title-big" style="font-size:18px;">5 STAGES<br>+ BOSS</div>
+  <div class="sub">SUBURBS<br>NEON CITY<br>OLD TOWN<br>HARBOR<br>THEME PARK</div>
+</div>
 <div id="wrap">
   <canvas id="gameCanvas" width="360" height="580"></canvas>
   <div id="overlay">
@@ -302,6 +377,13 @@
     <div id="clear-stats">0 STOMPS</div>
     <div id="clear-record">BEST 0 m</div>
     <div id="clear-tap">TAP / CLICK TO RESTART</div>
+  </div>
+  <div id="title">
+    <h1>KAIJU<br>PINBALL</h1>
+    <div id="title-sub">CRUSH THE CITY.<br>STOMP FOR FUEL.</div>
+    <div id="title-controls">ANY KEY / CLICK / TAP = FLIP<br>II = PAUSE&nbsp;&nbsp;&#9834; = SOUND</div>
+    <div id="title-best" class="hidden">BEST 0 m</div>
+    <div id="title-tap">TAP / CLICK TO START</div>
   </div>
   <div id="loading">
     <div id="loading-title">KAIJU PINBALL</div>
