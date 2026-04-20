@@ -291,7 +291,11 @@ export class SoundEngine {
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
   private static readonly BASS_STEPS = [0, 0, 0, 0,  5, 5, 3, 3,   7, 7, 5, 5,   -5, -5, 3, 3];
   private static readonly LEAD_STEPS = [12, 15, 19, 15,  17, 15, 12, 10,  15, 19, 22, 19,  7, 10, 15, 12];
-  private static readonly KICK_PATTERN = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
+  // ハーモニー (5度下または3度下のコード音、リードの厚み付け)
+  private static readonly HARM_STEPS = [ 7, 10, 12, 10,  12, 10,  7,  5,  10, 12, 15, 12,  3,  7, 10,  7];
+  private static readonly KICK_PATTERN  = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
+  private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 1];
+  private static readonly HAT_PATTERN   = [1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 2, 2]; // 2=open
   private static readonly STEP_SEC = 0.16;
   private static readonly PATTERN_LEN = 16;
 
@@ -369,6 +373,23 @@ export class SoundEngine {
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + step * 0.9);
     }
+    // ハーモニー (square, LP で柔らかく、長めサステイン)
+    {
+      const harmSemi = SoundEngine.HARM_STEPS[i];
+      const freq = root * Math.pow(2, harmSemi / 12);
+      const o = ctx.createOscillator();
+      o.type = 'square';
+      o.frequency.value = freq;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 1400;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.14, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 1.6);
+      o.connect(lp); lp.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + step * 1.7);
+    }
     // キック (4分ごと、ノイズ+低音ピッチドロップ)
     if (SoundEngine.KICK_PATTERN[i]) {
       const dur = 0.08;
@@ -381,6 +402,44 @@ export class SoundEngine {
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + dur);
+    }
+    // スネア (BP ノイズ、2拍と4拍で rhythm guide)
+    if (SoundEngine.SNARE_PATTERN[i]) {
+      const dur = 0.085;
+      const bufLen = Math.ceil(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let k = 0; k < bufLen; k++) data[k] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1500;
+      bp.Q.value = 1.3;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.42, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(bp); bp.connect(g); g.connect(dst);
+      src.start(t); src.stop(t + dur);
+    }
+    // ハット (HP ノイズ、毎 step で grooove を作る)
+    if (SoundEngine.HAT_PATTERN[i]) {
+      const isOpen = SoundEngine.HAT_PATTERN[i] === 2;
+      const dur = isOpen ? 0.10 : 0.035;
+      const bufLen = Math.ceil(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let k = 0; k < bufLen; k++) data[k] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 6500;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(isOpen ? 0.18 : 0.22, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(hp); hp.connect(g); g.connect(dst);
+      src.start(t); src.stop(t + dur);
     }
   }
 }
