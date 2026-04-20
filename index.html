@@ -85,8 +85,8 @@
           rgba(0,0,0,0.6) 28px 30px),
         linear-gradient(180deg,
           #ffaa55 0%, #ff5522 40%, #aa2200 100%);
-      animation: blink 0.5s steps(2) infinite;
     }
+    #life-wrap.low  { animation: blink 0.5s steps(2) infinite; }
     /* クリティカル (crit): 純赤 + 高速点滅 */
     #life-wrap.crit #life-fill {
       background:
@@ -94,8 +94,8 @@
           transparent 0 28px,
           rgba(0,0,0,0.6) 28px 30px),
         linear-gradient(180deg, #ff6644 0%, #dd0000 50%, #881100 100%);
-      animation: blink 0.18s steps(2) infinite;
     }
+    #life-wrap.crit { animation: blink 0.18s steps(2) infinite; }
 
     /* ゲームオーバー */
     #gameover {
