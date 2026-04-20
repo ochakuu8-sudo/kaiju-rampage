@@ -17,6 +17,9 @@ import type { ChunkData, ChunkSpecialArea, ResolvedHorizontalRoad, ResolvedVerti
 import type { Intersection } from './grid';
 import { resolveCircleOBB, resolveCircleOBBSlide, resolveCircleCapsule, clampSpeed, rand, randInt, circleAABB } from './physics';
 import type { BuildingData, FurnitureType, VehicleType } from './entities';
+import { gameplayStart, gameplayStop } from './sdk';
+
+const MUTE_STORAGE_KEY = 'kaiju-pinball-muted';
 
 // 60000 instance 分の共有バッファ (renderer.ts の MAX_INST と一致させる)
 // 1000+ 人間同時描画を想定: 1500×25 instance + particles + scene
@@ -158,9 +161,54 @@ export class Game {
     this.input.registerRestartTap(document.getElementById('clear')!);
     this.input.onRestart(() => this.restart());
 
+    this.setupMuteButton();
+    this.setupVisibilityHandler();
+
     this.initRun();
     this.loadCity();
+    // CrazyGames: プレイ開始を通知 (広告配信タイミング制御のため)
+    gameplayStart();
     this.startLoop();
+  }
+
+  /** ミュートボタン: クリックで master gain をトグル、localStorage に永続化 */
+  private setupMuteButton(): void {
+    const btn = document.getElementById('mute-btn');
+    if (!btn) return;
+    // 初期状態を localStorage から復元
+    let muted = false;
+    try { muted = localStorage.getItem(MUTE_STORAGE_KEY) === '1'; } catch {}
+    this.sound.setMuted(muted);
+    this.applyMuteBtnState(btn, muted);
+    const toggle = (e: Event) => {
+      e.preventDefault();
+      const next = !this.sound.isMuted();
+      this.sound.setMuted(next);
+      this.applyMuteBtnState(btn, next);
+      try { localStorage.setItem(MUTE_STORAGE_KEY, next ? '1' : '0'); } catch {}
+    };
+    btn.addEventListener('click', toggle);
+    btn.addEventListener('touchstart', toggle, { passive: false });
+  }
+
+  private applyMuteBtnState(btn: HTMLElement, muted: boolean): void {
+    btn.classList.toggle('muted', muted);
+    // ♪ (U+266A) / 🔇 ではなく X 表現 (Press Start 2P 非対応字を避ける)
+    btn.textContent = muted ? 'X' : '\u266A';
+  }
+
+  /** タブ非アクティブ時: AudioContext を suspend し、ゲームループを実質停止
+   *  復帰時: 元の状態から再開 (最初の dt クランプで巨大デルタを防ぐ) */
+  private setupVisibilityHandler(): void {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.sound.suspend();
+      } else {
+        this.sound.resume();
+        // 復帰直後のフレームで大デルタにならないよう lastTime をリセット
+        this.lastTime = performance.now();
+      }
+    });
   }
 
   private initRun() {
@@ -206,6 +254,7 @@ export class Game {
     this.ui.hideClear();
     this.initRun();
     this.loadCity();
+    gameplayStart();
   }
 
   private lastTime = 0;
@@ -1061,6 +1110,8 @@ export class Game {
   private onGameOver() {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
+    // CrazyGames: プレイ終了を通知 (インタースティシャル広告の候補タイミング)
+    gameplayStop();
     setTimeout(() => {
       this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);
@@ -1069,6 +1120,7 @@ export class Game {
   private onClear() {
     this.state = 'clear';
     this.juice.flash(1, 0.9, 0.5, 0.7);
+    gameplayStop();
     setTimeout(() => {
       this.ui.showClear(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
     }, 800);

@@ -3,10 +3,14 @@
  * 外部ファイル不要。OscillatorNode + GainNode で合成。
  */
 
+const MASTER_VOLUME = 0.28;
+
 export class SoundEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private activeCount = 0;
+  private muted = false;
+  private suspended = false;
   private readonly MAX_ACTIVE = 8;
 
   private getCtx(): AudioContext | null {
@@ -14,14 +18,39 @@ export class SoundEngine {
       try {
         this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         this.master = this.ctx.createGain();
-        this.master.gain.value = 0.28;
+        this.master.gain.value = this.muted ? 0 : MASTER_VOLUME;
         this.master.connect(this.ctx.destination);
       } catch {
         return null;
       }
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    // タブ非アクティブ中はリジュームしない (visibilitychange で明示的に復帰させる)
+    if (!this.suspended && this.ctx.state === 'suspended') this.ctx.resume();
     return this.ctx;
+  }
+
+  /** ミュート切替 (true: 消音 / false: 通常音量) */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    if (this.master) this.master.gain.value = muted ? 0 : MASTER_VOLUME;
+  }
+
+  isMuted(): boolean { return this.muted; }
+
+  /** タブ非アクティブ時に呼ぶ: AudioContext を停止し、後続の自動 resume を抑止 */
+  suspend(): void {
+    this.suspended = true;
+    if (this.ctx && this.ctx.state === 'running') {
+      this.ctx.suspend().catch(() => {});
+    }
+  }
+
+  /** タブ復帰時に呼ぶ: 自動 resume 抑止を解除し、AudioContext を再開 */
+  resume(): void {
+    this.suspended = false;
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
   }
 
   /** ランダムピッチ変動 (±range) */
@@ -35,6 +64,7 @@ export class SoundEngine {
   }
 
   private schedule(fn: (ctx: AudioContext, master: GainNode) => number) {
+    if (this.muted || this.suspended) return;
     const ctx = this.getCtx();
     if (!ctx || !this.master) return;
     if (!this.canPlay()) return;

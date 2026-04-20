@@ -46,8 +46,8 @@ export class UIManager {
   }
 
   showGameOver(distanceM: number, destroys: number, humans: number) {
-    this.elFinalBest.textContent  = `${distanceM.toLocaleString()} m | ${destroys} 破壊`;
-    this.elFinalStats.textContent = `${humans.toLocaleString()} 人踏み`;
+    this.elFinalBest.textContent  = `${distanceM.toLocaleString()} m | ${destroys} DESTROYED`;
+    this.elFinalStats.textContent = `${humans.toLocaleString()} STOMPS`;
     this.elGameover.classList.add('show');
   }
 
@@ -56,8 +56,8 @@ export class UIManager {
   }
 
   showClear(distanceM: number, destroys: number, humans: number) {
-    this.elClearDist.textContent  = `${distanceM.toLocaleString()} m | ${destroys} 破壊`;
-    this.elClearStats.textContent = `${humans.toLocaleString()} 人踏み`;
+    this.elClearDist.textContent  = `${distanceM.toLocaleString()} m | ${destroys} DESTROYED`;
+    this.elClearStats.textContent = `${humans.toLocaleString()} STOMPS`;
     this.elClear.classList.add('show');
   }
 

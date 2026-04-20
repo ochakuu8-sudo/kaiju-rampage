@@ -2,7 +2,9 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
-  base: '/kaiju-rampage/',
+  // 相対パス ('./') にすることで GitHub Pages (/kaiju-rampage/) と
+  // CrazyGames (任意のサブパス) の両方で同じビルド成果物が動作する
+  base: './',
   root: '.',
   build: {
     outDir: 'dist',
