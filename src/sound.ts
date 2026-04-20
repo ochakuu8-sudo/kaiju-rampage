@@ -283,7 +283,8 @@ export class SoundEngine {
   // ═══════════════════════════════════════════════════════════════════
   //  BGM  "Sunny Kaiju Parade" — 真昼のお日様の下で暴れる怪獣パレード
   // ═══════════════════════════════════════════════════════════════════
-  // 32-step ループ = 3.84s/loop @ 120ms/step (125 BPM、16分音符グリッド)。
+  // 32-step ループ = 5.44s/loop @ 170ms/step (88 BPM、16分音符グリッド)。
+  // 落ち着いた歩調で、怪獣が街をゆったり練り歩く感じ。
   // 進行: I - V - vi - IV (A - E - F#m - D)  — 王道「四つの和音」進行で
   //        明るく伸びやかなカタルシス。暗さは残さず、昼の光を感じさせる。
   // メジャーペンタトニック中心のリードで「お昼の爽快感」を演出。
@@ -374,8 +375,8 @@ export class SoundEngine {
   //   次ループ頭の A コードに向けてドミナント的に引っ張る緊張感。
   private static readonly TENSION_STAB_STEP = 28;
 
-  private static readonly STEP_SEC = 0.12;   // 16分音符、125 BPM (跳ねるように少し速め)
-  private static readonly PATTERN_LEN = 32;  // 2 小節 = 3.84s ループ
+  private static readonly STEP_SEC = 0.17;   // 16分音符、約 88 BPM (落ち着いたテンポ)
+  private static readonly PATTERN_LEN = 32;  // 2 小節 = 5.44s ループ
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
   startMusic(stageIndex: number): void {
