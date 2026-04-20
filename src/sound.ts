@@ -281,19 +281,90 @@ export class SoundEngine {
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  BGM (手続き的チップチューン)
+  //  BGM (手続き的チップチューン) — NES 風 4 チャンネル構成
   // ═══════════════════════════════════════════════════════════════════
-  // 16-step ループ = 2.56s/loop @ 160ms per step.
-  // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
-  // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
+  //  ・Pulse1 (square, lead): メロディ
+  //  ・Pulse2 (square, harm): ハーモニー / アルペジオ / 対旋律
+  //  ・Triangle (bass):        低音、1 オクターブ下
+  //  ・Noise drums:            キック (sine pitch-drop) + スネア (bp noise) + ハット (hp noise)
+  //
+  //  32 ステップ = 4 小節 (8 分音符単位)。ステージごとに固有の曲。
+  //  -1 = rest (休符)、それ以外は半音オフセット。
 
-  /** A=220Hz 起点の半音テーブル */
-  private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
-  private static readonly BASS_STEPS = [0, 0, 0, 0,  5, 5, 3, 3,   7, 7, 5, 5,   -5, -5, 3, 3];
-  private static readonly LEAD_STEPS = [12, 15, 19, 15,  17, 15, 12, 10,  15, 19, 22, 19,  7, 10, 15, 12];
-  private static readonly KICK_PATTERN = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
-  private static readonly STEP_SEC = 0.16;
-  private static readonly PATTERN_LEN = 16;
+  private static readonly BGM_SONGS: Array<{
+    root: number;        // 基準周波数 (Hz)
+    stepSec: number;     // 1 ステップ秒
+    lead: number[];      // 32 steps
+    harm: number[];
+    bass: number[];
+    kick: number[];
+    snare: number[];
+    hat: number[];       // 0=off, 1=closed, 2=open (長めの減衰)
+  }> = [
+    // ─────────────────────────────────────────────────────────
+    // Stage 0: SUBURBS — 明るい A メジャー、軽快でポップ (I-V-vi-IV)
+    // ─────────────────────────────────────────────────────────
+    {
+      root: 220, stepSec: 0.135,
+      //         |-- I (A) --|-- V (E) --|-- vi (F#m) --|-- IV (D) --|
+      lead:  [ 7,12,16,19, 16,12, 7,12,   7,11,14,19,  14,11, 7, 7,   9,12,16,21,  16,12, 9,12,   5, 9,12,17,  12, 9, 5, 5 ],
+      harm:  [ 0,-1,-1,-1,  4,-1,-1,-1,  -5,-1,-1,-1, -1,-1,-1,-1,  -3,-1,-1,-1,  0,-1,-1,-1,  -7,-1,-1,-1, -3,-1,-1,-1 ],
+      bass:  [ 0,-1, 0,-1,  0,-1, 0,-1,  -5,-1,-5,-1, -5,-1,-5,-1,  -3,-1,-3,-1, -3,-1,-3,-1,  -7,-1,-7,-1, -7,-1, 0,-1 ],
+      kick:  [ 1, 0, 0, 0,  1, 0, 0, 0,   1, 0, 0, 0,  1, 0, 0, 0,   1, 0, 0, 0,  1, 0, 0, 0,   1, 0, 0, 0,  1, 0, 1, 0 ],
+      snare: [ 0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 1, 0, 1 ],
+      hat:   [ 1, 1, 1, 1,  1, 1, 1, 1,   1, 1, 1, 1,  1, 1, 1, 2,   1, 1, 1, 1,  1, 1, 1, 1,   1, 1, 1, 1,  1, 1, 1, 2 ],
+    },
+    // ─────────────────────────────────────────────────────────
+    // Stage 1: NEON CITY — E マイナー、ファンキーでダーク (i-VII-VI-V)
+    // ─────────────────────────────────────────────────────────
+    {
+      root: 165, stepSec: 0.12,
+      lead:  [ 0, 7,10, 7, 12,10, 7, 3,   5, 8,12,15,  12, 8, 5, 3,   3, 7,10,15,  10, 7, 3, 0,  -2, 3, 7,10,   7, 3, 0,-2 ],
+      harm:  [-5,-1, 7,-1, -5,-1, 7,-1,  -7,-1, 5,-1, -7,-1, 5,-1,  -9,-1, 3,-1, -9,-1, 3,-1, -10,-1, 2,-1, -10,-1, 2,-1 ],
+      bass:  [ 0,-1, 0, 0, -1, 0,-1, 0,  -2,-1,-2,-2, -1,-2,-1,-2,  -4,-1,-4,-4, -1,-4,-1,-4,  -5,-1,-5,-5, -1,-5,-1,-5 ],
+      kick:  [ 1, 0, 0, 1,  1, 0, 0, 0,   1, 0, 0, 1,  1, 0, 0, 0,   1, 0, 0, 1,  1, 0, 0, 0,   1, 0, 0, 1,  1, 0, 1, 1 ],
+      snare: [ 0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 1, 1, 1 ],
+      hat:   [ 1, 1, 1, 1,  2, 1, 1, 1,   1, 1, 1, 1,  2, 1, 1, 1,   1, 1, 1, 1,  2, 1, 1, 1,   1, 1, 1, 1,  2, 1, 2, 2 ],
+    },
+    // ─────────────────────────────────────────────────────────
+    // Stage 2: OLD TOWN — 和風ヒラジョシ (C, Db, F, G, Ab), 荘厳
+    // ─────────────────────────────────────────────────────────
+    {
+      root: 262, stepSec: 0.15,
+      lead:  [ 0, 5, 8, 7,  5, 1, 0,-1,   0, 5, 7, 8,  12, 8, 5, 1,   0, 1, 5, 7,   8,12,13,12,   8, 7, 5, 1,   0,-1, 0,-1 ],
+      harm:  [-5,-1,-1,-1, -5,-1,-1,-1,  -5,-1,-1,-1, 0,-1,-1,-1,  -7,-1,-1,-1, -7,-1,-1,-1,  -5,-1,-1,-1,  0,-1, 0,-1 ],
+      bass:  [ 0,-1,-1, 0, -1,-1, 0,-1,   0,-1,-1, 0, -1,-1, 0,-1,  -5,-1,-1,-5, -1,-1,-5,-1,  -7,-1,-1,-7, -1,-1, 0,-1 ],
+      kick:  [ 1, 0, 0, 0,  0, 0, 0, 0,   1, 0, 0, 0,  0, 0, 1, 0,   1, 0, 0, 0,  0, 0, 0, 0,   1, 0, 0, 0,  0, 1, 0, 1 ],
+      snare: [ 0, 0, 0, 0,  1, 0, 0, 0,   0, 0, 0, 0,  1, 0, 0, 0,   0, 0, 0, 0,  1, 0, 0, 0,   0, 0, 0, 0,  1, 0, 1, 0 ],
+      hat:   [ 0, 1, 0, 1,  0, 1, 0, 1,   0, 1, 0, 1,  0, 1, 0, 2,   0, 1, 0, 1,  0, 1, 0, 1,   0, 1, 0, 1,  0, 1, 0, 2 ],
+    },
+    // ─────────────────────────────────────────────────────────
+    // Stage 3: HARBOR — D マイナー、工業的で推進力のある反復
+    // ─────────────────────────────────────────────────────────
+    {
+      root: 147, stepSec: 0.11,
+      lead:  [ 0,12, 7,12,  3,12, 7,12,   5,12, 8,12,  3,12, 5,12,   7,15,12,15, 10,15,12,15,  10,13, 8,13,   7,-1, 0,-1 ],
+      harm:  [-5,-1,-5,-1, -5,-1,-5,-1,  -5,-1,-5,-1, -5,-1,-5,-1,  -3,-1,-3,-1, -3,-1,-3,-1,  -3,-1,-3,-1,  -5,-1,-5,-1 ],
+      bass:  [ 0, 0, 0, 0, -2,-2,-2,-2,   0, 0, 0, 0, -2,-2,-2,-2,   3, 3, 3, 3, -2,-2,-2,-2,   0, 0, 0, 0,   0,-2,-5,-5 ],
+      kick:  [ 1, 0, 1, 0,  1, 0, 1, 0,   1, 0, 1, 0,  1, 0, 1, 0,   1, 0, 1, 0,  1, 0, 1, 0,   1, 0, 1, 0,  1, 1, 1, 1 ],
+      snare: [ 0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 0, 1, 0,   0, 0, 1, 0,  0, 1, 1, 1 ],
+      hat:   [ 1, 2, 1, 2,  1, 2, 1, 2,   1, 2, 1, 2,  1, 2, 1, 2,   1, 2, 1, 2,  1, 2, 1, 2,   1, 2, 1, 2,  2, 2, 2, 2 ],
+    },
+    // ─────────────────────────────────────────────────────────
+    // Stage 4: THEME PARK — G メジャー、アルペジオ満載のカーニバル
+    // ─────────────────────────────────────────────────────────
+    {
+      root: 196, stepSec: 0.105,
+      //       G major arpeggios cascading
+      lead:  [ 0, 4, 7,12, 16,12, 7, 4,   5, 9,12,17,  12, 9, 5, 0,   7,11,14,19,  14,11, 7, 2,   0, 4, 7,12,  19,12, 7, 4 ],
+      harm:  [ 7,-1,-1,-1, 12,-1,-1,-1,  12,-1,-1,-1, 17,-1,-1,-1,  14,-1,-1,-1, 19,-1,-1,-1,   7,-1,-1,-1, 12,-1, 7,-1 ],
+      bass:  [ 0,-1, 7,-1,  0,-1, 7,-1,  -7,-1, 0,-1, -7,-1, 0,-1,  -5,-1, 2,-1, -5,-1, 2,-1,   0,-1, 7,-1,  0,-1, 7, 0 ],
+      kick:  [ 1, 0, 0, 0,  1, 0, 0, 0,   1, 0, 0, 0,  1, 0, 0, 0,   1, 0, 0, 0,  1, 0, 0, 0,   1, 0, 0, 0,  1, 0, 1, 1 ],
+      snare: [ 0, 0, 1, 0,  0, 0, 1, 1,   0, 0, 1, 0,  0, 0, 1, 1,   0, 0, 1, 0,  0, 0, 1, 1,   0, 0, 1, 0,  1, 1, 1, 1 ],
+      hat:   [ 1, 1, 1, 1,  1, 1, 1, 2,   1, 1, 1, 1,  1, 1, 1, 2,   1, 1, 1, 1,  1, 1, 1, 2,   2, 1, 2, 1,  2, 2, 2, 2 ],
+    },
+  ];
+  private static readonly PATTERN_LEN = 32;
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
   startMusic(stageIndex: number): void {
@@ -319,10 +390,12 @@ export class SoundEngine {
       const now = c.currentTime;
       // suspend/mute 明けで nextTime が過去に取り残されている場合、現在時刻に合わせ直す
       if (nextTime < now - 0.2) nextTime = now + 0.05;
+      // 現在のステージ曲からステップ秒を取得
+      const song = SoundEngine.BGM_SONGS[this.musicStageIndex] ?? SoundEngine.BGM_SONGS[0];
       // 0.4s 先までスケジュール
       while (nextTime < now + 0.4) {
         this._scheduleStep(c, this.musicGain, nextTime, stepIdx);
-        nextTime += SoundEngine.STEP_SEC;
+        nextTime += song.stepSec;
         stepIdx++;
       }
       setTimeout(schedule, 80);
@@ -336,51 +409,120 @@ export class SoundEngine {
   }
 
   private _scheduleStep(ctx: AudioContext, dst: GainNode, t: number, stepIdx: number): void {
+    const song = SoundEngine.BGM_SONGS[this.musicStageIndex] ?? SoundEngine.BGM_SONGS[0];
     const i = stepIdx % SoundEngine.PATTERN_LEN;
-    const root = SoundEngine.STAGE_ROOT_HZ[this.musicStageIndex] ?? SoundEngine.STAGE_ROOT_HZ[0];
-    const bassSemi = SoundEngine.BASS_STEPS[i];
-    const leadSemi = SoundEngine.LEAD_STEPS[i];
-    const step = SoundEngine.STEP_SEC;
+    const step = song.stepSec;
+    const root = song.root;
 
-    // ベース (square, 2オクターブ下, ゲート = step の 0.85)
-    {
-      const freq = (root / 2) * Math.pow(2, bassSemi / 12);
+    // ── リード (pulse1, square, 本命メロディ) ──
+    const leadSemi = song.lead[i];
+    if (leadSemi !== -1) {
+      const freq = root * Math.pow(2, leadSemi / 12);
       const o = ctx.createOscillator();
       o.type = 'square';
       o.frequency.value = freq;
+      // 軽いビブラート (LFO)
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 6;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = freq * 0.008;
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
       const g = ctx.createGain();
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.45, t + 0.008);
-      g.gain.setValueAtTime(0.45, t + step * 0.6);
-      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.9);
+      g.gain.linearRampToValueAtTime(0.18, t + 0.008);
+      g.gain.setValueAtTime(0.18, t + step * 0.55);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.92);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + step * 0.95);
+      lfo.start(t); lfo.stop(t + step * 0.95);
     }
-    // リード (triangle + 16分の後打ちでアタック弱め)
-    {
-      const freq = root * Math.pow(2, leadSemi / 12);
+
+    // ── ハーモニー (pulse2, square + low-pass, 対旋律/和声) ──
+    const harmSemi = song.harm[i];
+    if (harmSemi !== -1) {
+      const freq = root * Math.pow(2, harmSemi / 12);
+      const o = ctx.createOscillator();
+      o.type = 'square';
+      o.frequency.value = freq;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 1400;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.10, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 1.8); // 少し長めにサステイン
+      o.connect(lp); lp.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + step * 1.9);
+    }
+
+    // ── ベース (triangle, 1 オクターブ下) ──
+    const bassSemi = song.bass[i];
+    if (bassSemi !== -1) {
+      const freq = (root / 2) * Math.pow(2, bassSemi / 12);
       const o = ctx.createOscillator();
       o.type = 'triangle';
       o.frequency.value = freq;
       const g = ctx.createGain();
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.35, t + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.85);
+      g.gain.linearRampToValueAtTime(0.48, t + 0.005);
+      g.gain.setValueAtTime(0.48, t + step * 0.65);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.95);
       o.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + step * 0.9);
+      o.start(t); o.stop(t + step * 0.98);
     }
-    // キック (4分ごと、ノイズ+低音ピッチドロップ)
-    if (SoundEngine.KICK_PATTERN[i]) {
-      const dur = 0.08;
+
+    // ── キック (sine pitch-drop + ノイズのパンチ) ──
+    if (song.kick[i]) {
+      const dur = 0.09;
       const o = ctx.createOscillator();
       o.type = 'sine';
-      o.frequency.setValueAtTime(150, t);
-      o.frequency.exponentialRampToValueAtTime(45, t + dur);
+      o.frequency.setValueAtTime(140, t);
+      o.frequency.exponentialRampToValueAtTime(40, t + dur);
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.7, t);
+      g.gain.setValueAtTime(0.75, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + dur);
+    }
+
+    // ── スネア (bandpass noise + 短い sine トーン) ──
+    if (song.snare[i]) {
+      const dur = 0.08;
+      const bufLen = Math.ceil(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let k = 0; k < bufLen; k++) data[k] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1600;
+      bp.Q.value = 1.5;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(bp); bp.connect(g); g.connect(dst);
+      src.start(t); src.stop(t + dur);
+    }
+
+    // ── ハイハット (highpass noise, closed=短い / open=長い) ──
+    if (song.hat[i]) {
+      const isOpen = song.hat[i] === 2;
+      const dur = isOpen ? 0.11 : 0.035;
+      const bufLen = Math.ceil(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let k = 0; k < bufLen; k++) data[k] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 6000;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(isOpen ? 0.22 : 0.28, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(hp); hp.connect(g); g.connect(dst);
+      src.start(t); src.stop(t + dur);
     }
   }
 }
