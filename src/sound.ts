@@ -4,7 +4,7 @@
  */
 
 const MASTER_VOLUME = 0.55;
-const MUSIC_VOLUME  = 0.14;   // SFX を潰さないよう控えめ
+const MUSIC_VOLUME  = 0.07;   // SFX を潰さないよう控えめ (ユーザー要望で半減)
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
