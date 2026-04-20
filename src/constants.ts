@@ -181,7 +181,7 @@ export const BUILDING_DEFS: Record<BuildingSize, {
 export const MAX_HUMANS = 5000;
 export const HUMAN_W = 3;
 export const HUMAN_H = 6;
-export const HUMAN_BASE_SPEED = 65; // px/s
+export const HUMAN_BASE_SPEED = 32; // px/s
 export const HUMAN_FEAR_BOOST = 1.8;
 export const HUMAN_FEAR_RADIUS = 60;
 export const HUMAN_DIR_CHANGE_MIN = 0.5;

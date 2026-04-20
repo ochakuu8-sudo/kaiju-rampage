@@ -515,7 +515,7 @@ export class HumanManager {
       this.activeIndices[this.activeLen++] = i;
       this.px[i]    = cx;
       this.py[i]    = cy;
-      const spd     = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
+      const spd     = rand(C.HUMAN_BASE_SPEED * 0.5, C.HUMAN_BASE_SPEED * 2.0);
       this.speed[i] = spd;
       // FREE モードで開始: 道路エリアに触れたらロックされる
       this.mode[i]  = MODE_FREE;
@@ -552,7 +552,7 @@ export class HumanManager {
 
       this.px[i]    = spawnX;
       this.py[i]    = spawnY;
-      const spd     = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
+      const spd     = rand(C.HUMAN_BASE_SPEED * 0.5, C.HUMAN_BASE_SPEED * 2.0);
       this.speed[i] = spd;
       this.mode[i]  = MODE_HORIZ;
       this.vx[i]    = (Math.random() > 0.5 ? 1 : -1) * spd;
@@ -584,7 +584,7 @@ export class HumanManager {
       const spd          = rand(180, 380);
       this.vx[i]         = Math.cos(angle) * spd;
       this.vy[i]         = Math.sin(angle) * spd;
-      this.speed[i]      = rand(C.HUMAN_BASE_SPEED * 0.7, C.HUMAN_BASE_SPEED * 1.3);
+      this.speed[i]      = rand(C.HUMAN_BASE_SPEED * 0.5, C.HUMAN_BASE_SPEED * 2.0);
       this.mode[i]       = MODE_HORIZ;
       this.blastTimer[i] = rand(0.30, 0.55);
       this.timer[i]      = rand(C.HUMAN_DIR_CHANGE_MIN, C.HUMAN_DIR_CHANGE_MAX);
