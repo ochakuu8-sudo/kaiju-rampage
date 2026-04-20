@@ -4,7 +4,7 @@
  */
 
 const MASTER_VOLUME = 0.55;
-const MUSIC_VOLUME  = 0.035;  // SFX を潰さないよう控えめ (ユーザー要望で計 1/4)
+const MUSIC_VOLUME  = 0.08;   // SE ピーク (≈0.22) の半分くらいを狙った設定
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
