@@ -296,12 +296,15 @@ export class SoundEngine {
   //  - メガキック(コード頭のみ深いピッチドロップ) : 都市を踏み潰すドッスン
   //  - ベース(square + sub sine) : 跳ねるロックベース
   //  - リード(square + LP env) : 明るい主旋律
+  //  - ハイリード(sine オクターブ上) : 2小節目の感情せり上がり
   //  - ハーモニースタブ(triangle 3声) : コード感
   //  - スネア(ノイズ+sine) : マーチ的スネア
   //  - タムフィル(triangle ピッチ可変) : コード切替前の暴走ドラムフィル
   //  - ハット(HPノイズ) : 8分ドライブ
+  //  - ライザー(saw sweep, LP 開放) : ループ末の緊張ビルドアップ
+  //  - テンションスタブ(E7add9 triangle 4声) : ループ末の分厚いドミナント
+  //  - クラッシュ(HPノイズ長め) : 大見得のクラッシュシンバル
   //  - ベルスパークル(sine 2声) : ループ末のきらめき
-  //  - テンションスタブ(E7 triangle 3声) : ループ末のドミナント緊張感
 
   /** ステージごとのキー (root 音)。A3=220Hz 起点。 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
@@ -341,10 +344,12 @@ export class SoundEngine {
     [ -7, -3,  0], // D   (D, F#, A)
   ];
 
-  // キック: ルート/3拍目 + シンコペ、小節末はダブルキックでフィル。
+  // キック: ルート/3拍目 + シンコペ。2小節目は密度を上げて終盤に加速 (build-up)。
   private static readonly KICK_PATTERN = [
+    // bar 1 (落ち着いた土台)
     1,0,0,1, 1,0,0,0,  1,0,0,1, 1,0,1,0,
-    1,0,0,1, 1,0,0,0,  1,0,0,1, 1,0,1,1,
+    // bar 2 (ビルドアップ、末尾は 4 連打で爆発)
+    1,0,1,1, 1,0,0,1,  1,0,1,1, 1,1,1,1,
   ];
   // スネア: 2/4 拍 + ループ終盤フィル。
   private static readonly SNARE_PATTERN = [
@@ -371,9 +376,19 @@ export class SoundEngine {
   private static readonly RUMBLE_STEP = 0;
   // メガキック発動ステップ: 各コード頭で深いピッチドロップの踏み潰し。
   private static readonly MEGA_KICK_STEPS = new Set([0, 8, 16, 24]);
-  // テンションスタブ: ループ末 step 28 で E7 (V7) の b7 を含む和音を鳴らし、
-  //   次ループ頭の A コードに向けてドミナント的に引っ張る緊張感。
+  // テンションスタブ: ループ末 step 28 で E7add9 (E-G#-D-F#) を鳴らし、
+  //   次ループ頭の A コードに向けて強いドミナント引力を生む。
   private static readonly TENSION_STAB_STEP = 28;
+  // ライザー (緊張の溜め): step 24 から 4step かけて saw がピッチ+音量+明るさを上げ、
+  //   テンションスタブ (step 28) に向かって "せり上がる" ビルドアップ効果。
+  private static readonly RISER_START = 24;
+  private static readonly RISER_LEN = 4;
+  // ハイリード: 2小節目 (step 16-27) でリードをオクターブ上の sine で重ね、
+  //   climax 区間の感情的せり上がりを演出する。
+  private static readonly HIGH_LEAD_START = 16;
+  private static readonly HIGH_LEAD_END = 28; // exclusive、28 以降はスタブに譲る
+  // クラッシュシンバル: step 28 の大見得でドラマチックな頂点を作る。
+  private static readonly CRASH_STEP = 28;
 
   private static readonly STEP_SEC = 0.17;   // 16分音符、約 88 BPM (落ち着いたテンポ)
   private static readonly PATTERN_LEN = 32;  // 2 小節 = 5.44s ループ
@@ -547,6 +562,26 @@ export class SoundEngine {
       o.start(t); o.stop(t + step * 0.85);
     }
 
+    // ── (4b) ハイリード: 2小節目の climax 区間 (step 16-27) で
+    //   リード音をオクターブ上の sine で重ね、感情のせり上がりを演出 ──
+    if (i >= SoundEngine.HIGH_LEAD_START && i < SoundEngine.HIGH_LEAD_END) {
+      const leadSemi = SoundEngine.LEAD_STEPS[i];
+      // step 16→27 で volume を 0.06 → 0.12 に漸増し、ビルドアップ感
+      const progress = (i - SoundEngine.HIGH_LEAD_START) /
+        (SoundEngine.HIGH_LEAD_END - SoundEngine.HIGH_LEAD_START);
+      const gain = 0.06 + 0.06 * progress;
+      const freq = root * Math.pow(2, leadSemi / 12) * 2; // 1 oct up
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, t);
+      g.gain.setValueAtTime(gain, t + step * 0.55);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.85);
+      o.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + step * 0.9);
+    }
+
     // ── (5) ハーモニースタブ: 8-step ごと (= コード頭) に 3声 triangle コード ──
     if (i % 8 === 0) {
       const chord = SoundEngine.CHORDS[(i / 8) | 0];
@@ -647,14 +682,35 @@ export class SoundEngine {
       src.start(t); src.stop(t + dur);
     }
 
-    // ── (8a) テンションスタブ: E7 (V7) の 3 声で次ループ頭の A に向けた引力 ──
-    //   E - G# - D の組合せは b7 (D) が緊張を生み、怪獣がラストに吼える瞬間の
-    //   "ドミナント的 "溜め"" を作る。次ループ頭で A コードに解決してカタルシス。
+    // ── (7b) ライザー: ループ末 (step 24-27) で saw が低→高へ駆け上がる溜め ──
+    //   LP も同時に開いて音色が明るくなり、volume も上がって緊張をチャージする。
+    //   step 28 のテンションスタブ直前で最大に達し、そこにドーン！と落ちる。
+    if (i === SoundEngine.RISER_START) {
+      const dur = step * SoundEngine.RISER_LEN;
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(root * 0.5, t);
+      o.frequency.exponentialRampToValueAtTime(root * 4, t + dur);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(700, t);
+      lp.frequency.exponentialRampToValueAtTime(6500, t + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.14, t + dur * 0.95);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur + 0.04);
+      o.connect(lp); lp.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + dur + 0.08);
+    }
+
+    // ── (8a) テンションスタブ: E7add9 (E-G#-D-F#) の 4 声で分厚い引力 ──
+    //   D は V7 の b7、F# は 9th。より広い倍音スペクトルで "どーん！" と
+    //   鳴らし、次ループ頭の A メジャーへの解決感をドラマチックに強調。
     if (i === SoundEngine.TENSION_STAB_STEP) {
-      const dur = step * 3.5;
-      // E(-5), G#(-1), D(5) — V7 コードトーン
-      const stabSemis = [-5, -1, 5];
-      const stabGains = [0.16, 0.11, 0.09];
+      const dur = step * 3.0;
+      // E(-5), G#(-1), D(5), F#(9) — E7add9 コードトーン
+      const stabSemis = [-5, -1, 5, 9];
+      const stabGains = [0.18, 0.13, 0.11, 0.10];
       for (let v = 0; v < stabSemis.length; v++) {
         const freq = root * Math.pow(2, stabSemis[v] / 12);
         const o = ctx.createOscillator();
@@ -667,6 +723,25 @@ export class SoundEngine {
         o.connect(g); g.connect(dst);
         o.start(t); o.stop(t + dur);
       }
+    }
+
+    // ── (8c) クラッシュシンバル: テンションスタブと同時に鳴らす大見得 ──
+    //   HP ノイズの長い余韻 + 初速の強いアタックで "ジャーン！" と爆発感。
+    if (i === SoundEngine.CRASH_STEP) {
+      const dur = 0.55;
+      const bufLen = Math.ceil(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let k = 0; k < bufLen; k++) data[k] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 5200;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.20, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(hp); hp.connect(g); g.connect(dst);
+      src.start(t); src.stop(t + dur);
     }
 
     // ── (8b) ベルスパークル: ループ末尾で 1 回、"チン♪" と光るきらめき ──
