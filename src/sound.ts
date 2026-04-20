@@ -3,7 +3,7 @@
  * 外部ファイル不要。OscillatorNode + GainNode で合成。
  */
 
-const MASTER_VOLUME = 0.55;
+const MASTER_VOLUME = 0.9;
 const MUSIC_VOLUME  = 0.12;   // BGM サブバス。SE より控えめだがイヤホンで埋もれない水準
 
 export class SoundEngine {
