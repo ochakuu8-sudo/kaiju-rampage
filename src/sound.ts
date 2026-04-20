@@ -289,14 +289,18 @@ export class SoundEngine {
   // メジャーペンタトニック中心のリードで「お昼の爽快感」を演出。
   //
   // レイヤー構成:
-  //  - サンパッド(sine + 5度) : お日様の暖かい持続音 (地響きの代わり)
+  //  - サンパッド(sine + 5度) : お日様の暖かい持続音
+  //  - サブランブル(sine + LFO) : 怪獣の気配を示す控えめな低域ドローン
   //  - ステップキック(triangle + noise) : 軽快な怪獣の足音
+  //  - メガキック(コード頭のみ深いピッチドロップ) : 都市を踏み潰すドッスン
   //  - ベース(square + sub sine) : 跳ねるロックベース
   //  - リード(square + LP env) : 明るい主旋律
   //  - ハーモニースタブ(triangle 3声) : コード感
   //  - スネア(ノイズ+sine) : マーチ的スネア
+  //  - タムフィル(triangle ピッチ可変) : コード切替前の暴走ドラムフィル
   //  - ハット(HPノイズ) : 8分ドライブ
-  //  - ベルスパークル(sine 2声) : ループ末のきらめき (サイレンの代わり)
+  //  - ベルスパークル(sine 2声) : ループ末のきらめき
+  //  - テンションスタブ(E7 triangle 3声) : ループ末のドミナント緊張感
 
   /** ステージごとのキー (root 音)。A3=220Hz 起点。 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
@@ -351,10 +355,24 @@ export class SoundEngine {
     1,0,1,2, 1,0,1,2,  1,0,1,2, 1,0,1,0,
     1,0,1,2, 1,0,1,2,  1,0,1,2, 1,0,2,2,
   ];
+  // タムフィル: 0=なし、1=ローtom、2=ハイtom。
+  //   コード切替直前 (step 6,7 / 14,15 / 22,23) に"ドタドタ"と駆け込むフィル、
+  //   ループ末 (step 28-31) に"タタタタ!"と暴走ドラムフィル。
+  private static readonly TOM_PATTERN = [
+    0,0,0,0, 0,0,1,2,  0,0,0,0, 0,0,1,2,
+    0,0,0,0, 0,0,1,2,  0,0,0,0, 1,1,2,2,
+  ];
   // ベルスパークル: ループ末 1 回 (step 28 で発音、2声sineのきらめき)。
   private static readonly BELL_STEP = 28;
   // サンパッド (お日様ドローン): step 0 で持続音をトリガ、ループ全体に渡る。
   private static readonly SUNPAD_STEP = 0;
+  // サブランブル (怪獣の気配): ループ先頭で控えめな低域トリガ。
+  private static readonly RUMBLE_STEP = 0;
+  // メガキック発動ステップ: 各コード頭で深いピッチドロップの踏み潰し。
+  private static readonly MEGA_KICK_STEPS = new Set([0, 8, 16, 24]);
+  // テンションスタブ: ループ末 step 28 で E7 (V7) の b7 を含む和音を鳴らし、
+  //   次ループ頭の A コードに向けてドミナント的に引っ張る緊張感。
+  private static readonly TENSION_STAB_STEP = 28;
 
   private static readonly STEP_SEC = 0.12;   // 16分音符、125 BPM (跳ねるように少し速め)
   private static readonly PATTERN_LEN = 32;  // 2 小節 = 3.84s ループ
@@ -426,29 +444,55 @@ export class SoundEngine {
       }
     }
 
-    // ── (2) キック: triangle 軽いピッチドロップ + 明るいクリック ──
-    if (SoundEngine.KICK_PATTERN[i]) {
-      const dur = 0.075; // 短め、軽やか
-      // pitched body (跳ねる足音 "トゥン")
+    // ── (1b) サブランブル: 怪獣が近づく気配。控えめな低域ドローン + LFO ──
+    //   root × 0.25 (2oct下) の sine に ±1.2Hz の LFO をかけ、わずかに
+    //   揺らして "重さ" を足す。音量は SUNPAD より小さめで輪郭はぼかす。
+    if (i === SoundEngine.RUMBLE_STEP) {
+      const dur = loopSec + 0.15;
       const o = ctx.createOscillator();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(185, t);
-      o.frequency.exponentialRampToValueAtTime(58, t + dur); // 深沈みしない
+      o.type = 'sine';
+      o.frequency.setValueAtTime(root * 0.25, t);
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 5.0;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 1.2;
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.75, t);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.10, t + 0.4);
+      g.gain.setValueAtTime(0.10, t + dur - 0.3);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + dur);
-      // click layer (明るいアタック)
-      const cDur = 0.012;
+      lfo.start(t); lfo.stop(t + dur);
+    }
+
+    // ── (2) キック: triangle 軽いピッチドロップ + 明るいクリック ──
+    //   コード頭 (step 0/8/16/24) のみ "メガキック" 発動: より深く長く、
+    //   都市を踏み潰すドッスン感を出して緊張感を補強。
+    if (SoundEngine.KICK_PATTERN[i]) {
+      const mega = SoundEngine.MEGA_KICK_STEPS.has(i);
+      const dur = mega ? 0.13 : 0.075;
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(mega ? 220 : 185, t);
+      o.frequency.exponentialRampToValueAtTime(mega ? 34 : 58, t + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(mega ? 1.0 : 0.75, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + dur);
+      // click layer (アタック)。メガキックは低域寄りのクリックに。
+      const cDur = 0.014;
       const cBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * cDur), ctx.sampleRate);
       const cData = cBuf.getChannelData(0);
       for (let k = 0; k < cData.length; k++) cData[k] = Math.random() * 2 - 1;
       const cSrc = ctx.createBufferSource(); cSrc.buffer = cBuf;
       const cLp = ctx.createBiquadFilter();
-      cLp.type = 'lowpass'; cLp.frequency.value = 4000; // 明るめ
+      cLp.type = 'lowpass'; cLp.frequency.value = mega ? 2800 : 4000;
       const cG = ctx.createGain();
-      cG.gain.setValueAtTime(0.38, t);
+      cG.gain.setValueAtTime(mega ? 0.5 : 0.38, t);
       cG.gain.exponentialRampToValueAtTime(0.001, t + cDur);
       cSrc.connect(cLp); cLp.connect(cG); cG.connect(dst);
       cSrc.start(t); cSrc.stop(t + cDur);
@@ -551,6 +595,39 @@ export class SoundEngine {
       src.start(t); src.stop(t + dur);
     }
 
+    // ── (6b) タムフィル: 暴走ドラム的な低中音ロール ──
+    //   コード切替前 (step 6,7 / 14,15 / 22,23) と、ループ末 (step 28-31) に
+    //   "ドタドタ" と駆け込むフィル。怪獣が突進してくる緊迫感を付与。
+    if (SoundEngine.TOM_PATTERN[i]) {
+      const isHi = SoundEngine.TOM_PATTERN[i] === 2;
+      const dur = 0.09;
+      // 足の低音ボディ (triangle、ピッチドロップあり)
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      const startHz = isHi ? 240 : 150;
+      const endHz   = isHi ? 160 : 95;
+      o.frequency.setValueAtTime(startHz, t);
+      o.frequency.exponentialRampToValueAtTime(endHz, t + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.55, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + dur);
+      // アタックノイズ (LP でウッド寄りに)
+      const cDur = 0.02;
+      const cBuf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * cDur), ctx.sampleRate);
+      const cData = cBuf.getChannelData(0);
+      for (let k = 0; k < cData.length; k++) cData[k] = Math.random() * 2 - 1;
+      const cSrc = ctx.createBufferSource(); cSrc.buffer = cBuf;
+      const cLp = ctx.createBiquadFilter();
+      cLp.type = 'lowpass'; cLp.frequency.value = isHi ? 3200 : 2200;
+      const cG = ctx.createGain();
+      cG.gain.setValueAtTime(0.25, t);
+      cG.gain.exponentialRampToValueAtTime(0.001, t + cDur);
+      cSrc.connect(cLp); cLp.connect(cG); cG.connect(dst);
+      cSrc.start(t); cSrc.stop(t + cDur);
+    }
+
     // ── (7) ハット: HP ノイズで 8 分ドライブ (open = 少し長め) ──
     if (SoundEngine.HAT_PATTERN[i]) {
       const isOpen = SoundEngine.HAT_PATTERN[i] === 2;
@@ -569,7 +646,29 @@ export class SoundEngine {
       src.start(t); src.stop(t + dur);
     }
 
-    // ── (8) ベルスパークル: ループ末尾で 1 回、"チン♪" と光るきらめき ──
+    // ── (8a) テンションスタブ: E7 (V7) の 3 声で次ループ頭の A に向けた引力 ──
+    //   E - G# - D の組合せは b7 (D) が緊張を生み、怪獣がラストに吼える瞬間の
+    //   "ドミナント的 "溜め"" を作る。次ループ頭で A コードに解決してカタルシス。
+    if (i === SoundEngine.TENSION_STAB_STEP) {
+      const dur = step * 3.5;
+      // E(-5), G#(-1), D(5) — V7 コードトーン
+      const stabSemis = [-5, -1, 5];
+      const stabGains = [0.16, 0.11, 0.09];
+      for (let v = 0; v < stabSemis.length; v++) {
+        const freq = root * Math.pow(2, stabSemis[v] / 12);
+        const o = ctx.createOscillator();
+        o.type = 'triangle';
+        o.frequency.value = freq;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.exponentialRampToValueAtTime(stabGains[v], t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g); g.connect(dst);
+        o.start(t); o.stop(t + dur);
+      }
+    }
+
+    // ── (8b) ベルスパークル: ループ末尾で 1 回、"チン♪" と光るきらめき ──
     //   root * 4 (2oct上) と root * 6 (2oct+5th上) の sine 2 声で、
     //   高域の鐘のような倍音を作り、お昼の日差しに似合う爽快感を演出。
     if (i === SoundEngine.BELL_STEP) {
