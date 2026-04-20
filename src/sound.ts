@@ -283,8 +283,8 @@ export class SoundEngine {
   // ═══════════════════════════════════════════════════════════════════
   //  BGM  "Sunny Kaiju Parade" — 真昼のお日様の下で暴れる怪獣パレード
   // ═══════════════════════════════════════════════════════════════════
-  // 32-step ループ = 5.44s/loop @ 170ms/step (88 BPM、16分音符グリッド)。
-  // 落ち着いた歩調で、怪獣が街をゆったり練り歩く感じ。
+  // 32-step ループ = 3.68s/loop @ 115ms/step (約 130 BPM)。
+  // アーケードアクション BGM の駆動感を意識したテンポ。
   // 進行: I - V - vi - IV (A - E - F#m - D)  — 王道「四つの和音」進行で
   //        明るく伸びやかなカタルシス。暗さは残さず、昼の光を感じさせる。
   // メジャーペンタトニック中心のリードで「お昼の爽快感」を演出。
@@ -295,6 +295,7 @@ export class SoundEngine {
   //  - ステップキック(triangle + noise) : 軽快な怪獣の足音
   //  - メガキック(コード頭のみ深いピッチドロップ) : 都市を踏み潰すドッスン
   //  - ベース(square + sub sine) : 跳ねるロックベース
+  //  - アルペジオ(square + LP) : off-beat 16分駆動でアーケード疾走感
   //  - リード(square + LP env) : 明るい主旋律
   //  - ハイリード(sine オクターブ上) : 2小節目の感情せり上がり
   //  - ハーモニースタブ(triangle 3声) : コード感
@@ -344,29 +345,36 @@ export class SoundEngine {
     [ -7, -3,  0], // D   (D, F#, A)
   ];
 
-  // キック: ルート/3拍目 + シンコペ。2小節目は密度を上げて終盤に加速 (build-up)。
+  // キック: 密な駆動 + シンコペのダブルキック、小節末は 4 連打の爆発フィル。
   private static readonly KICK_PATTERN = [
-    // bar 1 (落ち着いた土台)
-    1,0,0,1, 1,0,0,0,  1,0,0,1, 1,0,1,0,
-    // bar 2 (ビルドアップ、末尾は 4 連打で爆発)
-    1,0,1,1, 1,0,0,1,  1,0,1,1, 1,1,1,1,
+    // bar 1 (土台だが既に 16 分キック混じりで前進力あり)
+    1,0,0,1, 1,0,1,0,  1,0,1,1, 1,0,1,0,
+    // bar 2 (ビルドアップ → 末尾 4 連打でカタルシス)
+    1,0,0,1, 1,0,1,0,  1,0,1,1, 1,1,1,1,
   ];
-  // スネア: 2/4 拍 + ループ終盤フィル。
+  // スネア: 2/4 拍バックビート + ゴーストノートで疾走感、ループ末はフィル。
   private static readonly SNARE_PATTERN = [
-    0,0,1,0, 0,0,1,0,  0,0,1,0, 0,0,1,0,
-    0,0,1,0, 0,0,1,0,  0,0,1,1, 1,0,1,0,
+    0,0,1,0, 0,1,1,0,  0,0,1,0, 0,0,1,1,
+    0,0,1,0, 0,1,1,0,  0,0,1,1, 1,1,1,0,
   ];
-  // ハット: 基本 8 分 (1 = closed, 2 = open)。open 多めで空気感を軽く。
+  // ハット: フル 16 分刻み (1 = closed, 2 = open)。アクション BGM の疾走感。
   private static readonly HAT_PATTERN = [
-    1,0,1,2, 1,0,1,2,  1,0,1,2, 1,0,1,0,
-    1,0,1,2, 1,0,1,2,  1,0,1,2, 1,0,2,2,
+    1,1,1,2, 1,1,1,2,  1,1,1,2, 1,1,1,2,
+    1,1,1,2, 1,1,1,2,  1,1,1,2, 1,1,2,2,
   ];
   // タムフィル: 0=なし、1=ローtom、2=ハイtom。
   //   コード切替直前 (step 6,7 / 14,15 / 22,23) に"ドタドタ"と駆け込むフィル、
-  //   ループ末 (step 28-31) に"タタタタ!"と暴走ドラムフィル。
+  //   ループ末 (step 28-31) に"タタタタ!"と暴走ドラムフィル。密度を上げて激しさ強化。
   private static readonly TOM_PATTERN = [
-    0,0,0,0, 0,0,1,2,  0,0,0,0, 0,0,1,2,
-    0,0,0,0, 0,0,1,2,  0,0,0,0, 1,1,2,2,
+    0,0,0,0, 0,1,1,2,  0,0,0,0, 0,1,1,2,
+    0,0,0,0, 0,1,1,2,  0,1,0,1, 1,2,1,2,
+  ];
+  // アルペジオ: コードトーンを off-beat で高速刻み。
+  //   0=無音 / 1=root / 2=3rd / 3=5th (各 8step の CHORDS から参照)。
+  //   16分の駆動感でアーケードアクション BGM の勢いを付ける。
+  private static readonly ARP_PATTERN = [
+    0,3,0,2, 0,1,0,2,  0,3,0,2, 0,1,0,3,
+    0,3,0,2, 0,1,0,2,  0,3,0,2, 0,1,3,2,
   ];
   // ベルスパークル: ループ末 1 回 (step 28 で発音、2声sineのきらめき)。
   private static readonly BELL_STEP = 28;
@@ -390,8 +398,8 @@ export class SoundEngine {
   // クラッシュシンバル: step 28 の大見得でドラマチックな頂点を作る。
   private static readonly CRASH_STEP = 28;
 
-  private static readonly STEP_SEC = 0.17;   // 16分音符、約 88 BPM (落ち着いたテンポ)
-  private static readonly PATTERN_LEN = 32;  // 2 小節 = 5.44s ループ
+  private static readonly STEP_SEC = 0.115;  // 16分音符、約 130 BPM (アーケード疾走感)
+  private static readonly PATTERN_LEN = 32;  // 2 小節 = 3.68s ループ
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
   startMusic(stageIndex: number): void {
@@ -540,6 +548,29 @@ export class SoundEngine {
       sg.gain.exponentialRampToValueAtTime(0.001, t + step * 0.85);
       sub.connect(sg); sg.connect(dst);
       sub.start(t); sub.stop(t + step * 0.9);
+    }
+
+    // ── (3b) アルペジオ: コードトーンを off-beat で高速刻み ──
+    //   アクション BGM の非停止感を作る "ブリブリ" とした 16 分駆動レイヤー。
+    //   リードが休む裏拍に刺さり、テンションを持続させる。
+    if (SoundEngine.ARP_PATTERN[i]) {
+      const seg = (i >> 3) & 3;                              // 0..3 = コード ID
+      const chord = SoundEngine.CHORDS[seg];
+      const toneIdx = SoundEngine.ARP_PATTERN[i] - 1;        // 0=root, 1=3rd, 2=5th
+      const semi = chord[toneIdx] + 12;                      // 1 オクターブ上で中高域に
+      const freq = root * Math.pow(2, semi / 12);
+      const o = ctx.createOscillator();
+      o.type = 'square';
+      o.frequency.value = freq;
+      // LP で角を丸めてリードと住み分け
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 2600;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.09, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.45);
+      o.connect(lp); lp.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + step * 0.5);
     }
 
     // ── (4) リード: square + LP エンベロープで "ブリッ" としたチップ音 ──
