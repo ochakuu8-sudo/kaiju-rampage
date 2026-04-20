@@ -287,14 +287,14 @@ export class SoundEngine {
   // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
   // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
 
-  /** A=220Hz 起点。A マイナー + 半音クリープ + トライトーンでパニックホラーな旋律 */
+  /** A=220Hz 起点。A マイナー、アクションゲーム系のドライブ感あるフック */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
-  // ベース: A ペダル → 5度下降 → C (b3) 短クライマックス → G#/G (半音下降の不吉な帰結)
-  private static readonly BASS_STEPS = [ 0, 0, 0, 0,  -5, -5,-5,-5,    3, 3, 3, 3,   -1,-2,-1,-2];
-  // リード: A マイナー + トライトーン (D#/Eb=6) で horror 的刺突、最後に半音下降創迫
-  private static readonly LEAD_STEPS = [12,15,13,15,   7,10, 8,13,   15,17,16,15,   13,11,10, 9];
-  // ハーモニー: リードと並行 3 度下、小 2 度の軋みを作る
-  private static readonly HARM_STEPS = [ 7,10, 8,10,   2, 5, 3, 8,   10,12,11,10,    8, 6, 5, 4];
+  // ベース: A-E ペダル駆動 → C-G 展開 → E-B 駆け上がり → A へカデンツ
+  private static readonly BASS_STEPS = [ 0,-5, 0,-5,    0,-5, 0,-5,    3,-2, 3,-2,    0, 0, 7, 0];
+  // リード: ジグザグ動機のアクション的ヒューク、最後は高音へ駆け上がり
+  private static readonly LEAD_STEPS = [12,15,12,19,   17,15,17,12,   15,19,15,22,   19,17,15,12];
+  // ハーモニー: リードの 3度下で追従、コード感を補強
+  private static readonly HARM_STEPS = [ 7,12, 7,15,   12,10,12, 7,   10,15,10,17,   15,12,10, 7];
   private static readonly KICK_PATTERN  = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
   private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 1];
   private static readonly HAT_PATTERN   = [1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 2, 2]; // 2=open
