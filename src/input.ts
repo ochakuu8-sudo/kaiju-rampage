@@ -18,32 +18,29 @@ export class InputManager {
     window.addEventListener('mouseup',   this._onMouseUp.bind(this));
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // キーボード（PC）— 任意のキーで両フリッパー
+    // キーボード（PC）— 修飾キーなしの任意のキーで両フリッパー同時
+    // 設計: 押し間違い防止・学習コスト削減のため、キー割り当てを意識せずに遊べる。
+    // preventDefault することで iframe 親ページのスクロールや focus 移動を抑止。
     window.addEventListener('keydown', (e) => {
-      if (
-        e.code === 'Space' ||
-        e.code === 'Enter' ||
-        e.code === 'ArrowLeft'  || e.code === 'ArrowRight' ||
-        e.code === 'ArrowUp'    || e.code === 'ArrowDown'  ||
-        e.code === 'KeyZ'       || e.code === 'KeyX'
-      ) {
-        this.leftPressed  = true;
-        this.rightPressed = true;
-        if (e.code === 'Space') e.preventDefault();
-      }
+      if (this._isSkipKey(e)) return;
+      this.leftPressed  = true;
+      this.rightPressed = true;
+      e.preventDefault();
     });
     window.addEventListener('keyup', (e) => {
-      if (
-        e.code === 'Space' ||
-        e.code === 'Enter' ||
-        e.code === 'ArrowLeft'  || e.code === 'ArrowRight' ||
-        e.code === 'ArrowUp'    || e.code === 'ArrowDown'  ||
-        e.code === 'KeyZ'       || e.code === 'KeyX'
-      ) {
-        this.leftPressed  = false;
-        this.rightPressed = false;
-      }
+      if (this._isSkipKey(e)) return;
+      this.leftPressed  = false;
+      this.rightPressed = false;
+      e.preventDefault();
     });
+  }
+
+  /** browser ナビゲーション・ショートカット・修飾キー操作は温存する */
+  private _isSkipKey(e: KeyboardEvent): boolean {
+    if (e.ctrlKey || e.metaKey || e.altKey) return true;
+    if (e.key === 'Tab' || e.key === 'Escape') return true;
+    if (/^F\d{1,2}$/.test(e.key)) return true;           // F1-F12
+    return false;
   }
 
   private _onTouchStart(e: TouchEvent) {

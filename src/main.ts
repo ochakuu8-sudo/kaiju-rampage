@@ -20,5 +20,21 @@ applyScale();
 // init の成否を待たずにゲーム起動しても問題ないので fire-and-forget
 initSdk();
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const game = new Game(canvas);
+// ゲーム起動 — WebGL2 初期化失敗時は non-WebGL 画面を出す
+try {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const game = new Game(canvas);
+  // 初期化完了: ローディング画面をフェードアウト
+  const loading = document.getElementById('loading');
+  if (loading) {
+    loading.classList.add('hidden');
+    // transition 終了後に DOM から除去 (クリック透過のため pointer-events は class で制御済み)
+    setTimeout(() => loading.remove(), 400);
+  }
+} catch (err) {
+  console.error('Game init failed:', err);
+  const loading = document.getElementById('loading');
+  if (loading) loading.remove();
+  const noWebgl = document.getElementById('no-webgl');
+  if (noWebgl) noWebgl.classList.add('show');
+}

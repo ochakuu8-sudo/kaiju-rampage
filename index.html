@@ -127,6 +127,52 @@
     }
     #mute-btn.muted { color: #666; }
 
+    /* ローディング画面 — Game 初期化完了まで表示 */
+    #loading {
+      position: absolute; inset: 0;
+      background: #111;
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; gap: 14px;
+      z-index: 20;
+      transition: opacity 0.3s ease-out;
+    }
+    #loading.hidden { opacity: 0; pointer-events: none; }
+    #loading-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px; color: #ffd020;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 2px;
+    }
+    #loading-text {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px; color: #888;
+      animation: blink 1s infinite;
+    }
+
+    /* WebGL2 非対応ブラウザ向けフォールバック */
+    #no-webgl {
+      position: absolute; inset: 0;
+      background: #111;
+      display: none;
+      justify-content: center; align-items: center;
+      flex-direction: column; gap: 14px;
+      padding: 20px; text-align: center;
+      z-index: 30;
+    }
+    #no-webgl.show { display: flex; }
+    #no-webgl h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px; color: #f44;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 1px;
+    }
+    #no-webgl p {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px; color: #ccc;
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
     /* ゲームオーバー */
     #gameover {
       position: absolute; inset: 0;
@@ -183,6 +229,14 @@
     <div id="clear-dist">0 m | 0 DESTROYED</div>
     <div id="clear-stats">0 STOMPS</div>
     <div id="clear-tap">TAP TO RESTART</div>
+  </div>
+  <div id="loading">
+    <div id="loading-title">KAIJU PINBALL</div>
+    <div id="loading-text">LOADING...</div>
+  </div>
+  <div id="no-webgl">
+    <h2>WEBGL 2 REQUIRED</h2>
+    <p>This game requires a browser with WebGL 2 support.<br><br>Please update your browser or try a different one (Chrome, Firefox, Edge, Safari 15+).</p>
   </div>
 </div>
 <script type="module" src="/src/main.ts"></script>
