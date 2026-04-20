@@ -17,6 +17,7 @@ export class SoundEngine {
 
   /** BGM ループ状態 */
   private musicStopFlag = { stopped: true };
+  private musicStageIndex = -1;
 
   private getCtx(): AudioContext | null {
     if (!this.ctx) {
@@ -280,29 +281,26 @@ export class SoundEngine {
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  BGM — 簡易版 ピコピコチップチューン (要フィードバック)
+  //  BGM (手続き的チップチューン)
   // ═══════════════════════════════════════════════════════════════════
-  //  Pulse1 (square): 速いアルペジオメロディ
-  //  Pulse2 (square): 低音ベース
-  //  Kick:            1・3拍の簡単なリズム
+  // 16-step ループ = 2.56s/loop @ 160ms per step.
+  // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
+  // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
 
-  private static readonly THEME = {
-    root: 165,           // E3 (E マイナー、駆け抜ける暴力のキー)
-    stepSec: 0.095,      // 超速ピコピコ、3秒ループ
-    // 32 ステップ。執拗に反復する E-B-G 3音モチーフ + オクターブ跳躍で狂乱、
-    // 上昇半音ランで煽り、最後に 2 オクターブ下降で暴れ切るフィナーレ。
-    //         |─ 主題 (E→B→G) 反復 ─|─ 変化反復 ─|── 半音上昇ラン ──|── 大下降カオス ──|
-    lead:  [  0, 7, 3, 7,  0, 7, 3, 7,    0, 7, 3, 7,  0, 7, 3, 5,    5, 7, 8,10, 11,12,14,15,   15,14,12,10,  8, 7, 3, 0 ],
-    bass:  [  0,12, 0, 7,  0,12, 0, 7,    0,12, 0, 7,  0,12, 0, 7,   -4, 8,-4, 8, -4, 8,-4, 8,   -5,-5, 0, 0, -5,-5, 0, 0 ],
-    kick:  [  1, 0, 1, 0,  1, 0, 1, 0,    1, 0, 1, 0,  1, 0, 1, 0,    1, 0, 1, 0,  1, 0, 1, 0,    1, 0, 1, 0,  1, 1, 1, 1 ],
-  };
-  private static readonly PATTERN_LEN = 32;
+  /** A=220Hz 起点の半音テーブル */
+  private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
+  private static readonly BASS_STEPS = [0, 0, 0, 0,  5, 5, 3, 3,   7, 7, 5, 5,   -5, -5, 3, 3];
+  private static readonly LEAD_STEPS = [12, 15, 19, 15,  17, 15, 12, 10,  15, 19, 22, 19,  7, 10, 15, 12];
+  private static readonly KICK_PATTERN = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
+  private static readonly STEP_SEC = 0.16;
+  private static readonly PATTERN_LEN = 16;
 
-  /** BGM ループを開始 */
-  startMusic(_stageIndex: number = 0): void {
+  /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
+  startMusic(stageIndex: number): void {
     const ctx = this.getCtx();
     if (!ctx || !this.musicGain) return;
-    if (!this.musicStopFlag.stopped) return;
+    this.musicStageIndex = stageIndex;
+    if (!this.musicStopFlag.stopped) return;  // 既に再生中
 
     const flag = { stopped: false };
     this.musicStopFlag = flag;
@@ -314,14 +312,17 @@ export class SoundEngine {
       const c = this.ctx;
       if (!c || !this.musicGain) return;
       if (this.muted || this.suspended) {
+        // 無音状態では空回しせず、復帰を待つ (100ms ポーリング)
         setTimeout(schedule, 100);
         return;
       }
       const now = c.currentTime;
+      // suspend/mute 明けで nextTime が過去に取り残されている場合、現在時刻に合わせ直す
       if (nextTime < now - 0.2) nextTime = now + 0.05;
+      // 0.4s 先までスケジュール
       while (nextTime < now + 0.4) {
         this._scheduleStep(c, this.musicGain, nextTime, stepIdx);
-        nextTime += SoundEngine.THEME.stepSec;
+        nextTime += SoundEngine.STEP_SEC;
         stepIdx++;
       }
       setTimeout(schedule, 80);
@@ -329,52 +330,54 @@ export class SoundEngine {
     schedule();
   }
 
-  /** BGM を即停止 */
+  /** BGM を即停止 (ゲームオーバー/クリア/タイトルで呼ぶ) */
   stopMusic(): void {
     this.musicStopFlag.stopped = true;
   }
 
   private _scheduleStep(ctx: AudioContext, dst: GainNode, t: number, stepIdx: number): void {
-    const song = SoundEngine.THEME;
     const i = stepIdx % SoundEngine.PATTERN_LEN;
-    const step = song.stepSec;
-    const root = song.root;
+    const root = SoundEngine.STAGE_ROOT_HZ[this.musicStageIndex] ?? SoundEngine.STAGE_ROOT_HZ[0];
+    const bassSemi = SoundEngine.BASS_STEPS[i];
+    const leadSemi = SoundEngine.LEAD_STEPS[i];
+    const step = SoundEngine.STEP_SEC;
 
-    // リード (square、短め、フィルターなし)
-    const leadSemi = song.lead[i];
-    if (leadSemi !== -1) {
+    // ベース (square, 2オクターブ下, ゲート = step の 0.85)
+    {
+      const freq = (root / 2) * Math.pow(2, bassSemi / 12);
       const o = ctx.createOscillator();
       o.type = 'square';
-      o.frequency.value = root * Math.pow(2, leadSemi / 12);
+      o.frequency.value = freq;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.18, t);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.45, t + 0.008);
+      g.gain.setValueAtTime(0.45, t + step * 0.6);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.9);
+      o.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + step * 0.95);
+    }
+    // リード (triangle + 16分の後打ちでアタック弱め)
+    {
+      const freq = root * Math.pow(2, leadSemi / 12);
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.value = freq;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.35, t + 0.01);
       g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.85);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + step * 0.9);
     }
-
-    // ベース (square, 1oct下)
-    const bassSemi = song.bass[i];
-    if (bassSemi !== -1) {
-      const o = ctx.createOscillator();
-      o.type = 'square';
-      o.frequency.value = (root / 2) * Math.pow(2, bassSemi / 12);
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.28, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.85);
-      o.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + step * 0.9);
-    }
-
-    // キック
-    if (song.kick[i]) {
-      const dur = 0.07;
+    // キック (4分ごと、ノイズ+低音ピッチドロップ)
+    if (SoundEngine.KICK_PATTERN[i]) {
+      const dur = 0.08;
       const o = ctx.createOscillator();
       o.type = 'sine';
-      o.frequency.setValueAtTime(140, t);
+      o.frequency.setValueAtTime(150, t);
       o.frequency.exponentialRampToValueAtTime(45, t + dur);
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.6, t);
+      g.gain.setValueAtTime(0.7, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + dur);
