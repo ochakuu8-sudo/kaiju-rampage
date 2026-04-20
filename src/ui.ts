@@ -1,5 +1,5 @@
 /**
- * ui.ts — DOM UI 更新 (燃料ゲージ + ステージ + CLEAR/GAMEOVER + BEST + PAUSE)
+ * ui.ts — DOM UI 更新 (燃料ゲージ + ステージ + SCORE + CLEAR/GAMEOVER + BEST + PAUSE)
  */
 
 import * as C from './constants';
@@ -7,14 +7,17 @@ import * as C from './constants';
 export class UIManager {
   private elDistance    = document.getElementById('distance-display')!;
   private elZone        = document.getElementById('zone-display')!;
+  private elScore       = document.getElementById('score-display')!;
   private elBest        = document.getElementById('best-display')!;
   private elFuelWrap    = document.getElementById('life-wrap')!;
   private elFuelFill    = document.getElementById('life-fill')!;
   private elGameover    = document.getElementById('gameover')!;
+  private elFinalScore  = document.getElementById('final-score')!;
   private elFinalBest   = document.getElementById('final-best')!;
   private elFinalStats  = document.getElementById('final-stats')!;
   private elFinalRecord = document.getElementById('final-record')!;
   private elClear       = document.getElementById('clear')!;
+  private elClearScore  = document.getElementById('clear-score')!;
   private elClearDist   = document.getElementById('clear-dist')!;
   private elClearStats  = document.getElementById('clear-stats')!;
   private elClearRecord = document.getElementById('clear-record')!;
@@ -34,10 +37,15 @@ export class UIManager {
     this.elZone.textContent = `STAGE ${stageIndex + 1} / ${stageNameEn}`;
   }
 
+  /** 現在スコア (建物・車両・家具の破壊で累積) */
+  setScore(score: number) {
+    this.elScore.textContent = `SCORE ${score.toLocaleString()}`;
+  }
+
   /** ベストスコア HUD 表示 (0 の場合は隠す) */
-  setBest(meters: number) {
-    if (meters > 0) {
-      this.elBest.textContent = `BEST ${meters.toLocaleString()} m`;
+  setBest(score: number) {
+    if (score > 0) {
+      this.elBest.textContent = `BEST ${score.toLocaleString()}`;
       this.elBest.classList.remove('hidden');
     } else {
       this.elBest.classList.add('hidden');
@@ -59,10 +67,11 @@ export class UIManager {
     this.elPopupLayer.style.transform = `translateY(${cameraY}px)`;
   }
 
-  showGameOver(distanceM: number, destroys: number, humans: number, best: number) {
+  showGameOver(distanceM: number, score: number, destroys: number, humans: number, best: number) {
+    this.elFinalScore.textContent  = `SCORE ${score.toLocaleString()}`;
     this.elFinalBest.textContent   = `${distanceM.toLocaleString()} m | ${destroys} DESTROYED`;
     this.elFinalStats.textContent  = `${humans.toLocaleString()} STOMPS`;
-    this.elFinalRecord.textContent = `BEST ${best.toLocaleString()} m`;
+    this.elFinalRecord.textContent = `BEST ${best.toLocaleString()}`;
     this.elGameover.classList.add('show');
   }
 
@@ -70,10 +79,11 @@ export class UIManager {
     this.elGameover.classList.remove('show');
   }
 
-  showClear(distanceM: number, destroys: number, humans: number, best: number) {
+  showClear(distanceM: number, score: number, destroys: number, humans: number, best: number) {
+    this.elClearScore.textContent  = `SCORE ${score.toLocaleString()}`;
     this.elClearDist.textContent   = `${distanceM.toLocaleString()} m | ${destroys} DESTROYED`;
     this.elClearStats.textContent  = `${humans.toLocaleString()} STOMPS`;
-    this.elClearRecord.textContent = `BEST ${best.toLocaleString()} m`;
+    this.elClearRecord.textContent = `BEST ${best.toLocaleString()}`;
     this.elClear.classList.add('show');
   }
 

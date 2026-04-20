@@ -2923,6 +2923,59 @@ const FURNITURE_HH: Record<FurnitureType, number> = {
 // Traffic light cycle durations per state (seconds)
 const LIGHT_DURATIONS = [3.0, 0.8, 3.0]; // red, yellow, green
 
+/** 家具タイプごとの破壊スコア
+ *  設計基準 (建物スコア 80-3000 と比較):
+ *   - ごみ/柵/小物 (10-25): 多数あるので控えめ
+ *   - 街路設備 (30-60): 自販機・電話ボックス・信号・ATM
+ *   - 中型 (80-150): 銅像・石灯籠・遊具・鳥居・大型噴水
+ *   - ランドマーク (200-400): 神社鳥居・風呂屋煙突・火の見櫓等
+ */
+export const FURNITURE_SCORES: Record<FurnitureType, number> = {
+  // ── オリジナル ──
+  tree: 20, vending: 50, bench: 15, car: 80, traffic_light: 40,
+  mailbox: 25, bicycle: 20, flower_bed: 15, parasol: 20,
+  sign_board: 15, garbage: 10, power_pole: 25, hydrant: 15, fountain: 80,
+  // ── 街路設備 ──
+  street_lamp: 30, bollard: 10, traffic_cone: 10, barrier: 15, guardrail: 15,
+  telephone_booth: 60, electric_box: 30, newspaper_stand: 25, atm: 80, post_box: 25,
+  bicycle_rack: 20, dumpster: 30, recycling_bin: 20, fire_extinguisher: 20, bus_stop: 45,
+  statue: 150, flag_pole: 25, banner_pole: 20,
+  // ── 植栽 ──
+  bush: 10, hedge: 15, planter: 15, sakura_tree: 40, pine_tree: 35,
+  palm_tree: 35, bamboo_cluster: 25,
+  // ── 神社・寺社 ──
+  torii: 200, stone_lantern: 80, shinto_rope: 50, offering_box: 60,
+  // ── 商店街 ──
+  chouchin: 20, noren: 15, a_frame_sign: 20, shop_awning: 30, milk_crate_stack: 20,
+  // ── 住宅 ──
+  wood_fence: 15, laundry_pole: 15, ac_unit: 25, gas_canister: 30, potted_plant: 10,
+  // ── 庭園 ──
+  rock: 25, stepping_stones: 20, koi_pond: 150, bonsai: 40,
+  // ── 街路 / 工事 ──
+  street_mirror: 25, tarp: 15, sandbags: 20, water_tank: 80,
+  // ── 港湾・工業 (Stage 4) ──
+  drum_can: 40, cargo_container: 60, forklift: 120, buoy: 30, pallet_stack: 30,
+  // ── 和風・古都 (Stage 3) ──
+  koma_inu: 150, ema_rack: 50, bamboo_fence: 20, temizuya: 80,
+  // ── テーマパーク・祭り (Stage 5) ──
+  balloon_cluster: 60, ticket_booth: 100, matsuri_drum: 80, popcorn_cart: 60,
+  // ── キャラ ──
+  cat: 100,
+  // ── Stage 1 ミニチュア強化 ──
+  ac_outdoor_cluster: 20, power_line: 15, laundry_balcony: 25,
+  kerbside_vending_pair: 70, post_letter_box: 30, flower_planter_row: 20,
+  guardrail_short: 15, railway_track: 30, platform_edge: 25, railroad_crossing: 80,
+  pedestrian_bridge: 120, signal_tower: 150, plaza_tile_circle: 60,
+  fountain_large: 200, taxi_rank_sign: 30,
+  sando_stone_pillar: 80, ema_wall: 60, omikuji_stand: 50, shrine_fence_red: 25,
+  bamboo_water_fountain: 80,
+  puddle_reflection: 5, manhole_cover: 15, cable_junction_box: 25, bicycle_row: 40,
+  // ── Act signatures ──
+  play_structure: 150, slide: 100, swing_set: 80, sandbox: 50,
+  bathhouse_chimney: 250, jungle_gym: 120,
+  fire_watchtower: 250, grain_silo: 200,
+};
+
 export class FurnitureManager {
   items: FurnitureItem[] = [];
 
@@ -2931,7 +2984,8 @@ export class FurnitureManager {
     for (const d of defs) {
       this.items.push({
         type: d.type, x: d.x, y: d.y,
-        hp: d.hp ?? 2, active: true, score: d.score ?? 50,
+        hp: d.hp ?? 2, active: true,
+        score: d.score ?? FURNITURE_SCORES[d.type] ?? 30,
         lightTimer: LIGHT_DURATIONS[0], lightState: 0,
         chunkId: -1,
       });
@@ -2943,7 +2997,8 @@ export class FurnitureManager {
     for (const d of defs) {
       this.items.push({
         type: d.type, x: d.x, y: d.y,
-        hp: 1, active: true, score: 5,
+        hp: 1, active: true,
+        score: FURNITURE_SCORES[d.type] ?? 20,
         lightTimer: LIGHT_DURATIONS[0], lightState: 0,
         chunkId,
       });
@@ -3991,15 +4046,17 @@ interface VehicleDef {
 }
 
 const VEHICLE_DEFS_DATA: Record<VehicleType, { w: number; h: number; maxHp: number; score: number; speedMin: number; speedMax: number }> = {
-  car:          { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 50,  speedMax: 70  },
-  bus:          { w: 28, h: 12, maxHp: 1, score:  8, speedMin: 35,  speedMax: 50  },
-  truck:        { w: 24, h: 12, maxHp: 1, score:  5, speedMin: 30,  speedMax: 45  },
-  ambulance:    { w: 22, h: 10, maxHp: 1, score: 50, speedMin: 100, speedMax: 120 },
-  taxi:         { w: 20, h: 10, maxHp: 1, score:  3, speedMin: 55,  speedMax: 75  },
-  motorcycle:   { w: 12, h:  7, maxHp: 1, score:  2, speedMin: 70,  speedMax: 100 },
-  delivery:     { w: 22, h: 11, maxHp: 1, score:  3, speedMin: 40,  speedMax: 60  },
-  van:          { w: 22, h: 11, maxHp: 1, score:  4, speedMin: 35,  speedMax: 55  },
-  worker_truck: { w: 26, h: 14, maxHp: 1, score: 30, speedMin: 25,  speedMax: 40  },
+  // score は建物 (80-3000) と比較してバランスを取っている。
+  // 通常車両 (乗用) = 小型建物 (80-200) 相当、特殊車両 (緊急/業務) は希少さで割増し。
+  car:          { w: 20, h: 10, maxHp: 1, score:   80, speedMin: 50,  speedMax: 70  },
+  bus:          { w: 28, h: 12, maxHp: 1, score:  180, speedMin: 35,  speedMax: 50  },
+  truck:        { w: 24, h: 12, maxHp: 1, score:  140, speedMin: 30,  speedMax: 45  },
+  ambulance:    { w: 22, h: 10, maxHp: 1, score:  500, speedMin: 100, speedMax: 120 },
+  taxi:         { w: 20, h: 10, maxHp: 1, score:   90, speedMin: 55,  speedMax: 75  },
+  motorcycle:   { w: 12, h:  7, maxHp: 1, score:   60, speedMin: 70,  speedMax: 100 },
+  delivery:     { w: 22, h: 11, maxHp: 1, score:  100, speedMin: 40,  speedMax: 60  },
+  van:          { w: 22, h: 11, maxHp: 1, score:  110, speedMin: 35,  speedMax: 55  },
+  worker_truck: { w: 26, h: 14, maxHp: 1, score:  300, speedMin: 25,  speedMax: 40  },
 };
 
 /** 破壊時に人間を吐く車種と人数レンジ (工業エリアの燃料補給源) */

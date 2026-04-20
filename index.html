@@ -83,10 +83,23 @@
     }
     #distance-display { top: 28px; left: 8px; font-size: 9px; color: #fff;    letter-spacing: 1px; }
     #zone-display     { top: 42px; left: 8px; font-size: 7px; color: #ffd020; letter-spacing: 1px; }
-    /* ベストスコア (プレイ中も薄く表示) */
+    /* 現在スコア (画面中央上に大きめで表示) */
+    #score-display {
+      position: absolute;
+      top: 28px; left: 50%; transform: translateX(-50%);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #ffec8c;
+      text-shadow: 1px 1px 0 #000, 2px 2px 0 rgba(0,0,0,0.7);
+      letter-spacing: 1px;
+      pointer-events: none;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    /* ベストスコア (プレイ中は score の右隣) */
     #best-display {
       position: absolute;
-      top: 28px; right: 72px;
+      top: 44px; left: 50%; transform: translateX(-50%);
       font-family: 'Press Start 2P', monospace;
       font-size: 7px;
       color: #8cf;
@@ -94,6 +107,7 @@
       letter-spacing: 1px;
       pointer-events: none;
       z-index: 2;
+      white-space: nowrap;
     }
     #best-display.hidden { display: none; }
     /* 燃料メーター (レトロゲーム風 HP バー: セグメント分割 + チャンキー枠) */
@@ -310,9 +324,10 @@
     }
     #gameover.show { display: flex; }
     #gameover h1  { font-family: 'Press Start 2P', monospace; font-size: 28px; color: #f44; text-shadow: 3px 3px 0 #000; letter-spacing: 3px; margin-bottom: 4px; }
-    #final-best   { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #aaa; margin-top: 8px; }
-    #final-stats  { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #8cf; margin-top: 4px; }
-    #final-record { font-family: 'Press Start 2P', monospace; font-size: 9px;  color: #ffd020; margin-top: 10px; letter-spacing: 1px; }
+    #final-score  { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #ffec8c; text-shadow: 2px 2px 0 #000; margin-top: 8px; letter-spacing: 2px; }
+    #final-best   { font-family: 'Press Start 2P', monospace; font-size: 9px;  color: #aaa; margin-top: 10px; }
+    #final-stats  { font-family: 'Press Start 2P', monospace; font-size: 9px;  color: #8cf; margin-top: 4px; }
+    #final-record { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffd020; margin-top: 12px; letter-spacing: 1px; }
     #go-tap       { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
@@ -331,9 +346,10 @@
       animation: clearPulse 1s infinite alternate;
     }
     @keyframes clearPulse { from { filter: brightness(1); } to { filter: brightness(1.35); } }
-    #clear-dist   { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #aaa; margin-top: 8px; }
-    #clear-stats  { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #8cf; margin-top: 4px; }
-    #clear-record { font-family: 'Press Start 2P', monospace; font-size: 9px;  color: #ffd020; margin-top: 10px; letter-spacing: 1px; }
+    #clear-score  { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #ffec8c; text-shadow: 2px 2px 0 #000; margin-top: 8px; letter-spacing: 2px; }
+    #clear-dist   { font-family: 'Press Start 2P', monospace; font-size: 9px;  color: #aaa; margin-top: 10px; }
+    #clear-stats  { font-family: 'Press Start 2P', monospace; font-size: 9px;  color: #8cf; margin-top: 4px; }
+    #clear-record { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffd020; margin-top: 12px; letter-spacing: 1px; }
     #clear-tap    { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
 
   </style>
@@ -354,7 +370,8 @@
     <div id="popup-layer"></div>
     <div id="distance-display">0 m</div>
     <div id="zone-display">STAGE 1 / SUBURBS</div>
-    <div id="best-display" class="hidden">BEST 0 m</div>
+    <div id="score-display">SCORE 0</div>
+    <div id="best-display" class="hidden">BEST 0</div>
     <div id="life-wrap"><div id="life-fill"></div></div>
     <button id="pause-btn" type="button" aria-label="Pause">II</button>
     <button id="mute-btn" type="button" aria-label="Toggle sound">&#9834;</button>
@@ -365,16 +382,18 @@
   </div>
   <div id="gameover">
     <h1>GAME OVER</h1>
+    <div id="final-score">SCORE 0</div>
     <div id="final-best">0 m | 0 DESTROYED</div>
     <div id="final-stats">0 STOMPS</div>
-    <div id="final-record">BEST 0 m</div>
+    <div id="final-record">BEST 0</div>
     <div id="go-tap">TAP / CLICK TO RESTART</div>
   </div>
   <div id="clear">
     <h1>CLEAR!</h1>
+    <div id="clear-score">SCORE 0</div>
     <div id="clear-dist">0 m | 0 DESTROYED</div>
     <div id="clear-stats">0 STOMPS</div>
-    <div id="clear-record">BEST 0 m</div>
+    <div id="clear-record">BEST 0</div>
     <div id="clear-tap">TAP / CLICK TO RESTART</div>
   </div>
   <div id="title">

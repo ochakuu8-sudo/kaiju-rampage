@@ -19,12 +19,12 @@ import { resolveCircleOBB, resolveCircleOBBSlide, resolveCircleCapsule, clampSpe
 import type { BuildingData, FurnitureType, VehicleType } from './entities';
 import { gameplayStart, gameplayStop } from './sdk';
 
-const MUTE_STORAGE_KEY = 'kaiju-pinball-muted';
-const BEST_STORAGE_KEY = 'kaiju-pinball-best';
+const MUTE_STORAGE_KEY       = 'kaiju-pinball-muted';
+const BEST_SCORE_STORAGE_KEY = 'kaiju-pinball-best-score';
 
-function loadBestDistance(): number {
+function loadBestScore(): number {
   try {
-    const raw = localStorage.getItem(BEST_STORAGE_KEY);
+    const raw = localStorage.getItem(BEST_SCORE_STORAGE_KEY);
     if (!raw) return 0;
     const v = parseInt(raw, 10);
     return Number.isFinite(v) && v >= 0 ? v : 0;
@@ -33,8 +33,8 @@ function loadBestDistance(): number {
   }
 }
 
-function saveBestDistance(meters: number): void {
-  try { localStorage.setItem(BEST_STORAGE_KEY, String(meters)); } catch {}
+function saveBestScore(score: number): void {
+  try { localStorage.setItem(BEST_SCORE_STORAGE_KEY, String(score)); } catch {}
 }
 
 // 60000 instance 分の共有バッファ (renderer.ts の MAX_INST と一致させる)
@@ -131,8 +131,10 @@ export class Game {
   private currentStageIndex = 0;
   private clearTriggered = false;
 
-  // ハイスコア (最遠到達距離 m)
-  private bestDistance = 0;
+  // スコア (破壊対象から累積)
+  private totalScore = 0;
+  // ハイスコア (これまでのベスト totalScore)
+  private bestScore = 0;
 
   // ポーズ状態 (update をスキップ、AudioContext を suspend)
   private paused = false;
@@ -211,8 +213,8 @@ export class Game {
     }
     // ベスト記録表示 (0 なら隠す)
     if (best) {
-      if (this.bestDistance > 0) {
-        best.textContent = `BEST ${this.bestDistance.toLocaleString()} m`;
+      if (this.bestScore > 0) {
+        best.textContent = `BEST ${this.bestScore.toLocaleString()}`;
         best.classList.remove('hidden');
       } else {
         best.classList.add('hidden');
@@ -320,17 +322,19 @@ export class Game {
   private initRun() {
     this.totalDestroys    = 0;
     this.totalHumans      = 0;
+    this.totalScore       = 0;
     this.state            = 'playing';
     this.stateTimer       = 0;
     this.fuel             = C.FUEL_INITIAL;
     this.currentStageIndex = 0;
     this.clearTriggered   = false;
     this.introActive      = true;
-    this.bestDistance     = loadBestDistance();
+    this.bestScore        = loadBestScore();
     this.ui.setDistance(0);
     this.ui.setZone(0, STAGES[0].nameEn);
     this.ui.setFuel(C.FUEL_INITIAL);
-    this.ui.setBest(this.bestDistance);
+    this.ui.setScore(0);
+    this.ui.setBest(this.bestScore);
   }
 
   private loadCity() {
@@ -675,6 +679,7 @@ export class Game {
       const destroyed = this.furniture.damage(furnitureHit, 1);
       this.spawnFurnitureFx(furnitureHit.type, b.x, b.y, destroyed);
       this.juice.shake(C.SHAKE_HIT_AMP * 0.5, C.SHAKE_HIT_DUR * 0.5);
+      if (destroyed) this.addScore(furnitureHit.score);
     }
 
     const vehicleHit = this.vehicles.checkBallHit(b.x, b.y, r);
@@ -683,6 +688,7 @@ export class Game {
       if (destroyed) {
         this.spawnVehicleFx(vehicleHit.type, b.x, b.y);
         this.juice.shake(C.SHAKE_HIT_AMP, C.SHAKE_HIT_DUR);
+        this.addScore(vehicleHit.score);
         // 工業車両 (worker_truck) は破壊時に労働者を吐く — Stage 4 の燃料補給源
         const yield_ = VEHICLE_HUMAN_YIELD[vehicleHit.type];
         if (yield_) {
@@ -714,6 +720,7 @@ export class Game {
     const cx = bld.x + bld.w / 2;
     const cy = bld.y + bld.h / 2;
     this.totalDestroys++;
+    this.addScore(bld.score);
     this.sound.buildingDestroy();
 
     // hp 4段階 → tier 1-4 に正規化してパーティクル数・演出強度に使う
@@ -1249,9 +1256,9 @@ export class Game {
     this.sound.stopMusic();
     // CrazyGames: プレイ終了を通知 (インタースティシャル広告の候補タイミング)
     gameplayStop();
-    this.updateBestDistance();
+    this.updateBestScore();
     setTimeout(() => {
-      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans, this.bestDistance);
+      this.ui.showGameOver(this.camera.distanceMeters, this.totalScore, this.totalDestroys, this.totalHumans, this.bestScore);
     }, 800);
   }
 
@@ -1260,11 +1267,11 @@ export class Game {
     this.juice.flash(1, 0.9, 0.5, 0.7);
     this.sound.stopMusic();
     gameplayStop();
-    this.updateBestDistance();
+    this.updateBestScore();
     // 勝利演出: カメラ範囲内に花火を複数回スポーン (0〜1.2s の間に 5 連発)
     this.spawnVictoryFireworks();
     setTimeout(() => {
-      this.ui.showClear(this.camera.distanceMeters, this.totalDestroys, this.totalHumans, this.bestDistance);
+      this.ui.showClear(this.camera.distanceMeters, this.totalScore, this.totalDestroys, this.totalHumans, this.bestScore);
     }, 1500);
   }
 
@@ -1288,12 +1295,18 @@ export class Game {
     });
   }
 
-  private updateBestDistance(): void {
-    const d = this.camera.distanceMeters;
-    if (d > this.bestDistance) {
-      this.bestDistance = d;
-      saveBestDistance(d);
-      this.ui.setBest(d);
+  /** スコア加算ヘルパー: HUD も即時反映 */
+  private addScore(delta: number): void {
+    this.totalScore += delta;
+    this.ui.setScore(this.totalScore);
+  }
+
+  /** ハイスコア判定: 現在スコアがベストを超えていれば保存 + HUD 更新 */
+  private updateBestScore(): void {
+    if (this.totalScore > this.bestScore) {
+      this.bestScore = this.totalScore;
+      saveBestScore(this.bestScore);
+      this.ui.setBest(this.bestScore);
     }
   }
 
