@@ -593,6 +593,8 @@ export interface RawChunkBody {
 export interface StageDef {
   id: number;
   name: string;
+  /** 英語表示名 (ゲーム内 UI 用) */
+  nameEn: string;
   templates: ChunkTemplate[];
   sidewalkZone: number;
   /** 背景色 (夜景など暗めにシフトしたい場合) */
@@ -7168,15 +7170,15 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
 ];
 
 export const STAGES: StageDef[] = [
-  { id: 0, name: '住宅街ミックス都市', templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
+  { id: 0, name: '住宅街ミックス都市', nameEn: 'SUBURBS',      templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
     bgTop: [0.52, 0.74, 0.96], bgBottom: [0.38, 0.50, 0.38] },
-  { id: 1, name: '繁華街・夜の街',     templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
+  { id: 1, name: '繁華街・夜の街',     nameEn: 'NEON CITY',    templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
     bgTop: [0.10, 0.08, 0.25], bgBottom: [0.22, 0.14, 0.32] },
-  { id: 2, name: '和風・古都',        templates: STAGE_3_TEMPLATES, sidewalkZone: 3,
+  { id: 2, name: '和風・古都',        nameEn: 'OLD TOWN',     templates: STAGE_3_TEMPLATES, sidewalkZone: 3,
     bgTop: [0.92, 0.78, 0.82], bgBottom: [0.62, 0.52, 0.44] },
-  { id: 3, name: '港湾・工業地帯',     templates: STAGE_4_TEMPLATES, sidewalkZone: 2,
+  { id: 3, name: '港湾・工業地帯',     nameEn: 'HARBOR',       templates: STAGE_4_TEMPLATES, sidewalkZone: 2,
     bgTop: [0.58, 0.62, 0.70], bgBottom: [0.40, 0.42, 0.48] },
-  { id: 4, name: 'テーマパーク・祭り', templates: STAGE_5_TEMPLATES, sidewalkZone: 4,
+  { id: 4, name: 'テーマパーク・祭り', nameEn: 'THEME PARK',   templates: STAGE_5_TEMPLATES, sidewalkZone: 4,
     bgTop: [0.96, 0.72, 0.50], bgBottom: [0.66, 0.48, 0.62] },
 ];
 

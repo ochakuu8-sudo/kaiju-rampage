@@ -20,6 +20,22 @@ import type { BuildingData, FurnitureType, VehicleType } from './entities';
 import { gameplayStart, gameplayStop } from './sdk';
 
 const MUTE_STORAGE_KEY = 'kaiju-pinball-muted';
+const BEST_STORAGE_KEY = 'kaiju-pinball-best';
+
+function loadBestDistance(): number {
+  try {
+    const raw = localStorage.getItem(BEST_STORAGE_KEY);
+    if (!raw) return 0;
+    const v = parseInt(raw, 10);
+    return Number.isFinite(v) && v >= 0 ? v : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveBestDistance(meters: number): void {
+  try { localStorage.setItem(BEST_STORAGE_KEY, String(meters)); } catch {}
+}
 
 // 60000 instance 分の共有バッファ (renderer.ts の MAX_INST と一致させる)
 // 1000+ 人間同時描画を想定: 1500×25 instance + particles + scene
@@ -115,6 +131,12 @@ export class Game {
   private currentStageIndex = 0;
   private clearTriggered = false;
 
+  // ハイスコア (最遠到達距離 m)
+  private bestDistance = 0;
+
+  // ポーズ状態 (update をスキップ、AudioContext を suspend)
+  private paused = false;
+
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
@@ -162,6 +184,7 @@ export class Game {
     this.input.onRestart(() => this.restart());
 
     this.setupMuteButton();
+    this.setupPauseButton();
     this.setupVisibilityHandler();
 
     this.initRun();
@@ -197,15 +220,50 @@ export class Game {
     btn.textContent = muted ? 'X' : '\u266A';
   }
 
+  /** ポーズボタン: プレイ中のみポーズ可 (game_over/clear 中は無効)
+   *  オーバーレイクリックでも再開できるよう、pause overlay もトグル対象に */
+  private setupPauseButton(): void {
+    const btn = document.getElementById('pause-btn');
+    const overlay = document.getElementById('pause');
+    const toggle = (e: Event) => {
+      e.preventDefault();
+      if (this.state === 'game_over' || this.state === 'clear') return;
+      this.setPaused(!this.paused);
+    };
+    if (btn) {
+      btn.addEventListener('click', toggle);
+      btn.addEventListener('touchstart', toggle, { passive: false });
+    }
+    if (overlay) {
+      overlay.addEventListener('click', toggle);
+      overlay.addEventListener('touchstart', toggle, { passive: false });
+    }
+  }
+
+  private setPaused(paused: boolean): void {
+    if (this.paused === paused) return;
+    this.paused = paused;
+    this.ui.setPauseVisible(paused);
+    if (paused) {
+      this.sound.suspend();
+      gameplayStop();
+    } else {
+      this.sound.resume();
+      // 復帰時の dt 爆発を防ぐ
+      this.lastTime = performance.now();
+      gameplayStart();
+    }
+  }
+
   /** タブ非アクティブ時: AudioContext を suspend し、ゲームループを実質停止
    *  復帰時: 元の状態から再開 (最初の dt クランプで巨大デルタを防ぐ) */
   private setupVisibilityHandler(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         this.sound.suspend();
-      } else {
+      } else if (!this.paused) {
+        // 手動ポーズ中は復帰時も AudioContext を sustain (不要な再生を避ける)
         this.sound.resume();
-        // 復帰直後のフレームで大デルタにならないよう lastTime をリセット
         this.lastTime = performance.now();
       }
     });
@@ -220,9 +278,11 @@ export class Game {
     this.currentStageIndex = 0;
     this.clearTriggered   = false;
     this.introActive      = true;
+    this.bestDistance     = loadBestDistance();
     this.ui.setDistance(0);
-    this.ui.setZone(0, STAGES[0].name);
+    this.ui.setZone(0, STAGES[0].nameEn);
     this.ui.setFuel(C.FUEL_INITIAL);
+    this.ui.setBest(this.bestDistance);
   }
 
   private loadCity() {
@@ -270,6 +330,8 @@ export class Game {
   }
 
   private update(rawDt: number) {
+    // ポーズ中は juice 含めて完全停止 (演出停止 + ball 停止)
+    if (this.paused) return;
     this.juice.update(rawDt);
 
     if (this.state === 'game_over' || this.state === 'clear') return;
@@ -384,7 +446,7 @@ export class Game {
     if (info.finished) return;
     if (info.stageIndex !== this.currentStageIndex) {
       this.currentStageIndex = info.stageIndex;
-      this.ui.setZone(info.stageIndex, info.stage.name);
+      this.ui.setZone(info.stageIndex, info.stage.nameEn);
       if (info.stage.bgTop) {
         this.bgTopR = info.stage.bgTop[0];
         this.bgTopG = info.stage.bgTop[1];
@@ -1112,8 +1174,9 @@ export class Game {
     this.juice.flash(1, 0, 0, 0.6);
     // CrazyGames: プレイ終了を通知 (インタースティシャル広告の候補タイミング)
     gameplayStop();
+    this.updateBestDistance();
     setTimeout(() => {
-      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+      this.ui.showGameOver(this.camera.distanceMeters, this.totalDestroys, this.totalHumans, this.bestDistance);
     }, 800);
   }
 
@@ -1121,9 +1184,19 @@ export class Game {
     this.state = 'clear';
     this.juice.flash(1, 0.9, 0.5, 0.7);
     gameplayStop();
+    this.updateBestDistance();
     setTimeout(() => {
-      this.ui.showClear(this.camera.distanceMeters, this.totalDestroys, this.totalHumans);
+      this.ui.showClear(this.camera.distanceMeters, this.totalDestroys, this.totalHumans, this.bestDistance);
     }, 800);
+  }
+
+  private updateBestDistance(): void {
+    const d = this.camera.distanceMeters;
+    if (d > this.bestDistance) {
+      this.bestDistance = d;
+      saveBestDistance(d);
+      this.ui.setBest(d);
+    }
   }
 
   private render() {
