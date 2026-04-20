@@ -4,7 +4,7 @@
  */
 
 const MASTER_VOLUME = 0.55;
-const MUSIC_VOLUME  = 0.03;   // ゲーム(SE)音量の 0.2 倍を目安にした設定
+const MUSIC_VOLUME  = 0.12;   // BGM サブバス。SE より控えめだがイヤホンで埋もれない水準
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
