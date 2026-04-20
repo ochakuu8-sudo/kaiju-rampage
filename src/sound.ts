@@ -346,86 +346,78 @@ export class SoundEngine {
     const leadSemi = SoundEngine.LEAD_STEPS[i];
     const step = SoundEngine.STEP_SEC;
 
-    // ベース (square, 2オクターブ下, ゲート = step の 0.85)
+    // ベース (square, 2オクターブ下, ゲート = step の 0.75, 短めで跳ね感)
     {
       const freq = (root / 2) * Math.pow(2, bassSemi / 12);
       const o = ctx.createOscillator();
       o.type = 'square';
       o.frequency.value = freq;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.45, t + 0.008);
-      g.gain.setValueAtTime(0.45, t + step * 0.6);
-      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.9);
+      g.gain.setValueAtTime(0.42, t);
+      g.gain.setValueAtTime(0.42, t + step * 0.55);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.8);
       o.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + step * 0.95);
+      o.start(t); o.stop(t + step * 0.85);
     }
-    // リード (triangle + 16分の後打ちでアタック弱め)
+    // リード (square, 短ゲート、8-bit 的なピコピコ感)
     {
       const freq = root * Math.pow(2, leadSemi / 12);
       const o = ctx.createOscillator();
-      o.type = 'triangle';
+      o.type = 'square';
       o.frequency.value = freq;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.35, t + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.85);
+      g.gain.setValueAtTime(0.22, t);
+      g.gain.setValueAtTime(0.22, t + step * 0.6);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.8);
       o.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + step * 0.9);
+      o.start(t); o.stop(t + step * 0.85);
     }
-    // ハーモニー (square, LP で柔らかく、長めサステイン)
+    // ハーモニー (square、LP なしで生チップ音、やや長め)
     {
       const harmSemi = SoundEngine.HARM_STEPS[i];
       const freq = root * Math.pow(2, harmSemi / 12);
       const o = ctx.createOscillator();
       o.type = 'square';
       o.frequency.value = freq;
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = 1400;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.14, t + 0.012);
-      g.gain.exponentialRampToValueAtTime(0.001, t + step * 1.6);
-      o.connect(lp); lp.connect(g); g.connect(dst);
-      o.start(t); o.stop(t + step * 1.7);
+      g.gain.setValueAtTime(0.10, t);
+      g.gain.setValueAtTime(0.10, t + step * 0.9);
+      g.gain.exponentialRampToValueAtTime(0.001, t + step * 1.3);
+      o.connect(g); g.connect(dst);
+      o.start(t); o.stop(t + step * 1.4);
     }
-    // キック (4分ごと、ノイズ+低音ピッチドロップ)
+    // キック (triangle 高速ピッチドロップ、NES 系の "ドッ")
     if (SoundEngine.KICK_PATTERN[i]) {
-      const dur = 0.08;
+      const dur = 0.06;
       const o = ctx.createOscillator();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(150, t);
-      o.frequency.exponentialRampToValueAtTime(45, t + dur);
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(180, t);
+      o.frequency.exponentialRampToValueAtTime(40, t + dur);
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.7, t);
+      g.gain.setValueAtTime(0.8, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g); g.connect(dst);
       o.start(t); o.stop(t + dur);
     }
-    // スネア (BP ノイズ、2拍と4拍で rhythm guide)
+    // スネア (生ノイズ短ゲート、チップ的"シャッ")
     if (SoundEngine.SNARE_PATTERN[i]) {
-      const dur = 0.085;
+      const dur = 0.05;
       const bufLen = Math.ceil(ctx.sampleRate * dur);
       const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
       const data = buf.getChannelData(0);
       for (let k = 0; k < bufLen; k++) data[k] = Math.random() * 2 - 1;
       const src = ctx.createBufferSource();
       src.buffer = buf;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 1500;
-      bp.Q.value = 1.3;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.42, t);
+      g.gain.setValueAtTime(0.35, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      src.connect(bp); bp.connect(g); g.connect(dst);
+      src.connect(g); g.connect(dst);
       src.start(t); src.stop(t + dur);
     }
-    // ハット (HP ノイズ、毎 step で grooove を作る)
+    // ハット (HP ノイズ、超短ゲートで "チッ")
     if (SoundEngine.HAT_PATTERN[i]) {
       const isOpen = SoundEngine.HAT_PATTERN[i] === 2;
-      const dur = isOpen ? 0.10 : 0.035;
+      const dur = isOpen ? 0.06 : 0.02;
       const bufLen = Math.ceil(ctx.sampleRate * dur);
       const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
       const data = buf.getChannelData(0);
@@ -434,9 +426,9 @@ export class SoundEngine {
       src.buffer = buf;
       const hp = ctx.createBiquadFilter();
       hp.type = 'highpass';
-      hp.frequency.value = 6500;
+      hp.frequency.value = 7500;
       const g = ctx.createGain();
-      g.gain.setValueAtTime(isOpen ? 0.18 : 0.22, t);
+      g.gain.setValueAtTime(isOpen ? 0.16 : 0.22, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       src.connect(hp); hp.connect(g); g.connect(dst);
       src.start(t); src.stop(t + dur);
