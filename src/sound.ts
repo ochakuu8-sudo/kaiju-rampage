@@ -287,14 +287,14 @@ export class SoundEngine {
   // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
   // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
 
-  /** A=220Hz 起点。A マイナー、アクションゲーム系のドライブ感あるフック */
+  /** A=220Hz 起点。A メジャーのアーケード系バウンス、「楽しい破壊」寄り */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
-  // ベース: A-E ペダル駆動 → C-G 展開 → E-B 駆け上がり → A へカデンツ
-  private static readonly BASS_STEPS = [ 0,-5, 0,-5,    0,-5, 0,-5,    3,-2, 3,-2,    0, 0, 7, 0];
-  // リード: ジグザグ動機のアクション的ヒューク、最後は高音へ駆け上がり
-  private static readonly LEAD_STEPS = [12,15,12,19,   17,15,17,12,   15,19,15,22,   19,17,15,12];
-  // ハーモニー: リードの 3度下で追従、コード感を補強
-  private static readonly HARM_STEPS = [ 7,12, 7,15,   12,10,12, 7,   10,15,10,17,   15,12,10, 7];
+  // ベース: A-A-E-A (polka/アーケード定番の oom-pah) → F#m → D → E7 → A (I-vi-IV-V)
+  private static readonly BASS_STEPS = [ 0, 0, 7, 0,    0, 0, 7, 0,    -3,-3, 4,-3,   -5,-5, 2, 0];
+  // リード: A メジャー トライアドのキャッチーなアッパーフック、2 小節で完結する hook を 2 回
+  private static readonly LEAD_STEPS = [12,16,19,16,  14,12, 9,12,   16,19,21,19,   16,12, 9,12];
+  // ハーモニー: リードの 3度下で追従
+  private static readonly HARM_STEPS = [ 7,11,14,11,   9, 7, 4, 7,   11,14,16,14,   11, 7, 4, 7];
   private static readonly KICK_PATTERN  = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
   private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 1];
   private static readonly HAT_PATTERN   = [1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 2, 2]; // 2=open
