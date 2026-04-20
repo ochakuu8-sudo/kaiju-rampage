@@ -137,6 +137,12 @@ export class Game {
   // ポーズ状態 (update をスキップ、AudioContext を suspend)
   private paused = false;
 
+  // タイトル画面表示中 (初回起動のみ。restart では再表示しない)
+  private titleActive = true;
+
+  // ボール停滞検出 (auto-nudge 用)
+  private stuckSeconds = 0;
+
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
@@ -189,9 +195,51 @@ export class Game {
 
     this.initRun();
     this.loadCity();
-    // CrazyGames: プレイ開始を通知 (広告配信タイミング制御のため)
-    gameplayStart();
+    this.setupTitleScreen();
+    // CrazyGames gameplayStart はタイトル画面解除時に呼ぶ (実プレイ開始タイミング)
     this.startLoop();
+  }
+
+  /** タイトル画面: 初回起動時に一度だけ表示。クリック/キーで解除してゲーム開始 */
+  private setupTitleScreen(): void {
+    const title = document.getElementById('title');
+    const best  = document.getElementById('title-best');
+    if (!title) {
+      this.titleActive = false;
+      gameplayStart();
+      return;
+    }
+    // ベスト記録表示 (0 なら隠す)
+    if (best) {
+      if (this.bestDistance > 0) {
+        best.textContent = `BEST ${this.bestDistance.toLocaleString()} m`;
+        best.classList.remove('hidden');
+      } else {
+        best.classList.add('hidden');
+      }
+    }
+    title.classList.add('show');
+
+    let dismissed = false;
+    const dismiss = (e?: Event) => {
+      if (dismissed) return;
+      dismissed = true;
+      e?.preventDefault();
+      title.classList.remove('show');
+      this.titleActive = false;
+      this.lastTime = performance.now();
+      gameplayStart();
+      this.sound.startMusic(this.currentStageIndex);
+    };
+    title.addEventListener('click', dismiss, { once: true });
+    title.addEventListener('touchstart', dismiss, { once: true, passive: false });
+    const onKey = (e: KeyboardEvent) => {
+      if (this.titleActive && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        dismiss(e);
+        window.removeEventListener('keydown', onKey);
+      }
+    };
+    window.addEventListener('keydown', onKey);
   }
 
   /** ミュートボタン: クリックで master gain をトグル、localStorage に永続化 */
@@ -314,7 +362,9 @@ export class Game {
     this.ui.hideClear();
     this.initRun();
     this.loadCity();
+    this.stuckSeconds = 0;
     gameplayStart();
+    this.sound.startMusic(this.currentStageIndex);
   }
 
   private lastTime = 0;
@@ -330,11 +380,16 @@ export class Game {
   }
 
   private update(rawDt: number) {
-    // ポーズ中は juice 含めて完全停止 (演出停止 + ball 停止)
-    if (this.paused) return;
+    // タイトル / ポーズ中は update を完全スキップ (演出停止 + ball 停止)
+    if (this.titleActive || this.paused) return;
     this.juice.update(rawDt);
 
-    if (this.state === 'game_over' || this.state === 'clear') return;
+    // clear 中は花火演出のためパーティクルだけ更新する
+    if (this.state === 'clear') {
+      this.particles.update(rawDt);
+      return;
+    }
+    if (this.state === 'game_over') return;
 
     if (this.state === 'ball_lost') {
       this.stateTimer -= rawDt;
@@ -367,6 +422,23 @@ export class Game {
     this.flippers[1].update(dt);
 
     if (dt > 0) this.updateBall(dt);
+
+    // ボール詰まり検出: 速度が極小の状態が 3s 続いたら自動 nudge で救出
+    // (MAX_BALL_SPEED = 22 の座標系。speed < 3 はほぼ停止)
+    if (!this.introActive && this.state === 'playing') {
+      if (this.ball.speed() < 3) {
+        this.stuckSeconds += rawDt;
+        if (this.stuckSeconds >= 3.0) {
+          this.ball.vy += 16;
+          this.ball.vx += (Math.random() * 2 - 1) * 8;
+          this.stuckSeconds = 0;
+          this.sound.bumper();
+          this.juice.shake(2, 0.12);
+        }
+      } else {
+        this.stuckSeconds = 0;
+      }
+    }
 
     this.buildings.update(dt);
     this.furniture.update(dt);
@@ -447,6 +519,8 @@ export class Game {
     if (info.stageIndex !== this.currentStageIndex) {
       this.currentStageIndex = info.stageIndex;
       this.ui.setZone(info.stageIndex, info.stage.nameEn);
+      // BGM のルート音をステージ変更に合わせて切替
+      this.sound.startMusic(info.stageIndex);
       if (info.stage.bgTop) {
         this.bgTopR = info.stage.bgTop[0];
         this.bgTopG = info.stage.bgTop[1];
@@ -1172,6 +1246,7 @@ export class Game {
   private onGameOver() {
     this.state = 'game_over';
     this.juice.flash(1, 0, 0, 0.6);
+    this.sound.stopMusic();
     // CrazyGames: プレイ終了を通知 (インタースティシャル広告の候補タイミング)
     gameplayStop();
     this.updateBestDistance();
@@ -1183,11 +1258,34 @@ export class Game {
   private onClear() {
     this.state = 'clear';
     this.juice.flash(1, 0.9, 0.5, 0.7);
+    this.sound.stopMusic();
     gameplayStop();
     this.updateBestDistance();
+    // 勝利演出: カメラ範囲内に花火を複数回スポーン (0〜1.2s の間に 5 連発)
+    this.spawnVictoryFireworks();
     setTimeout(() => {
       this.ui.showClear(this.camera.distanceMeters, this.totalDestroys, this.totalHumans, this.bestDistance);
-    }, 800);
+    }, 1500);
+  }
+
+  /** クリア画面を出す前に画面全体に花火を散らす */
+  private spawnVictoryFireworks(): void {
+    const cx = 0; // ワールド座標系 X 中心
+    const cyBase = this.camera.y + C.CANVAS_HEIGHT * 0.45;
+    const positions = [
+      [cx - 80, cyBase + 60],
+      [cx + 80, cyBase - 40],
+      [cx - 40, cyBase - 10],
+      [cx + 50, cyBase + 90],
+      [cx, cyBase + 30],
+    ];
+    positions.forEach(([x, y], i) => {
+      setTimeout(() => {
+        this.particles.spawnFireworks(x, y, 40);
+        this.sound.stageClear();
+        this.juice.shake(3, 0.15);
+      }, i * 240);
+    });
   }
 
   private updateBestDistance(): void {
