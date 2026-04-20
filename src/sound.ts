@@ -287,18 +287,24 @@ export class SoundEngine {
   // ベース (square, 2oct下) + リード (triangle) + キック (ノイズバースト毎4step)。
   // ステージごとに root 音 (A, E, C, F, D) をずらして雰囲気変化。
 
-  /** A=220Hz 起点。A フリギアン (b2 = Bb) で火山/スペイン的な熱量・危険感 */
+  /** A=220Hz 起点。A 自然短調、`i-VII-VI-V` (Am-G-F-E) 進行。
+   *  重くて派手、カタルシスあり、ループしても疲れないキャッチーなフック。 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196]; // A3, E3, C4, F3, G3
-  // ベース: A の 8 分ポンプ駆動 + bII (Bb) の熱い衝突 + V (E) 帰還
-  private static readonly BASS_STEPS = [ 0, 0, 0, 0,    0, 0, 0, 0,    1, 1, 1, 1,   -5,-5, 0, 0];
-  // リード: フリギアン (A Bb C D E F G) の半音階的スケール、危険な昇降
-  private static readonly LEAD_STEPS = [12,13,15,17,  13,15,17,13,   20,17,15,13,   15,13,12,10];
-  // ハーモニー: b2/b6 を絡めたスペイン的緊張 (リード -3 度程度)
-  private static readonly HARM_STEPS = [ 7, 8,10,13,   8,10,13, 8,   15,12,10, 8,   10, 8, 7, 5];
-  private static readonly KICK_PATTERN  = [1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0];
-  private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 1];
-  private static readonly HAT_PATTERN   = [1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 2, 2]; // 2=open
-  private static readonly STEP_SEC = 0.16;
+  // ベース: Am 5度跳躍 (ロック的駆動) → G → F → E 下降で週末感
+  private static readonly BASS_STEPS = [ 0, 7, 0, 7,   -2, 5,-2, 5,   -4, 3,-4, 3,   -5, 2,-5, 2];
+  // リード: 「呼びかけ→応答」型フック。2小節目の最高音 E(19) でビル倒壊の決め
+  //   Bar 1: A-G-A-C-D-C-A-G (ジグザグ呼びかけ)
+  //   Bar 2: A-G-A-C-E-D-C-A (同形で高音ピーク、到達感)
+  private static readonly LEAD_STEPS = [12,10,12,15,  17,15,12,10,   12,10,12,15,   19,17,15,12];
+  // ハーモニー: 3度/6度下でリードを支え、コード感を厚く
+  private static readonly HARM_STEPS = [ 7, 5, 7,12,  13,12, 7, 5,    7, 5, 7,12,   15,13,12, 7];
+  // キック: 4分頭 + シンコペ・ダブルキックで「踏み潰し感」を演出
+  private static readonly KICK_PATTERN  = [1, 0, 0, 1,  1, 0, 0, 0,  1, 0, 0, 1,  1, 0, 1, 1];
+  // スネア: 2/4 拍 + 小節末のダブルフィル
+  private static readonly SNARE_PATTERN = [0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 1, 1, 1];
+  // ハット: 8分刻み + アクセント位置に open
+  private static readonly HAT_PATTERN   = [1, 1, 1, 2,  1, 1, 1, 1,  1, 1, 1, 2,  1, 1, 2, 2];
+  private static readonly STEP_SEC = 0.145;  // やや速めでアーケード感、2.32s/loop
   private static readonly PATTERN_LEN = 16;
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
