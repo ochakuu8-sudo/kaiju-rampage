@@ -189,10 +189,12 @@ export class Game {
 
     // スクリーンショットモード: UI ハンドラを貼らず、
     // タイトル画面も表示しない。titleActive=true のまま保って update を止め、
-    // render だけ回して stage 1 の盤面 (人間・車両・建物) を静止画として表示
+    // render だけ回して stage 1 の盤面 (人間・車両・建物) を静止画として表示。
+    // 物理停止なので建物/人間/車を大量追加してもゲームに影響なし → 高密度化する
     if (opts?.screenshotMode) {
       this.initRun();
       this.loadCity();
+      this.addScreenshotDensity();              // stage 1 の街並みに追加ビル・人・車を詰め込み
       this.ball.active = false;                 // ボール非表示
       this.sound.setMuted(true);                // 念のため無音
       // titleActive は既定で true。update() は冒頭で early return するので物理停止
@@ -348,6 +350,89 @@ export class Game {
     this.ui.setFuel(C.FUEL_INITIAL);
     this.ui.setScore(0);
     this.ui.setBest(this.bestScore);
+  }
+
+  /**
+   * スクリーンショットモード専用: stage 1 の街並みに大量の建物・人・車を追加。
+   * 物理停止・ボール無し・UI 無しの状態なのでゲームプレイには一切影響しない。
+   * 目的: CrazyGames 提出用に「街がびっしり埋まった盤面」を見せる。
+   */
+  private addScreenshotDensity(): void {
+    // 決定論的擬似乱数 (同じシードで同じ配置)
+    let seed = 20241124;
+    const rand = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed & 0x7fffffff) / 0x7fffffff; };
+    const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rand() * arr.length)];
+
+    const tiny: C.BuildingSize[] = [
+      'house', 'townhouse', 'shed', 'garage', 'florist', 'bakery', 'ramen', 'cafe',
+      'bookstore', 'pharmacy', 'laundromat', 'daycare', 'shop', 'convenience', 'clinic',
+    ];
+    const small: C.BuildingSize[] = [
+      'restaurant', 'izakaya', 'gas_station', 'snack', 'sushi_ya', 'wagashi',
+      'kominka', 'chaya', 'bungalow', 'duplex', 'mansion', 'greenhouse', 'kura',
+    ];
+    const medium: C.BuildingSize[] = [
+      'apartment', 'temple', 'parking', 'karaoke', 'pachinko', 'game_center', 'bank',
+      'library', 'museum', 'movie_theater', 'fire_station', 'police_station',
+      'mahjong_parlor', 'capsule_hotel', 'love_hotel', 'business_hotel',
+      'supermarket', 'school', 'shrine', 'machiya', 'onsen_inn',
+    ];
+    const large: C.BuildingSize[] = [
+      'office', 'tower', 'hospital', 'city_hall', 'train_station', 'clock_tower',
+      'apartment_tall', 'department_store', 'radio_tower', 'pagoda', 'tahoto',
+    ];
+    const landmark: C.BuildingSize[] = ['skyscraper', 'tower', 'apartment_tall', 'radio_tower'];
+
+    // 1 行を x 軸に沿って隙間ゼロで敷き詰める
+    const extras: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx: number }> = [];
+    let chunkId = 9900;
+    const fillRow = (baseY: number, pool: readonly C.BuildingSize[], xStart = -179, xEnd = 179, gap = 0) => {
+      let x = xStart;
+      const id = chunkId++;
+      while (x < xEnd) {
+        const size = pick(pool);
+        const def = C.BUILDING_DEFS[size];
+        if (x + def.w > xEnd) break;
+        extras.push({ x: x + def.w / 2, y: baseY, size, blockIdx: id });
+        x += def.w + gap;
+      }
+    };
+
+    // ── 下段 (川〜ロワー間) に小型住宅を 3 行追加 ──
+    //   y=-290 〜 -80 の空きスペース (既存 stage 1 では川エリアでビル無し)
+    fillRow(-275, tiny);
+    fillRow(-250, tiny);
+    fillRow(-220, [...tiny, ...small]);
+    fillRow(-180, tiny);
+    fillRow(-145, [...tiny, ...small]);
+    fillRow(-110, tiny);
+
+    // ── 中低段 (既存 stage 1 の下町層の間) に詰め込み ──
+    //   y=20 の LOWER 道路〜 MAIN 道路 の間 (既存 apartment/shop/restaurant 層)
+    fillRow(40, [...small, ...medium]);
+    fillRow(75, [...small, ...tiny]);
+    fillRow(105, [...tiny, ...small]);
+
+    // ── 中高段 (MAIN 道路〜HILLTOP 道路 の間) ──
+    //   既存の商店街層。中型を詰める
+    fillRow(145, medium);
+    fillRow(175, [...medium, ...small]);
+    fillRow(205, small);
+
+    // ── 上段 (HILLTOP より上) に大型ビル・高層ビル ──
+    fillRow(232, large);
+    fillRow(258, landmark, -175, 175, 2);
+    fillRow(278, [...large, ...medium]);
+
+    this.buildings.loadChunk(extras);
+
+    // ── 通行人を大量追加 (街を賑やかに) ──
+    //   既存の spawnOnStreets 60 体 + prePlaced 以外に 400 体を領域全体に散布
+    for (let i = 0; i < 400; i++) {
+      const x = -175 + rand() * 350;
+      const y = -285 + rand() * 570;
+      this.humans.spawnAt(x, y);
+    }
   }
 
   private loadCity() {
