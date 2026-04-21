@@ -353,98 +353,77 @@ export class Game {
   }
 
   /**
-   * スクリーンショットモード専用: stage 1 の街並みに大量の建物・人・車を追加。
-   * 物理停止・ボール無し・UI 無しの状態なのでゲームプレイには一切影響しない。
-   * 目的: CrazyGames 提出用に「街がびっしり埋まった盤面」を見せる。
+   * スクリーンショットモード専用: stage 1 の建物を破棄して、
+   * 被りも空白もない均一密度のタイル状グリッドに差し替える。
+   * 物理停止・ボール無しなのでゲームプレイには影響しない。
    */
   private addScreenshotDensity(): void {
     // 決定論的擬似乱数 (同じシードで同じ配置)
     let seed = 20241124;
     const rand = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed & 0x7fffffff) / 0x7fffffff; };
-    const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rand() * arr.length)];
 
-    const tiny: C.BuildingSize[] = [
-      'house', 'townhouse', 'shed', 'garage', 'florist', 'bakery', 'ramen', 'cafe',
-      'bookstore', 'pharmacy', 'laundromat', 'daycare', 'shop', 'convenience', 'clinic',
-    ];
-    const small: C.BuildingSize[] = [
-      'restaurant', 'izakaya', 'gas_station', 'snack', 'sushi_ya', 'wagashi',
-      'kominka', 'chaya', 'bungalow', 'duplex', 'mansion', 'greenhouse', 'kura',
-    ];
-    const medium: C.BuildingSize[] = [
-      'apartment', 'temple', 'parking', 'karaoke', 'pachinko', 'game_center', 'bank',
-      'library', 'museum', 'movie_theater', 'fire_station', 'police_station',
-      'mahjong_parlor', 'capsule_hotel', 'love_hotel', 'business_hotel',
-      'supermarket', 'school', 'shrine', 'machiya', 'onsen_inn',
-    ];
-    const large: C.BuildingSize[] = [
-      'office', 'tower', 'hospital', 'city_hall', 'train_station', 'clock_tower',
-      'apartment_tall', 'department_store', 'radio_tower', 'pagoda', 'tahoto',
-    ];
-    const landmark: C.BuildingSize[] = ['skyscraper', 'tower', 'apartment_tall', 'radio_tower'];
-
-    // 1 行を x 軸に沿って隙間ゼロで敷き詰める
-    const extras: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx: number }> = [];
-    let chunkId = 9900;
-    const fillRow = (baseY: number, pool: readonly C.BuildingSize[], xStart = -179, xEnd = 179, gap = 0) => {
-      let x = xStart;
-      const id = chunkId++;
-      while (x < xEnd) {
-        const size = pick(pool);
-        const def = C.BUILDING_DEFS[size];
-        if (x + def.w > xEnd) break;
-        extras.push({ x: x + def.w / 2, y: baseY, size, blockIdx: id });
-        x += def.w + gap;
+    // 指定範囲の高さに収まる BuildingSize だけを集めるヘルパ
+    const byH = (minH: number, maxH: number): C.BuildingSize[] => {
+      const arr: C.BuildingSize[] = [];
+      for (const k of Object.keys(C.BUILDING_DEFS) as C.BuildingSize[]) {
+        const h = C.BUILDING_DEFS[k].h;
+        if (h >= minH && h <= maxH) arr.push(k);
       }
+      return arr.length > 0 ? arr : (['house'] as C.BuildingSize[]);
     };
 
-    // ── 下段 (川〜ロワー間) に小型住宅を敷き詰める ──
-    //   y=-290 〜 -80 の空きスペース (既存 stage 1 では川エリアでビル無し)
-    fillRow(-275, tiny);
-    fillRow(-250, tiny);
-    fillRow(-220, [...tiny, ...small]);
-    fillRow(-180, tiny);
-    fillRow(-145, [...tiny, ...small]);
-    fillRow(-110, tiny);
+    // 各行: baseY = 行の下端、slotH = 次の行までの垂直スロット (baseY + slotH まで
+    //   その行の建物が収まる)。hMax = その行で許す最大建物高 (= slotH - 3px gap)。
+    //   下段ほど小型、上段ほど高層。画面全体 y=[-290, 290] を15行で覆う。
+    const rowDefs = [
+      { baseY: -286, slotH: 25 },
+      { baseY: -261, slotH: 25 },
+      { baseY: -236, slotH: 25 },
+      { baseY: -211, slotH: 28 },
+      { baseY: -183, slotH: 28 },
+      { baseY: -155, slotH: 32 },
+      { baseY: -123, slotH: 32 },
+      { baseY:  -91, slotH: 34 },
+      { baseY:  -57, slotH: 34 },
+      { baseY:  -23, slotH: 36 },
+      { baseY:   13, slotH: 40 },
+      { baseY:   53, slotH: 45 },
+      { baseY:   98, slotH: 55 },
+      { baseY:  153, slotH: 68 },
+      { baseY:  221, slotH: 75 }, // 画面上端まで (y<=290)
+    ];
 
-    // ── タイトル真後ろ (y ≈ -90 〜 35 の中央帯) に補完行を追加 ──
-    //   既存 stage 1 の row0 (LOWER より下、家層) と重ねつつ隙間を潰す。
-    //   titleフォント (画面中央) が空き地を背景にしないよう、小型で埋める。
-    fillRow(-90, tiny);
-    fillRow(-70, [...tiny, ...small]);
-    fillRow(-45, tiny);
-    fillRow(-20, [...tiny, ...small]);
-    fillRow( 0, tiny);
-    fillRow( 18, [...tiny, ...small]);
+    const grid: Array<{ x: number; y: number; size: C.BuildingSize; blockIdx: number }> = [];
+    rowDefs.forEach((row, ri) => {
+      const hMax = row.slotH - 3;
+      const hMin = Math.max(8, hMax - 18);  // 同じ行は高さが近い建物だけ混ぜる
+      const pool = byH(hMin, hMax);
+      const gapX = 1;
+      let x = -180;
+      const xEnd = 180;
+      while (x < xEnd) {
+        const size = pool[Math.floor(rand() * pool.length)];
+        const def = C.BUILDING_DEFS[size];
+        if (x + def.w > xEnd) break;
+        grid.push({ x: x + def.w / 2, y: row.baseY, size, blockIdx: 9900 + ri });
+        x += def.w + gapX;
+      }
+    });
 
-    // ── 中低段 (既存 stage 1 の下町層の間) に詰め込み ──
-    //   y=20 の LOWER 道路〜 MAIN 道路 の間 (既存 apartment/shop/restaurant 層)
-    fillRow(40, [...small, ...medium]);
-    fillRow(60, tiny);
-    fillRow(75, [...small, ...tiny]);
-    fillRow(90, tiny);
-    fillRow(105, [...tiny, ...small]);
+    // 既存 stage 1 の建物を廃棄してグリッドで置換 (被り無し、均一密度)
+    this.buildings.load(grid);
 
-    // ── 中高段 (MAIN 道路〜HILLTOP 道路 の間) ──
-    //   既存の商店街層。中型を詰める
-    fillRow(145, medium);
-    fillRow(175, [...medium, ...small]);
-    fillRow(205, small);
-
-    // ── 上段 (HILLTOP より上) に大型ビル・高層ビル ──
-    fillRow(232, large);
-    fillRow(258, landmark, -175, 175, 2);
-    fillRow(278, [...large, ...medium]);
-
-    this.buildings.loadChunk(extras);
-
-    // ── 通行人を大量追加 (街を賑やかに) ──
-    //   既存の spawnOnStreets 60 体 + prePlaced 以外に 400 体を領域全体に散布
-    for (let i = 0; i < 400; i++) {
-      const x = -175 + rand() * 350;
-      const y = -285 + rand() * 570;
-      this.humans.spawnAt(x, y);
-    }
+    // 通行人はリセットして、各行の隙間 (道路相当の帯) に等間隔配置
+    this.humans.reset();
+    this.humans.resetRoads();
+    rowDefs.forEach(row => {
+      const gapY = row.baseY + (row.slotH - 3) + 1; // 建物頂点のすぐ上
+      const N = 14;
+      for (let i = 0; i < N; i++) {
+        const x = -170 + (340 / (N - 1)) * i + (rand() - 0.5) * 8;
+        this.humans.spawnAt(x, gapY);
+      }
+    });
   }
 
   private loadCity() {
