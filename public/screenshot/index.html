@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>KAIJU PINBALL — Screenshot</title>
+<style>
+  @font-face {
+    font-family: 'Press Start 2P';
+    src: url('../fonts/PressStart2P-latin.woff2') format('woff2');
+    font-display: block;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    min-height: 100%;
+    background: #000;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* 1280x720 固定フレーム (CrazyGames 標準スクリーンショットサイズ) */
+  .frame {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    image-rendering: pixelated;
+    /* 夜空: 紫〜暗赤のグラデ + 地平線に燃える街の光 */
+    background:
+      radial-gradient(ellipse 140% 60% at 50% 100%, rgba(255, 90, 30, 0.55) 0%, rgba(220, 40, 20, 0.25) 18%, transparent 45%),
+      radial-gradient(ellipse 90% 50% at 50% 95%, rgba(255, 160, 40, 0.35) 0%, transparent 40%),
+      linear-gradient(180deg, #0a0618 0%, #1a0a22 30%, #2e1028 60%, #3a1218 85%, #2a0810 100%);
+  }
+
+  /* スキャンライン CRT 効果 */
+  .frame::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.08) 0px,
+      rgba(0, 0, 0, 0.08) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none; z-index: 30;
+  }
+  /* ビネット */
+  .frame::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+    pointer-events: none; z-index: 25;
+  }
+
+  /* 月 */
+  .moon {
+    position: absolute;
+    top: 70px; right: 150px;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff4c0 0%, #ffd878 55%, #d89840 100%);
+    box-shadow:
+      0 0 40px rgba(255, 220, 130, 0.4),
+      0 0 100px rgba(255, 180, 60, 0.25);
+    z-index: 2;
+  }
+  /* 星 */
+  .stars {
+    position: absolute; inset: 0 0 55% 0;
+    background-image:
+      radial-gradient(1px 1px at 80px 60px,  #fff, transparent),
+      radial-gradient(1px 1px at 220px 30px, #fff8, transparent),
+      radial-gradient(1px 1px at 360px 110px, #fff, transparent),
+      radial-gradient(1px 1px at 520px 45px, #fffb, transparent),
+      radial-gradient(1px 1px at 700px 90px, #fff6, transparent),
+      radial-gradient(1px 1px at 900px 70px, #fff, transparent),
+      radial-gradient(1px 1px at 1080px 35px, #fff9, transparent),
+      radial-gradient(1px 1px at 1200px 120px, #fff, transparent),
+      radial-gradient(1px 1px at 140px 150px, #fff6, transparent),
+      radial-gradient(1px 1px at 450px 180px, #fff8, transparent),
+      radial-gradient(1px 1px at 820px 140px, #fff6, transparent),
+      radial-gradient(1px 1px at 1150px 200px, #fff9, transparent);
+    background-repeat: no-repeat;
+    z-index: 1;
+  }
+
+  /* 遠景ビル (暗いシルエット) */
+  .city-far {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 340px;
+    z-index: 3;
+    filter: brightness(0.35) saturate(0.5);
+  }
+  /* 中景ビル (ゲーム内カラー、怪獣の背景) */
+  .city-mid {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 400px;
+    z-index: 5;
+  }
+  /* 前景ビル (最も手前、鮮やか) */
+  .city-near {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 240px;
+    z-index: 12;
+  }
+
+  .building {
+    position: absolute;
+    bottom: 0;
+    image-rendering: pixelated;
+    /* 窓を CSS グラデで表現 (LED ピクセルパターン) */
+  }
+  .building::after {
+    content: '';
+    position: absolute;
+    inset: 6px 4px 10px 4px;
+    background-image:
+      radial-gradient(circle 2px at 3px 3px, var(--win-color, #ffc040), transparent 3px);
+    background-size: 8px 8px;
+    opacity: var(--win-opacity, 0.85);
+    mix-blend-mode: screen;
+  }
+  /* 屋根ラインのハイライト */
+  .building::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  /* 怪獣シルエット */
+  .kaiju {
+    position: absolute;
+    left: 50%;
+    bottom: 170px;
+    transform: translateX(-50%);
+    z-index: 8;
+    width: 420px; height: 440px;
+    filter: drop-shadow(0 0 30px rgba(255, 80, 40, 0.5));
+  }
+  .kaiju svg { width: 100%; height: 100%; display: block; }
+
+  /* 地平線の炎 (破壊されたビルの炎上) */
+  .fire-glow {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 160px;
+    background:
+      radial-gradient(ellipse 40% 100% at 20% 100%, rgba(255, 160, 40, 0.5) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 100% at 55% 100%, rgba(255, 80, 20, 0.45) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 100% at 85% 100%, rgba(255, 180, 50, 0.4) 0%, transparent 60%);
+    z-index: 11;
+    pointer-events: none;
+  }
+
+  /* タイトル */
+  .title {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -58%);
+    text-align: center;
+    z-index: 20;
+  }
+  .title h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 110px;
+    line-height: 1.08;
+    color: #ffd020;
+    letter-spacing: 10px;
+    text-shadow:
+      8px 8px 0 #000,
+      -4px -4px 0 #8a1008,
+      4px -4px 0 #8a1008,
+      -4px 4px 0 #8a1008,
+      0 0 60px rgba(255, 200, 40, 0.6);
+    -webkit-text-stroke: 2px #000;
+  }
+  .title .sub {
+    margin-top: 42px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 22px;
+    color: #ff7a6a;
+    letter-spacing: 4px;
+    text-shadow: 4px 4px 0 #000, 0 0 18px rgba(255, 100, 60, 0.4);
+  }
+  .title .tag {
+    margin-top: 26px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #8cf;
+    letter-spacing: 3px;
+    text-shadow: 3px 3px 0 #000;
+  }
+
+  /* 右上のボールトレイル装飾 (ピンボール要素を示唆) */
+  .pinball {
+    position: absolute;
+    top: 180px; right: 180px;
+    width: 18px; height: 18px;
+    background: radial-gradient(circle at 35% 35%, #fff 0%, #ffd020 40%, #b07008 80%);
+    border-radius: 50%;
+    box-shadow: 0 0 24px rgba(255, 220, 80, 0.9), 0 0 60px rgba(255, 120, 40, 0.5);
+    z-index: 18;
+  }
+  .pinball-trail {
+    position: absolute;
+    top: 186px; right: 220px;
+    width: 180px; height: 6px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 200, 60, 0.7) 60%, rgba(255, 220, 120, 1) 100%);
+    border-radius: 3px;
+    box-shadow: 0 0 16px rgba(255, 180, 40, 0.6);
+    z-index: 17;
+    transform: rotate(-12deg);
+  }
+
+  /* 左下のフリッパー装飾 */
+  .flipper {
+    position: absolute;
+    bottom: 60px; left: 60px;
+    width: 110px; height: 26px;
+    background: linear-gradient(180deg, #e8e0d0 0%, #908070 60%, #504840 100%);
+    transform: rotate(-18deg);
+    border: 3px solid #000;
+    z-index: 19;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  }
+  .flipper.right {
+    left: auto; right: 60px;
+    transform: rotate(18deg);
+  }
+
+  /* キャプションバー */
+  .caption {
+    position: absolute;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #7090a0;
+    letter-spacing: 2px;
+    z-index: 22;
+    text-shadow: 2px 2px 0 #000;
+  }
+
+  /* 撮影用メタ情報 (印刷/スクショ時非表示) */
+  .info {
+    position: fixed;
+    top: 12px; left: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #555;
+    color: #8cf;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    line-height: 1.7;
+    z-index: 100;
+  }
+  @media print { .info { display: none; } }
+  .info b { color: #ffd020; }
+</style>
+</head>
+<body>
+
+<div class="info">
+  <b>KAIJU PINBALL SCREENSHOT PAGE</b><br>
+  Frame: 1280 x 720 (16:9)<br>
+  Use DevTools &gt; Capture screenshot<br>
+  or browser full-window capture at 1280x720.
+</div>
+
+<div class="frame" id="frame">
+  <div class="stars"></div>
+  <div class="moon"></div>
+
+  <!-- 遠景ビル (暗シルエット) -->
+  <div class="city-far" id="city-far"></div>
+
+  <!-- 中景ビル (色付き、怪獣の後ろ) -->
+  <div class="city-mid" id="city-mid"></div>
+
+  <!-- 怪獣シルエット -->
+  <div class="kaiju">
+    <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+      <!-- 怪獣ボディ (ピクセルアート風、ダークグリーンシルエット + 赤目) -->
+      <g fill="#1a0c18">
+        <!-- 胴体 -->
+        <rect x="60" y="80" width="80" height="90"/>
+        <rect x="50" y="100" width="100" height="60"/>
+        <!-- 首 -->
+        <rect x="70" y="50" width="60" height="40"/>
+        <!-- 頭 -->
+        <rect x="55" y="20" width="90" height="45"/>
+        <!-- 角/ツノ -->
+        <rect x="60" y="10" width="12" height="18"/>
+        <rect x="128" y="10" width="12" height="18"/>
+        <!-- 腕 -->
+        <rect x="30" y="90" width="30" height="60"/>
+        <rect x="20" y="120" width="20" height="40"/>
+        <rect x="140" y="90" width="30" height="60"/>
+        <rect x="160" y="120" width="20" height="40"/>
+        <!-- 足 -->
+        <rect x="55" y="165" width="35" height="45"/>
+        <rect x="110" y="165" width="35" height="45"/>
+        <rect x="45" y="205" width="55" height="15"/>
+        <rect x="100" y="205" width="55" height="15"/>
+        <!-- 背びれ -->
+        <rect x="95" y="60" width="10" height="20"/>
+        <rect x="88" y="75" width="24" height="15"/>
+        <rect x="80" y="85" width="40" height="15"/>
+      </g>
+      <!-- 目 (赤く光る) -->
+      <g fill="#ff3020">
+        <rect x="72" y="35" width="14" height="10"/>
+        <rect x="114" y="35" width="14" height="10"/>
+      </g>
+      <!-- 目のハイライト -->
+      <g fill="#ffb070">
+        <rect x="74" y="37" width="4" height="4"/>
+        <rect x="116" y="37" width="4" height="4"/>
+      </g>
+      <!-- 口 (牙) -->
+      <g fill="#fff">
+        <rect x="80" y="55" width="4" height="6"/>
+        <rect x="88" y="55" width="4" height="6"/>
+        <rect x="108" y="55" width="4" height="6"/>
+        <rect x="116" y="55" width="4" height="6"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 地平線の炎 -->
+  <div class="fire-glow"></div>
+
+  <!-- 前景ビル (手前、色鮮やか) -->
+  <div class="city-near" id="city-near"></div>
+
+  <!-- ピンボール要素 -->
+  <div class="pinball-trail"></div>
+  <div class="pinball"></div>
+
+  <!-- フリッパー -->
+  <div class="flipper"></div>
+  <div class="flipper right"></div>
+
+  <!-- タイトル -->
+  <div class="title">
+    <h1>KAIJU<br>PINBALL</h1>
+    <div class="sub">CRUSH THE CITY. STOMP FOR FUEL.</div>
+    <div class="tag">5 STAGES + BOSS</div>
+  </div>
+
+  <div class="caption">GIANT MONSTER PINBALL RAMPAGE</div>
+</div>
+
+<script>
+// ─── 都市生成: ゲーム内ビル色パレットを使ってランダム都市を構築 ───
+
+// ゲームの entities.ts から抜粋したファサード色 (RGB 0-1 → hex)
+const PALETTES = {
+  residential: ['#b86a4d', '#ccbf9d', '#94a6b8', '#a68461'],
+  commercial:  ['#ccc2ad', '#9eae99', '#b3a6bf'],
+  office:      ['#99aecc', '#aeaea6', '#85a6bf'],
+  named: [
+    '#d9d19a', // school (warm sand)
+    '#e6e6eb', // hospital (pale)
+    '#855134', // temple
+    '#aeaea6', // parking
+    '#e8c06b', // department_store warm
+    '#f288ad', // snack pink
+    '#b861d1', // love_hotel purple
+    '#e0e0d1', // business_hotel
+    '#d14732', // fire_station red
+    '#526bb3', // police_station blue
+    '#e6b340', // pachinko yellow
+    '#4085e0', // game_center blue
+    '#c73899', // karaoke magenta
+    '#9ee085', // supermarket green
+    '#c75138', // tahoto red (pagoda)
+    '#8fe0d6', // water/greenhouse teal
+  ],
+};
+const WINDOW_COLORS = ['#ffd040', '#ffc060', '#ff8040', '#f0e090', '#ffe090'];
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+}
+function mixDark(hex, amt) {
+  const [r, g, b] = hexToRgb(hex);
+  const m = 1 - amt;
+  return `rgb(${(r*m)|0},${(g*m)|0},${(b*m)|0})`;
+}
+
+function pickColor(tier) {
+  // tier: 'far'=暗い住宅風、'mid'=多様な色、'near'=鮮やかな名物系
+  if (tier === 'far') {
+    const p = PALETTES.residential;
+    return mixDark(p[Math.random()*p.length|0], 0.3);
+  }
+  if (tier === 'mid') {
+    const bag = [...PALETTES.residential, ...PALETTES.commercial, ...PALETTES.office];
+    return bag[Math.random()*bag.length|0];
+  }
+  // near
+  return PALETTES.named[Math.random()*PALETTES.named.length|0];
+}
+
+function makeBuilding(x, w, h, color, tier) {
+  const d = document.createElement('div');
+  d.className = 'building';
+  d.style.left = x + 'px';
+  d.style.width = w + 'px';
+  d.style.height = h + 'px';
+  d.style.background = `linear-gradient(180deg, ${color} 0%, ${mixDark(color, 0.3)} 100%)`;
+  d.style.borderTop = `3px solid ${mixDark(color, 0.5)}`;
+  d.style.borderLeft = `2px solid ${mixDark(color, 0.2)}`;
+  d.style.borderRight = `2px solid ${mixDark(color, 0.4)}`;
+  // 窓の色と密度
+  const winColor = WINDOW_COLORS[Math.random()*WINDOW_COLORS.length|0];
+  d.style.setProperty('--win-color', winColor);
+  d.style.setProperty('--win-opacity', tier === 'far' ? '0.35' : (tier === 'mid' ? '0.7' : '0.9'));
+  // 一部のビルは屋根にアンテナや看板を載せる (near のみ)
+  if (tier === 'near' && Math.random() < 0.35) {
+    const sign = document.createElement('div');
+    sign.style.position = 'absolute';
+    sign.style.top = '-14px';
+    sign.style.left = '50%';
+    sign.style.transform = 'translateX(-50%)';
+    sign.style.width = '4px';
+    sign.style.height = '16px';
+    sign.style.background = '#555';
+    d.appendChild(sign);
+    const lamp = document.createElement('div');
+    lamp.style.position = 'absolute';
+    lamp.style.top = '-20px';
+    lamp.style.left = '50%';
+    lamp.style.transform = 'translateX(-50%)';
+    lamp.style.width = '10px';
+    lamp.style.height = '10px';
+    lamp.style.borderRadius = '50%';
+    lamp.style.background = '#ff4030';
+    lamp.style.boxShadow = '0 0 12px rgba(255, 60, 30, 0.9)';
+    d.appendChild(lamp);
+  }
+  return d;
+}
+
+function generateCity(containerId, tier, opts) {
+  const c = document.getElementById(containerId);
+  const frame = document.getElementById('frame').clientWidth; // 1280
+  let x = -20;
+  while (x < frame + 20) {
+    const w = opts.wMin + Math.random() * (opts.wMax - opts.wMin);
+    const gap = opts.gapMin + Math.random() * (opts.gapMax - opts.gapMin);
+    const h = opts.hMin + Math.random() * (opts.hMax - opts.hMin);
+    const color = pickColor(tier);
+    c.appendChild(makeBuilding(x, w, h, color, tier));
+    x += w + gap;
+  }
+}
+
+// 遠景: 低く細かいビル
+generateCity('city-far', 'far', { wMin: 30, wMax: 70, gapMin: 2, gapMax: 10, hMin: 120, hMax: 260 });
+// 中景: タワーミックス、怪獣の背景
+generateCity('city-mid', 'mid', { wMin: 45, wMax: 100, gapMin: 6, gapMax: 18, hMin: 180, hMax: 380 });
+// 前景: 小さめ、色鮮やかな繁華街
+generateCity('city-near', 'near', { wMin: 55, wMax: 120, gapMin: 10, gapMax: 22, hMin: 100, hMax: 220 });
+
+// 前景ビルには「破壊痕」を 1〜2 個ランダムで追加
+(() => {
+  const near = document.getElementById('city-near');
+  const all = near.querySelectorAll('.building');
+  const picked = new Set();
+  for (let i = 0; i < 2; i++) {
+    const idx = Math.random() * all.length | 0;
+    if (picked.has(idx)) continue;
+    picked.add(idx);
+    const b = all[idx];
+    // 上部をジャギーに切り取る = 破壊
+    b.style.clipPath = 'polygon(0% 100%, 0% 40%, 15% 45%, 25% 20%, 40% 55%, 55% 25%, 70% 50%, 85% 30%, 100% 55%, 100% 100%)';
+    // 炎オーバーレイ
+    const flame = document.createElement('div');
+    flame.style.position = 'absolute';
+    flame.style.bottom = '80%';
+    flame.style.left = '10%'; flame.style.right = '10%';
+    flame.style.height = '40px';
+    flame.style.background = 'radial-gradient(ellipse, rgba(255,180,50,0.8) 0%, rgba(255,80,20,0.4) 50%, transparent 80%)';
+    flame.style.filter = 'blur(4px)';
+    b.appendChild(flame);
+  }
+})();
+</script>
+
+</body>
+</html>
