@@ -351,6 +351,66 @@
     #clear-record { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffd020; margin-top: 12px; letter-spacing: 1px; }
     #clear-tap    { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #8f8; margin-top: 16px; animation: blink 1s infinite; }
 
+    /* ============== スクリーンショットモード (?screenshot=1) ==============
+       UI/HUD を全て隠し、ゲームエンジンが stage 1 の盤面を描画したキャンバスを
+       そのまま見せる。中央にプレーンなタイトル文字を重ねる。 */
+    body.screenshot-mode #side-left,
+    body.screenshot-mode #side-right,
+    body.screenshot-mode #loading,
+    body.screenshot-mode #title,
+    body.screenshot-mode #pause,
+    body.screenshot-mode #gameover,
+    body.screenshot-mode #clear,
+    body.screenshot-mode #mute-btn,
+    body.screenshot-mode #pause-btn,
+    body.screenshot-mode #distance-display,
+    body.screenshot-mode #zone-display,
+    body.screenshot-mode #score-display,
+    body.screenshot-mode #best-display,
+    body.screenshot-mode #life-wrap {
+      display: none !important;
+    }
+    /* screenshot モード: 背景を純黒に (周囲のグロー削除) */
+    body.screenshot-mode {
+      background: #000 !important;
+    }
+    body.screenshot-mode #wrap {
+      /* 少しゆったり目に拡大: min(innerW/360, innerH/580) の倍率は main.ts 側で制御 */
+    }
+    /* 中央のタイトル (ゲームキャンバスの上にオーバーレイ) */
+    #screenshot-title { display: none; }
+    body.screenshot-mode #screenshot-title {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      z-index: 30;
+      text-align: center;
+    }
+    #screenshot-title .sst-main {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 36px;
+      color: #ffd020;
+      letter-spacing: 4px;
+      line-height: 1.2;
+      text-shadow:
+        4px 4px 0 #000,
+        -2px 0 0 #000,
+        2px 0 0 #000,
+        0 -2px 0 #000,
+        0 2px 0 #000;
+    }
+    #screenshot-title .sst-sub {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #ff5030;
+      letter-spacing: 2px;
+      margin-top: 18px;
+      text-shadow: 3px 3px 0 #000, -1px 0 0 #000, 1px 0 0 #000;
+    }
   </style>
 </head>
 <body>
@@ -405,6 +465,11 @@
   <div id="loading">
     <div id="loading-title">KAIJU PINBALL</div>
     <div id="loading-text">LOADING...</div>
+  </div>
+  <!-- スクリーンショット用タイトルオーバーレイ (?screenshot=1 でのみ表示) -->
+  <div id="screenshot-title">
+    <div class="sst-main">KAIJU<br>PINBALL</div>
+    <div class="sst-sub">CRUSH THE CITY</div>
   </div>
   <div id="no-webgl">
     <h2>WEBGL 2 REQUIRED</h2>

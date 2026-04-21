@@ -172,7 +172,7 @@ export class Game {
     return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
   }
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, opts?: { screenshotMode?: boolean }) {
     this.renderer  = new Renderer(canvas);
     this.input     = new InputManager(canvas);
     this.sound     = new SoundEngine();
@@ -186,6 +186,19 @@ export class Game {
     this.vehicles  = new VehicleManager();
     this.ball      = new Ball();
     this.flippers  = [new Flipper(true), new Flipper(false)];
+
+    // スクリーンショットモード: UI ハンドラを貼らず、
+    // タイトル画面も表示しない。titleActive=true のまま保って update を止め、
+    // render だけ回して stage 1 の盤面 (人間・車両・建物) を静止画として表示
+    if (opts?.screenshotMode) {
+      this.initRun();
+      this.loadCity();
+      this.ball.active = false;                 // ボール非表示
+      this.sound.setMuted(true);                // 念のため無音
+      // titleActive は既定で true。update() は冒頭で early return するので物理停止
+      this.startLoop();
+      return;
+    }
 
     this.input.registerRestartTap(document.getElementById('gameover')!);
     this.input.registerRestartTap(document.getElementById('clear')!);

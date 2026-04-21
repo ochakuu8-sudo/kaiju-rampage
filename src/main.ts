@@ -7,6 +7,11 @@ import { initSdk } from './sdk';
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 if (!canvas) throw new Error('Canvas not found');
 
+// スクリーンショット用モード: ?screenshot=1 でタイトル/HUD を隠し、
+// stage 1 の盤面だけをレンダリングする (ボールも非表示、物理停止)
+const screenshotMode = new URLSearchParams(window.location.search).has('screenshot');
+if (screenshotMode) document.body.classList.add('screenshot-mode');
+
 // レスポンシブ: #wrap を画面に合わせてスケール（縦横比固定）
 const wrap = document.getElementById('wrap') as HTMLElement;
 function applyScale() {
@@ -23,7 +28,7 @@ initSdk();
 // ゲーム起動 — WebGL2 初期化失敗時は non-WebGL 画面を出す
 try {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const game = new Game(canvas);
+  const game = new Game(canvas, { screenshotMode });
   // 初期化完了: ローディング画面をフェードアウト
   const loading = document.getElementById('loading');
   if (loading) {
