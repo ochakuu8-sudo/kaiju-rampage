@@ -398,7 +398,7 @@ export class Game {
       }
     };
 
-    // ── 下段 (川〜ロワー間) に小型住宅を 3 行追加 ──
+    // ── 下段 (川〜ロワー間) に小型住宅を敷き詰める ──
     //   y=-290 〜 -80 の空きスペース (既存 stage 1 では川エリアでビル無し)
     fillRow(-275, tiny);
     fillRow(-250, tiny);
@@ -407,10 +407,22 @@ export class Game {
     fillRow(-145, [...tiny, ...small]);
     fillRow(-110, tiny);
 
+    // ── タイトル真後ろ (y ≈ -90 〜 35 の中央帯) に補完行を追加 ──
+    //   既存 stage 1 の row0 (LOWER より下、家層) と重ねつつ隙間を潰す。
+    //   titleフォント (画面中央) が空き地を背景にしないよう、小型で埋める。
+    fillRow(-90, tiny);
+    fillRow(-70, [...tiny, ...small]);
+    fillRow(-45, tiny);
+    fillRow(-20, [...tiny, ...small]);
+    fillRow( 0, tiny);
+    fillRow( 18, [...tiny, ...small]);
+
     // ── 中低段 (既存 stage 1 の下町層の間) に詰め込み ──
     //   y=20 の LOWER 道路〜 MAIN 道路 の間 (既存 apartment/shop/restaurant 層)
     fillRow(40, [...small, ...medium]);
+    fillRow(60, tiny);
     fillRow(75, [...small, ...tiny]);
+    fillRow(90, tiny);
     fillRow(105, [...tiny, ...small]);
 
     // ── 中高段 (MAIN 道路〜HILLTOP 道路 の間) ──
