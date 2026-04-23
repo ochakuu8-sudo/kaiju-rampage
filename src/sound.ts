@@ -376,26 +376,27 @@ export class SoundEngine {
                                        0,0,0,0, 0,0,0,0, 0,0,0,0, 1,2,1,2];
 
   // ───── セクション別レイヤープロファイル ─────
-  //   厳密に「1 セクションにつき 1 楽器だけ追加」する積み上げ方式。
-  //   各セクションで 1 つ新レイヤーが入るので「あ、音増えた」と気づきやすい。
-  //   Section 7 (CLIMAX) でリードだけ +12 (octave up)、fill + crash も有効化。
+  //   ドラム系 (hat/kick/snare) は 1-3 で積み上げ、
+  //   4 以降は pitched layer (違う音程の新音色) を段階的に追加して盛り上げる。
+  //   counter = カウンターメロディ (lead の +7 = 5 度上ハーモニー)。
+  //   Section 7 (CLIMAX) で初めて lead +12 octave up + crash + fill を解放。
   private static readonly SECTION_PROFILE = [
-    // 0: bass + lead のみ (基本 2 レイヤー)
-    { kick:false, snare:false, hat:false, arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.18, bassGain:0.28 },
-    // 1: + hat (まず軽く刻みが入る)
-    { kick:false, snare:false, hat:true,  arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.20, bassGain:0.30 },
-    // 2: + kick (踏み込みが入ってリズム感が立ち上がる)
-    { kick:true,  snare:false, hat:true,  arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.22, bassGain:0.32 },
-    // 3: + snare (バックビート入って完全なビートに)
-    { kick:true,  snare:true,  hat:true,  arp:false, stab:false, pad:false, crash:true,  fill:false, leadGain:0.24, bassGain:0.34 },
-    // 4: + arp (off-beat 16 分刻みでメロディが広がる)
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:false, pad:false, crash:false, fill:false, leadGain:0.26, bassGain:0.35 },
-    // 5: + stab (コード頭の打ち込みで厚みが加わる)
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, crash:false, fill:false, leadGain:0.28, bassGain:0.36 },
-    // 6: + pad (サステインコードが敷かれて音像が埋まる、最大編成一歩手前)
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:false, fill:false, leadGain:0.30, bassGain:0.37 },
-    // 7 CLIMAX: 全レイヤー + lead オクターブ up + crash + 末尾 fill で解放
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:true,  leadGain:0.32, bassGain:0.38 },
+    // 0: bass + lead のみ (基本 2 レイヤー、静かな導入)
+    { kick:false, snare:false, hat:false, arp:false, stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.18, bassGain:0.28 },
+    // 1: + hat (軽い刻み、ドラム系 1)
+    { kick:false, snare:false, hat:true,  arp:false, stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.20, bassGain:0.30 },
+    // 2: + kick (踏み込み、ドラム系 2)
+    { kick:true,  snare:false, hat:true,  arp:false, stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.22, bassGain:0.32 },
+    // 3: + snare (完全なビート、ドラム系 3)
+    { kick:true,  snare:true,  hat:true,  arp:false, stab:false, pad:false, counter:false, crash:true,  fill:false, leadGain:0.24, bassGain:0.34 },
+    // 4: + stab (コード頭の "ドン" という和音打ち込み、新しい音程が加わる)
+    { kick:true,  snare:true,  hat:true,  arp:false, stab:true,  pad:false, counter:false, crash:false, fill:false, leadGain:0.25, bassGain:0.35 },
+    // 5: + arp (off-beat 16 分でコードトーン刻み、音程のバラエティが更に増える)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, counter:false, crash:false, fill:false, leadGain:0.26, bassGain:0.36 },
+    // 6: + pad (サステインコード、持続音で厚みアップ、音の隙間が埋まる)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  counter:false, crash:false, fill:false, leadGain:0.28, bassGain:0.37 },
+    // 7 CLIMAX: + counter-melody (lead の +7 = 5度上ハモリ) + lead +12 + crash + fill
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  counter:true,  crash:true,  fill:true,  leadGain:0.32, bassGain:0.38 },
   ];
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
@@ -553,6 +554,26 @@ export class SoundEngine {
         g.gain.setValueAtTime(profile.leadGain, t + step * 0.55);
         g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.8);
         o.connect(lp); lp.connect(g); g.connect(dst);
+        o.start(t); o.stop(t + step * 0.85);
+      }
+    }
+
+    // ── Counter-melody (lead の 5 度上ハーモニー、triangle 波で柔らかく) ──
+    //   違う音程の layer を足して盛り上げる役。profile.counter 有効時のみ発音。
+    //   lead が無音 (-1) のときは counter も出さない。
+    if (profile.counter) {
+      const leadSemi = leadPattern[i];
+      if (leadSemi >= 0) {
+        const counterSemi = leadSemi + 7; // 完全 5 度上
+        const freq = root * Math.pow(2, counterSemi / 12);
+        const o = ctx.createOscillator();
+        o.type = 'triangle';
+        o.frequency.value = freq;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(profile.leadGain * 0.7, t);
+        g.gain.setValueAtTime(profile.leadGain * 0.7, t + step * 0.55);
+        g.gain.exponentialRampToValueAtTime(0.001, t + step * 0.8);
+        o.connect(g); g.connect(dst);
         o.start(t); o.stop(t + step * 0.85);
       }
     }
