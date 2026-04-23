@@ -685,7 +685,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -75, 78),
       _B('duplex', 30, 36), _B('garage', 65, 42),               // Cell C 二世帯住宅 + 車庫
       _B('shed', 70, 78),
-      _B('mansion', 108, 42),                                   // Cell D 大きめの住宅
+      _B('mansion', 114, 42),                                   // Cell D 大きめの住宅
       _B('townhouse', 142, 42),
       _B('shed', 118, 78), _B('greenhouse', 162, 78),
 
@@ -699,12 +699,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('greenhouse', 115, 178), _B('shed', 160, 175),
 
       // === ★ 住宅街の密集化: 追加 HP1 小住宅 (空きを埋める) ===
-      _B('house', -85, 42),   _B('house', 165, 40),               // 上段 facade の隙間
-      _B('townhouse', -22, 76), _B('house', 0, 76),               // 上段裏庭の空き
-      _B('house', 92, 76),                                         // 上段裏中央
-      _B('house', -85, 138),  _B('townhouse', 0, 138),            // 下段 facade
-      _B('house', 92, 138),   _B('house', 178, 134),               // 下段右端
-      _B('shed', 0, 178),     _B('house', 45, 172),                // 下段裏
+      _B('house', -74, 42),   _B('house', 165, 40),               // 上段 facade の隙間
+      _B('townhouse', -22, 76), _B('house', 18, 76),               // 上段裏庭の空き
+      _B('house', -74, 138),  _B('townhouse', -19, 138),            // 下段 facade
+      _B('house', 178, 134),                                        // 下段右端
+      _B('shed', -16, 178),     _B('house', 45, 172),                // 下段裏
     ],
     furniture: [
       // ─── ★★ C0 固有: 古民家の日本庭園 (Cell B 上段・Cell F 下段) ★★ ───
@@ -816,7 +815,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('house', -155, 38), _B('duplex', -120, 38),            // Cell A 戸建 + 二世帯
       _B('shed', -148, 72), _B('greenhouse', -115, 78),
       _B('convenience', -45, 38),                               // ★ Cell B 角のコンビニ
-      _B('garage', -15, 75),
+      _B('garage', 20, 75),
       _B('laundromat', 35, 38),                                 // Cell C ランドロマット
       _B('bungalow', 68, 48), _B('shed', 38, 78),               // ★ 平屋
       _B('mansion', 115, 42),                                   // Cell D 住宅 (大)
@@ -834,12 +833,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('garage', 115, 175), _B('shed', 160, 178),
 
       // === ★ 住宅街の密集化: 追加 HP1 小住宅 ===
-      _B('house', -85, 42),   _B('townhouse', 175, 44),           // 上段 facade 隙間
-      _B('house', -25, 76),   _B('house', 95, 76),                // 上段裏庭
-      _B('house', 172, 78),
-      _B('house', -88, 132),  _B('house', -10, 138),              // 下段 facade
-      _B('house', 90, 138),
-      _B('townhouse', 90, 172), _B('house', 0, 172),              // 下段裏
+      _B('house', -74, 42),   _B('townhouse', 175, 44),           // 上段 facade 隙間
+      _B('house', -25, 76),   _B('house', 74, 76),                // 上段裏庭
+      _B('house', 150, 78),
+      _B('house', -74, 132),  _B('house', -18, 138),              // 下段 facade
+      _B('townhouse', 73, 172),                                    // 下段裏
     ],
     furniture: [
       // ─── 軸 1: wood_fence / hedge リボン (x=±178) ───
@@ -983,22 +981,20 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
 
       // === 下段: 分院 + 多様な住宅 + 銀行支店 ===
       _B('clinic', -145, 130),                                  // Cell E 分院
-      _B('mansion', -105, 142),                                 // ★ 大きめ住宅
+      _B('mansion', -114, 142),                                 // ★ 大きめ住宅
       _B('garage', -150, 178),
       _B('townhouse', -48, 132), _B('house', -18, 138),         // Cell F 住宅
-      _B('shed', -70, 175), _B('greenhouse', -20, 178),
+      _B('shed', -60, 175), _B('greenhouse', -20, 178),
       _B('bank', 45, 128),                                      // Cell G 小さな銀行支店
-      _B('bungalow', 78, 146),                                  // ★ 平屋
       _B('shed', 30, 178),
       _B('duplex', 115, 132),                                   // ★ 2 世帯
       _B('townhouse', 148, 138),
       _B('garage', 170, 178), _B('shed', 118, 175),
 
       // === ★ 住宅街の密集化: 追加 HP1 小住宅 ===
-      _B('house', -85, 42),   _B('house', 0, 72),                 // 上段 facade 隙間 + 裏庭
-      _B('house', 90, 76),
-      _B('townhouse', 85, 134), _B('house', -75, 172),            // 下段追加住宅
-      _B('house', 0, 172),    _B('townhouse', 65, 172),
+      _B('house', -74, 42),   _B('house', 18, 72),                 // 上段 facade 隙間 + 裏庭
+      _B('house', -75, 172),                                       // 下段追加住宅
+      _B('townhouse', 65, 172),
     ],
     furniture: [
       // ─── 軸 1: wood_fence / hedge リボン ───
@@ -1118,11 +1114,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('greenhouse', -120, 78),
       // === Cell B (中左上): コンビニ (角地) + 住宅 ===
       _B('convenience', -45, 42),
-      _B('bungalow', -15, 48),                               // ★ 平屋
+      _B('bungalow', -21, 48),                               // ★ 平屋
       _B('shed', -70, 78),
       // === Cell C (中右上): クリーニング + 家族住宅 ===
       _B('laundromat', 35, 40),
-      _B('mansion', 68, 42),                                 // ★ 大きめ
+      _B('mansion', 66, 42),                                 // ★ 大きめ
       _B('shed', 30, 78),
       // === Cell D (右上): 住宅 + 薬局 ===
       _B('townhouse', 115, 40),                              // 戸建 (houseから変更)
@@ -1141,7 +1137,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('duplex', 50, 172),                                 // ★ 奥の 2 世帯
       // === Cell G 右: 住宅 ===
       _B('house', 75, 138),
-      _B('shed', 78, 178),
+      _B('shed', 76, 178),
       // === Cell H (右下): 住宅 3 連 + 花屋 ===
       _B('florist', 115, 130),
       _B('mansion', 150, 138),                               // ★ 大きめ
@@ -1257,7 +1253,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
 
       // === Cell E (左下): 住宅 3 軒 + 共用庭 (多彩化) ===
       _B('house', -158, 130), _B('bungalow', -128, 142),     // ★ 平屋
-      _B('townhouse', -100, 138),
+      _B('townhouse', -107, 138),
       _B('garage', -152, 180),
       // === Cell F (中左下): 小 cafe + 花屋 ===
       _B('cafe', -55, 130),
@@ -1377,11 +1373,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -150, 75),
       // === Cell B (中左上): 郵便局 (地域拠点) ===
       _B('post_office', -50, 42),
-      _B('duplex', -18, 38),                                 // ★ 2 世帯
+      _B('duplex', -20, 38),                                 // ★ 2 世帯
       _B('shed', -75, 78),
       // === Cell C (中右上): 銀行 + 住宅 ===
       _B('bank', 45, 42),
-      _B('bungalow', 80, 48),                                // ★ 平屋
+      _B('bungalow', 71, 48),                                // ★ 平屋
       // === Cell D (右上): 住宅 + パン屋 ===
       _B('mansion', 118, 42),                                // ★ 大きめ
       _B('bakery', 150, 42),
@@ -1517,8 +1513,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's1_raw', raw: {
     buildings: [
       // === 上段: 小学校キャンパス (Cell A-D を貫く大ランドマーク) ===
-      _B('school', -90, 42),                                 // ★ 本校舎 (左翼)
-      _B('school', -20, 42),                                 // ★ 本校舎 (右翼) — 連結校舎
+      _B('school', -118, 42),                                 // ★ 本校舎 (左翼)
+      _B('school', -30, 42),                                 // ★ 本校舎 (右翼) — 連結校舎
       _B('school', 55, 42),                                  // ★ 体育館 (校舎 BuildingSize 流用)
       _B('garage', 108, 42),                                 // プール棟
       _B('shed', 145, 42),                                   // 器具庫
@@ -1814,7 +1810,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('train_station', -40, 48),                          // ★ 地方の小さな駅 (セル中央)
       // === Cell C (中右上): 駅前コンビニ + 郵便局 ===
       _B('convenience', 50, 42),
-      _B('post_office', 88, 42),
+      _B('post_office', 110, 42),
       // === Cell D (右上): 住宅 + 小 cafe ===
       _B('house', 145, 40),
       _B('cafe', 178, 42),
@@ -1942,7 +1938,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('bungalow', -25, 48),                               // ★ 農家の平屋 (大温室から変更)
       // === Cell C (中右上): 別の農家 + 物置 ===
       _B('duplex', 50, 38),                                  // ★ 2 世帯農家
-      _B('shed', 80, 40),
+      _B('shed', 76, 40),
       _B('greenhouse', 55, 78),
       // === Cell D (右上): 畑 + 温室 + 倉庫 ===
       _B('greenhouse', 120, 45),                             // 温室 (1 つに削減)
@@ -1955,11 +1951,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -148, 180),
       // === Cell F (中左下): 畑のど真ん中 + 小屋 ===
       _B('shed', -50, 138),
-      _B('greenhouse', -15, 140),
+      _B('greenhouse', -21, 140),
       _B('shed', -55, 180),
       // === Cell G (中右下): 小さな倉庫 + 畑 ===
       _B('garage', 40, 135),
-      _B('townhouse', 75, 132),                              // ★ 農協風の連棟 (温室から変更)
+      _B('townhouse', 73, 132),                              // ★ 農協風の連棟 (温室から変更)
       _B('shed', 38, 180),
       // === Cell H (右下): 住宅 + 畑 ===
       _B('house', 118, 138),
@@ -2054,10 +2050,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -120, 38),
       _B('greenhouse', -150, 78),
       // === Cell B (中左上): 大きな倉庫 ★ (Act IV ランドマーク、warehouse 40x36) ===
-      _B('warehouse', -30, 48),                              // ★ 郊外の大きな倉庫
+      _B('warehouse', -36, 48),                              // ★ 郊外の大きな倉庫
       // === Cell C (中右上): 消防分署 + 訓練場 ===
       _B('fire_station', 60, 48),                            // 郊外の消防分署
-      _B('shed', 95, 38),
+      _B('shed', 104, 38),
       // === Cell D (右上): 住宅 + 古いガレージ ===
       _B('house', 138, 40),
       _B('garage', 170, 40),
@@ -2070,11 +2066,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -120, 180),
       // === Cell F (中左下): 警察派出所 + 住宅 ===
       _B('police_station', -35, 132),                        // 郊外の派出所
-      _B('townhouse', -5, 138),
+      _B('townhouse', 19, 138),
       _B('shed', -55, 180),
       // === Cell G (中右下): 倉庫 2 連 ===
       _B('garage', 45, 132),
-      _B('garage', 75, 135),
+      _B('garage', 72, 135),
       _B('shed', 60, 180),
       // === Cell H (右下): 住宅 + 空き地風 ===
       _B('townhouse', 118, 132),
@@ -2176,7 +2172,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('gas_station', -50, 42),                            // 夜営業 (ネオン予感)
       // === Cell C (中右上): 24 時間コンビニ + ラーメン ===
       _B('convenience', 45, 42),
-      _B('ramen', 80, 42),                                   // 夜食のラーメン
+      _B('ramen', 74, 42),                                   // 夜食のラーメン
       // === Cell D (右上): 古い住宅 + ガレージ ===
       _B('townhouse', 138, 40),
       _B('garage', 170, 42),
@@ -2189,11 +2185,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -118, 180),
       // === Cell F (中左下): 夜ラーメン + 古いガレージ ===
       _B('ramen', -45, 135),                                 // 夜の ramen
-      _B('garage', -10, 132),
+      _B('garage', -20, 132),
       _B('shed', -50, 180),
       // === Cell G (中右下): 2 軒目のコンビニ (夜) + 住宅 ===
       _B('convenience', 45, 135),
-      _B('townhouse', 78, 138),
+      _B('townhouse', 73, 138),
       _B('shed', 45, 180),
       // === Cell H (右下): 住宅 + ガレージ + 空き地 ===
       _B('house', 118, 135),
@@ -2310,17 +2306,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       // === 上段 ─ 前列ファサード (Y をずらす) ===
       _B('ramen', -148, 42),                                    // Cell A 駅前ラーメン
       _B('snack', -115, 38),
-      _B('train_station', -25, 52),                             // ★ Cell B 駅舎 (奥に構える)
+      _B('train_station', -35, 52),                             // ★ Cell B 駅舎 (奥に構える)
       _B('convenience', 55, 40),
-      _B('cafe', 90, 44),
-      _B('business_hotel', 135, 68),                            // ★ 背が高いため奥
+      _B('cafe', 107, 44),
+      _B('business_hotel', 135, 64.5),                            // ★ 背が高いため奥
       _B('shop', 172, 40),
       // === 上段 ─ 奥列 (小屋/物置/人力車置き場) ===
       _B('shed', -170, 76),                                     // 駅裏の倉庫
       _B('garage', -128, 80),
-      _B('greenhouse', -78, 78),                                // 花屋の温室
+      _B('greenhouse', -71, 78),                                // 花屋の温室
       _B('shed', 30, 72),
-      _B('garage', 78, 74),
+      _B('garage', 72, 74),
       _B('shed', 110, 76),
       _B('shed', 168, 80),
       // === 下段 ─ 前列ファサード ===
@@ -2328,17 +2324,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('izakaya', -118, 138),
       _B('bus_terminal_shelter', -55, 142),                     // Cell F バス乗り場 (長庇)
       _B('bakery', 38, 130),
-      _B('karaoke', 78, 144),                                   // 少し奥
+      _B('karaoke', 70, 144),                                   // 少し奥
       _B('capsule_hotel', 135, 146),                            // ★ カプセル (横長、少し奥)
       _B('apartment', 175, 148),
       // === 下段 ─ 奥列 (駐輪場/物置/タクシー溜まり) ===
       _B('shed', -170, 172),
       _B('garage', -128, 178),                                  // タクシー車庫
-      _B('shed', -90, 174),
+      _B('shed', -104, 174),
       _B('yatai', -22, 170),                                    // ★ 駅前の夜鳴き屋台
-      _B('shed', 12, 176),
-      _B('garage', 100, 178),
-      _B('shed', 158, 172),
+      _B('shed', 16, 176),
+      _B('garage', 108, 178),
+      _B('shed', 156, 172),
       _B('house', 195, 170),                                    // 駅前の古い家
     ],
     furniture: [
@@ -2401,39 +2397,39 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       // === 上段 ─ 前列ファサード (y=38-46、業種で Y を少しずらす) ===
       _B('ramen', -156, 42),                                    // Cell A ラーメン
       _B('snack', -128, 38),                                    // 前方 (小さく手前)
-      _B('bakery', -102, 44),                                   // 奥めに
+      _B('bakery', -106, 44),                                   // 奥めに
       _B('izakaya', -62, 40),                                   // Cell B 立ち飲み
       _B('shop', -28, 46),                                      // 牛丼 (見立て)
-      _B('cafe', 5, 38),
+      _B('cafe', 19, 38),
       _B('convenience', 40, 44),                                // Cell C 24h
       _B('pharmacy', 72, 40),
-      _B('bookstore', 105, 42),                                 // Cell D
+      _B('bookstore', 107, 42),                                 // Cell D
       _B('karaoke', 142, 48),                                   // ★ カラオケ (奥めに、背が高い)
       // === 上段 ─ 奥列 (y=65-85) 物置/室外機小屋/小さな店 ===
       _B('shed', -170, 72),                                     // 路地裏の物置
       _B('garage', -115, 78),                                   // 車庫
-      _B('shed', -78, 74),
+      _B('shed', -76, 74),
       _B('yatai', -42, 68),                                     // ★ 路地に置かれた屋台
       _B('shed', 22, 76),
-      _B('garage', 85, 80),                                     // 奥の車庫
+      _B('garage', 72, 80),                                     // 奥の車庫
       _B('shed', 125, 72),
       _B('house', 172, 68),                                     // ★ 奥の古い家
       // === 下段 ─ 前列ファサード (y=128-138) ===
       _B('mahjong_parlor', -160, 132),                          // ★ Cell E 麻雀荘
       _B('laundromat', -128, 138),
-      _B('florist', -102, 130),
+      _B('florist', -105, 130),
       _B('gas_station', -60, 136),                              // Cell F 深夜ガソスタ (少し奥)
-      _B('post_office', -18, 132),
+      _B('post_office', -22, 132),
       _B('business_hotel', 30, 150),                            // ★ Cell G (背が高いため少し奥)
-      _B('clinic', 72, 128),                                    // Cell H
-      _B('restaurant', 102, 134),
+      _B('clinic', 69, 128),                                    // Cell H
+      _B('restaurant', 108, 134),
       _B('snack', 132, 130),                                    // ★ スナック 2 軒目
       // === 下段 ─ 奥列 (y=160-180) ===
       _B('shed', -175, 170),
       _B('garage', -128, 178),                                  // 麻雀荘の裏
-      _B('shed', -90, 174),
+      _B('shed', -104, 174),
       _B('greenhouse', -48, 172),                               // ★ 深夜営業の八百屋風
-      _B('shed', 5, 168),
+      _B('shed', -16, 168),
       _B('yatai', 58, 170),                                     // ★ 駐車場脇の屋台
       _B('shed', 118, 176),
       _B('apartment', 170, 168),                                // Cell H 駅前アパート (背景)
@@ -2516,12 +2512,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: {
     buildings: [
       // === 上段 ─ 前列 (アーケード + 多様小店) ===
-      _B('shotengai_arcade', -110, 48),                         // ★ 大型アーケード (奥)
+      _B('shotengai_arcade', -118, 48),                         // ★ 大型アーケード (奥)
       _B('bookstore', -30, 40),
-      _B('cafe', 0, 44),
       _B('izakaya', 30, 38),
       _B('ramen', 60, 42),
-      _B('pachinko', 108, 46),                                  // ★ Act II 予兆
+      _B('pachinko', 113, 46),                                  // ★ Act II 予兆
       _B('snack', 148, 40),
       _B('shop', 175, 42),
       // === 上段 ─ 奥列 (小屋/物置/花屋の温室など) ===
@@ -2529,22 +2524,22 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('garage', -60, 78),
       _B('florist', -25, 75),                                   // 花屋 (小さく)
       _B('shed', 40, 82),
-      _B('greenhouse', 85, 76),
+      _B('greenhouse', 71, 76),
       _B('shed', 135, 74),
       _B('garage', 168, 80),
       // === 下段 ─ 前列 ===
       _B('mahjong_parlor', -160, 132),
       _B('ramen', -128, 138),
-      _B('snack', -95, 130),
+      _B('snack', -106, 130),
       _B('bookstore', -62, 134),
-      _B('karaoke', -15, 144),                                  // ★ 奥に
-      _B('shotengai_arcade', 105, 140),                         // ★ 下段大型アーケード
+      _B('karaoke', -22, 144),                                  // ★ 奥に
+      _B('shotengai_arcade', 118, 140),                         // ★ 下段大型アーケード
       _B('shop', 35, 130),
       _B('cafe', 60, 136),
       // === 下段 ─ 奥列 ===
       _B('shed', -175, 170),
       _B('garage', -140, 176),
-      _B('shed', -78, 172),
+      _B('shed', -76, 172),
       _B('yatai', -32, 168),                                    // ★ 屋台
       _B('shed', 18, 176),
       _B('garage', 48, 172),
@@ -2622,24 +2617,21 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('snack', -115, 38),                                    // 前方
       _B('club', -58, 46),                                      // ★ クラブ (少し奥)
       _B('izakaya', -22, 40),
-      _B('bookstore', 10, 44),
-      _B('cafe', 95, 38),
+      _B('bookstore', 19, 44),
+      _B('cafe', 73, 38),
       _B('bank', 128, 46),
       _B('shop', 165, 42),
       // === 上段 ─ 奥列 (高層ビル + 物置) ===
-      _B('apartment_tall', -108, 78),                           // ★ 高層 (奥)
-      _B('tower', 55, 82),                                      // ★ 雑居タワー (奥)
-      _B('love_hotel', 168, 80),                                // ★ ラブホ (奥)
       _B('shed', -170, 70),
-      _B('garage', -82, 74),
+      _B('garage', -72, 74),
       _B('shed', 25, 68),
       _B('shed', 105, 76),
       _B('greenhouse', 138, 72),
       // === 下段 ─ 前列 ===
       _B('snack', -115, 132),
-      _B('ramen', -82, 138),
+      _B('ramen', -74, 138),
       _B('mahjong_parlor', 20, 134),
-      _B('pharmacy', 100, 130),
+      _B('pharmacy', 108, 130),
       _B('laundromat', 175, 134),
       // === 下段 ─ 奥列 (高層/大型はここ) ===
       _B('business_hotel', -150, 160),                          // ★ ビジネスホテル (奥)
@@ -2647,9 +2639,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('movie_theater', 62, 162),                             // ★ ミニシアター
       _B('capsule_hotel', 145, 165),                            // ★ カプセルホテル
       _B('shed', -175, 175),
-      _B('garage', -45, 172),
-      _B('yatai', 50, 170),                                     // ★ 屋台
-      _B('shed', 120, 178),
+      _B('garage', -48, 172),
+      _B('yatai', 50, 187),                                     // ★ 屋台
+      _B('shed', 118, 178),
     ],
     furniture: [
       // ─── ★★ シグネチャ: 巨大カラオケ看板の連続 ★★ ───
@@ -2708,7 +2700,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 68, 162, 50, 38),
       _G('asphalt', 0, 15, 360, 25),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 128.5, 'avenue'), _VR(0, 187.5, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C4: ゲーセンとパチンコのメイン通り — 交番 + 多業種混在 ──
@@ -2717,21 +2709,21 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段 ─ 前列 ===
       _B('pachinko', -148, 46),                                 // ★ 唯一のパチンコ
-      _B('game_center', -108, 40),                              // ★ ゲーセン
+      _B('game_center', -112, 40),                              // ★ ゲーセン
       _B('karaoke', -65, 50),                                   // 少し奥
-      _B('police_station', -10, 52),                            // ★ 交番 (奥)
+      _B('police_station', -25, 52),                            // ★ 交番 (奥)
       _B('club', 38, 48),                                       // ★ クラブ
-      _B('bookstore', 78, 40),
+      _B('bookstore', 73, 40),
       _B('izakaya', 158, 38),
       _B('ramen', 180, 42),
       // === 上段 ─ 奥列 ===
-      _B('movie_theater', 115, 78),                             // 映画館 (奥)
+      _B('movie_theater', 117, 124),                             // 映画館 (奥)
       _B('shed', -175, 72),
       _B('garage', -130, 78),
-      _B('shed', -85, 74),
-      _B('greenhouse', -35, 76),
+      _B('shed', -76, 74),
+      _B('greenhouse', -35, 78),
       _B('shed', 18, 72),
-      _B('yatai', 60, 70),                                      // ★ 屋台
+      _B('yatai', 60, 72),                                      // ★ 屋台
       _B('shed', 138, 78),
       // === 下段 ─ 前列 ===
       _B('bank', -150, 148),                                    // 少し奥
@@ -2741,8 +2733,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('snack', 75, 134),
       _B('bakery', 155, 132),
       // === 下段 ─ 奥列 ===
-      _B('love_hotel', -75, 160),                               // ★ 奥
-      _B('capsule_hotel', 5, 165),                              // ★ 奥 (横長)
+      _B('love_hotel', -66, 160),                               // ★ 奥
       _B('business_hotel', 112, 168),                           // ★ 奥 (縦長)
       _B('apartment', 180, 158),
       _B('shed', -178, 172),
@@ -2833,12 +2824,12 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       // === 上段 西 (x=-180〜-97): 老舗飲み屋横丁 ===
       _B('snack', -160, 38),                                    // ピンクの小さなママの店
       _B('mahjong_parlor', -130, 44),                           // 緑看板の老舗雀荘
-      _B('izakaya', -105, 40),                                  // 隣の老舗居酒屋
+      _B('izakaya', -108, 40),                                  // 隣の老舗居酒屋
       _B('shed', -172, 76),                                     // 横丁の店裏 (3 軒共用)
       _B('garage', -130, 80),                                   // 古い車庫
 
       // === 上段 中 (x=-83〜+83): ビジネスホテル区画 ===
-      _B('business_hotel', -10, 80),                            // ★ メインのホテル (奥、高層)
+      _B('business_hotel', -22, 64.5),                            // ★ メインのホテル (奥、高層)
       _B('cafe', -60, 40),                                      // ホテル隣のカフェ (1F)
       _B('bookstore', 30, 44),                                  // ホテル隣の書店 (1F)
       _B('ramen', 60, 38),                                      // 反対側のラーメン (1F)
@@ -2846,22 +2837,22 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('garage', 50, 78),                                     // ホテル裏の駐車場
 
       // === 上段 東 (x=+97〜+180): 銀行 + カプセルホテル区画 ===
-      _B('bank', 108, 46),                                      // 落ち着いた銀行
-      _B('capsule_hotel', 155, 80),                             // ★ 横長カプセル (奥)
+      _B('bank', 112, 46),                                      // 落ち着いた銀行
+      _B('capsule_hotel', 155, 78),                             // ★ 横長カプセル (奥)
       _B('shop', 178, 40),                                      // 角の小売店
       _B('shed', 125, 76),                                      // 銀行裏
 
       // === 下段 西 (x=-180〜-97): ラブホテル + クラブ派手区画 ===
       _B('love_hotel', -150, 168),                              // ★ 紫派手 (奥)
-      _B('club', -108, 170),                                    // ★ 黒金クラブ (奥)
+      _B('club', -112, 170),                                    // ★ 黒金クラブ (奥)
       _B('pharmacy', -110, 132),                                // 24h ドラッグ (表)
       _B('shed', -178, 175),                                    // ラブホ裏
-      _B('garage', -160, 178),                                  // ラブホ駐車場
+      _B('garage', -160, 139),                                  // ラブホ駐車場
 
       // === 下段 中 (x=-83〜+83): パチンコ + カラオケ娯楽区画 ===
       _B('pachinko', -50, 142),                                 // ★ メインのパチンコ
       _B('karaoke', 25, 144),                                   // ★ 隣のカラオケ
-      _B('restaurant', -10, 132),                               // 娯楽帰りのレストラン
+      _B('restaurant', -20, 132),                               // 娯楽帰りのレストラン
       _B('shed', 60, 175),                                      // 娯楽店裏
 
       // === 下段 東 (x=+97〜+180): 映画街区 ===
@@ -2956,10 +2947,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('love_hotel', -150, 70),                               // ★ メインのラブホ (奥、派手)
       _B('snack', -108, 38),                                    // 客引きスナック
       _B('snack', -180, 38),                                    // ★ 端のスナック (色違い隣接 OK)
-      _B('garage', -130, 78),                                   // ラブホ駐車場
+      _B('garage', -123, 78),                                   // ラブホ駐車場
 
       // === 上段 中: カプセルホテル + 1F 店区画 ===
-      _B('capsule_hotel', -10, 80),                             // ★ 横長カプセル (奥)
+      _B('capsule_hotel', -30, 78),                             // ★ 横長カプセル (奥)
       _B('cafe', -60, 40),                                      // 1F カフェ
       _B('bookstore', 30, 44),                                  // 1F 書店
       _B('bakery', 60, 40),                                     // 1F パン屋
@@ -2969,7 +2960,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('club', 145, 70),                                      // ★ 黒金クラブ (奥)
       _B('izakaya', 108, 40),                                   // クラブ隣の老舗居酒屋
       _B('mahjong_parlor', 178, 40),                            // 雀荘
-      _B('shed', 130, 78),                                      // クラブ裏
+      _B('shed', 124, 78),                                      // クラブ裏
       _B('garage', 175, 78),                                    // クラブ裏
 
       // === 下段 西: ビジネスホテル + 1F コンビニ区画 ===
@@ -2977,17 +2968,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _B('convenience', -110, 132),                             // 1F コンビニ
       _B('ramen', -180, 132),                                   // 端のラーメン
       _B('shed', -130, 178),                                    // ホテル裏
-      _B('garage', -88, 175),                                   // 駐車場
+      _B('garage', -72, 175),                                   // 駐車場
 
       // === 下段 中: 娯楽区画 (パチンコ + 麻雀) ===
       _B('pachinko', -28, 142),                                 // ★ メイン
-      _B('game_center', 12, 138),                               // 隣のゲーセン
+      _B('game_center', 24, 138),                               // 隣のゲーセン
       _B('shop', 50, 132),                                      // 駐車場前の小店
       _B('shed', 35, 175),                                      // 娯楽店裏
 
       // === 下段 東: ミニシアター街区 ===
       _B('movie_theater', 132, 168),                            // ★ 奥にシアター
-      _B('pharmacy', 105, 132),                                 // シアター前の 24h ドラッグ
+      _B('pharmacy', 108, 132),                                 // シアター前の 24h ドラッグ
       _B('florist', 165, 132),                                  // 花屋
       _B('shed', 175, 178),                                     // シアター裏
     ],
@@ -3076,7 +3067,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       // === 上段 中: ★ 屋台横丁の核 (yatai 3 台密集) ===
       _B('yatai', -55, 30),                                     // ★ 1 台目 (手前)
       _B('yatai', -25, 30),                                     // ★ 2 台目 (隣接)
-      _B('yatai', 5, 30),                                       // ★ 3 台目 (隣接)
       _B('izakaya', 35, 42),                                    // 屋台奥の立ち飲み
       _B('cafe', 65, 38),                                       // 横の夜カフェ
       _B('shed', -25, 76),                                      // 屋台共用倉庫
@@ -3095,16 +3085,16 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
       // === 下段 中: ★ 大型ホテル区画 (奥に並ぶ) ===
       _B('love_hotel', -55, 168),                               // ★ ラブホ (奥)
-      _B('business_hotel', 0, 172),                             // ★ ビジネスホテル (奥)
+      _B('business_hotel', 22, 172),                             // ★ ビジネスホテル (奥)
       _B('club', 50, 170),                                      // ★ クラブ (奥)
       _B('restaurant', -25, 132),                               // 1F レストラン (表)
       _B('snack', 30, 132),                                     // 1F スナック (表、別区画)
 
       // === 下段 東: ガソリンスタンド + 帰路 ===
-      _B('gas_station', 105, 135),                              // ガソスタ
+      _B('gas_station', 113, 135),                              // ガソスタ
       _B('capsule_hotel', 150, 168),                            // ★ カプセル (奥)
       _B('convenience', 178, 132),                              // 帰路コンビニ
-      _B('shed', 130, 178),                                     // ガソスタ裏
+      _B('shed', 123, 178),                                     // ガソスタ裏
     ],
     furniture: [
       // ─── 屋台の湯気 ── noren + chouchin ───
@@ -3185,35 +3175,35 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段 西: シャッター街 (廃れた商店) ===
       _B('snack', -160, 38),                                    // 閉店のスナック (シャッター)
-      _B('apartment', -125, 78),                                // 古いアパート (奥)
+      _B('apartment', -125, 72),                                // 古いアパート (奥)
       _B('shop', -108, 38),                                     // 古い小売店 (閉)
       _B('shed', -175, 76),                                     // 店裏
 
       // === 上段 中: ★ 中央コインパーキング (広場) ===
-      _B('parking', -25, 50),                                   // ★ メイン駐車場 (表に大広場)
+      _B('parking', -28, 50),                                   // ★ メイン駐車場 (表に大広場)
       _B('shed', -65, 75),                                      // 駐車場脇の物置
       _B('shed', 25, 78),                                       // 駐車場脇
 
       // === 上段 東: 古い雑居ビル + ガレージ ===
-      _B('office', 130, 78),                                    // ★ 古い雑居 (奥)
-      _B('mahjong_parlor', 105, 42),                            // 古い雀荘
+      _B('office', 130, 64.5),                                    // ★ 古い雑居 (奥)
+      _B('mahjong_parlor', 71, 42),                            // 古い雀荘
       _B('garage', 155, 40),                                    // 1F ガレージ
       _B('shed', 175, 78),                                      // 端の倉庫
 
       // === 下段 西: ★ もう 1 つの大駐車場 (連結) ===
       _B('parking', -130, 148),                                 // ★ 大駐車場
       _B('shed', -178, 178),                                    // 駐車場端
-      _B('garage', -85, 175),                                   // 駐車場脇
+      _B('garage', -72, 175),                                   // 駐車場脇
 
       // === 下段 中: 雑居オフィスビル + 1F コンビニ ===
       _B('office', -25, 170),                                   // ★ 古い雑居 (奥)
-      _B('convenience', 5, 132),                                // 1F の 24h コンビニ (孤独に明かり)
+      _B('convenience', 22, 132),                                // 1F の 24h コンビニ (孤独に明かり)
       _B('pharmacy', -55, 132),                                 // 隣の 24h ドラッグ
       _B('shed', 30, 175),                                      // ビル裏
 
       // === 下段 東: 高層雑居 + 倉庫 ===
       _B('apartment_tall', 150, 175),                           // ★ 高層 (奥)
-      _B('cafe', 105, 132),                                     // 1F カフェ
+      _B('cafe', 107, 132),                                     // 1F カフェ
       _B('garage', 175, 132),                                   // ガレージ
       _B('shed', 178, 178),                                     // 倉庫
     ],
@@ -3296,36 +3286,36 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       // === 上段 ─ 前列 (古民家の並びと神社) ===
       _B('kominka', -158, 40),
       _B('kominka', -130, 44),
-      _B('shrine', -75, 48),                                    // ★ 小さな神社 (奥)
+      _B('shrine', -69, 48),                                    // ★ 小さな神社 (奥)
       _B('chaya', -30, 38),
-      _B('kominka', 0, 42),
+      _B('kominka', 21, 42),
       _B('apartment', 55, 52),                                  // 古アパート (奥)
-      _B('kominka', 105, 40),
+      _B('kominka', 109, 40),
       _B('chaya', 130, 44),
       // === 上段 ─ 奥列 (物置/小屋/温室) ===
       _B('shed', -175, 70),
       _B('greenhouse', -115, 74),                               // 古い温室
       _B('shed', -60, 78),
       _B('shed', 25, 72),
-      _B('shed', 80, 76),
+      _B('shed', 76, 76),
       _B('greenhouse', 148, 78),
       _B('shed', 175, 70),
       // === 下段 ─ 前列 (境内 + 古民家) ===
       _B('kominka', -160, 132),
       _B('kominka', -135, 138),
-      _B('shrine', -75, 146),                                   // ★ 摂社 (奥)
+      _B('shrine', -69, 146),                                   // ★ 摂社 (奥)
       _B('kominka', -25, 132),
-      _B('chaya', 5, 138),
+      _B('chaya', 20, 138),
       _B('kominka', 48, 130),
       _B('house', 75, 134),
       _B('kominka', 120, 132),
       _B('kominka', 148, 138),
       // === 下段 ─ 奥列 (物置/小さな家) ===
       _B('shed', -178, 172),
-      _B('greenhouse', -105, 178),
+      _B('greenhouse', -109, 178),
       _B('shed', -45, 174),
       _B('garage', 25, 172),
-      _B('shed', 88, 178),
+      _B('shed', 76, 178),
       _B('shed', 175, 174),
     ],
     furniture: [
@@ -3444,7 +3434,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
 
       // === 上段 東: 古民家と町家の並び ===
       _B('kominka', 108, 42),                                   // 古民家 (唯一)
-      _B('machiya', 138, 48),                                   // ★ 町家
+      _B('machiya', 138, 45),                                   // ★ 町家
       _B('kimono_shop', 170, 42),                               // ★ 呉服屋 (別区画)
       _B('machiya', 145, 78),                                   // 奥の町家
 
@@ -3452,11 +3442,11 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('kura', -162, 130),                                    // 蔵
       _B('dojo', -130, 138),                                    // ★ 道場 (大きめ)
       _B('shed', -178, 175),
-      _B('greenhouse', -100, 178),
+      _B('greenhouse', -109, 178),
 
       // === 下段 中: 参道続き + 摂社 ===
       _B('shrine', -35, 152),                                   // ★ 小さな摂社 (奥)
-      _B('chaya', 5, 132),
+      _B('chaya', 20, 132),
       _B('wagashi', 42, 136),                                   // ★ 参道の和菓子屋
       _B('shed', 20, 178),
 
@@ -3530,7 +3520,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _G('stone_pavement', 140, 160, 80, 42),                   // 茶屋街の石畳 (下段東)
       _G('gravel', 0, 15, 220, 25),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 131), _HR(100, 159, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C1: 門前町 — 茶屋と土産物屋が並ぶ商店街 ──
@@ -3555,26 +3545,26 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('kominka', -30, 40),                                   // 古民家 (唯一)
       _B('kimono_shop', 30, 44),                                // ★ 呉服屋
       _B('dojo', 62, 40),                                       // ★ 道場
-      _B('machiya', -45, 78),                                   // 奥の 2F 町家
+      _B('machiya', -45, 76),                                   // 奥の 2F 町家
       _B('shed', 15, 76),
 
       // === 上段 東: 土産物屋 ===
-      _B('machiya', 108, 74),                                   // ★ 2F 町家 (奥)
+      _B('machiya', 110, 74),                                   // ★ 2F 町家 (奥)
       _B('wagashi', 135, 42),                                   // ★ 和菓子 (別区画)
       _B('chaya', 168, 40),                                     // 茶屋 (別区画)
       _B('shed', 150, 78),
 
       // === 下段 西: 旅館入口 ===
       _B('ryokan', -145, 150),                                  // ★ 大きな旅館
-      _B('kimono_shop', -100, 132),                             // ★ 呉服屋 (旅館隣)
+      _B('kimono_shop', -109, 132),                             // ★ 呉服屋 (旅館隣)
       _B('kura', -178, 175),                                    // 裏の蔵 (唯一)
       _B('shed', -115, 178),
 
       // === 下段 中: 路地と料亭 ===
       _B('chaya', -38, 132),                                    // 茶屋 (別区画)
-      _B('sushi_ya', 5, 138),                                   // ★ 寿司屋 (別区画)
+      _B('sushi_ya', 18, 138),                                   // ★ 寿司屋 (別区画)
       _B('wagashi', 40, 132),                                   // ★ 和菓子屋 (別区画)
-      _B('dojo', -20, 175),                                     // 奥の道場 (別区画)
+      _B('dojo', -22, 175),                                     // 奥の道場 (別区画)
       _B('shed', 58, 178),
 
       // === 下段 東: 茶屋の奥 + 祠 ===
@@ -3672,11 +3662,11 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('shrine', 22, 55),                                     // 対の摂社
       _B('wagashi', -55, 42),                                   // ★ 参道脇の和菓子屋
       _B('dojo', 55, 44),                                       // ★ 参道脇の道場
-      _B('shed', -10, 78),
+      _B('shed', -16, 78),
 
       // === 上段 東: 町家クラスタ ===
       _B('machiya', 115, 70),                                   // ★ 町家 (奥)
-      _B('kominka', 105, 42),                                   // 古民家 (唯一)
+      _B('kominka', 109, 42),                                   // 古民家 (唯一)
       _B('bookstore', 138, 42),                                 // 古書店
       _B('wagashi', 168, 40),                                   // ★ 和菓子 (別区画)
       _B('shed', 178, 78),
@@ -3685,11 +3675,11 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('kominka', -162, 132),                                 // 古民家 (唯一)
       _B('ryokan', -120, 150),                                  // ★ 小旅館
       _B('kura', -178, 175),
-      _B('shed', -100, 178),
+      _B('shed', -104, 178),
 
       // === 下段 中: 参道の広場 ===
       _B('chaya', -40, 132),                                    // 茶屋 (別区画)
-      _B('sushi_ya', 5, 138),                                   // ★ 寿司屋 (別区画)
+      _B('sushi_ya', 18, 138),                                   // ★ 寿司屋 (別区画)
       _B('wagashi', 45, 132),                                   // ★ 和菓子 (別区画)
       _B('dojo', 22, 175),                                      // 奥の道場 (別区画)
 
@@ -3783,7 +3773,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段 西: ★ 老舗旅館 ===
       _B('ryokan', -148, 50),                                   // ★ 大きな旅館
-      _B('wagashi', -105, 38),                                  // 旅館隣の和菓子屋
+      _B('wagashi', -107, 38),                                  // 旅館隣の和菓子屋
       _B('kura', -172, 78),                                     // 旅館の蔵 (奥)
       _B('shed', -130, 78),
 
@@ -3792,29 +3782,28 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('kominka', -25, 44),                                   // 古民家 (唯一)
       _B('kimono_shop', 25, 42),                                // ★ 呉服屋
       _B('chaya', 55, 40),                                      // 茶屋 (唯一、別区画)
-      _B('shed', 0, 78),
+      _B('shed', -16, 78),
 
       // === 上段 東: 2 軒目の旅館 ===
       _B('ryokan', 132, 52),                                    // ★ 2 軒目
       _B('dojo', 170, 44),                                      // ★ 道場
-      _B('kura', 100, 78),                                      // 蔵 (奥)
+      _B('kura', 107, 78),                                      // 蔵 (奥)
       _B('shed', 165, 78),
 
       // === 下段 西: 古民家と蔵 (差別化) ===
       _B('kominka', -162, 132),                                 // 古民家 (別区画 1)
       _B('machiya', -132, 148),                                 // ★ 町家 (1 棟のみ)
-      _B('wagashi', -105, 132),                                 // ★ 和菓子 (別区画)
+      _B('wagashi', -107, 132),                                 // ★ 和菓子 (別区画)
       _B('shed', -178, 175),
       _B('greenhouse', -135, 178),
 
       // === 下段 中: 庭園 (茶屋 1 + 寿司屋) ===
       _B('chaya', -38, 132),                                    // 茶屋 (別区画)
       _B('sushi_ya', 38, 132),                                  // ★ 寿司屋 (別区画)
-      _B('kimono_shop', 5, 138),                                // ★ 呉服屋
       _B('shed', -15, 178),
 
       // === 下段 東: 町家と古書店 ===
-      _B('machiya', 108, 168),                                  // ★ 町家 (奥)
+      _B('machiya', 110, 168),                                  // ★ 町家 (奥)
       _B('bookstore', 148, 168),                                // 古書店 (machiya の隣に変化)
       _B('kominka', 108, 132),                                  // 古民家 (別区画)
       _B('dojo', 138, 136),                                     // ★ 道場 (別区画)
@@ -3905,8 +3894,8 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('ryokan', -150, 46),
       _B('wagashi', -108, 40),                                  // ★ 和菓子屋 (温泉土産)
       _B('kura', -172, 78),                                     // 奥の蔵 (唯一)
-      _B('sushi_ya', -128, 42),                                 // ★ 寿司屋
-      _B('shed', -95, 80),
+      _B('sushi_ya', -128, 20),                                 // ★ 寿司屋
+      _B('shed', -104, 80),
 
       // === 上段 中: ★★ 温泉旅館 ★★ ===
       _B('onsen_inn', 0, 68),                                   // ★ 大温泉 (中央、奥)
@@ -3924,20 +3913,20 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 下段 西: 竹林の小径 (kominka 1 軒) ===
       _B('kominka', -162, 132),                                 // 古民家 (唯一)
       _B('machiya', -128, 148),                                 // ★ 町家 (町並み感)
-      _B('dojo', -105, 138),                                    // ★ 道場 (竹林の奥)
+      _B('dojo', -70, 138),                                    // ★ 道場 (竹林の奥)
       _B('shed', -178, 175),
 
       // === 下段 中: ★ 露天風呂の庭 (茶屋 1) ===
       _B('chaya', -40, 132),                                    // 茶屋 (別区画)
       _B('kimono_shop', 40, 132),                               // ★ 呉服屋 (別区画)
-      _B('shed', -10, 170),
+      _B('shed', -16, 170),
       _B('shed', 15, 175),
 
       // === 下段 東: 町家の並び (差別化) ===
-      _B('machiya', 108, 170),                                  // ★ 町家 (奥)
+      _B('machiya', 110, 170),                                  // ★ 町家 (奥)
       _B('ryokan', 148, 162),                                   // ★ 小旅館 (別の奥施設)
       _B('kominka', 108, 132),                                  // 古民家 (別区画)
-      _B('sushi_ya', 138, 138),                                 // ★ 寿司屋 (別区画)
+      _B('sushi_ya', 138, 136),                                 // ★ 寿司屋 (別区画)
       _B('kura', 175, 132),                                     // (別区画)
     ],
     furniture: [
@@ -4007,7 +3996,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _G('stone_pavement', 140, 160, 80, 42),
       _G('gravel', 0, 15, 240, 25),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 48, 'avenue'), _VR(0, 88, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C5: 裏路地の摂社 + 古民家 ──
@@ -4023,7 +4012,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 上段 西: 古民家集落 (多彩に) ===
       _B('kominka', -162, 40),                                  // 古民家 (唯一)
       _B('dojo', -130, 44),                                     // ★ 道場
-      _B('wagashi', -105, 40),                                  // ★ 和菓子屋
+      _B('wagashi', -107, 40),                                  // ★ 和菓子屋
       _B('kura', -172, 78),
       _B('greenhouse', -128, 78),
 
@@ -4032,11 +4021,11 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('temple', 30, 60),                                     // ★ 小さな寺 (avenue 右脇)
       _B('sushi_ya', -62, 42),                                  // ★ 参道脇の寿司屋
       _B('chaya', 62, 38),                                      // 茶屋 (唯一)
-      _B('shed', -10, 78),
-      _B('shed', 15, 78),
+      _B('shed', -16, 78),
+      _B('shed', 15, 82),
 
       // === 上段 東: 町家 + 蔵 + 呉服 ===
-      _B('machiya', 108, 72),                                   // ★ 町家 (奥、唯一)
+      _B('machiya', 110, 72),                                   // ★ 町家 (奥、唯一)
       _B('kimono_shop', 138, 42),                               // ★ 呉服屋
       _B('kura', 170, 42),                                      // 蔵 (前、唯一)
       _B('shed', 155, 78),
@@ -4044,18 +4033,18 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 下段 西: 旅館裏 + 蔵 ===
       _B('ryokan', -138, 165),                                  // ★ 旅館の裏 (奥)
       _B('kura', -168, 132),                                    // (別区画)
-      _B('bookstore', -102, 138),                               // 古書店 (旅館隣)
-      _B('shed', -145, 178),
+      _B('bookstore', -107, 138),                               // 古書店 (旅館隣)
+      _B('shed', -145, 187),
 
       // === 下段 中: 小茶屋の広場 (差別化) ===
       _B('chaya', -38, 132),                                    // 茶屋 (別区画、唯一)
-      _B('wagashi', 5, 136),                                    // ★ 和菓子屋 (別区画)
+      _B('wagashi', 19, 136),                                    // ★ 和菓子屋 (別区画)
       _B('sushi_ya', 45, 132),                                  // ★ 寿司屋 (別区画)
       _B('shed', -20, 178),
       _B('shed', 22, 178),
 
       // === 下段 東: 町家集落 (集落感を保ちつつ多彩) ===
-      _B('machiya', 108, 170),                                  // ★ (別区画)
+      _B('machiya', 110, 170),                                  // ★ (別区画)
       _B('kominka', 138, 132),                                  // 古民家 (別区画)
       _B('dojo', 168, 138),                                     // ★ 道場 (別区画)
       _B('kura', 178, 178),                                     // 蔵 (別区画)
@@ -4161,7 +4150,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('kominka', 108, 40),                                   // 僧坊 (別区画 1)
       _B('dojo', 135, 44),                                      // ★ 修行道場 (別区画)
       _B('machiya', 160, 70),                                   // ★ 町家 (奥)
-      _B('kura', 178, 78),
+      _B('kura', 138, 78),
 
       // === 下段 西: 鐘楼の広場 (差別化) ===
       _B('shrine', -150, 150),                                  // ★ 小さな鐘楼 (奥)
@@ -4248,7 +4237,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _G('stone_pavement', 140, 160, 80, 42),
       _G('stone_pavement', 0, 15, 240, 25),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, -14), _HR(100, 14, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 44, 'avenue'), _VR(0, 120, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C7: 寺院本堂 (temple) ──
@@ -4290,15 +4279,15 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 下段 中: 境内広場 + 手水舎 (差別化) ===
       _B('chaya', -38, 132),                                    // 茶屋 (唯一)
       _B('sushi_ya', 38, 132),                                  // ★ 参拝者向け寿司
-      _B('shed', -10, 178),
+      _B('shed', -16, 178),
       _B('shed', 18, 178),
 
       // === 下段 東: 僧坊 + 多彩 ===
-      _B('dojo', 108, 138),                                     // ★ 道場 (別区画)
+      _B('dojo', 110, 138),                                     // ★ 道場 (別区画)
       _B('kimono_shop', 138, 138),                              // ★ 呉服屋
       _B('kominka', 170, 132),                                  // 古民家 (別区画)
       _B('kura', 160, 175),                                     // (別区画)
-      _B('machiya', 108, 168),                                  // ★ 奥の町家
+      _B('machiya', 110, 168),                                  // ★ 奥の町家
     ],
     furniture: [
       // ─── 軸: 石灯籠 ───
@@ -4368,7 +4357,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _G('stone_pavement', 140, 160, 80, 42),
       _G('stone_pavement', 0, 15, 240, 25),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 53, 'avenue'), _VR(0, 87, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C8: 多宝塔 + 石庭 + 摂社 ──
@@ -4382,7 +4371,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's3_raw', raw: {
     buildings: [
       // === 上段 西: ★ 多宝塔 ===
-      _B('tahoto', -148, 70),                                   // ★ 多宝塔 (奥)
+      _B('tahoto', -148, 68),                                   // ★ 多宝塔 (奥)
       _B('chaya', -108, 40),
       _B('kominka', -178, 40),
       _B('shed', -120, 78),
@@ -4392,7 +4381,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('dojo', -62, 44),                                      // ★ 石庭脇の道場
       _B('kominka', 62, 42),                                    // 古民家 (唯一)
       _B('chaya', 30, 40),                                      // 石庭の茶屋 (唯一)
-      _B('shed', 0, 78),
+      _B('shed', -16, 78),
 
       // === 上段 東: 僧坊 + 庫裏 ===
       _B('ryokan', 140, 50),                                    // ★ 庫裏
@@ -4410,11 +4399,11 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 下段 中: 石庭の続き ===
       _B('sushi_ya', -38, 132),                                 // ★ 寿司屋 (別区画)
       _B('kimono_shop', 38, 132),                               // ★ 呉服屋 (別区画)
-      _B('shed', -10, 178),
+      _B('shed', -16, 178),
       _B('shed', 18, 178),
 
       // === 下段 東: 町家 + 竹林 (差別化) ===
-      _B('machiya', 108, 170),                                  // ★ 町家 (別区画 2)
+      _B('machiya', 110, 170),                                  // ★ 町家 (別区画 2)
       _B('dojo', 148, 170),                                     // ★ 道場 (差別化)
       _B('kominka', 108, 132),                                  // 古民家 (別区画 2)
       _B('chaya', 138, 138),                                    // 茶屋 (別区画)
@@ -4506,7 +4495,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 上段 西: ★ 町家集落 ===
       _B('machiya', -160, 52),                                  // ★ 町家 3 軒連続
       _B('machiya', -125, 54),
-      _B('machiya', -95, 78),                                   // 奥の町家
+      _B('machiya', -70, 76),                                   // 奥の町家
       _B('kura', -175, 78),
 
       // === 上段 中: 古料亭 ===
@@ -4518,7 +4507,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('shed', 18, 78),
 
       // === 上段 東: 町家続き + 蔵 ===
-      _B('machiya', 108, 52),                                   // 町家 1
+      _B('machiya', 110, 52),                                   // 町家 1
       _B('dojo', 142, 44),                                      // ★ 道場 (変化)
       _B('kura', 175, 40),                                      // 蔵 (唯一)
       _B('bookstore', 178, 74),                                 // 古書店 (奥)
@@ -4533,13 +4522,13 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
 
       // === 下段 中: 紅葉の広場 (多様な茶屋風) ===
       _B('chaya', -38, 132),                                    // 茶屋 (別区画、唯一)
-      _B('sushi_ya', 5, 138),                                   // ★ 寿司屋
+      _B('sushi_ya', 18, 138),                                   // ★ 寿司屋
       _B('kimono_shop', 45, 132),                               // ★ 呉服屋
       _B('shed', -20, 178),
       _B('shed', 22, 178),
 
       // === 下段 東: 町家 + 竹垣 ===
-      _B('machiya', 108, 170),                                  // ★ 奥の町家 (別区画)
+      _B('machiya', 110, 170),                                  // ★ 奥の町家 (別区画)
       _B('kominka', 108, 132),                                  // 古民家 (別区画)
       _B('dojo', 138, 138),                                     // ★ 道場 (変化)
       _B('chaya', 168, 132),                                    // 茶屋 (別区画)
@@ -4630,24 +4619,24 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       _B('sushi_ya', -22, 40),                                  // ★ 寿司屋
       _B('kimono_shop', 22, 44),                                // ★ 呉服屋
       _B('bookstore', 55, 40),                                  // 古書店
-      _B('kura', 0, 78),                                        // 奥の蔵
+      _B('kura', -19, 78),                                        // 奥の蔵
 
       // === 上段 東: ★ 土蔵と町家 (蔵 3 → 2 に削減) ===
       _B('kura', 108, 40),                                      // 蔵 (別区画)
-      _B('machiya', 135, 48),                                   // ★ 町家 (変化)
+      _B('machiya', 135, 46),                                   // ★ 町家 (変化)
       _B('kura', 165, 40),                                      // 蔵 (1 軒ずつ)
       _B('ryokan', 140, 78),                                    // ★ 古い旅館 (奥)
 
       // === 下段 西: 蔵と古民家 ===
       _B('kominka', -162, 132),                                 // 古民家 (別区画)
       _B('kura', -135, 138),
-      _B('dojo', -108, 132),                                    // ★ 道場
+      _B('dojo', -110, 132),                                    // ★ 道場
       _B('shed', -178, 175),
       _B('greenhouse', -135, 178),
 
       // === 下段 中: 茶屋の路地 (多様化) ===
       _B('chaya', -38, 132),                                    // 茶屋 (別区画)
-      _B('wagashi', 5, 138),                                    // ★ 和菓子
+      _B('wagashi', 19, 138),                                    // ★ 和菓子
       _B('sushi_ya', 45, 132),                                  // ★ 寿司屋
       _B('shed', -15, 178),
       _B('shed', 22, 178),
@@ -4736,7 +4725,7 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
       // === 上段 西: 古い農家 ===
       _B('kominka', -162, 42),
       _B('kominka', -132, 44),
-      _B('greenhouse', -105, 40),                               // 農業用温室
+      _B('greenhouse', -109, 40),                               // 農業用温室
       _B('kura', -175, 78),
       _B('greenhouse', -135, 78),                               // 2 棟目温室
 
@@ -4757,15 +4746,15 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
 
       // === 下段 西: 畑地 ===
       _B('kominka', -162, 132),                                 // 古民家 (別区画)
-      _B('greenhouse', -130, 138),
-      _B('kimono_shop', -105, 132),                             // ★ 呉服屋
+      _B('greenhouse', -132, 138),
+      _B('kimono_shop', -109, 132),                             // ★ 呉服屋
       _B('shed', -178, 175),
       _B('greenhouse', -138, 178),
 
       // === 下段 中: 終盤の広場 ===
       _B('chaya', -38, 132),                                    // 茶屋 (唯一)
       _B('bookstore', 38, 132),                                 // 古書店 (別業種で最後を飾る)
-      _B('shed', 0, 178),
+      _B('shed', -16, 178),
 
       // === 下段 東: 港への道の気配 (多彩化) ===
       _B('kura', 108, 132),                                     // 蔵 (別区画)
@@ -4867,7 +4856,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       // === 上段: 海岸線沿いの古い港 (奥に置いて海を広く見せる) ===
       _B('shrine', -150, 70),                                   // ★ 港神社 (Stage 3 余韻)
       _B('shed', -110, 75),
-      _B('kura', -80, 70),                                      // ★ 蔵 (Stage 3 handoff)
+      _B('kura', -73, 70),                                      // ★ 蔵 (Stage 3 handoff)
       _B('shed', -50, 78),
       _B('garage', 30, 75),                                     // 漁協の物置
       _B('shed', 60, 78),
@@ -4875,12 +4864,12 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _B('shed', 175, 78),
       // === 下段: 漁師町の家並び + 魚市場 ===
       _B('kominka', -160, 132), _B('house', -130, 135),
-      _B('shed', -100, 175),
+      _B('shed', -104, 175),
       _B('chaya', -50, 132),                                    // 港の茶屋 (漁師の朝食)
-      _B('ramen', -15, 135),                                    // 早朝ラーメン
+      _B('ramen', -18, 135),                                    // 早朝ラーメン
       _B('shed', -45, 175),
       _B('warehouse', 50, 138),                                 // 魚市場の倉庫
-      _B('shed', 90, 178),
+      _B('shed', 76, 178),
       _B('garage', 130, 138),
       _B('kominka', 165, 132), _B('shed', 175, 178),
     ],
@@ -4976,21 +4965,21 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 海から続く岸壁 + 倉庫の入口 ===
       _B('warehouse', -130, 70),                                // 第一冷蔵倉庫
-      _B('shed', -90, 78),
+      _B('shed', -76, 78),
       _B('garage', -55, 75),                                    // 漁協事務所
-      _B('warehouse', 30, 70),                                  // 第二冷蔵倉庫
+      _B('warehouse', 36, 70),                                  // 第二冷蔵倉庫
       _B('shed', 70, 78),
       _B('kura', 110, 72),                                      // 古い氷蔵
       _B('shed', 145, 78),
       _B('garage', 175, 75),
       // === 下段: 市場通り (セリ場 + 茶屋 + 漁師の家) ===
       _B('warehouse', -135, 138),                               // ★ セリ場 (市場本館)
-      _B('shed', -90, 178),
+      _B('shed', -104, 178),
       _B('chaya', -45, 132),                                    // 市場の茶屋
-      _B('ramen', -15, 135),                                    // 漁師ラーメン
+      _B('ramen', -18, 135),                                    // 漁師ラーメン
       _B('sushi_ya', 18, 132),                                  // ★ 港寿司
-      _B('shed', -10, 178),
-      _B('warehouse', 90, 138),                                 // 物流倉庫
+      _B('shed', -16, 178),
+      _B('warehouse', 56, 138),                                 // 物流倉庫
       _B('shed', 135, 178),
       _B('garage', 170, 138),
     ],
@@ -5087,7 +5076,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _B('silo', -150, 50),                                     // ★ 造船所の最初のサイロ (ガス)
       _B('warehouse', -100, 70),                                // 部品倉庫 (大)
       _B('shed', -50, 78),
-      _B('container_stack', -10, 60),                           // ★ 初めてのコンテナ山
+      _B('container_stack', -26, 60),                           // ★ 初めてのコンテナ山
       _B('shed', 30, 78),
       _B('warehouse', 80, 70),                                  // 組み立て倉庫
       _B('silo', 130, 50),                                      // ★ 第二サイロ
@@ -5095,11 +5084,11 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       // === 下段: 造船工の小屋 + ガス溶接 + 工員寮 ===
       _B('garage', -160, 138),                                  // 部品ガレージ
       _B('shed', -135, 178),
-      _B('warehouse', -90, 138),                                // 修理倉庫
+      _B('warehouse', -124, 138),                                // 修理倉庫
       _B('shed', -50, 178),
-      _B('factory_stack', 0, 132),                              // ★ 初めての factory (船舶エンジン工場、煙突つき)
+      _B('factory_stack', -31, 139),                              // ★ 初めての factory (船舶エンジン工場、煙突つき)
       _B('garage', 60, 138),                                    // ガス溶接ガレージ
-      _B('shed', 90, 178),
+      _B('shed', 76, 178),
       _B('warehouse', 135, 138),                                // 工員寮兼倉庫
       _B('shed', 175, 178),
     ],
@@ -5185,7 +5174,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', -160, 152, 28, 36),                        // ガレージ前
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 54), _VR(-90, 86, 200), _VR(0, 0, 200, 'avenue'), _VR(90, 0, 54), _VR(90, 86, 200)],
   } },
 
   // ═══ Act II: コンテナヤード (C3-C5) ════════════════════════════════
@@ -5199,19 +5188,19 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: ゲートハウス + 入庫倉庫 ===
       _B('garage', -160, 70),                                   // ゲートハウス西
-      _B('warehouse', -110, 70),                                // 検査倉庫
+      _B('warehouse', -124, 70),                                // 検査倉庫
       _B('container_stack', -55, 60),                           // ★ 入庫待ちコンテナ
       _B('container_stack', 0, 60),
       _B('container_stack', 50, 60),
-      _B('warehouse', 110, 70),                                 // 出荷倉庫
+      _B('warehouse', 124, 70),                                 // 出荷倉庫
       _B('garage', 160, 70),                                    // ゲートハウス東
       // === 下段: 大型ヤード ===
       _B('container_stack', -140, 132),                         // ★ 大型ヤード (赤)
       _B('container_stack', -90, 132),                          // (青)
       _B('container_stack', -40, 132),                          // (黄)
       _B('container_stack', 30, 132),                           // (緑)
-      _B('container_stack', 80, 132),                           // (赤)
-      _B('container_stack', 130, 132),                          // (青)
+      _B('container_stack', 66, 132),                           // (赤)
+      _B('container_stack', 127, 132),                          // (青)
       _B('warehouse', 170, 138),
       _B('shed', -160, 178),
       _B('shed', 60, 178),
@@ -5284,7 +5273,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 160, 168, 32, 38),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 115), _VR(-90, 149, 200), _VR(0, 0, 43, 'avenue'), _VR(0, 77, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C4: ガントリークレーン見本市 ★★ Stage 4 ランドマーク ★★ ──
@@ -5296,19 +5285,18 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _B('crane_gantry', -130, 30),                             // ★★ 西ガントリー (主)
       _B('crane_gantry', 130, 30),                              // ★★ 東ガントリー (主)
       _B('container_stack', -65, 60),                           // クレーン下のスタック
-      _B('container_stack', -20, 60),
+      _B('container_stack', -26, 60),
       _B('container_stack', 25, 60),
       _B('container_stack', 70, 60),
-      _B('shed', -80, 78), _B('shed', 80, 78),
+      _B('shed', -104, 78), _B('shed', 104, 78),
       // === 下段: 大ヤード ===
       _B('container_stack', -150, 132),
       _B('container_stack', -100, 132),
-      _B('container_stack', -50, 132),
+      _B('container_stack', -47, 132),
       _B('container_stack', 0, 132),
       _B('container_stack', 50, 132),
-      _B('container_stack', 100, 132),
+      _B('container_stack', 114, 132),
       _B('container_stack', 150, 132),
-      _B('warehouse', -90, 138),                                // この行は重なるので除外
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
     furniture: [
@@ -5374,7 +5362,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('rust_deck', 0, 178, 360, 18),                         // ヤード奥の鉄板帯
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 115), _VR(-90, 154, 200), _VR(0, 0, 115, 'avenue'), _VR(0, 149, 200, 'avenue'), _VR(90, 0, 43), _VR(90, 77, 200)],
   } },
 
   // ── C5: コンテナ山頂点 — 巨大な貨物車両ヤードと高く積まれたコンテナの森 ──
@@ -5385,22 +5373,22 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       // === 上段: 鉄道引き込み線 + コンテナ列 ===
       _B('container_stack', -160, 60),
       _B('container_stack', -115, 60),
-      _B('container_stack', -70, 60),
+      _B('container_stack', -66, 60),
       _B('container_stack', -25, 60),
       _B('container_stack', 25, 60),
-      _B('container_stack', 70, 60),
+      _B('container_stack', 66, 60),
       _B('container_stack', 115, 60),
       _B('container_stack', 160, 60),
       // === 下段: 第二段スタック + Act III 予兆 ===
       _B('container_stack', -150, 132),
-      _B('container_stack', -100, 132),
-      _B('silo', -50, 110),                                     // ★ Act III 予兆 (1 本目)
+      _B('container_stack', -114, 132),
+      _B('silo', -50, 132),                                     // ★ Act III 予兆 (1 本目)
       _B('container_stack', 0, 132),
       _B('container_stack', 50, 132),
-      _B('silo', 100, 110),                                     // ★ Act III 予兆 (2 本目)
+      _B('silo', 108, 132),                                     // ★ Act III 予兆 (2 本目)
       _B('container_stack', 150, 132),
       _B('shed', -180, 178), _B('shed', 180, 178),
-      _B('warehouse', 0, 175),                                  // 巨大倉庫の頭 (奥)
+      _B('warehouse', -36, 175),                                  // 巨大倉庫の頭 (奥)
     ],
     furniture: [
       // ─── 上段: 鉄道 (港湾線路) — Stage 4 ★ シグネチャ ───
@@ -5470,7 +5458,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('hazard_stripe', 0, 168, 22, 18),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 115, 'avenue'), _VR(0, 149, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ═══ Act III: 重工業地帯 (C6-C8) ═══════════════════════════════════
@@ -5484,8 +5472,8 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 製鉄所 (巨大煙突) ===
       _B('factory_stack', -130, 38),                            // ★★ 西製鉄所 (h=62)
-      _B('silo', -75, 50),                                      // 高炉サイロ
-      _B('warehouse', -25, 70),                                 // 鉄屑倉庫
+      _B('silo', -72, 50),                                      // 高炉サイロ
+      _B('warehouse', -36, 70),                                 // 鉄屑倉庫
       _B('silo', 25, 50),
       _B('silo', 60, 50),                                       // 連続サイロ
       _B('factory_stack', 130, 38),                             // ★★ 東製鉄所
@@ -5573,7 +5561,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('steel_plate', -150, 168, 60, 50), _G('steel_plate', 150, 168, 60, 50),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, -23), _HR(100, 23, 180)], verticalRoads: [_VR(-90, 0, 115), _VR(-90, 149, 200), _VR(0, 0, 99, 'avenue'), _VR(0, 165, 200, 'avenue'), _VR(90, 0, 115), _VR(90, 149, 200)],
   } },
 
   // ── C7: 石油タンク群 — サイロが森のように立ち並び、パイプとドラム缶の海 ──
@@ -5584,23 +5572,23 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       // === 上段: サイロ 8 本連続 (オイルタンク見立て) ===
       _B('silo', -160, 50),
       _B('silo', -125, 50),
-      _B('silo', -90, 50),
+      _B('silo', -72, 50),
       _B('silo', -50, 50),
       _B('silo', 50, 50),
-      _B('silo', 90, 50),
+      _B('silo', 72, 50),
       _B('silo', 125, 50),
       _B('silo', 160, 50),
       _B('warehouse', 0, 70),                                   // 中央のオペレーション棟
       // === 下段: タンク基礎 + パイプライン ===
-      _B('silo', -160, 110),                                    // 第二段サイロ (短)
-      _B('silo', -100, 110),
-      _B('silo', 100, 110),
-      _B('silo', 160, 110),
+      _B('silo', -160, 132),                                    // 第二段サイロ (短)
+      _B('silo', -108, 132),
+      _B('silo', 108, 132),
+      _B('silo', 160, 132),
       _B('warehouse', -50, 138),                                // パイプライン分岐倉庫
       _B('warehouse', 50, 138),
       _B('garage', 0, 138),                                     // 制御室
       _B('shed', -180, 178), _B('shed', 180, 178),
-      _B('container_stack', 0, 180),                            // 中央のタンクローリー
+      _B('container_stack', -26, 180),                            // 中央のタンクローリー
     ],
     furniture: [
       // ─── 上段: サイロ間のパイプ + バルブ + ドラム ───
@@ -5673,7 +5661,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('steel_plate', -130, 168, 60, 50), _G('steel_plate', 130, 168, 60, 50),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 54, 'avenue'), _VR(0, 86, 129, 'avenue'), _VR(0, 147, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C8: 発電所 + 化学工場 — 煙突の森、Act III の最終形 ──
@@ -5683,21 +5671,21 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 発電所 (大煙突連続) ===
       _B('factory_stack', -130, 38),                            // ★★ 西大煙突
-      _B('silo', -75, 50),                                      // 補助
-      _B('factory_stack', 0, 38),                               // ★★ 中央大煙突
-      _B('silo', 75, 50),
+      _B('silo', -72, 50),                                      // 補助
+      _B('factory_stack', -31, 38),                               // ★★ 中央大煙突
+      _B('silo', 72, 50),
       _B('factory_stack', 130, 38),                             // ★★ 東大煙突
       _B('shed', -180, 78), _B('shed', 180, 78),
       // === 下段: 化学工場 + 変電所 ===
       _B('warehouse', -150, 138),                               // 化学倉庫西
-      _B('silo', -100, 110),                                    // 化学反応塔
+      _B('silo', -108, 132),                                    // 化学反応塔
       _B('container_stack', -50, 132),                          // 化学コンテナ
       _B('warehouse', 0, 138),                                  // 中央倉庫
       _B('container_stack', 50, 132),
-      _B('silo', 100, 110),                                     // 化学反応塔
+      _B('silo', 108, 132),                                     // 化学反応塔
       _B('warehouse', 150, 138),                                // 化学倉庫東
       _B('shed', -180, 178), _B('shed', 180, 178),
-      _B('garage', 0, 178),                                     // 出荷ガレージ
+      _B('garage', -20, 178),                                     // 出荷ガレージ
     ],
     furniture: [
       // ─── 上段: 発電所付属 ───
@@ -5775,7 +5763,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('steel_plate', -180, 152, 30, 36), _G('steel_plate', 180, 152, 30, 36),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 122, 'avenue'), _VR(0, 154, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ═══ Act IV: 出荷場 (C9) → Stage 5 (祭り) handoff ═════════════════
@@ -5789,20 +5777,20 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 巨大倉庫 + トラック並び ===
       _B('warehouse', -130, 70),                                // 西出荷倉庫
-      _B('container_stack', -75, 60),                           // 出荷待ちコンテナ
+      _B('container_stack', -66, 60),                           // 出荷待ちコンテナ
       _B('warehouse', -10, 70),                                 // 中央倉庫
       _B('container_stack', 50, 60),
       _B('warehouse', 130, 70),                                 // 東出荷倉庫
       _B('shed', -180, 78), _B('shed', 180, 78),
       // === 下段: 廃工場 + 祭り予兆 ===
-      _B('factory_stack', -150, 132),                           // 最後の工場 (廃)
-      _B('garage', -100, 138),
+      _B('factory_stack', -150, 139),                           // 最後の工場 (廃)
+      _B('garage', -108, 138),
       _B('warehouse', -50, 138),                                // ガレージ + 待機トラック倉庫
-      _B('yatai', 0, 175),                                      // ★★ 祭り予兆: 屋台 (Stage 5 handoff)
-      _B('warehouse', 60, 138),
+      _B('yatai', -20, 175),                                      // ★★ 祭り予兆: 屋台 (Stage 5 handoff)
+      _B('warehouse', 56, 138),
       _B('garage', 110, 138),
       _B('container_stack', 160, 132),
-      _B('shed', 35, 178), _B('shed', -35, 178),
+      _B('shed', 35, 178), _B('shed', -37, 178),
     ],
     furniture: [
       // ─── 上段: 出荷ゲート + トラック行列 (car で代用) ───
@@ -5885,7 +5873,7 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
       _G('steel_plate', 110, 168, 50, 50),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 54, 'avenue'), _VR(0, 86, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 ];
 
@@ -5914,20 +5902,20 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       // === 上段: 入場ゲート + 最後の工業 + 祭り倉庫 ===
       _B('warehouse', -150, 70),                                // ★ Stage 4 余韻: 出荷倉庫
       _B('shed', -118, 78),
-      _B('big_tent', -60, 50),                                  // ★ 入場テント (左)
-      _B('yatai', -15, 38),                                     // 入場直後の屋台
-      _B('yatai', 18, 38),
-      _B('big_tent', 60, 50),                                   // ★ 入場テント (右)
+      _B('big_tent', -58, 50),                                  // ★ 入場テント (左)
+      _B('yatai', -20, 38),                                     // 入場直後の屋台
+      _B('yatai', 20, 38),
+      _B('big_tent', 58, 50),                                   // ★ 入場テント (右)
       _B('shed', 118, 78),
       _B('warehouse', 150, 70),                                 // ★ 倉庫 (祭り運営倉庫)
       // === 下段: 屋台通りの開幕 ===
       _B('yatai', -160, 132),                                   // 屋台 西端
       _B('yatai', -128, 132),
-      _B('yatai', -95, 132),
+      _B('yatai', -108, 132),
       _B('yatai', -62, 132),
-      _B('carousel', 0, 140),                                   // ★★ 入場広場の小メリーゴーランド
+      _B('carousel', -29, 140),                                   // ★★ 入場広場の小メリーゴーランド
       _B('yatai', 60, 132),
-      _B('yatai', 92, 132),
+      _B('yatai', 108, 132),
       _B('yatai', 128, 132),
       _B('yatai', 160, 132),
       _B('shed', -155, 178),                                    // 裏方: 物置
@@ -6021,19 +6009,19 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 屋台 + 休憩テント ===
       _B('yatai', -160, 38), _B('yatai', -130, 38),
-      _B('yatai', -95, 38), _B('yatai', -60, 38),
+      _B('yatai', -108, 38), _B('yatai', -60, 38),
       _B('big_tent', 0, 50),                                    // ★ 中央休憩テント (大)
-      _B('yatai', 60, 38), _B('yatai', 95, 38),
+      _B('yatai', 60, 38), _B('yatai', 108, 38),
       _B('yatai', 130, 38), _B('yatai', 160, 38),
       _B('yatai', -155, 78), _B('yatai', 155, 78),              // 奥にも屋台
       // === 下段: 屋台の第二列 + 遊技場 (chaya 代用で和カフェ) ===
       _B('yatai', -160, 132), _B('yatai', -128, 132),
-      _B('yatai', -95, 132),
+      _B('yatai', -108, 132),
       _B('chaya', -50, 132),                                    // 甘酒茶屋
-      _B('yatai', -18, 132),
-      _B('yatai', 18, 132),
+      _B('yatai', -20, 132),
+      _B('yatai', 20, 132),
       _B('chaya', 50, 132),                                     // もう一軒
-      _B('yatai', 95, 132), _B('yatai', 128, 132),
+      _B('yatai', 108, 132), _B('yatai', 128, 132),
       _B('yatai', 160, 132),
       _B('shed', -165, 178), _B('shed', 165, 178),
     ],
@@ -6116,7 +6104,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _G('gravel', 170, 82, 22, 22),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 30, 'avenue'), _VR(0, 70, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ── C2: 屋台通り 2 + チケットブース + 飾り通り ──
@@ -6124,22 +6112,22 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 屋台 + チケット小屋 (garage で代用) + 装飾 ===
       _B('yatai', -160, 38), _B('yatai', -130, 38),
-      _B('garage', -90, 42),                                    // ★ チケットブース (小屋)
+      _B('garage', -108, 42),                                    // ★ チケットブース (小屋)
       _B('yatai', -50, 38),
       _B('yatai', 50, 38),
-      _B('garage', 90, 42),                                     // ★ チケットブース (小屋)
+      _B('garage', 72, 42),                                     // ★ チケットブース (小屋)
       _B('yatai', 130, 38), _B('yatai', 160, 38),
-      _B('big_tent', 0, 70),                                    // ★ 抽選会テント (奥)
+      _B('big_tent', -34, 70),                                    // ★ 抽選会テント (奥)
       _B('yatai', -155, 78), _B('yatai', 155, 78),
       // === 下段: 屋台 + 休憩スポット ===
       _B('yatai', -160, 132), _B('yatai', -128, 132),
-      _B('yatai', -95, 132),
+      _B('yatai', -108, 132),
       _B('yatai', -35, 132),
       _B('chaya', 0, 132),                                      // 中央茶屋
       _B('yatai', 35, 132),
-      _B('yatai', 95, 132), _B('yatai', 128, 132),
+      _B('yatai', 108, 132), _B('yatai', 128, 132),
       _B('yatai', 160, 132),
-      _B('fountain_pavilion', 0, 178),                          // ★ 祭り中央噴水パビリオン
+      _B('fountain_pavilion', -24, 178),                          // ★ 祭り中央噴水パビリオン
       _B('shed', -165, 178), _B('shed', 165, 178),
     ],
     furniture: [
@@ -6229,7 +6217,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _G('gravel', 172, 90, 18, 22),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 120, 'avenue'), _VR(0, 144, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ═══ Act II: 広場エリア (C3-C5) ═════════════════════════════════════
@@ -6241,8 +6229,8 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 屋台 + 観客テント ===
       _B('yatai', -160, 38), _B('yatai', -128, 38),
-      _B('big_tent', -70, 50),                                  // 観客席 (左)
-      _B('big_tent', 70, 50),                                   // 観客席 (右)
+      _B('big_tent', -58, 50),                                  // 観客席 (左)
+      _B('big_tent', 58, 50),                                   // 観客席 (右)
       _B('yatai', 128, 38), _B('yatai', 160, 38),
       _B('yatai', -160, 78), _B('yatai', 160, 78),
       // === 下段: ★★ 中央メリーゴーランド (主役) ★★ ===
@@ -6250,7 +6238,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _B('carousel', -45, 145),                                 // ★★ メリーゴーランド (西)
       _B('carousel', 45, 145),                                  // ★★ メリーゴーランド (東)
       _B('yatai', 130, 132), _B('yatai', 165, 132),
-      _B('yatai', -90, 178), _B('yatai', 90, 178),
+      _B('yatai', -108, 178), _B('yatai', 72, 178),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
     furniture: [
@@ -6345,11 +6333,11 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _B('yatai', -155, 78), _B('yatai', 155, 78),
       // === 下段: ★★ 中央に太鼓櫓 (big_tent で見立て) ★★ ===
       _B('yatai', -165, 132), _B('yatai', -135, 132),
-      _B('yatai', -95, 132),
-      _B('big_tent', 0, 145),                                   // ★★ 太鼓櫓 (中央)
-      _B('yatai', 95, 132),
+      _B('yatai', -108, 132),
+      _B('big_tent', -34, 145),                                   // ★★ 太鼓櫓 (中央)
+      _B('yatai', 108, 132),
       _B('yatai', 135, 132), _B('yatai', 165, 132),
-      _B('yatai', -90, 178), _B('yatai', 90, 178),
+      _B('yatai', -108, 178), _B('yatai', 72, 178),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
     furniture: [
@@ -6426,7 +6414,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 140, 170, 60, 40),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 30), _VR(-90, 70, 200), _VR(0, 0, 200, 'avenue'), _VR(90, 0, 30), _VR(90, 70, 200)],
   } },
 
   // ── C5: 公園休憩 (park_break) — 既存パターン維持 ──
@@ -6442,19 +6430,19 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: ★★ ジェットコースター (中央、巨大) ★★ + 観客屋台 ===
       _B('yatai', -165, 38),
-      _B('big_tent', -120, 50),                                 // 観客席テント
-      _B('roller_coaster', -30, 60),                            // ★★ ジェットコースター (w=60, h=60)
-      _B('roller_coaster', 30, 60),                             // ★★ 第二レール (並列)
-      _B('big_tent', 120, 50),
+      _B('big_tent', -122, 50),                                 // 観客席テント
+      _B('roller_coaster', -40, 60),                            // ★★ ジェットコースター (w=60, h=60)
+      _B('roller_coaster', 40, 60),                             // ★★ 第二レール (並列)
+      _B('big_tent', 122, 50),
       _B('yatai', 165, 38),
       // === 下段: 関連屋台 + 発券所 + 休憩 ===
       _B('yatai', -165, 132), _B('yatai', -135, 132),
-      _B('chaya', -100, 132),                                   // 待機中の休憩カフェ
+      _B('chaya', -108, 132),                                   // 待機中の休憩カフェ
       _B('garage', -60, 138),                                   // ★ 発券所
       _B('yatai', -20, 132),
       _B('yatai', 20, 132),
       _B('garage', 60, 138),                                    // ★ 発券所
-      _B('chaya', 100, 132),
+      _B('chaya', 108, 132),
       _B('yatai', 135, 132), _B('yatai', 165, 132),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
@@ -6542,20 +6530,20 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 巨大観覧車 (中央) + 補助屋台 ===
       _B('yatai', -165, 38), _B('yatai', -130, 38),
-      _B('big_tent', -80, 50),                                  // 観覧車入場テント (西)
-      _B('ferris_wheel', 0, 78),                                // ★★ 大観覧車 (中央、奥目)
+      _B('big_tent', -58, 50),                                  // 観覧車入場テント (西)
+      _B('ferris_wheel', 32, 68),                                // ★★ 大観覧車 (中央、奥目)
       _B('big_tent', 80, 50),                                   // 観覧車入場テント (東)
       _B('yatai', 130, 38), _B('yatai', 165, 38),
       // === 下段: 観覧車発券所 + 屋台 ===
       _B('yatai', -165, 132), _B('yatai', -135, 132),
-      _B('chaya', -95, 132),                                    // 観覧車待機カフェ
+      _B('chaya', -108, 132),                                    // 観覧車待機カフェ
       _B('garage', -45, 138),                                   // ★ 観覧車発券所
-      _B('yatai', -10, 132),
-      _B('yatai', 10, 132),
+      _B('yatai', -20, 132),
+      _B('yatai', 20, 132),
       _B('garage', 45, 138),                                    // ★ 観覧車発券所
-      _B('chaya', 95, 132),
+      _B('chaya', 108, 132),
       _B('yatai', 135, 132), _B('yatai', 165, 132),
-      _B('yatai', -85, 178), _B('yatai', 85, 178),
+      _B('yatai', -72, 178), _B('yatai', 72, 178),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
     furniture: [
@@ -6633,7 +6621,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _G('grass', -150, 195, 50, 20), _G('grass', 150, 195, 50, 20),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(90, 0, 30), _VR(90, 70, 200)],
   } },
 
   // ── C8: 第 2 コースター + カーニバルショーテント ──
@@ -6642,18 +6630,17 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 屋台 + 観客席テント ===
       _B('yatai', -165, 38), _B('yatai', -135, 38),
-      _B('yatai', -105, 38),
+      _B('yatai', -108, 38),
       _B('big_tent', -50, 50),                                  // 観客席テント (左)
-      _B('yatai', 0, 38),
       _B('big_tent', 50, 50),                                   // 観客席テント (右)
-      _B('yatai', 105, 38),
+      _B('yatai', 108, 38),
       _B('yatai', 135, 38), _B('yatai', 165, 38),
       _B('yatai', -160, 78), _B('yatai', 160, 78),
       // === 下段: コースター + 大テント ===
       _B('yatai', -170, 132),
-      _B('roller_coaster', -90, 155),                           // ★★ 第 2 コースター (西)
-      _B('carousel', 0, 145),                                   // ★ 中央メリー (彩り)
-      _B('roller_coaster', 90, 155),                            // ★★ 第 2 コースター (東)
+      _B('roller_coaster', -128, 155),                           // ★★ 第 2 コースター (西)
+      _B('carousel', -29, 145),                                   // ★ 中央メリー (彩り)
+      _B('roller_coaster', 52, 155),                            // ★★ 第 2 コースター (東)
       _B('yatai', 170, 132),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
@@ -6738,18 +6725,18 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 大テント 2 連 + 屋台 ===
       _B('yatai', -165, 38), _B('yatai', -135, 38),
-      _B('big_tent', -60, 50),                                  // ★ 大テント (西)
-      _B('big_tent', 60, 50),                                   // ★ 大テント (東)
+      _B('big_tent', -58, 50),                                  // ★ 大テント (西)
+      _B('big_tent', 58, 50),                                   // ★ 大テント (東)
       _B('yatai', 135, 38), _B('yatai', 165, 38),
       _B('yatai', -155, 78), _B('yatai', 155, 78),
-      _B('carousel', 0, 78),                                    // 奥にメリーゴーランド
+      _B('carousel', -29, 124),                                    // 奥にメリーゴーランド
       // === 下段: ★★ 大テントショー会場 ★★ ===
       _B('yatai', -170, 132), _B('yatai', -140, 132),
       _B('big_tent', -75, 155),                                 // ★★ ショーテント (西)
-      _B('big_tent', 75, 155),                                  // ★★ ショーテント (東)
+      _B('big_tent', 58, 155),                                  // ★★ ショーテント (東)
       _B('yatai', 140, 132), _B('yatai', 170, 132),
       _B('shed', -180, 178), _B('shed', 180, 178),
-      _B('fountain_pavilion', 0, 175),                          // ★ 中央噴水
+      _B('fountain_pavilion', -24, 175),                          // ★ 中央噴水
     ],
     furniture: [
       // ─── ★★ バルーンアーチ (上空一面) ★★ ───
@@ -6825,7 +6812,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _G('grass', -150, 195, 50, 20), _G('grass', 150, 195, 50, 20),
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 135), _VR(-90, 175, 200), _VR(0, 0, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 
   // ═══ Act IV: フィナーレ (C10-C13) ══════════════════════════════════
@@ -6841,11 +6828,11 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: 屋台を通りの両端に寄せ、中央を広々とパレード用に ===
       _B('yatai', -170, 38), _B('yatai', -140, 38),
-      _B('yatai', -110, 38), _B('yatai', -80, 38),
-      _B('yatai', 80, 38), _B('yatai', 110, 38),
+      _B('yatai', -110, 38), _B('yatai', -72, 38),
+      _B('yatai', 72, 38), _B('yatai', 110, 38),
       _B('yatai', 140, 38), _B('yatai', 170, 38),
       _B('yatai', -170, 78), _B('yatai', 170, 78),
-      _B('carousel', 0, 78),                                    // ★ 奥に小メリー (パレードの見どころ)
+      _B('carousel', -29, 76),                                    // ★ 奥に小メリー (パレードの見どころ)
       // === 下段: 屋台+チャヤ、中央はパレード通行 ===
       _B('yatai', -170, 132), _B('yatai', -140, 132),
       _B('yatai', -110, 132),
@@ -6854,7 +6841,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _B('yatai', 110, 132),
       _B('yatai', 140, 132), _B('yatai', 170, 132),
       _B('yatai', -170, 178), _B('yatai', 170, 178),
-      _B('shed', -180, 178), _B('shed', 180, 178),
+      _B('shed', -153, 178), _B('shed', 153, 178),
     ],
     furniture: [
       // ─── ★★ パレード演出: 旗と風船の海 ★★ ───
@@ -6940,16 +6927,16 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
     buildings: [
       // === 上段: ★★ 中央 big_tent ショー会場 ★★ ===
       _B('yatai', -170, 38), _B('yatai', -140, 38),
-      _B('big_tent', -70, 68),                                  // ★★ 花火観覧テント (西)
-      _B('big_tent', 70, 68),                                   // ★★ 花火観覧テント (東)
+      _B('big_tent', -58, 68),                                  // ★★ 花火観覧テント (西)
+      _B('big_tent', 58, 68),                                   // ★★ 花火観覧テント (東)
       _B('yatai', 140, 38), _B('yatai', 170, 38),
       _B('yatai', -155, 78), _B('yatai', 155, 78),
-      _B('ferris_wheel', 0, 75),                                // ★ 奥に観覧車再登場 (光の演出)
+      _B('ferris_wheel', -32, 132),                                // ★ 奥に観覧車再登場 (光の演出)
       // === 下段: 観客席+演奏広場 + 花火打ち上げ地点 ===
       _B('yatai', -170, 132), _B('yatai', -140, 132),
-      _B('chaya', -100, 132),
-      _B('big_tent', 0, 175),                                   // ★★ 花火打ち上げテント (中央奥)
-      _B('chaya', 100, 132),
+      _B('chaya', -108, 132),
+      _B('big_tent', -34, 175),                                   // ★★ 花火打ち上げテント (中央奥)
+      _B('chaya', 108, 132),
       _B('yatai', 140, 132), _B('yatai', 170, 132),
       _B('shed', -180, 178), _B('shed', 180, 178),
     ],
@@ -7046,13 +7033,13 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _B('yatai', -175, 38), _B('yatai', 175, 38),              // 上段の端
       _B('yatai', -175, 78), _B('yatai', 175, 78),              // 奥
       // === 下段: 応援ランドマーク + 屋台 ===
-      _B('carousel', -115, 145),                                // ★ 西メリーゴーランド (応援)
-      _B('carousel', 115, 145),                                 // ★ 東メリーゴーランド (応援)
-      _B('yatai', -170, 132), _B('yatai', -145, 132),           // 西端屋台
-      _B('yatai', 145, 132), _B('yatai', 170, 132),             // 東端屋台
+      _B('carousel', -117, 145),                                // ★ 西メリーゴーランド (応援)
+      _B('carousel', 117, 145),                                 // ★ 東メリーゴーランド (応援)
+      _B('yatai', -170, 132), _B('yatai', -147, 132),           // 西端屋台
+      _B('yatai', 147, 132), _B('yatai', 170, 132),             // 東端屋台
       _B('yatai', -60, 132), _B('yatai', 60, 132),              // 城前 左右の屋台
       _B('yatai', -170, 178), _B('yatai', 170, 178),
-      _B('shed', -180, 178), _B('shed', 180, 178),
+      _B('shed', -153, 178), _B('shed', 153, 178),
     ],
     furniture: [
       // ─── ★★★ 空を埋める花火 (風船の大花束) + 三角旗ガーランド ★★★ ───
@@ -7165,7 +7152,7 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
       _G('checker_tile', 0, 170, 80, 50),                       // 応援太鼓広場
       _G('concrete', 0, 15, 80, 20),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_HR(100, -180, -37), _HR(100, 37, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 97, 200, 'avenue'), _VR(90, 0, 200)],
   } },
 ];
 
