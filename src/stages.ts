@@ -1139,7 +1139,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('house', 75, 138),
       _B('shed', 76, 178),
       // === Cell H (右下): 住宅 3 連 + 花屋 ===
-      _B('florist', 115, 130),
+      _B('florist', 125, 130),
       _B('mansion', 150, 138),                               // ★ 大きめ
       _B('townhouse', 178, 132),
       _B('garage', 168, 178),
@@ -1390,7 +1390,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -125, 178),
       // === Cell F (中左下): 本屋 + 小 cafe + 薬局 ===
       _B('bookstore', -55, 130),
-      _B('cafe', -20, 132),
+      _B('cafe', -34, 132),
       _B('pharmacy', -55, 178),
       // === Cell G (中右下): クリーニング + 住宅 ===
       _B('laundromat', 40, 132),
