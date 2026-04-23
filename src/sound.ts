@@ -284,11 +284,11 @@ export class SoundEngine {
   // ═══════════════════════════════════════════════════════════════════
   //  BGM  "Kaiju March" フルバージョン — 8 セクション × 32 step = 256 step ループ
   // ═══════════════════════════════════════════════════════════════════
-  // 32 秒で一巡する本格構成。Intro → Verse → Chorus → Bridge → Climax → Outro
-  // の起承転結をつけ、セクションごとに楽器編成とメロディを切替える。
+  // 32 秒で一巡する右肩上がり構成。下げ場面なし、ひたすら盛り上がる。
+  // セクションごとにレイヤーとメロディ音域を段階的に加算していく。
   //
   // 進行: Am-G-F-E (アンダルシア終止) を基本とし、各セクションで 8 step ずつ。
-  // 全セクション共通のコードトーン上で、リードとアルペジオが物語性をつけていく。
+  // メロディはセクションが進むにつれ高音域へ、レイヤー数も増加。
 
   /** ステージごとのキー (root 音)。A3=220Hz 起点。 */
   private static readonly STAGE_ROOT_HZ = [220, 165, 262, 175, 196];
@@ -298,61 +298,60 @@ export class SoundEngine {
   private static readonly SECTION_COUNT = 8;
   private static readonly PATTERN_LEN = 256;  // 8 × 32 = 256 step = 32 秒
 
-  // ───── ベース: 各セクション 32 step 、進行は共通 Am-G-F-E ─────
-  //   ルート/5度/オクターブの pumping。セクションにより跳躍幅を変える。
+  // ───── ベース: 右肩上がり、セクション毎に密度 UP ─────
   private static readonly BASS_SECTIONS: number[][] = [
-    // 0 INTRO: ルート長め、跳躍少なめ (静かな導入)
+    // 0 INTRO: ルート長押し (minimal)
     [  0, 0, 0, 0,  0, 0, 0, 0,   -2,-2,-2,-2,  -2,-2,-2,-2,
       -4,-4,-4,-4, -4,-4,-4,-4,   -5,-5,-5,-5,  -5,-5,-5,-5 ],
     // 1 VERSE A: 基本 pumping (root-5-oct-5)
     [  0, 0, 7, 0,  0, 7,12, 7,   -2,-2, 5,-2,  -2, 5,10, 5,
       -4,-4, 3,-4, -4, 3, 8, 3,   -5,-5, 2,-5,  -5, 2, 7, 2 ],
-    // 2 VERSE A': 同じ pumping、8 分裏にオクターブ
-    [  0,12, 7,12,  0,12, 7,12,   -2,10, 5,10,  -2,10, 5,10,
-      -4, 8, 3, 8, -4, 8, 3, 8,   -5, 7, 2, 7,  -5, 7, 2, 7 ],
-    // 3 CHORUS: 上行アルペジオ (root-5-oct-10th)
-    [  0, 7,12,15,  0, 7,12,15,   -2, 5,10,13,  -2, 5,10,13,
-      -4, 3, 8,12, -4, 3, 8,12,   -5, 2, 7,11,  -5, 2, 7,11 ],
-    // 4 BRIDGE: ルートだけ、静かに
-    [  0, 0, 0, 0,  0, 0, 0, 0,   -2,-2,-2,-2,  -2,-2,-2,-2,
-      -4,-4,-4,-4, -4,-4,-4,-4,   -5,-5,-5,-5,  -5,-5,-5,-5 ],
-    // 5 PRE-CHORUS: 8 分 pumping (次への助走)
+    // 2 VERSE A': 8 分 pumping (root-5 往復)
     [  0, 7, 0, 7,  0, 7, 0, 7,   -2, 5,-2, 5,  -2, 5,-2, 5,
       -4, 3,-4, 3, -4, 3,-4, 3,   -5, 2,-5, 2,  -5, 2,-5, 2 ],
-    // 6 FINAL CHORUS: クライマックス、密度最大
+    // 3 VERSE B: 8 分裏にオクターブを混ぜる (音数増)
+    [  0,12, 7,12,  0,12, 7,12,   -2,10, 5,10,  -2,10, 5,10,
+      -4, 8, 3, 8, -4, 8, 3, 8,   -5, 7, 2, 7,  -5, 7, 2, 7 ],
+    // 4 CHORUS A: 上行アルペジオ (root-5-oct-10th)
     [  0, 7,12,15,  0, 7,12,15,   -2, 5,10,13,  -2, 5,10,13,
       -4, 3, 8,12, -4, 3, 8,12,   -5, 2, 7,11,  -5, 2, 7,11 ],
-    // 7 OUTRO: ルート減衰、次ループ冒頭へ戻る
-    [  0, 0, 7, 0,  0, 7, 0, 0,   -2,-2, 5,-2,  -2, 5,-2,-2,
-      -4,-4, 3,-4, -4, 3,-4,-4,   -5,-5, 2,-5,  -5,-5, 0, 0 ],
+    // 5 CHORUS B: 上行 + 下行 (往復で密度さらに上げ)
+    [  0, 7,12,15, 12, 7, 0, 7,   -2, 5,10,13, 10, 5,-2, 5,
+      -4, 3, 8,12,  8, 3,-4, 3,   -5, 2, 7,11,  7, 2,-5, 2 ],
+    // 6 FINAL: 16 分 walk (最密)
+    [  0, 7,12,15, 12, 7,12,15,   -2, 5,10,13, 10, 5,10,13,
+      -4, 3, 8,12,  8, 3, 8,12,   -5, 2, 7,11,  7, 2, 7,11 ],
+    // 7 PEAK/TRANSITION: 同じ最密レベルを維持、フィル付き
+    [  0, 7,12,15, 12, 7,12,15,   -2, 5,10,13, 10, 5,10,13,
+      -4, 3, 8,12,  8, 3, 8,12,   -5, 2, 7,11, 12, 7, 0, 0 ],
   ];
 
-  // ───── リード: 各セクション独自メロディ (-1 = 無音) ─────
+  // ───── リード: セクション毎に音域を上げていく、下げ場面なし ─────
   private static readonly LEAD_SECTIONS: number[][] = [
-    // 0 INTRO: ルートと 3 度をゆっくり、余白多め
+    // 0 INTRO: ルートと 3 度を余白多めに (静かな導入、下の音域)
     [ 12,-1,-1,-1, 15,-1,-1,-1,  10,-1,-1,-1, 13,-1,-1,-1,
        8,-1,-1,-1, 12,-1,-1,-1,   7,-1,-1,-1, 11,-1,-1,-1 ],
-    // 1 VERSE A: メインテーマ (旧版と同じ、Phrygian dom)
+    // 1 VERSE A: メインテーマ (mid)
     [ 12,15,19,15, 17,15,12,15,  10,13,17,13, 15,13,10,13,
        8,12,15,12, 13,12, 8,12,   7,11,14,11, 12,11, 7,11 ],
-    // 2 VERSE A': 同メロに装飾音追加
-    [ 12,15,17,19, 17,15,12,10,  10,13,15,17, 15,13,10, 8,
-       8,12,13,15, 13,12, 8, 7,   7,11,12,14, 12,11, 7, 5 ],
-    // 3 CHORUS: 1 オクターブ上、明快なフック
+    // 2 VERSE A': 装飾音追加、音域少し上へ
+    [ 12,15,17,19, 17,15,17,12,  10,13,15,17, 15,13,15,10,
+       8,12,13,15, 13,12,13, 8,   7,11,12,14, 12,11,12, 7 ],
+    // 3 VERSE B: 上昇ラインで chorus への build
+    [ 12,15,17,19, 22,19,17,15,  10,13,15,17, 20,17,15,13,
+       8,12,13,15, 17,15,13,12,   7,11,12,14, 16,14,12,11 ],
+    // 4 CHORUS A: 1 オクターブ上、明快なフック
     [ 24,22,19,22, 24,22,19,17,  22,19,17,19, 22,19,17,15,
       20,17,15,17, 20,17,15,13,  19,16,14,16, 19,16,14,11 ],
-    // 4 BRIDGE: 静か、問いかけ風 (付点リズム、半分の音数)
-    [ -1,12,-1,15, -1,17,-1,15,  -1,10,-1,13, -1,15,-1,13,
-      -1, 8,-1,12, -1,13,-1,12,  -1, 7,-1,11, -1,12,-1,11 ],
-    // 5 PRE-CHORUS: 半音階上昇 (緊張の蓄積)
-    [ 12,13,14,15, 15,16,17,18,  10,11,12,13, 13,14,15,16,
-       8, 9,10,11, 11,12,13,14,   7, 8, 9,10, 10,11,12,13 ],
-    // 6 FINAL CHORUS: 最高音 A5 到達、勝利のテーマ
-    [ 24,22,19,24, 22,19,17,24,  22,19,17,22, 19,17,15,22,
-      20,17,15,20, 17,15,13,20,  19,16,14,19, 16,14,12,19 ],
-    // 7 OUTRO: 下降して消え入る、次ループの A に繋ぐ
-    [ 19,17,15,12, 15,12,10,12,  17,15,13,10, 13,10, 8,10,
-      15,13,12, 8, 12, 8, 7, 8,  14,12,11, 7, 11, 7, 5,12 ],
+    // 5 CHORUS B: オクターブ上 + 装飾、密度増
+    [ 24,22,24,19, 22,24,22,19,  22,19,22,17, 19,22,19,17,
+      20,17,20,15, 17,20,17,15,  19,16,19,14, 16,19,16,14 ],
+    // 6 FINAL: 最高音 A5 / B5 に到達、勝利のテーマ
+    [ 24,26,24,22, 24,26,24,19,  22,24,22,19, 22,24,22,17,
+      20,22,20,17, 20,22,20,15,  19,21,19,16, 19,21,19,14 ],
+    // 7 PEAK/TRANSITION: 最高音維持しつつ末尾で次ループの A に繋ぐ
+    [ 24,22,24,26, 24,22,19,24,  22,19,22,24, 22,19,17,22,
+      20,17,20,22, 20,17,15,20,  19,16,19,21, 14,12,15,12 ],
   ];
 
   // ───── アルペジオ: 裏拍で和音トーンを刻む。セクション有効時のみ ─────
@@ -386,25 +385,25 @@ export class SoundEngine {
   private static readonly TOM_FILL = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
                                        0,0,0,0, 0,0,0,0, 0,0,0,0, 1,2,1,2];
 
-  // ───── セクション別レイヤー有効化プロファイル ─────
-  // [kick, snare, hat, arp, stab, pad, crash, fill]
+  // ───── セクション別レイヤープロファイル (右肩上がりで加算) ─────
+  //   セクション番号が上がるほどレイヤー追加、音量 UP。下げなし。
   private static readonly SECTION_PROFILE = [
-    // 0 INTRO: pad のみ、ドラムなし
-    { kick:false, snare:false, hat:false, arp:false, stab:false, pad:true,  crash:false, fill:false, leadGain:0.18, bassGain:0.28 },
-    // 1 VERSE A: 基本セット、pad なし
-    { kick:true,  snare:true,  hat:true,  arp:false, stab:true,  pad:false, crash:true,  fill:false, leadGain:0.22, bassGain:0.34 },
-    // 2 VERSE A': arp 追加
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, crash:false, fill:true,  leadGain:0.22, bassGain:0.34 },
-    // 3 CHORUS: 全レイヤー、最大音量
+    // 0 INTRO: bass + lead のみ、ドラムなし (最小編成)
+    { kick:false, snare:false, hat:false, arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.18, bassGain:0.26 },
+    // 1 VERSE A: + kick/snare/hat (基本ドラム in)
+    { kick:true,  snare:true,  hat:true,  arp:false, stab:false, pad:false, crash:true,  fill:false, leadGain:0.20, bassGain:0.30 },
+    // 2 VERSE A': + arp (off-beat 刻み追加)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:false, pad:false, crash:false, fill:false, leadGain:0.22, bassGain:0.32 },
+    // 3 VERSE B: + stab (コード頭スタブ)、fill で chorus への橋渡し
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, crash:false, fill:true,  leadGain:0.24, bassGain:0.34 },
+    // 4 CHORUS A: + pad、リードオクターブ上
     { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:false, leadGain:0.26, bassGain:0.36 },
-    // 4 BRIDGE: pad + hat のみ、静寂
-    { kick:false, snare:false, hat:true,  arp:true,  stab:false, pad:true,  crash:false, fill:false, leadGain:0.16, bassGain:0.22 },
-    // 5 PRE-CHORUS: kick + hat で tension、snare は小節末のみ
-    { kick:true,  snare:false, hat:true,  arp:true,  stab:false, pad:true,  crash:false, fill:true,  leadGain:0.22, bassGain:0.32 },
-    // 6 FINAL CHORUS: 最大、crash 頭
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:false, leadGain:0.28, bassGain:0.38 },
-    // 7 OUTRO: pad + 弱いドラム、次ループへクールダウン
-    { kick:true,  snare:false, hat:true,  arp:false, stab:true,  pad:true,  crash:false, fill:true,  leadGain:0.18, bassGain:0.26 },
+    // 5 CHORUS B: 全レイヤー継続、密度アップ
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:false, fill:false, leadGain:0.28, bassGain:0.37 },
+    // 6 FINAL: 最高音域、全レイヤー、crash 頭
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:false, leadGain:0.30, bassGain:0.38 },
+    // 7 PEAK/TRANSITION: 最大密度維持、末尾に fill で次ループへ
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:false, fill:true,  leadGain:0.30, bassGain:0.38 },
   ];
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
