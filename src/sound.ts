@@ -375,25 +375,27 @@ export class SoundEngine {
   private static readonly TOM_FILL = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
                                        0,0,0,0, 0,0,0,0, 0,0,0,0, 1,2,1,2];
 
-  // ───── セクション別レイヤープロファイル (右肩上がりで加算) ─────
-  //   セクション番号が上がるほどレイヤー追加、音量 UP。下げなし。
+  // ───── セクション別レイヤープロファイル ─────
+  //   厳密に「1 セクションにつき 1 楽器だけ追加」する積み上げ方式。
+  //   各セクションで 1 つ新レイヤーが入るので「あ、音増えた」と気づきやすい。
+  //   Section 7 (CLIMAX) でリードだけ +12 (octave up)、fill + crash も有効化。
   private static readonly SECTION_PROFILE = [
-    // 0 INTRO: bass + lead のみ、ドラムなし (最小編成)
-    { kick:false, snare:false, hat:false, arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.18, bassGain:0.26 },
-    // 1 VERSE A: + kick/snare/hat (基本ドラム in)
-    { kick:true,  snare:true,  hat:true,  arp:false, stab:false, pad:false, crash:true,  fill:false, leadGain:0.20, bassGain:0.30 },
-    // 2 VERSE A': + arp (off-beat 刻み追加)
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:false, pad:false, crash:false, fill:false, leadGain:0.22, bassGain:0.32 },
-    // 3 VERSE B: + stab (コード頭スタブ)、fill で chorus への橋渡し
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, crash:false, fill:true,  leadGain:0.24, bassGain:0.34 },
-    // 4 CHORUS A: + pad、リードオクターブ上
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:false, leadGain:0.26, bassGain:0.36 },
-    // 5 CHORUS B: 全レイヤー継続、密度アップ
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:false, fill:false, leadGain:0.28, bassGain:0.37 },
-    // 6 FINAL: 最高音域、全レイヤー、crash 頭
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:false, leadGain:0.30, bassGain:0.38 },
-    // 7 PEAK/TRANSITION: 最大密度維持、末尾に fill で次ループへ
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:false, fill:true,  leadGain:0.30, bassGain:0.38 },
+    // 0: bass + lead のみ (基本 2 レイヤー)
+    { kick:false, snare:false, hat:false, arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.18, bassGain:0.28 },
+    // 1: + hat (まず軽く刻みが入る)
+    { kick:false, snare:false, hat:true,  arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.20, bassGain:0.30 },
+    // 2: + kick (踏み込みが入ってリズム感が立ち上がる)
+    { kick:true,  snare:false, hat:true,  arp:false, stab:false, pad:false, crash:false, fill:false, leadGain:0.22, bassGain:0.32 },
+    // 3: + snare (バックビート入って完全なビートに)
+    { kick:true,  snare:true,  hat:true,  arp:false, stab:false, pad:false, crash:true,  fill:false, leadGain:0.24, bassGain:0.34 },
+    // 4: + arp (off-beat 16 分刻みでメロディが広がる)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:false, pad:false, crash:false, fill:false, leadGain:0.26, bassGain:0.35 },
+    // 5: + stab (コード頭の打ち込みで厚みが加わる)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, crash:false, fill:false, leadGain:0.28, bassGain:0.36 },
+    // 6: + pad (サステインコードが敷かれて音像が埋まる、最大編成一歩手前)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:false, fill:false, leadGain:0.30, bassGain:0.37 },
+    // 7 CLIMAX: 全レイヤー + lead オクターブ up + crash + 末尾 fill で解放
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  crash:true,  fill:true,  leadGain:0.32, bassGain:0.38 },
   ];
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
