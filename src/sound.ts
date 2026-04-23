@@ -318,30 +318,43 @@ export class SoundEngine {
     -5, 2, 7,11,  7, 2, 0, 0,
   ];
 
-  // ───── リード: A1 が軸。0 は間引き版、1-6 は同じ A1 を使用、
-  //   7 だけ +12 (1 オクターブ上) で最後のクライマックス。
+  // ───── リード: 普通の BGM 構造 (verse → pre-chorus → chorus → outro) ─────
+  //   ベースは A1 固定だが、リードは曲の流れに沿って 4 種類のメロディを使い分け、
+  //   層の追加と相まって自然に盛り上がる構造にする。
   private static readonly LEAD_A1 = [
-    // Am: A C E C | D C A C
+    // VERSE 用 (Section 1, 2): メインテーマ
     12,15,19,15, 17,15,12,15,
-    // G:  G Bb D Bb | C Bb G Bb
     10,13,17,13, 15,13,10,13,
-    // F:  F A C A | Bb A F A
      8,12,15,12, 13,12, 8,12,
-    // E:  E G# B G# | A G# E G#
      7,11,14,11, 12,11, 7,11,
   ];
-  // セクション 0 (INTRO) 用: A1 の骨格音だけ、隙間多め
+  // INTRO (Section 0) 用: A1 の骨格音だけ (4 分音符 + 休符)
   private static readonly LEAD_INTRO = [
     12,-1,-1,-1, 17,-1,-1,-1,  10,-1,-1,-1, 15,-1,-1,-1,
      8,-1,-1,-1, 13,-1,-1,-1,   7,-1,-1,-1, 12,-1,-1,-1,
   ];
-  // セクション 7 (CLIMAX) 用: A1 を +12 (1 オクターブ上) のクライマックス版
-  //   末尾だけ 12 = A4 に落として次ループ INTRO の 12 へスムーズ接続
-  private static readonly LEAD_CLIMAX = [
+  // PRE-CHORUS (Section 3) 用: A1 を上昇させて chorus への助走
+  //   各コードの最後 4 ステップで一気に上り詰める形
+  private static readonly LEAD_PRE = [
+    12,15,17,19, 19,22,24,22,
+    10,13,15,17, 17,20,22,20,
+     8,12,13,15, 15,17,20,17,
+     7,11,12,14, 14,16,19,16,
+  ];
+  // CHORUS (Section 4, 5, 6) 用: A1 を 1 オクターブ上 (普通の BGM の chorus)
+  private static readonly LEAD_CHORUS = [
     24,27,31,27, 29,27,24,27,
     22,25,29,25, 27,25,22,25,
     20,24,27,24, 25,24,20,24,
-    19,23,26,23, 24,23,19,12,
+    19,23,26,23, 24,23,19,23,
+  ];
+  // OUTRO (Section 7) 用: chorus の高音から徐々に降りて、末尾で A4 (12) に着地
+  //   次ループ INTRO の 12 へスムーズに繋ぐ
+  private static readonly LEAD_OUTRO = [
+    24,22,19,17, 19,17,15,12,
+    22,19,17,15, 17,15,13,10,
+    20,17,15,13, 15,13,12, 8,
+    19,16,14,12, 14,12,11,12,
   ];
 
   // ───── アルペジオ: 裏拍で和音トーンを刻む。セクション有効時のみ ─────
@@ -375,28 +388,26 @@ export class SoundEngine {
   private static readonly TOM_FILL = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
                                        0,0,0,0, 0,0,0,0, 0,0,0,0, 1,2,1,2];
 
-  // ───── セクション別レイヤープロファイル ─────
-  //   ドラム系 (hat/kick/snare) は 1-3 で積み上げ、
-  //   4 以降は pitched layer (違う音程の新音色) を段階的に追加して盛り上げる。
-  //   counter = カウンターメロディ (lead の +7 = 5 度上ハーモニー)。
-  //   Section 7 (CLIMAX) で初めて lead +12 octave up + crash + fill を解放。
+  // ───── セクション別レイヤープロファイル (普通の BGM 構造) ─────
+  //   INTRO → VERSE → PRE-CHORUS → CHORUS → OUTRO の流れに沿って
+  //   1 セクションごとに 1 種類のレイヤーが追加され、自然に盛り上がる。
   private static readonly SECTION_PROFILE = [
-    // 0: bass + lead のみ (基本 2 レイヤー、静かな導入)
+    // 0 INTRO: bass + 間引き lead のみ (静かな導入、2 レイヤー)
     { kick:false, snare:false, hat:false, arp:false, stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.18, bassGain:0.28 },
-    // 1: + hat (軽い刻み、ドラム系 1)
+    // 1 VERSE: + hat (軽い刻み)
     { kick:false, snare:false, hat:true,  arp:false, stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.20, bassGain:0.30 },
-    // 2: + kick (踏み込み、ドラム系 2)
+    // 2 VERSE: + kick (踏み込み入って前進感)
     { kick:true,  snare:false, hat:true,  arp:false, stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.22, bassGain:0.32 },
-    // 3: + snare (完全なビート、ドラム系 3)
-    { kick:true,  snare:true,  hat:true,  arp:false, stab:false, pad:false, counter:false, crash:true,  fill:false, leadGain:0.24, bassGain:0.34 },
-    // 4: + stab (コード頭の "ドン" という和音打ち込み、新しい音程が加わる)
-    { kick:true,  snare:true,  hat:true,  arp:false, stab:true,  pad:false, counter:false, crash:false, fill:false, leadGain:0.25, bassGain:0.35 },
-    // 5: + arp (off-beat 16 分でコードトーン刻み、音程のバラエティが更に増える)
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:false, counter:false, crash:false, fill:false, leadGain:0.26, bassGain:0.36 },
-    // 6: + pad (サステインコード、持続音で厚みアップ、音の隙間が埋まる)
+    // 3 PRE-CHORUS: + snare + arp (リード上昇、ドラム完成、CHORUS への助走)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:false, pad:false, counter:false, crash:false, fill:false, leadGain:0.24, bassGain:0.34 },
+    // 4 CHORUS: + pad (リード octave up、サステインコードで一気に厚み倍増)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:false, pad:true,  counter:false, crash:true,  fill:false, leadGain:0.26, bassGain:0.36 },
+    // 5 CHORUS: + stab (コード頭の打ち込みで chorus に推進力追加)
     { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  counter:false, crash:false, fill:false, leadGain:0.28, bassGain:0.37 },
-    // 7 CLIMAX: + counter-melody (lead の +7 = 5度上ハモリ) + lead +12 + crash + fill
-    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  counter:true,  crash:true,  fill:true,  leadGain:0.32, bassGain:0.38 },
+    // 6 CHORUS PEAK: + counter-melody (5 度上ハモリ、chorus 最高潮)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  counter:true,  crash:false, fill:false, leadGain:0.30, bassGain:0.38 },
+    // 7 OUTRO: + crash + fill (リード下降、次ループへ橋渡し)
+    { kick:true,  snare:true,  hat:true,  arp:true,  stab:true,  pad:true,  counter:true,  crash:true,  fill:true,  leadGain:0.28, bassGain:0.36 },
   ];
 
   /** BGM ループを開始 (既に再生中なら stageIndex 変更のみ反映) */
@@ -503,8 +514,8 @@ export class SoundEngine {
     }
 
     // ── Bass (square + オクターブ下 sine で厚み) ──
-    //   0 = INTRO (A1 同じ)、7 = CLIMAX (アルペジオ)、それ以外は A1 共通
-    const bassPattern = sectionIdx === 7 ? SoundEngine.BASS_CLIMAX : SoundEngine.BASS_A1;
+    //   全セクション共通の A1 を使用 (基盤として安定)
+    const bassPattern = SoundEngine.BASS_A1;
     {
       const bassSemi = bassPattern[i];
       const baseFreq = (root / 2) * Math.pow(2, bassSemi / 12);
@@ -533,11 +544,13 @@ export class SoundEngine {
     }
 
     // ── Lead (square + LP envelope) ──
-    //   0 = INTRO (間引き版)、7 = CLIMAX (+12 octave up)、それ以外は A1 共通
+    //   普通の BGM 構造: INTRO → VERSE → PRE-CHORUS → CHORUS → OUTRO
     const leadPattern =
       sectionIdx === 0 ? SoundEngine.LEAD_INTRO :
-      sectionIdx === 7 ? SoundEngine.LEAD_CLIMAX :
-                         SoundEngine.LEAD_A1;
+      sectionIdx <= 2  ? SoundEngine.LEAD_A1 :       // 1, 2: VERSE
+      sectionIdx === 3 ? SoundEngine.LEAD_PRE :      // PRE-CHORUS (上昇)
+      sectionIdx <= 6  ? SoundEngine.LEAD_CHORUS :   // 4, 5, 6: CHORUS (octave up)
+                         SoundEngine.LEAD_OUTRO;     // 7: OUTRO (下降して loop 接続)
     {
       const leadSemi = leadPattern[i];
       if (leadSemi >= 0) {
