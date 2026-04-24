@@ -681,29 +681,29 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // === 上段: 古民家中心の住宅列 (多彩な住宅) ===
       _B('house', -155, 38), _B('bungalow', -120, 48),          // Cell A 家族住宅 + 平屋
       _B('shed', -145, 72), _B('greenhouse', -115, 78),
-      _B('townhouse', -50, 38),                                 // Cell B ★ 古民家 (庭園が裏)
-      _B('shed', -75, 78),
+      _B('townhouse', -42, 38),                                 // Cell B ★ 古民家 (庭園が裏、歩道軸 x=-65 を避ける)
+      _B('shed', -38, 85),                                      // 庭園 wood_deck の奥 (縁側を隠さない、MID_HR を避ける)
       _B('duplex', 30, 36), _B('garage', 65, 42),               // Cell C 二世帯住宅 + 車庫
       _B('shed', 70, 78),
       _B('mansion', 114, 42),                                   // Cell D 大きめの住宅
       _B('townhouse', 142, 42),
-      _B('shed', 118, 78), _B('greenhouse', 162, 78),
+      _B('greenhouse', 162, 78),                                // 上段右奥 (桜下の落ち葉を隠さない)
 
       // === 下段: 古民家続き + 菜園 ===
       _B('house', -150, 132), _B('duplex', -115, 128),          // Cell E 家庭菜園家族 (2世帯)
       _B('greenhouse', -155, 170), _B('shed', -120, 178),
-      _B('townhouse', -48, 132),                                // Cell F ★ 古民家の続き (縁側)
+      _B('townhouse', -42, 132),                                // Cell F ★ 古民家の続き (縁側、歩道軸 x=-65 を避ける)
       _B('bungalow', 35, 138), _B('house', 70, 138),            // Cell G 小家族 (平屋+戸建)
       _B('mansion', 118, 132),                                  // Cell H 桜古木の家 (大)
       _B('greenhouse', 158, 138),
       _B('greenhouse', 115, 178), _B('shed', 160, 175),
 
-      // === ★ 住宅街の密集化: 追加 HP1 小住宅 (空きを埋める) ===
-      _B('house', -74, 42),   _B('house', 165, 40),               // 上段 facade の隙間
-      _B('townhouse', -22, 76), _B('house', 18, 76),               // 上段裏庭の空き
-      _B('house', -74, 138),  _B('townhouse', -19, 138),            // 下段 facade
-      _B('house', 178, 134),                                        // 下段右端
-      _B('shed', -16, 178),     _B('house', 45, 172),                // 下段裏
+      // === ★ 住宅街の密集化: 追加 HP1 小住宅 (歩道軸・桜の落ち葉を避ける配置) ===
+      _B('house', 165, 40),                                     // 上段右端
+      _B('house', 18, 76),                                      // 上段裏庭
+      _B('townhouse', -19, 138),                                // 下段 facade
+      _B('house', 178, 134),                                    // 下段右端
+      _B('shed', -16, 178),                                     // 下段裏
     ],
     furniture: [
       // ─── ★★ C0 固有: 古民家の日本庭園 (Cell B 上段・Cell F 下段) ★★ ───
@@ -783,10 +783,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('wood_deck', -45, 162, 52, 30),                        // ★ 下段縁側
       _G('dirt', -5, 82, 20, 16),                               // 庭園の砂利エリア
 
-      // ─── 桜下の fallen_leaves リボン ───
-      _G('fallen_leaves', 128, 68, 54, 38),
-      _G('fallen_leaves', 115, 150, 50, 42),
-      _G('fallen_leaves', 32, 178, 44, 34),
+      // ─── 桜下の fallen_leaves リボン (サクラ直下の狭いパッチに限定) ───
+      _G('fallen_leaves', 140, 62, 28, 14),                     // sakura(125) と sakura(155) の間
+      _G('fallen_leaves', 100, 162, 28, 16),                    // sakura(108, 150) 直下
+      _G('fallen_leaves', 32, 185, 28, 18),                     // 広場入口横の落ち葉 (house 削除)
 
       // ─── dirt 菜園帯 ───
       _G('dirt', -150, 70, 50, 32),
@@ -814,30 +814,29 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // === 上段: 住宅 + 商店 (多彩な住宅で facade) ===
       _B('house', -155, 38), _B('duplex', -120, 38),            // Cell A 戸建 + 二世帯
       _B('shed', -148, 72), _B('greenhouse', -115, 78),
-      _B('convenience', -45, 38),                               // ★ Cell B 角のコンビニ
+      _B('convenience', -42, 38),                               // ★ Cell B 角のコンビニ (歩道軸を避ける)
       _B('garage', 20, 75),
       _B('laundromat', 35, 38),                                 // Cell C ランドロマット
       _B('bungalow', 68, 48), _B('shed', 38, 78),               // ★ 平屋
       _B('mansion', 115, 42),                                   // Cell D 住宅 (大)
       _B('townhouse', 148, 42),
-      _B('greenhouse', 170, 75), _B('shed', 118, 78),
+      _B('greenhouse', 170, 75),                                // 桜下の落ち葉を隠さない (shed 削除)
 
       // === 下段: マンション + 多様な住宅 ===
       _B('mansion', -130, 132), _B('bungalow', -170, 148),      // Cell E 若夫婦 + 平屋
       _B('garage', -148, 175), _B('shed', -110, 178),
-      _B('house', -48, 132),                                    // Cell F 独居老人
-      _B('greenhouse', -20, 165), _B('shed', -72, 175),
+      _B('house', -42, 132),                                    // Cell F 独居老人 (歩道軸を避ける)
+      _B('greenhouse', -20, 165),                               // 裏庭の温室 (shed 削除、歩道軸を開ける)
       _B('duplex', 28, 128), _B('townhouse', 65, 138),          // Cell G 2 世帯 + 連棟
       _B('shed', 30, 175),
       _B('townhouse', 108, 132), _B('house', 148, 136),         // Cell H 住宅連
-      _B('garage', 115, 175), _B('shed', 160, 178),
+      _B('garage', 138, 175), _B('shed', 160, 178),             // 桜下の落ち葉を避けて garage を右へ
 
-      // === ★ 住宅街の密集化: 追加 HP1 小住宅 ===
-      _B('house', -74, 42),   _B('townhouse', 175, 44),           // 上段 facade 隙間
-      _B('house', -25, 76),   _B('house', 74, 76),                // 上段裏庭
-      _B('house', 150, 78),
-      _B('house', -74, 132),  _B('house', -18, 138),              // 下段 facade
-      _B('townhouse', 73, 172),                                    // 下段裏
+      // === ★ 住宅街の密集化: 追加 HP1 小住宅 (歩道軸・桜下を避ける配置) ===
+      _B('townhouse', 175, 44),                                 // 上段 facade 隙間
+      _B('house', -25, 76),   _B('house', 74, 76),              // 上段裏庭
+      _B('house', -18, 138),                                    // 下段 facade
+      _B('townhouse', 73, 172),                                 // 下段裏
     ],
     furniture: [
       // ─── 軸 1: wood_fence / hedge リボン (x=±178) ───
@@ -934,9 +933,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 40, 18, 140, 36),                              // 公園の敷石 (拡幅)
       _G('dirt', 110, 22, 18, 12),                              // 砂場エリアの土台
 
-      // ─── 軸 3: 桜下の fallen_leaves リボン ───
-      _G('fallen_leaves', 128, 72, 50, 36),                     // 上段桜下
-      _G('fallen_leaves', 130, 158, 48, 36),                    // 下段桜下
+      // ─── 軸 3: 桜下の fallen_leaves リボン (サクラ直下の狭いパッチ) ───
+      _G('fallen_leaves', 135, 82, 32, 16),                     // 上段桜下 (sakura(125, 65), (155, 90) 間)
+      _G('fallen_leaves', 130, 150, 34, 14),                    // 下段桜下 (sakura(130, 155) 直下)
 
       // ─── 角のコンビニ・ランドロマット前舗装 ───
       _G('asphalt', -45, 58, 46, 30),                           // ★ コンビニ前駐車/搬入の小パッチ (限定)
@@ -971,7 +970,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // === 上段: 公共施設 3 連 + 多様な住宅 ===
       _B('house', -155, 38), _B('bungalow', -120, 48),          // Cell A 園児の家 + 平屋
       _B('shed', -148, 72), _B('greenhouse', -115, 78),
-      _B('daycare', -45, 40),                                   // ★ Cell B 保育園
+      _B('daycare', -38, 40),                                   // ★ Cell B 保育園 (歩道軸を避ける)
       _B('shed', -18, 78),
       _B('clinic', 40, 40),                                     // ★ Cell C 小児科診療所
       _B('shed', 75, 78),
@@ -983,18 +982,16 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('clinic', -145, 130),                                  // Cell E 分院
       _B('mansion', -114, 142),                                 // ★ 大きめ住宅
       _B('garage', -150, 178),
-      _B('townhouse', -48, 132), _B('house', -18, 138),         // Cell F 住宅
-      _B('shed', -60, 175), _B('greenhouse', -20, 178),
+      _B('townhouse', -42, 132), _B('house', -18, 138),         // Cell F 住宅 (歩道軸を避ける)
+      _B('greenhouse', -20, 178),                               // 裏の温室 (shed(-60) 削除で歩道開放)
       _B('bank', 45, 128),                                      // Cell G 小さな銀行支店
-      _B('shed', 30, 178),
       _B('duplex', 115, 132),                                   // ★ 2 世帯
       _B('townhouse', 148, 138),
       _B('garage', 170, 178), _B('shed', 118, 175),
 
-      // === ★ 住宅街の密集化: 追加 HP1 小住宅 ===
-      _B('house', -74, 42),   _B('house', 18, 72),                 // 上段 facade 隙間 + 裏庭
-      _B('house', -75, 172),                                       // 下段追加住宅
-      _B('townhouse', 65, 172),
+      // === ★ 住宅街の密集化: 追加 HP1 小住宅 (歩道軸を避ける配置) ===
+      _B('house', 18, 72),                                      // 上段裏庭
+      _B('townhouse', 65, 172),                                 // 下段追加住宅
     ],
     furniture: [
       // ─── 軸 1: wood_fence / hedge リボン ───
@@ -1941,9 +1938,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('house', -150, 42),                                 // 農家の母屋
       _B('shed', -122, 38),                                  // 納屋
       _B('greenhouse', -148, 78),                            // ビニールハウス
-      // === Cell B (中左上): 畑の真ん中の小屋 + 温室 ===
-      _B('shed', -65, 42),
-      _B('bungalow', -25, 48),                               // ★ 農家の平屋 (大温室から変更)
+      // === Cell B (中左上): 畑端の小屋 (畑の中央を空ける) ===
+      _B('shed', -76, 42),                                   // 畑端に寄せる (spine 道路を避ける)
       // === Cell C (中右上): 別の農家 + 物置 ===
       _B('duplex', 50, 38),                                  // ★ 2 世帯農家
       _B('shed', 76, 40),
@@ -2037,11 +2033,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     grounds: [
       _G('grass', 0, 46.5, 360, 93),
-      _G('dirt', -50, 60, 80, 50),                           // 中央の大畑 (土)
-      _G('dirt', 120, 60, 80, 50),                           // 右の畑
+      _G('dirt', -52, 60, 60, 50),                           // 中央の大畑 (建物を避けて縮小)
+      _G('dirt', 115, 60, 60, 50),                           // 右の畑 (mansion を避けて縮小)
       _G('grass', 0, 153.5, 360, 93),
       _G('dirt', -50, 160, 80, 50),                          // 下段の畑
-      _G('dirt', 40, 160, 80, 50),                           // 下段右の畑
+      _G('dirt', 37, 160, 55, 50),                           // 下段右の畑 (townhouse/garage を避けて縮小)
       _G('dirt', 155, 168, 50, 40),
       _G('dirt', 0, 15, 120, 25), _G('dirt', 0, 188, 120, 20),
     ],
