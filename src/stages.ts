@@ -801,8 +801,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 公園前の街路ミラー (横断地点) ──
       _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
+      _F('street_mirror', 30, 92), _F('street_mirror', 150, 92),
       // ── 境界・他の生活痕跡 ──
       _F('hedge', -140, 95), _F('cat', -100, 132), _F('cat', -160, 168),
       _F('flower_bed', -130, 195),
@@ -888,13 +889,18 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 公共施設前の街路ミラー ──
       _F('manhole_cover', 0, 100),
+      _F('street_mirror', -150, 92), _F('street_mirror', 150, 92),
+      // ── _TOP_HR (Ch3 への接続): 信号・街灯・ガードレール・地面素材の連続 ──
+      _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
+      _F('street_lamp', 0, 195),
+      _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
+      _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
       // ── 境界・その他 ──
       _F('bench', 130, 150), _F('cat', 155, 145), _F('cat', -160, 168),
-      _F('flower_bed', 60, 170), _F('flower_bed', -160, 195),
-      _F('hedge', 75, 90), _F('hedge', -75, 195),
-      _F('potted_plant', -45, 148),
+      _F('flower_bed', 60, 170),
+      _F('hedge', 75, 90), _F('potted_plant', -45, 148),
     ],
     humans: [
       // 保育園送迎
@@ -905,8 +911,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(110, 42), _H(132, 38),
       // 歩道橋・横断
       _H(0, 60), _H(0, 100),
-      // 住宅街の住人
+      // 住宅街の住人 + _TOP_HR 横断
       _H(-45, 138), _H(60, 138), _H(155, 50), _H(-100, 138),
+      _H(0, 192),
     ],
     grounds: [
       _G('residential_tile', 0, 100, 360, 200),
@@ -918,6 +925,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 110, 30, 40, 24),
       _G('tile', -110, 30, 60, 24),
       _G('concrete', 0, 60, 100, 14),
+      // _TOP_HR の地面連続 (Ch3 への handoff)
+      _G('concrete', 0, 198, 360, 12),
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1281,10 +1290,18 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 通学路の街路ミラー ──
       _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
+      _F('street_mirror', -110, 92), _F('street_mirror', 110, 92),
+      // ── _TOP_HR (Ch7 への通学路接続): 信号・街灯・ガードレール・地面素材の連続 ──
+      _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
+      _F('street_lamp', 0, 195), _F('street_lamp', -150, 195),
+      _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
+      _F('guardrail_short', -135, 198),
+      _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
+      _F('bollard', -65, 195), _F('bollard', 65, 195),
       // ── 境界 ──
-      _F('hedge', -150, 110), _F('hedge', 30, 110), _F('hedge', -90, 195), _F('hedge', 110, 195),
+      _F('hedge', -150, 110), _F('hedge', 30, 110),
     ],
     humans: [
       // 校門・校庭 (児童と見守り)
@@ -1296,8 +1313,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(95, 56), _H(130, 80),
       // 東側 商店利用客
       _H(80, 132), _H(145, 132), _H(35, 132),
-      // 住宅街
+      // 住宅街 + _TOP_HR 横断 (通学児)
       _H(-150, 138), _H(-110, 138),
+      _H(-30, 192), _H(30, 192),
     ],
     grounds: [
       _G('concrete', 0, 48, 360, 96),
@@ -1309,6 +1327,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('stone_pavement', -65, 100, 12, 200),
       _G('asphalt', 0, 95, 360, 18),
       _G('grass', 35, 175, 60, 50),
+      // _TOP_HR の地面連続 (Ch7 への handoff)
+      _G('asphalt', 0, 198, 360, 12),
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1475,8 +1495,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 駅前ロータリー脇 (x=+90) の街路ミラー ──
       _F('manhole_cover', 0, 100),
+      _F('street_mirror', 95, 92), _F('street_mirror', 130, 100),
+      _F('street_mirror', -100, 92),
       // ── 境界 ──
       _F('flower_bed', 165, 188), _F('hedge', -170, 110), _F('hedge', 170, 110),
       _F('guardrail_short', 35, 92), _F('guardrail_short', 155, 92),
@@ -1573,8 +1595,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 農道脇の街路ミラー ──
       _F('manhole_cover', 0, 100),
+      _F('street_mirror', -100, 92),
+      // ── x=+90 側の濡れ路面 (Ch11 踏切までの漸進) ──
+      _F('puddle_reflection', 165, 100), _F('puddle_reflection', 130, 90),
       // ── 境界 ──
       _F('hedge', 180, 165), _F('hedge', -100, 195),
       _F('flower_bed', -160, 192), _F('flower_bed', 30, 192),
@@ -1655,18 +1680,27 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('laundry_pole', 95, 158), _F('potted_plant', 145, 125),
       // ── 連続軸: pine_tree (Ch9-Ch11) ──
       _F('pine_tree', -170, 110), _F('pine_tree', 170, 110),
-      _F('pine_tree', -170, 188), _F('pine_tree', 170, 188),
-      _F('pine_tree', 0, 188),
+      _F('pine_tree', 0, 175),
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
-      _F('power_pole', -178, 195), _F('power_line', -175, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 倉庫前の街路ミラー ──
       _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
+      _F('street_mirror', -100, 92), _F('street_mirror', 100, 92),
+      // ── _TOP_HR (Ch11 への接続): 信号・街灯・ガードレール・地面素材の連続 ──
+      _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
+      _F('street_lamp', 0, 195), _F('street_lamp', 150, 195),
+      _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
+      _F('guardrail_short', 135, 198),
+      _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
+      _F('bollard', -65, 195), _F('bollard', 65, 195),
+      // ── x=+90 側の濡れ路面 (Ch11 踏切への前兆) ──
+      _F('puddle_reflection', 130, 180), _F('puddle_reflection', 100, 198),
+      // ── 電柱+電線 (下端、_TOP_HR の奥) ──
+      _F('power_pole', -178, 198), _F('power_line', -175, 196),
+      _F('power_pole', 178, 198), _F('power_line', 175, 196),
       // ── 境界・植栽 ──
-      _F('flower_bed', 100, 195), _F('flower_bed', -100, 195),
-      _F('hedge', 0, 195), _F('hedge', -160, 195),
+      _F('flower_bed', -100, 195), _F('hedge', -160, 195),
       _F('cat', -75, 195),
     ],
     humans: [
@@ -1676,8 +1710,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(65, 62), _H(135, 62), _H(100, 62),
       // 下段 住宅・住人
       _H(-135, 145), _H(95, 145), _H(145, 138), _H(50, 138),
-      // 道路通行人
-      _H(0, 100),
+      // 道路通行人 + _TOP_HR 横断 (Ch11 へ)
+      _H(0, 100), _H(-30, 192), _H(30, 192),
     ],
     grounds: [
       _G('asphalt', 0, 70, 360, 120),
@@ -1688,6 +1722,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', -135, 145, 80, 70),
       _G('residential_tile', 95, 145, 110, 70),
       _G('asphalt', 50, 138, 60, 30),
+      // _TOP_HR の地面連続 (Ch11 への handoff)
+      _G('asphalt', 0, 198, 360, 12),
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1751,15 +1787,25 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('laundry_pole', -50, 158), _F('potted_plant', 145, 125),
       // ── 連続軸: pine_tree (Ch9-Ch11) ──
       _F('pine_tree', -170, 90), _F('pine_tree', 170, 90),
-      _F('pine_tree', -170, 188), _F('pine_tree', 170, 188),
-      _F('pine_tree', -100, 188), _F('pine_tree', 100, 195),
+      _F('pine_tree', -100, 175),
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
-      _F('power_pole', -178, 195), _F('power_line', -175, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
+      // ── avenue 地点小物 + 踏切前の街路ミラー ──
       _F('manhole_cover', 0, 100),
+      _F('street_mirror', -100, 130), _F('street_mirror', 100, 130),
+      // ── _TOP_HR (Stage 2 接続): 信号・街灯・ガードレール・地面素材の連続 ──
+      _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
+      _F('street_lamp', -150, 195), _F('street_lamp', 0, 195), _F('street_lamp', 150, 195),
+      _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
+      _F('guardrail_short', -135, 198), _F('guardrail_short', 135, 198),
+      _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
+      _F('bollard', -65, 195), _F('bollard', 65, 195),
+      // ── x=+90 側の濡れ路面進行 (Ch9-Ch11 の終端感) ──
+      _F('puddle_reflection', 110, 195), _F('puddle_reflection', 145, 178),
+      // ── 電柱+電線 (下端、_TOP_HR の奥) ──
+      _F('power_pole', -178, 198), _F('power_line', -175, 196),
+      _F('power_pole', 178, 198), _F('power_line', 175, 196),
       // ── 境界 ──
       _F('cat', 70, 168), _F('cat', -135, 178),
     ],
@@ -1770,8 +1816,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-135, 56), _H(-45, 58), _H(70, 58), _H(90, 60),
       // 下段 住宅・店
       _H(50, 138), _H(145, 145), _H(-50, 138),
-      // 通行人
-      _H(0, 100), _H(0, 145),
+      // 通行人 + Stage 2 へ向かう人 (_TOP_HR 上)
+      _H(0, 100), _H(0, 145), _H(-90, 192), _H(90, 192),
     ],
     grounds: [
       _G('asphalt', 0, 100, 360, 200),
@@ -1783,8 +1829,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 70, 58, 50, 38),
       _G('tile', 50, 145, 60, 60),
       _G('asphalt', 0, 152, 280, 14),
+      // _TOP_HR の地面連続 (Stage 2 への handoff)
+      _G('asphalt', 0, 198, 360, 12),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
 ];
 
