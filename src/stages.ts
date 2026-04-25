@@ -687,6 +687,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 庭の補助・物置・温室
       _B('shed', 45, 78), _B('greenhouse', 78, 75),
       _B('shed', -150, 178), _B('garage', -70, 178), _B('greenhouse', 55, 178), _B('shed', 148, 178),
+      // タイトパッキング補強 (中間 dy 帯)
+      _B('shed', -25, 60), _B('shed', 25, 165), _B('greenhouse', 110, 178), _B('shed', -110, 178),
     ],
     furniture: [
       // ── 焦点: 古民家庭園 ──
@@ -709,6 +711,32 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 生活痕跡 ──
       _F('laundry_pole', -140, 160), _F('laundry_balcony', 145, 140), _F('laundry_pole', 60, 180),
       _F('bicycle', 107, 50), _F('bicycle_rack', -25, 158), _F('bicycle', 152, 158),
+      // ── タイトパッキング: 中間 dy 帯 ──
+      // dy=50 上段 facade と建物帯の間
+      _F('hedge', -150, 50), _F('hedge', -110, 50), _F('hedge', 75, 50), _F('hedge', 130, 50),
+      _F('hedge', 165, 50), _F('hedge', 30, 50),
+      _F('bush', -140, 60), _F('bush', 0, 50), _F('bush', 60, 60), _F('bush', 130, 60),
+      _F('flower_bed', -110, 60), _F('flower_bed', 105, 50),
+      _F('potted_plant', -130, 30), _F('potted_plant', 130, 22), _F('potted_plant', 75, 60),
+      // dy=110-118 avenue と下段facade の間
+      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -110, 118), _F('bush', 110, 118),
+      _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
+      _F('bollard', -65, 92), _F('bollard', 65, 92),
+      // dy=160-175 下段建物帯の間
+      _F('hedge', -130, 165), _F('hedge', 130, 165), _F('hedge', -75, 165), _F('hedge', 75, 165),
+      _F('hedge', 0, 165),
+      _F('bush', -100, 168), _F('bush', 100, 168), _F('bush', 25, 168),
+      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
+      _F('flower_planter_row', -45, 175), _F('flower_planter_row', 45, 175),
+      // 裏路地家具
+      _F('garbage', -150, 88), _F('garbage', 150, 88),
+      _F('garbage', -45, 188), _F('garbage', 45, 188),
+      _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
+      _F('milk_crate_stack', 25, 88),
+      _F('cat', -120, 60), _F('cat', 120, 165), _F('cat', -45, 175),
       // ── 連続軸: 桜並木 (Ch0-Ch5) ──
       _F('sakura_tree', -130, 28), _F('sakura_tree', 22, 60), _F('sakura_tree', 152, 95),
       _F('sakura_tree', -22, 180), _F('sakura_tree', 130, 180),
@@ -731,6 +759,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 道路へ出る生活者・玄関前
       _H(105, 48), _H(0, 100), _H(152, 50),
       _H(-30, 140), _H(40, 140),
+      // 追加: 庭園利用、店前歩行者
+      _H(-110, 58), _H(105, 138), _H(-170, 138),
+      _H(40, 175), _H(110, 175), _H(155, 138),
     ],
     grounds: [
       _G('residential_tile', 0, 100, 360, 200),
@@ -741,6 +772,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('dirt', 150, 72, 32, 24),
       _G('concrete', 150, 178, 32, 30),
       _G('grass', 105, 175, 90, 36),
+      _G('asphalt', 0, 88, 360, 24),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -763,6 +795,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('garage', -130, 178), _B('shed', -50, 180),
       // 公園周辺の小屋
       _B('shed', 175, 178),
+      // タイトパッキング補強
+      _B('shed', -75, 60), _B('shed', 0, 60), _B('shed', 100, 60),
+      _B('shed', -160, 78), _B('shed', -100, 178), _B('shed', -160, 180),
     ],
     furniture: [
       // ── 焦点: 児童公園 ──
@@ -804,6 +839,32 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── avenue 地点小物 + 公園前の街路ミラー (横断地点) ──
       _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
       _F('street_mirror', 30, 92), _F('street_mirror', 150, 92),
+      _F('bollard', -65, 92), _F('bollard', 65, 92),
+      // ── タイトパッキング: 中間 dy 帯 ──
+      // dy=50 帯
+      _F('hedge', -150, 50), _F('hedge', -110, 50), _F('hedge', 50, 50),
+      _F('hedge', 130, 50), _F('hedge', 165, 50),
+      _F('bush', -75, 50), _F('bush', 0, 50), _F('bush', 100, 50),
+      _F('flower_bed', -130, 60), _F('flower_bed', 30, 60), _F('flower_bed', 130, 60),
+      _F('potted_plant', -100, 8), _F('potted_plant', 80, 8), _F('potted_plant', -30, 25),
+      // dy=110-120 中間帯
+      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 30, 115),
+      _F('hedge', 165, 115),
+      _F('bush', -100, 118), _F('bush', 60, 118), _F('bush', 130, 118),
+      // dy=160-175 中間帯
+      _F('hedge', -75, 175), _F('bush', -130, 168),
+      _F('flower_bed', 25, 175), _F('flower_bed', 165, 175),
+      _F('flower_planter_row', -100, 175),
+      // 裏路地・店裏
+      _F('garbage', -160, 88), _F('garbage', 160, 88),
+      _F('garbage', -45, 188), _F('garbage', 45, 188),
+      _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
+      _F('dumpster', 0, 88), _F('dumpster', -130, 188),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
+      _F('milk_crate_stack', 0, 188), _F('milk_crate_stack', -160, 188),
+      _F('cat', 60, 60), _F('cat', -130, 130), _F('cat', 165, 60),
+      _F('cat', 100, 165), _F('cat', -50, 188),
       // ── 境界・他の生活痕跡 ──
       _F('hedge', -140, 95), _F('cat', -100, 132), _F('cat', -160, 168),
       _F('flower_bed', -130, 195),
@@ -811,10 +872,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     humans: [
       // 公園 (子どもと見守る大人)
       _H(90, 175), _H(50, 140), _H(130, 140), _H(30, 125), _H(155, 178), _H(110, 180),
+      _H(60, 178), _H(150, 130),
       // 商店利用客
       _H(-45, 58), _H(35, 58), _H(155, 50),
+      _H(-100, 30), _H(80, 30),
       // 住宅街の生活者
       _H(-100, 132), _H(-160, 138), _H(0, 100),
+      _H(-50, 178), _H(-130, 178),
     ],
     grounds: [
       _G('residential_tile', 0, 100, 360, 200),
@@ -825,6 +889,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 35, 58, 38, 38),
       _G('fallen_leaves', -160, 165, 26, 16),
       _G('grass', 30, 110, 30, 12),
+      _G('asphalt', 0, 88, 360, 24),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -847,6 +912,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('house', 60, 138),
       _B('garage', -160, 180), _B('shed', -130, 178), _B('greenhouse', 50, 175),
       _B('shed', 145, 178), _B('shed', -45, 180),
+      // タイトパッキング補強
+      _B('shed', -25, 78), _B('shed', 25, 78), _B('shed', 165, 78),
+      _B('shed', -75, 178), _B('shed', 100, 178), _B('shed', 0, 178),
     ],
     furniture: [
       // ── 焦点: 保育園庭 (送迎エリア) ──
@@ -897,6 +965,31 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp', 0, 195),
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=50 帯 (公共施設前のタイル境界)
+      _F('hedge', -150, 50), _F('hedge', 165, 50),
+      _F('bush', -130, 60), _F('bush', 75, 60), _F('bush', 130, 60),
+      _F('flower_bed', -75, 60), _F('flower_bed', 75, 60),
+      _F('potted_plant', -150, 30), _F('potted_plant', 165, 30),
+      // dy=110-120 中間帯
+      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
+      _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
+      _F('bollard', -65, 92), _F('bollard', 65, 92),
+      // dy=160-175 中間帯
+      _F('hedge', -130, 165), _F('hedge', 130, 165), _F('hedge', -75, 165),
+      _F('bush', 0, 168), _F('bush', 100, 168),
+      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
+      _F('flower_planter_row', -45, 175), _F('flower_planter_row', 45, 175),
+      // 裏路地家具
+      _F('garbage', -150, 88), _F('garbage', 150, 88),
+      _F('garbage', -75, 188), _F('garbage', 75, 188),
+      _F('recycling_bin', -130, 88), _F('recycling_bin', 130, 88),
+      _F('dumpster', 0, 88), _F('dumpster', -45, 188),
+      _F('ac_outdoor_cluster', -100, 92), _F('ac_outdoor_cluster', 100, 92),
+      _F('cable_junction_box', -130, 188), _F('cable_junction_box', 130, 188),
+      _F('milk_crate_stack', 0, 188), _F('milk_crate_stack', 25, 88),
+      _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', 100, 165),
       // ── 境界・その他 ──
       _F('bench', 130, 150), _F('cat', 155, 145), _F('cat', -160, 168),
       _F('flower_bed', 60, 170),
@@ -914,6 +1007,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 住宅街の住人 + _TOP_HR 横断
       _H(-45, 138), _H(60, 138), _H(155, 50), _H(-100, 138),
       _H(0, 192),
+      _H(145, 138), _H(-170, 138), _H(100, 178),
     ],
     grounds: [
       _G('residential_tile', 0, 100, 360, 200),
@@ -927,6 +1021,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 0, 60, 100, 14),
       // _TOP_HR の地面連続 (Ch3 への handoff)
       _G('concrete', 0, 198, 360, 12),
+      _G('asphalt', 0, 88, 360, 24),
     ],
     horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1098,6 +1193,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('house', -160, 132), _B('townhouse', -110, 138), _B('house', 165, 138),
       _B('garage', -160, 178), _B('shed', -75, 178), _B('greenhouse', 50, 178), _B('shed', 145, 178),
       _B('shed', 0, 178),
+      // タイトパッキング補強
+      _B('shed', -75, 60), _B('shed', 0, 60), _B('shed', 95, 60),
+      _B('shed', -25, 165), _B('shed', 25, 165),
     ],
     furniture: [
       // ── 焦点: 銭湯入口 ──
@@ -1136,8 +1234,36 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
-      _F('manhole_cover', 0, 100),
+      // ── avenue 地点小物 + 街灯・ガードレール ──
+      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('bollard', -65, 92), _F('bollard', 65, 92),
+      _F('guardrail_short', 35, 108), _F('guardrail_short', -35, 108),
+      _F('street_mirror', -75, 92), _F('street_mirror', 75, 92),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=50 帯
+      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 0, 50),
+      _F('hedge', 75, 50), _F('hedge', 165, 50),
+      _F('bush', -130, 60), _F('bush', -45, 60), _F('bush', 30, 60), _F('bush', 130, 60),
+      _F('flower_bed', -100, 60), _F('flower_bed', 100, 60),
+      _F('potted_plant', -75, 22), _F('potted_plant', 0, 22),
+      // dy=110-118 中間帯
+      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -110, 118), _F('bush', 0, 118), _F('bush', 110, 118),
+      // dy=160-175 中間帯
+      _F('hedge', -130, 165), _F('hedge', -75, 165), _F('hedge', 75, 165),
+      _F('hedge', 130, 165), _F('hedge', 0, 165),
+      _F('bush', -100, 168), _F('bush', 100, 168),
+      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
+      _F('flower_planter_row', -45, 175),
+      // 裏路地家具
+      _F('garbage', -150, 88), _F('garbage', 150, 88),
+      _F('garbage', -45, 188), _F('garbage', 45, 188),
+      _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
+      _F('dumpster', 0, 88), _F('dumpster', -130, 188), _F('dumpster', 130, 188),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
+      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
+      _F('cat', -130, 60), _F('cat', 60, 60), _F('cat', 100, 165),
       // ── 境界・植栽 ──
       _F('hedge', 60, 195), _F('hedge', -160, 192), _F('hedge', 145, 195),
       _F('flower_bed', -60, 188), _F('flower_bed', 165, 192),
@@ -1148,12 +1274,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     humans: [
       // 銭湯客
       _H(-118, 42), _H(-82, 38), _H(-100, 56), _H(-75, 56),
+      _H(-145, 60), _H(-130, 92),
       // 商店利用客
       _H(45, 55), _H(120, 55), _H(75, 56),
+      _H(95, 70),
       // ラーメン店
       _H(-40, 138), _H(-22, 152),
       // 住宅街
       _H(95, 138), _H(-110, 138), _H(165, 138), _H(0, 100),
+      _H(-160, 138), _H(50, 178),
     ],
     grounds: [
       _G('concrete', 0, 100, 360, 200),
@@ -1164,6 +1293,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 120, 58, 40, 34),
       _G('tile', -75, 58, 40, 34),
       _G('residential_tile', 0, 165, 360, 70),
+      _G('asphalt', 0, 88, 360, 24),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1187,6 +1317,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('townhouse', -160, 132), _B('house', -100, 138),
       _B('garage', -160, 178), _B('shed', -110, 178), _B('shed', 60, 178), _B('shed', 165, 178),
       _B('shed', -45, 178), _B('townhouse', 80, 175),
+      // タイトパッキング補強 (公共施設前のサテライトと広場の小屋)
+      _B('shed', -75, 60), _B('shed', 0, 60), _B('shed', 30, 60), _B('shed', 130, 60),
+      _B('shed', -55, 178), _B('shed', 30, 178), _B('shed', 130, 178),
     ],
     furniture: [
       // ── 焦点: 中央広場 ──
@@ -1234,8 +1367,45 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 ──
-      _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
+      // ── avenue 地点小物 + 街灯・ガードレール ──
+      _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100), _F('manhole_cover', -60, 100),
+      _F('bollard', -65, 92), _F('bollard', 65, 92),
+      _F('guardrail_short', -45, 108), _F('guardrail_short', 45, 108),
+      _F('street_mirror', -75, 92), _F('street_mirror', 75, 92),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=18-30 帯 facade
+      _F('hedge', -150, 18), _F('hedge', -100, 18), _F('hedge', 30, 18),
+      _F('hedge', 110, 18), _F('hedge', 165, 18),
+      _F('bush', -130, 22), _F('bush', 0, 22), _F('bush', 130, 22),
+      _F('potted_plant', -100, 30), _F('potted_plant', 30, 30),
+      // dy=60-72 帯 (公共施設前のタイル境界)
+      _F('hedge', -130, 70), _F('hedge', -75, 70), _F('hedge', 0, 70),
+      _F('hedge', 75, 70), _F('hedge', 130, 70),
+      _F('bush', -160, 70), _F('bush', 165, 70), _F('bush', -45, 70), _F('bush', 45, 70),
+      _F('flower_bed', -100, 70), _F('flower_bed', 100, 70),
+      _F('flower_planter_row', -150, 65), _F('flower_planter_row', 150, 65),
+      // dy=110-118 中間帯
+      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -100, 118), _F('bush', 100, 118), _F('bush', 0, 118),
+      // dy=160-168 中間帯 (広場外周)
+      _F('hedge', -130, 165), _F('hedge', 130, 165),
+      _F('hedge', -75, 175), _F('hedge', 75, 175),
+      _F('bush', -150, 168), _F('bush', 150, 168),
+      _F('flower_bed', -45, 175), _F('flower_bed', 45, 175),
+      _F('flower_planter_row', -100, 175), _F('flower_planter_row', 100, 175),
+      // 裏路地家具
+      _F('garbage', -150, 88), _F('garbage', 150, 88),
+      _F('garbage', -75, 188), _F('garbage', 75, 188),
+      _F('recycling_bin', -130, 88), _F('recycling_bin', 130, 88),
+      _F('dumpster', 0, 88), _F('dumpster', -45, 188), _F('dumpster', 45, 188),
+      _F('ac_outdoor_cluster', -100, 92), _F('ac_outdoor_cluster', 100, 92),
+      _F('cable_junction_box', -130, 188), _F('cable_junction_box', 130, 188),
+      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
+      _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', 100, 178), _F('cat', -110, 168),
+      // 広場外周 enrichment
+      _F('bench', -150, 168), _F('bench', 150, 168),
+      _F('flower_bed', -50, 130), _F('flower_bed', 50, 130),
+      _F('potted_plant', -50, 145), _F('potted_plant', 50, 145),
       // ── 境界 ──
       _F('hedge', -160, 195), _F('hedge', 165, 195),
       _F('hedge', -130, 110), _F('hedge', 130, 110),
@@ -1244,11 +1414,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 公共施設利用者
       _H(-130, 55), _H(-45, 55), _H(140, 56), _H(65, 56),
       _H(-110, 60), _H(-22, 30), _H(-150, 35),
+      _H(140, 30), _H(65, 30),
       // 広場で滞留
       _H(0, 148), _H(32, 158), _H(-50, 168), _H(50, 168),
       _H(-70, 130), _H(78, 132),
+      _H(-30, 145), _H(30, 145), _H(0, 175),
       // カフェ・周辺
       _H(120, 132), _H(100, 152), _H(-110, 178), _H(110, 178),
+      _H(-160, 138), _H(80, 175),
     ],
     grounds: [
       _G('concrete', 0, 100, 360, 200),
@@ -1261,6 +1434,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', -150, 188, 50, 24),
       _G('grass', 150, 188, 50, 24),
       _G('wood_deck', 120, 138, 40, 20),
+      _G('asphalt', 0, 88, 360, 24),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1289,6 +1463,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('townhouse', -10, 178),
       _B('shed', -170, 178), _B('garage', -110, 178), _B('shed', -45, 178),
       _B('greenhouse', 30, 178), _B('shed', 130, 178), _B('shed', 170, 178),
+      // タイトパッキング補強
+      _B('shed', -110, 60), _B('shed', -45, 60), _B('shed', 30, 60),
+      _B('shed', -25, 78), _B('shed', 25, 178),
     ],
     furniture: [
       // ── 焦点: 学校玄関と校庭 ──
@@ -1345,6 +1522,36 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('guardrail_short', -135, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
       _F('bollard', -65, 195), _F('bollard', 65, 195),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=18-30 (校門facade)
+      _F('hedge', -150, 18), _F('hedge', 165, 18),
+      _F('bush', -130, 22), _F('bush', 95, 22),
+      _F('potted_plant', -70, 22), _F('potted_plant', 95, 22),
+      // dy=50 帯 (校庭手前)
+      _F('hedge', -150, 50), _F('hedge', -45, 50), _F('hedge', 50, 50),
+      _F('hedge', 130, 50), _F('hedge', 165, 50),
+      _F('bush', -110, 60), _F('bush', 0, 60), _F('bush', 130, 60),
+      _F('flower_bed', -75, 60), _F('flower_bed', 60, 60), _F('flower_bed', 145, 60),
+      // dy=110-118 中間帯 (通学路境界)
+      _F('hedge', -45, 115), _F('hedge', 45, 115), _F('hedge', 145, 115),
+      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
+      _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
+      // dy=160-175 中間帯
+      _F('hedge', -130, 165), _F('hedge', 0, 165), _F('hedge', 130, 165),
+      _F('bush', -75, 168), _F('bush', 60, 168), _F('bush', 165, 168),
+      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
+      _F('flower_planter_row', -45, 175), _F('flower_planter_row', 45, 175),
+      // 裏路地家具
+      _F('garbage', -150, 88), _F('garbage', 150, 88),
+      _F('garbage', -45, 188), _F('garbage', 45, 188),
+      _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
+      _F('dumpster', 0, 88),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('ac_outdoor_cluster', 110, 92),
+      _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
+      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
+      _F('cat', -75, 60), _F('cat', 60, 60), _F('cat', -150, 168),
+      _F('cat', 150, 168),
       // ── 境界 ──
       _F('hedge', -150, 110), _F('hedge', 30, 110),
     ],
@@ -1361,6 +1568,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 住宅街 + _TOP_HR 横断 (通学児)
       _H(-150, 138), _H(-110, 138),
       _H(-30, 192), _H(30, 192),
+      _H(-45, 138), _H(-10, 178), _H(170, 60), _H(165, 138),
     ],
     grounds: [
       _G('concrete', 0, 48, 360, 96),
@@ -1550,6 +1758,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('house', 165, 138), _B('shed', 95, 178),
       _B('garage', -160, 178), _B('shed', -110, 178), _B('shed', -40, 178),
       _B('shed', 165, 178),
+      // タイトパッキング補強
+      _B('shed', -75, 60), _B('shed', 0, 60), _B('shed', 25, 178),
+      _B('shed', -25, 78), _B('shed', 65, 78), _B('shed', 130, 78),
+      _B('shed', 60, 178),
     ],
     furniture: [
       // ── 焦点: 駅舎 + プラットフォーム + 線路 ──
@@ -1599,9 +1811,40 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       // ── avenue 地点小物 + 駅前ロータリー脇 (x=+90) の街路ミラー ──
-      _F('manhole_cover', 0, 100),
+      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
       _F('street_mirror', 95, 92), _F('street_mirror', 130, 100),
       _F('street_mirror', -100, 92),
+      _F('bollard', -65, 92), _F('bollard', 65, 92),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=18-30 帯
+      _F('hedge', -150, 18), _F('hedge', -100, 18), _F('hedge', 165, 18),
+      _F('bush', -130, 22), _F('bush', 0, 22),
+      _F('potted_plant', -45, 22), _F('potted_plant', 95, 22),
+      // dy=50-72 帯 (駅前ロータリー周辺)
+      _F('hedge', -150, 60), _F('hedge', -75, 60), _F('hedge', 0, 60),
+      _F('hedge', 35, 60),
+      _F('bush', -130, 70), _F('bush', -45, 70), _F('bush', 165, 70),
+      _F('flower_bed', -100, 70), _F('flower_bed', 25, 70),
+      _F('flower_planter_row', -130, 65), _F('flower_planter_row', 145, 70),
+      // dy=110-118 中間帯
+      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
+      // dy=160-175 中間帯
+      _F('hedge', -130, 165), _F('hedge', 0, 165), _F('hedge', 65, 175),
+      _F('hedge', 130, 165), _F('hedge', 165, 165),
+      _F('bush', -100, 168), _F('bush', 100, 168),
+      _F('flower_bed', -150, 175), _F('flower_bed', 25, 175),
+      _F('flower_planter_row', -45, 175),
+      // 裏路地家具
+      _F('garbage', -150, 88), _F('garbage', 165, 88),
+      _F('garbage', -45, 188), _F('garbage', 45, 188),
+      _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
+      _F('dumpster', 0, 88), _F('dumpster', -130, 188),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 65, 92),
+      _F('cable_junction_box', -90, 88), _F('cable_junction_box', 130, 88),
+      _F('milk_crate_stack', 25, 88), _F('milk_crate_stack', 0, 188),
+      _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', 60, 168),
+      _F('cat', -55, 188),
       // ── 境界 ──
       _F('flower_bed', 165, 188), _F('hedge', -170, 110), _F('hedge', 170, 110),
       _F('guardrail_short', 35, 92), _F('guardrail_short', 155, 92),
@@ -1617,6 +1860,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(50, 138), _H(-120, 145),
       // 歩道
       _H(80, 82), _H(110, 62), _H(0, 100),
+      _H(130, 138), _H(-160, 138), _H(165, 138), _H(60, 178), _H(-110, 178),
     ],
     grounds: [
       _G('concrete', 0, 100, 360, 200),
@@ -1628,6 +1872,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', -160, 56, 40, 38),
       _G('residential_tile', -110, 165, 220, 70),
       _G('wood_deck', 50, 138, 50, 26),
+      _G('asphalt', 0, 88, 360, 24),
     ],
     horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
   } },
@@ -1655,6 +1900,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -160, 138), _B('garage', -100, 138), _B('shed', -45, 138),
       _B('greenhouse', -130, 178), _B('shed', -60, 178), _B('shed', 30, 178),
       _B('shed', 175, 178),
+      // タイトパッキング補強 (農地ヤード)
+      _B('shed', -25, 60), _B('shed', 25, 60), _B('shed', -160, 178),
+      _B('greenhouse', 65, 175),
     ],
     furniture: [
       // ── 焦点: 農家本体 (kominka 帰属) ──
@@ -1699,10 +1947,43 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       // ── avenue 地点小物 + 農道脇の街路ミラー ──
-      _F('manhole_cover', 0, 100),
+      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100),
       _F('street_mirror', -100, 92),
+      _F('bollard', -65, 92),
       // ── x=+90 側の濡れ路面 (Ch11 踏切までの漸進) ──
       _F('puddle_reflection', 165, 100), _F('puddle_reflection', 130, 90),
+      _F('puddle_reflection', 145, 195),
+      // ── タイトパッキング: 中間 dy 帯と農地 ──
+      // dy=18-30 帯 (街の終端 facade)
+      _F('hedge', -150, 18), _F('hedge', -100, 18), _F('hedge', 60, 18),
+      _F('hedge', 165, 18),
+      _F('bush', -75, 22), _F('bush', 95, 22),
+      // dy=50-70 (農道境界)
+      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 30, 50),
+      _F('hedge', 65, 50), _F('hedge', 130, 50),
+      _F('bush', -130, 60), _F('bush', 0, 60), _F('bush', 60, 60), _F('bush', 100, 60),
+      _F('flower_bed', -45, 60), _F('flower_bed', 30, 70),
+      _F('rock', 75, 70), _F('rock', 130, 75),
+      _F('wood_fence', -25, 70), _F('wood_fence', 25, 70),
+      // dy=110-118 中間帯
+      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
+      // dy=160-175 (畑の縁)
+      _F('hedge', -100, 165), _F('hedge', 0, 165), _F('hedge', 130, 165),
+      _F('bush', -150, 168), _F('bush', 60, 168), _F('bush', 150, 168),
+      _F('flower_bed', 0, 175), _F('flower_bed', 95, 175),
+      _F('wood_fence', -75, 175), _F('wood_fence', 0, 195),
+      // 裏路地 / 農地ヤード
+      _F('garbage', -150, 88), _F('garbage', 150, 88),
+      _F('garbage', -75, 188), _F('garbage', 0, 188),
+      _F('recycling_bin', -100, 88),
+      _F('dumpster', 130, 88),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('cable_junction_box', -45, 88), _F('cable_junction_box', 45, 88),
+      _F('milk_crate_stack', 25, 88), _F('milk_crate_stack', -25, 88),
+      _F('pallet_stack', 60, 88), _F('pallet_stack', -150, 168),
+      _F('drum_can', 0, 88), _F('drum_can', -130, 88),
+      _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', -150, 168),
       // ── 境界 ──
       _F('hedge', 180, 165), _F('hedge', -100, 195),
       _F('flower_bed', -160, 192), _F('flower_bed', 30, 192),
@@ -1715,8 +1996,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(105, 105), _H(145, 145),
       // 街の終端 (商店・住宅)
       _H(40, 55), _H(-135, 55), _H(-90, 70),
+      _H(165, 138), _H(-160, 138),
       // 物置・農道
       _H(-100, 145),
+      _H(-45, 138), _H(60, 178),
     ],
     grounds: [
       _G('grass', 0, 100, 360, 200),
@@ -1750,6 +2033,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('garage', -135, 132), _B('house', 95, 132), _B('townhouse', 145, 138),
       _B('shed', -170, 178), _B('shed', -75, 178), _B('garage', 30, 178),
       _B('shed', 95, 178), _B('shed', 165, 178), _B('shed', -120, 178),
+      // タイトパッキング補強 (倉庫ヤードと裏側)
+      _B('shed', -75, 60), _B('shed', 30, 60), _B('shed', 110, 60),
+      _B('shed', -25, 78), _B('shed', 60, 178), _B('shed', -45, 178),
     ],
     furniture: [
       // ── 焦点: 倉庫前ヤード (作業員エリア) ──
@@ -1799,9 +2085,40 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bollard', -65, 195), _F('bollard', 65, 195),
       // ── x=+90 側の濡れ路面 (Ch11 踏切への前兆) ──
       _F('puddle_reflection', 130, 180), _F('puddle_reflection', 100, 198),
+      _F('puddle_reflection', 165, 165),
       // ── 電柱+電線 (下端、_TOP_HR の奥) ──
       _F('power_pole', -178, 198), _F('power_line', -175, 196),
       _F('power_pole', 178, 198), _F('power_line', 175, 196),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=18-30 帯
+      _F('hedge', -160, 18), _F('hedge', 165, 18),
+      _F('bush', -120, 22), _F('bush', -45, 22), _F('bush', 65, 22), _F('bush', 135, 22),
+      // dy=50-72 帯 (倉庫ヤード周辺)
+      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 30, 50), _F('hedge', 165, 50),
+      _F('bush', -120, 60), _F('bush', -45, 60), _F('bush', 65, 60), _F('bush', 110, 60),
+      _F('flower_bed', -100, 60), _F('flower_bed', 0, 60), _F('flower_bed', 130, 60),
+      _F('drum_can', -30, 62), _F('drum_can', 0, 70),
+      _F('pallet_stack', 60, 70), _F('pallet_stack', -110, 70),
+      // dy=110-118 中間帯 (作業場・道路境界)
+      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
+      _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
+      // dy=160-175 中間帯
+      _F('hedge', -130, 165), _F('hedge', 0, 165), _F('hedge', 130, 165),
+      _F('bush', -100, 168), _F('bush', 100, 168),
+      _F('flower_bed', -45, 175), _F('flower_bed', 45, 175),
+      _F('flower_planter_row', -150, 175),
+      // 裏路地 / ヤード
+      _F('garbage', -150, 88), _F('garbage', 165, 88),
+      _F('garbage', -45, 188), _F('garbage', 45, 188),
+      _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
+      _F('dumpster', -130, 188), _F('dumpster', 130, 188),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
+      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
+      _F('drum_can', 0, 178), _F('drum_can', -75, 188),
+      _F('pallet_stack', 75, 188), _F('pallet_stack', 165, 168),
+      _F('cat', -130, 60), _F('cat', 130, 60),
       // ── 境界・植栽 ──
       _F('flower_bed', -100, 195), _F('hedge', -160, 195),
       _F('cat', -75, 195),
@@ -1815,6 +2132,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-135, 145), _H(95, 145), _H(145, 138), _H(50, 138),
       // 道路通行人 + _TOP_HR 横断 (Ch11 へ)
       _H(0, 100), _H(-30, 192), _H(30, 192),
+      _H(-170, 178), _H(165, 178), _H(60, 178), _H(-45, 178),
     ],
     grounds: [
       _G('asphalt', 0, 70, 360, 120),
@@ -1850,6 +2168,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 下段 補助
       _B('shed', -160, 178), _B('shed', -45, 178), _B('shed', 90, 178),
       _B('shed', 165, 178), _B('shed', 0, 178),
+      // タイトパッキング補強
+      _B('shed', -75, 60), _B('shed', 0, 60), _B('shed', 130, 60),
+      _B('shed', -25, 78), _B('shed', 65, 78),
     ],
     furniture: [
       // ── 焦点: 踏切 ──
@@ -1894,6 +2215,32 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
+      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
+      // dy=18-30 帯
+      _F('hedge', -160, 18), _F('hedge', -75, 18), _F('hedge', 100, 18),
+      _F('bush', -135, 22), _F('bush', -45, 22), _F('bush', 70, 22), _F('bush', 165, 22),
+      // dy=50-72 帯 (店前と倉庫脇)
+      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 30, 50), _F('hedge', 130, 50),
+      _F('bush', -130, 60), _F('bush', 0, 60), _F('bush', 100, 60), _F('bush', 165, 60),
+      _F('flower_bed', -45, 60), _F('flower_bed', 70, 60),
+      _F('drum_can', 165, 60), _F('drum_can', -100, 70),
+      // dy=110-118 中間帯
+      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
+      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
+      // dy=160-175 中間帯 (踏切手前)
+      _F('hedge', -130, 165), _F('hedge', -75, 165), _F('hedge', 75, 165), _F('hedge', 130, 165),
+      _F('bush', -100, 168), _F('bush', 0, 168), _F('bush', 100, 168),
+      _F('flower_bed', -160, 175),
+      // 裏路地家具
+      _F('garbage', -130, 88), _F('garbage', 130, 88),
+      _F('garbage', -45, 188), _F('garbage', 90, 188),
+      _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
+      _F('dumpster', 0, 88), _F('dumpster', -160, 188),
+      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
+      _F('cable_junction_box', -45, 88), _F('cable_junction_box', 45, 88),
+      _F('milk_crate_stack', 25, 88), _F('milk_crate_stack', -25, 88),
+      _F('drum_can', -75, 188), _F('pallet_stack', 130, 188),
+      _F('cat', -130, 60), _F('cat', 130, 60),
       // ── avenue 地点小物 + 踏切前の街路ミラー ──
       _F('manhole_cover', 0, 100),
       _F('street_mirror', -100, 130), _F('street_mirror', 100, 130),
@@ -1921,6 +2268,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(50, 138), _H(145, 145), _H(-50, 138),
       // 通行人 + Stage 2 へ向かう人 (_TOP_HR 上)
       _H(0, 100), _H(0, 145), _H(-90, 192), _H(90, 192),
+      _H(-160, 178), _H(165, 178), _H(0, 178),
     ],
     grounds: [
       _G('asphalt', 0, 100, 360, 200),
