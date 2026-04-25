@@ -651,9 +651,12 @@ const _HR = (dy: number, xMin: number, xMax: number, cls: 'street' | 'avenue' = 
   ({ dy, h: cls === 'avenue' ? 18 : 14, xMin, xMax, cls });
 const _VR = (dx: number, yMinLocal: number, yMaxLocal: number, cls: 'street' | 'avenue' = 'street') =>
   ({ dx, w: cls === 'avenue' ? 18 : 14, yMinLocal, yMaxLocal, cls });
-// 全チャンク共通の縦スパイン: x=-90 street, x=0 avenue, x=+90 street
+// 全チャンク共通の唯一の縦道路: 中央 avenue (x=0、幅18固定)
+// 旧 _SPINE_V (x=-90/0/+90) は撤廃。各チャンクが個性的な道路を持つ。
+const _AVE = _VR(0, 0, 200, 'avenue');
+// 後方互換 (Stage 2-5 がまだ使う)
 const _SPINE_V = [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(+90, 0, 200)];
-const _MID_HR = _HR(100, -180, 180);       // 中央クロス街路 (全チャンク)
+const _MID_HR = _HR(100, -180, 180);       // 中央クロス街路 (全チャンク共通の唯一の横道路)
 const _TOP_HR = _HR(200, -180, 180);       // 上端クロス街路 (クロスポイントのみ)
 
 // ─── Stage 1: 住宅街から街はずれへ (12 チャンク, raw 配置) ────────
@@ -774,9 +777,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 105, 175, 90, 36),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 標準スパイン + 右側生活路地 (古民家庭園と東住宅を分ける)
+    // 道路: 中央 avenue のみ (静かな住宅街の入口、側道なし)
     horizontalRoads: [_MID_HR],
-    verticalRoads: [..._SPINE_V, _VR(130, 100, 200)],
+    verticalRoads: [_AVE],
   } },
 
   // ── S1-Ch1: 児童公園を中心にした住宅街 ──
@@ -893,9 +896,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 30, 110, 30, 12),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 標準スパイン + 公園前アクセス道 (右側のみ)
+    // 道路: 中央 avenue + 公園前アクセス道 (右側のみ、住宅街と公園を結ぶ)
     horizontalRoads: [_MID_HR, _HR(130, 10, 180)],
-    verticalRoads: [..._SPINE_V],
+    verticalRoads: [_AVE],
   } },
 
   // ── S1-Ch2: 保育園・診療所・郵便局が並ぶ生活公共区画 ──
@@ -1027,9 +1030,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 0, 198, 360, 12),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 標準 + 上端接続 + 公共施設前のアクセス道 (T字交差点)
+    // 道路: 中央 avenue + 公共施設前アクセス道 (T字交差点) + Ch3 への上端接続
     horizontalRoads: [_MID_HR, _TOP_HR, _HR(60, -160, 160)],
-    verticalRoads: [..._SPINE_V],
+    verticalRoads: [_AVE],
   } },
 
   // ═══ Act II: 生活と小商店 (Ch3-Ch5) ═══════════════════════════════════
@@ -1176,9 +1179,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 165, 178, 30, 24),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 標準 + 北西側の搬入路 (商店裏)
+    // 道路: 中央 avenue + 北西側の商店搬入路 (商店街裏)
     horizontalRoads: [_MID_HR],
-    verticalRoads: [..._SPINE_V, _VR(-130, 0, 100)],
+    verticalRoads: [_AVE, _VR(-130, 0, 100)],
   } },
 
   // ── S1-Ch4: 銭湯風施設と生活商店の交差点 ──
@@ -1303,9 +1306,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('residential_tile', 0, 165, 360, 70),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 標準 + 銭湯と商店の境の短VR (十字交差点感)
+    // 道路: 中央 avenue + 銭湯と商店の境の短い縦路地 (十字交差点感)
     horizontalRoads: [_MID_HR],
-    verticalRoads: [..._SPINE_V, _VR(-45, 0, 100)],
+    verticalRoads: [_AVE, _VR(-45, 0, 100)],
   } },
 
   // ── S1-Ch5: 小さな公共広場と civic plaza ──
@@ -1446,9 +1449,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('wood_deck', 120, 138, 40, 20),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 中央 avenue 全長 + 左右 street は上半分のみ (広場の面感)
+    // 道路: 中央 avenue のみ (広場の面感、側道なしで開けたシビックスペース)
     horizontalRoads: [_MID_HR],
-    verticalRoads: [_VR(-90, 0, 130), _VR(0, 0, 200, 'avenue'), _VR(+90, 0, 130)],
+    verticalRoads: [_AVE],
   } },
 
   // ═══ Act III: ローカル商店街 (Ch6-Ch8) ═══════════════════════════════
@@ -1595,9 +1598,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // _TOP_HR の地面連続 (Ch7 への handoff)
       _G('asphalt', 0, 198, 360, 12),
     ],
-    // 道路バリエーション: 標準 + 上端接続 + 校庭外周の縦路地 (下半分のみ)
+    // 道路: 中央 avenue + 校庭横の縦路地 (下半分のみ) + Ch7 への上端接続
     horizontalRoads: [_MID_HR, _TOP_HR],
-    verticalRoads: [..._SPINE_V, _VR(-30, 100, 200)],
+    verticalRoads: [_AVE, _VR(-30, 100, 200)],
   } },
 
   // ── S1-Ch7: 昼の提灯アーケード商店街 ──
@@ -1750,9 +1753,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', -145, 70, 28, 16),
       _G('tile', 145, 70, 28, 16),
     ],
-    // 道路バリエーション: 中央 avenue を細い street に変更 (アーケード歩行帯感)
+    // 道路: 中央 avenue のみ (アーケード歩行帯、車道なしの歩行者専用感)
     horizontalRoads: [_MID_HR],
-    verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 200), _VR(+90, 0, 200)],
+    verticalRoads: [_AVE],
   } },
   // ── S1-Ch8: 地方の小駅と駅前ロータリー ──
   // 焦点: 駅舎 + プラットフォーム + 線路 + 駅前ロータリー (タクシー乗り場・バス停)
@@ -1890,9 +1893,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('wood_deck', 50, 138, 50, 26),
       _G('asphalt', 0, 88, 360, 24),
     ],
-    // 道路バリエーション: 標準 + 駅前ロータリー周回道 (右側のみ)
+    // 道路: 中央 avenue + 駅前ロータリー周回道 (右側のみ、駅とロータリーをつなぐ)
     horizontalRoads: [_MID_HR, _HR(70, 30, 180)],
-    verticalRoads: [..._SPINE_V],
+    verticalRoads: [_AVE],
   } },
 
   // ═══ Act IV: 街はずれ (Ch9-Ch11) ═══════════════════════════════════════
@@ -2030,9 +2033,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', -90, 60, 60, 28),
       _G('dirt', 145, 185, 70, 30),
     ],
-    // 道路バリエーション: 中央 avenue 全長 + 左 street 全長 + 右 street は上半分のみ (田園の終端感)
+    // 道路: 中央 avenue のみ (田園の生活道路、側道なしで街の終端感)
     horizontalRoads: [_MID_HR],
-    verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(+90, 0, 100)],
+    verticalRoads: [_AVE],
   } },
 
   // ── S1-Ch10: 街はずれの倉庫と消防分署 ──
@@ -2166,9 +2169,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // _TOP_HR の地面連続 (Ch11 への handoff)
       _G('asphalt', 0, 198, 360, 12),
     ],
-    // 道路バリエーション: 標準 + 上端接続 + 倉庫搬入の短VR (上半分)
+    // 道路: 中央 avenue + 倉庫搬入の縦路地 (中段) + Ch11 への上端接続
     horizontalRoads: [_MID_HR, _TOP_HR],
-    verticalRoads: [..._SPINE_V, _VR(-45, 42, 130)],
+    verticalRoads: [_AVE, _VR(-45, 42, 130)],
   } },
 
   // ── S1-Ch11: 踏切と街はずれの終端 ──
@@ -2305,9 +2308,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // _TOP_HR の地面連続 (Stage 2 への handoff)
       _G('asphalt', 0, 198, 360, 12),
     ],
-    // 道路バリエーション: 標準 + 上端接続 + 線路と並行する道路 (踏切の前後を結ぶ)
+    // 道路: 中央 avenue + 線路と並行する道路 (踏切前後を結ぶ) + Stage 2 への上端接続
     horizontalRoads: [_MID_HR, _TOP_HR, _HR(155, -130, 130)],
-    verticalRoads: [..._SPINE_V],
+    verticalRoads: [_AVE],
   } },
 ];
 
