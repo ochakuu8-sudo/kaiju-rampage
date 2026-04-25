@@ -2289,16 +2289,16 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
-// ─── Stage 2: 繁華街・夜の街 (10 チャンク, raw 配置) ──────────────
-// 【全体の物語】: プレイヤーは Stage 1 の踏切を越え、駅前の繁華街に入り、
-// 歓楽街の最奥を抜け、夜明け前の神社裏手から古都 (Stage 3) へ抜ける。
-//   Act I  (C0-C2):  駅前繁華     — 駅舎・サラリーマン動線・アーケード入口
-//   Act II (C3-C5):  歓楽街の極み — カラオケ・パチンコ・雑居ビル
-//   Act III(C6-C8):  深夜の路地   — スナック街・屋台・裏路地
-//   Act IV (C9):     朝の気配     — 神社の裏手、Stage 3 への handoff
-// 【連続軸】: 電線+電柱 (y=92, 195) / ネオン提灯帯 (facade y=20-30) /
-//           asphalt 中央 avenue / puddle_reflection の夜の湿り気
-// 【設計原則】: セル物語グルーピング / 左右非対称 / 歩道家具は Zone 5 (自動配置)
+// ─── Stage 2: 夜の歓楽街・飲食街 (raw 配置) ───────────────────
+// 【全体の物語】: 踏切の先で一気に夜へ切り替える。赤提灯、暖簾、ネオン、自販機、
+//   タクシー待ち、濡れた路面、裏口、ゴミ置き場で、夜の人流が見える高密度ジオラマ。
+//   Stage 3 (都心オフィス) へは大通り・bollard・stone_pavement で handoff。
+// 【連続軸】:
+//   chouchin と noren の飲食街帯 (Ch0-Ch7)
+//   全体: asphalt + puddle_reflection の濡れた夜路面
+//   裏側: garbage / dumpster / ac_outdoor_cluster / cable_junction_box
+//   交通: taxi_rank_sign / bus_stop / vending / street_lamp
+// 【密度目安】: 建物 20-30 / 家具 80-120 / 人 10-22 (夜街の高密度)
 const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
   // ═══ Act I: 駅前繁華 (C0-C2) ═══════════════════════════════════════
@@ -3397,16 +3397,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
-// ─── Stage 3: 和風・古都 (12 チャンク, raw 配置) ─────────────────
-// 【全体の物語】: Stage 2 の神社裏手を越え、古都の参道から寺院境内を経て
-// 古民家集落を抜け、Stage 4 (港湾) へ。
-//   Act I  (C0-C2):  参道の始まり — 大鳥居 → 門前町 → 茶屋街
-//   Act II (C3-C5):  旅館街・温泉街
-//   Act III(C6-C8):  寺院境内 — 五重塔 → 本堂 → 多宝塔
-//   Act IV (C9-C11): 古民家集落 → Stage 4 handoff
-// 【連続軸】: 中央 avenue の玉砂利参道 + 石灯籠の並び /
-//           桜並木 (Act I-II) → 松並木 (Act III-IV) /
-//           竹垣 + 古い塀
+// ─── Stage 3: 都心オフィス・公共中枢 (raw 配置) ─────────────────
+// 【全体の物語】: Stage 2 の雑多な夜街から、整然とした都心へ移行する。高層建物・
+//   公共施設・駅前・広場・銀行・市役所・病院で、破壊対象のスケールが上がったことを
+//   見せる。後半で warehouse / pallet_stack / cargo_container を少量混ぜ Stage 4 へ接続。
+// 【連続軸】:
+//   中央 avenue と大交差点
+//   stone_pavement / tile の公共広場
+//   street_lamp / bollard / flag_pole の整列
+//   駅前・公共施設前の人流
+// 【密度目安】: 建物 18-28 / 家具 65-105 / 人 10-24 (整然とした都心。公共広場)
+// ※ 現状チャンク内容は旧 "和風・古都" 仕様。今後 raw を順次差し替える。
 const STAGE_3_TEMPLATES: ChunkTemplate[] = [
 
   // ═══ Act I: 参道の始まり (C0-C2) ═══════════════════════════════
@@ -4837,17 +4838,17 @@ const STAGE_3_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
-// ─── Stage 4: 港湾・工業地帯 (10 チャンク, raw 配置) ────────────
-// 【全体の物語】: Stage 3 の古都の外れ (蔵 + 浮標) から潮風が届き、港町に至る。
-//   Act I  (C0-C2): 漁港        — 港の海、漁船(木造倉庫の見立て)、魚網、浮標、市場
-//   Act II (C3-C5): コンテナヤード — カラフルコンテナ山、ガントリークレーン、ゲート
-//   Act III(C6-C8): 重工業地帯  — 製鉄所、石油タンク、化学工場、煙突群
-//   Act IV (C9):    出荷場      — トラックターミナル、Stage 5 (祭) への提灯予兆
-// 【連続軸】: ① 鉄柵 (guardrail) を全チャンク端に / ② 電線+電柱を奥層 (y≈190) /
-//           ③ ドラム缶/パレット/コンテナの工業リズム / ④ 警告黄ライン (hazard_stripe) /
-//           ⑤ 海 (harbor_water) は Act I に集中、Act II→steel_plate、Act III→油汚れ
-// 【設計原則】: scene-like 物語グルーピング / 左右非対称 / 工業地帯らしく人は控えめ /
-//           Act ごとに地面色とアクセント色を緩やかにシフト
+// ─── Stage 4: 工業港湾・インフラ地帯 (raw 配置) ────────────
+// 【全体の物語】: 都市の裏側を見せる。倉庫、工場、コンテナ、消防、警察、ガソリン、
+//   貨物線、港湾端で広い作業場のジオラマを作る。建物密度ではなく、ヤード・フェンス・
+//   水たまり・作業導線が品質。後半で stone_pavement / pine_tree / stone_lantern を
+//   少量混ぜ、Stage 5 (城下町) へ接続する。
+// 【連続軸】:
+//   asphalt / concrete の広い作業面
+//   cargo_container / pallet_stack / forklift
+//   traffic_cone / barrier / guardrail_short
+//   power_pole / power_line / cable_junction_box
+// 【密度目安】: 建物 14-24 / 家具 60-100 / 人 6-16 (大型施設とヤード。余白も意味)
 const STAGE_4_TEMPLATES: ChunkTemplate[] = [
 
   // ═══ Act I: 漁港 (C0-C2) ═══════════════════════════════════════════
@@ -5881,18 +5882,19 @@ const STAGE_4_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
-// ─── Stage 5: テーマパーク・祭り (フィナーレ 14 チャンク, raw 配置) ──
-// 【全体の物語】: Stage 4 の出荷場を抜けた先、夕暮れの祭り会場に入る。
-// 歩くほどに音は大きく、光は強くなり、最後は花火と提灯の海で GOAL。
-//   Act I  (C0-C2):  祭り入場   — 入場ゲート・屋台通り・チケット売り場
-//   Act II (C3-C5):  広場       — メリーゴーランド・盆踊り広場・park_break 休憩
-//   Act III(C6-C9):  大型設備   — ジェットコースター・観覧車・大テント・第 2 コースター
-//   Act IV (C10-C13):フィナーレ — park_break 休憩・パレード・花火ステージ・GOAL
-// 【連続軸】: ① 提灯帯 (chouchin) を全チャンク facade に / ② 旗 (flag_pole + banner) を上空に /
-//           ③ 風船 (balloon_cluster) 色のアクセント / ④ 赤絨毯 (red_carpet) を中央通り /
-//           ⑤ 各 Act に固有のランドマーク建物 (yatai / carousel / roller_coaster / ferris_wheel)
-// 【設計原則】: 祭りらしく人混み多め (10-14 humans/chunk) / Act ごとに地面色とアクセント色を濃く変える /
-//           park_break (C5, C10) は休憩として既存パターン維持
+// ─── Stage 5: 城下町・祭礼・最終決戦 (フィナーレ raw 配置) ──
+// 【全体の物語】: 工業地帯から旧街道へ入り、和風商店街、温泉、神社、祭、寺社、城門、
+//   本丸前広場を経て castle 破壊へ向かう。密度だけでなく、儀式的な中央軸と城の視認性が最重要。
+// 【連続軸】:
+//   中央参道: stone_pavement / tile
+//   灯籠・提灯: stone_lantern / chouchin
+//   和風境界: bamboo_fence / wood_fence / shrine_fence_red
+//   祭礼: matsuri_drum / ticket_booth / balloon_cluster / yatai
+//   後半: castle へ向かう視線を中央に集める
+// 【絶対条件】: castle は視認できること。ボールが到達できる通路を家具で塞がないこと。
+//   GOAL / clear 判定を壊さないこと。
+// 【密度目安】: 建物 16-26 / 家具 75-120 / 人 10-28 (祭礼と最終決戦。城前は視認性優先)
+// ※ 現状チャンク内容は旧 "テーマパーク・祭り" 仕様。今後 raw を順次差し替える。
 const STAGE_5_TEMPLATES: ChunkTemplate[] = [
 
   // ═══ Act I: 祭り入場 (C0-C2) ═══════════════════════════════════════
@@ -7160,16 +7162,22 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
+// ステージ仕様 (新指示書):
+//   Stage 1: 昼の住宅街から街はずれへ
+//   Stage 2: 夜の歓楽街・飲食街
+//   Stage 3: 都心オフィス・公共中枢       (チャンク再構成は後続作業)
+//   Stage 4: 工業港湾・インフラ地帯
+//   Stage 5: 城下町・祭礼・最終決戦       (チャンク再構成は後続作業)
 export const STAGES: StageDef[] = [
-  { id: 0, name: '住宅街ミックス都市', nameEn: 'SUBURBS',      templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
+  { id: 0, name: '昼の住宅街',         nameEn: 'SUBURBS',         templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
     bgTop: [0.52, 0.74, 0.96], bgBottom: [0.38, 0.50, 0.38] },
-  { id: 1, name: '繁華街・夜の街',     nameEn: 'NEON CITY',    templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
+  { id: 1, name: '夜の歓楽街',         nameEn: 'NEON DISTRICT',   templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
     bgTop: [0.10, 0.08, 0.25], bgBottom: [0.22, 0.14, 0.32] },
-  { id: 2, name: '和風・古都',        nameEn: 'OLD TOWN',     templates: STAGE_3_TEMPLATES, sidewalkZone: 3,
+  { id: 2, name: '都心オフィス街',     nameEn: 'DOWNTOWN',        templates: STAGE_3_TEMPLATES, sidewalkZone: 3,
     bgTop: [0.92, 0.78, 0.82], bgBottom: [0.62, 0.52, 0.44] },
-  { id: 3, name: '港湾・工業地帯',     nameEn: 'HARBOR',       templates: STAGE_4_TEMPLATES, sidewalkZone: 2,
+  { id: 3, name: '工業港湾',           nameEn: 'HARBOR',          templates: STAGE_4_TEMPLATES, sidewalkZone: 2,
     bgTop: [0.58, 0.62, 0.70], bgBottom: [0.40, 0.42, 0.48] },
-  { id: 4, name: 'テーマパーク・祭り', nameEn: 'THEME PARK',   templates: STAGE_5_TEMPLATES, sidewalkZone: 4,
+  { id: 4, name: '城下町・祭礼',       nameEn: 'CASTLE TOWN',     templates: STAGE_5_TEMPLATES, sidewalkZone: 4,
     bgTop: [0.96, 0.72, 0.50], bgBottom: [0.66, 0.48, 0.62] },
 ];
 
