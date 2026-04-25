@@ -742,40 +742,40 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 庭の囲い (邸を avenue から区切る wood_fence)
       _F('wood_fence', -15, 30), _F('wood_fence', -15, 50),
       _F('wood_fence', -15, 70), _F('wood_fence', -15, 90),
-      // ═══ NE 現代住宅列 (各家を hedge で区切る + 個性的な庭) ═══
+      // ═══ NE 現代住宅列 (各家を 区画線 で完全に囲む + 個性的な庭) ═══
+      // ロット1境界: x=53 で townhouse と house を分ける (front→back)
+      _F('hedge', 53, 30), _F('hedge', 53, 50), _F('hedge', 53, 70), _F('hedge', 53, 88),
+      // ロット2境界: x=113 で house と mansion を分ける
+      _F('wood_fence', 113, 30), _F('wood_fence', 113, 50), _F('wood_fence', 113, 70), _F('wood_fence', 113, 88),
+      // ロット3境界: x=167 で mansion と east house を分ける
+      _F('hedge', 167, 30), _F('hedge', 167, 50), _F('hedge', 167, 70), _F('hedge', 167, 88),
       // townhouse(30, 30): 「花好きの家」— 花壇とプランター
       _F('mailbox', 22, 28), _F('ac_unit', 30, 50), _F('potted_plant', 38, 22),
       _F('flower_bed', 30, 64), _F('potted_plant', 22, 64), _F('flower_planter_row', 30, 78),
-      // 区画線: townhouse と house の境
-      _F('hedge', 55, 45), _F('hedge', 55, 65), _F('hedge', 55, 80),
       // house(80, 30): 「禅の庭の家」— 盆栽と石
       _F('mailbox', 70, 28), _F('ac_unit', 80, 50), _F('bicycle', 90, 22),
       _F('potted_plant', 88, 28),
       _F('bonsai', 80, 64), _F('rock', 70, 78), _F('stone_lantern', 88, 78),
-      // 区画線: house と mansion の境
-      _F('hedge', 113, 45), _F('hedge', 113, 65), _F('hedge', 113, 80),
       // mansion(145, 30): 「邸宅」— 噴水と像で高級感
       _F('mailbox', 130, 28), _F('ac_unit', 160, 56), _F('bicycle', 130, 22),
       _F('laundry_balcony', 145, 50), _F('potted_plant', 158, 28),
-      _F('fountain', 145, 75), _F('statue', 130, 78), _F('hedge', 145, 90),
-      // 区画線: mansion と east house の境
-      _F('hedge', 165, 50),
+      _F('fountain', 145, 75), _F('statue', 130, 78),
       // house(175, 60): 「家庭菜園の家」— 土の畝と植木鉢
       _F('mailbox', 165, 50), _F('ac_unit', 178, 70), _F('potted_plant', 178, 50),
       _F('potted_plant', 165, 88), _F('rock', 175, 88),
-      // ═══ SW 下段住宅列 (各家を hedge で区切る + 個性的な庭) ═══
+      // ═══ SW 下段住宅列 (各家を 区画線 で完全に囲む + 個性的な庭) ═══
+      // ロット境界: x=-118 (machiya と house) — 伝統 wood_fence
+      _F('wood_fence', -118, 130), _F('wood_fence', -118, 145), _F('wood_fence', -118, 162), _F('wood_fence', -118, 178),
+      // ロット境界: x=-65 (house と townhouse) — 現代 hedge
+      _F('hedge', -65, 130), _F('hedge', -65, 145), _F('hedge', -65, 162), _F('hedge', -65, 178),
       // machiya(-150, 130): 「伝統の家」— 石灯籠と盆栽の庭
       _F('noren', -150, 118), _F('bonsai', -160, 122),
       _F('wood_fence', -135, 145), _F('potted_plant', -150, 162),
       _F('stone_lantern', -160, 162), _F('rock', -135, 162), _F('bonsai', -135, 122),
-      // 区画線: machiya と house の境
-      _F('hedge', -118, 145), _F('hedge', -118, 162), _F('hedge', -118, 175),
       // house(-90, 130): 「子育て家庭」— 自転車2台と花壇
       _F('mailbox', -90, 118), _F('ac_unit', -90, 152), _F('bicycle', -100, 122),
       _F('potted_plant', -78, 122),
       _F('bicycle', -78, 168), _F('flower_bed', -90, 162),
-      // 区画線: house と townhouse の境
-      _F('hedge', -65, 145), _F('hedge', -65, 162),
       // townhouse(-45, 130): 「若夫婦の家」— 自転車置き場と多くの植木
       _F('mailbox', -45, 118), _F('ac_unit', -38, 154), _F('potted_plant', -52, 122),
       _F('bicycle_rack', -45, 168), _F('potted_plant', -30, 162), _F('flower_planter_row', -45, 175),
@@ -783,23 +783,23 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('garbage', -150, 168), _F('recycling_bin', -150, 195),  // kura 横
       _F('milk_crate_stack', -130, 195),                         // shed 横
       _F('bicycle_rack', -65, 168), _F('traffic_cone', -55, 168),  // garage 帰属
-      // ═══ SE 下段住宅列 (各家を hedge で区切る + 個性的な庭) ═══
+      // ═══ SE 下段住宅列 (各家を 区画線 で完全に囲む + 個性的な庭) ═══
+      // ロット境界: x=60 (house と duplex)
+      _F('hedge', 60, 130), _F('hedge', 60, 145), _F('hedge', 60, 162), _F('hedge', 60, 178),
+      // ロット境界: x=115 (duplex と mansion)
+      _F('wood_fence', 115, 130), _F('wood_fence', 115, 145), _F('wood_fence', 115, 162), _F('wood_fence', 115, 178),
       // house(35, 130): 「ガーデニング好きの家」— 花壇と植木
       _F('mailbox', 25, 118), _F('ac_unit', 35, 150), _F('potted_plant', 45, 122),
       _F('flower_bed', 35, 162), _F('flower_planter_row', 35, 175), _F('potted_plant', 25, 162),
-      // 区画線: house と duplex の境
-      _F('hedge', 60, 145), _F('hedge', 60, 162),
       // duplex(85, 130): 「二世帯住宅」— 洗濯物多め、自転車多め
       _F('mailbox', 75, 118), _F('mailbox', 95, 118),
       _F('ac_unit', 85, 158), _F('laundry_balcony', 95, 130),
       _F('bicycle', 75, 122),
       _F('laundry_pole', 75, 162), _F('bicycle', 95, 168), _F('flower_bed', 95, 162),
-      // 区画線: duplex と mansion の境
-      _F('hedge', 115, 145), _F('hedge', 115, 162),
       // mansion(145, 130): 「大邸宅」— 噴水と像
       _F('mailbox', 130, 118), _F('ac_unit', 160, 158),
       _F('bicycle', 135, 122), _F('potted_plant', 158, 122),
-      _F('fountain', 145, 162), _F('statue', 130, 168), _F('hedge', 160, 175),
+      _F('fountain', 145, 162), _F('statue', 130, 168),
       // wagashi(70, 175): 街角の和菓子屋 (avenue 寄り)
       _F('noren', 70, 165), _F('shop_awning', 70, 168),
       _F('chouchin', 70, 162), _F('a_frame_sign', 60, 188),
@@ -863,16 +863,38 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('fallen_leaves', -130, 50, 22, 14),
       _G('fallen_leaves', -45, 90, 22, 14),
 
-      // ═══ 街区帯: 各住宅街の前庭を 1 枚で統合 (細かいパッチを撤廃) ═══
-      // NE 前庭帯 (avenue 東、上半分の住宅列の前)
-      _G('grass', 100, 75, 160, 28),
-      // SW 前庭帯 (avenue 西、下半分の住宅列の前)
-      _G('grass', -95, 158, 130, 18),
-      // SE 前庭帯 (avenue 東、下半分の住宅列の前)
-      _G('grass', 95, 158, 130, 18),
+      // ═══ NE 住宅列 (4 ロット、各家の敷地を地面で表現) ═══
+      // ロット1: townhouse(30, 30) 「花好きの家」→ grass 庭の敷地
+      _G('grass', 30, 56, 46, 72),
+      // ロット2: house(80, 30) 「禅の庭の家」→ tile 玄関+石庭
+      _G('tile', 83, 56, 60, 72),
+      // ロット3: mansion(145, 30) 「邸宅」→ concrete 大駐車+grass庭
+      _G('concrete', 139, 40, 52, 40),
+      _G('grass', 139, 80, 52, 28),
+      // ロット4: house(175, 60) 「家庭菜園の家」→ dirt 畝
+      _G('dirt', 173, 56, 14, 72),
 
-      // ═══ 裏路地: 1 本の concrete 帯で統一 (dy=178 全幅) ═══
-      _G('concrete', 0, 188, 360, 22),
+      // ═══ SW 住宅列 (3 ロット) ═══
+      // ロット1: machiya(-150, 130) 「伝統の家」→ grass + dirt 石庭
+      _G('grass', -148, 152, 60, 40),
+      _G('dirt', -135, 175, 24, 14),  // 石庭の土
+      // ロット2: house(-90, 130) 「子育て家庭」→ tile 玄関+花壇
+      _G('tile', -90, 152, 53, 40),
+      // ロット3: townhouse(-45, 130) 「若夫婦」→ concrete 駐車
+      _G('concrete', -38, 152, 55, 40),
+
+      // ═══ SE 住宅列 (3 ロット) ═══
+      // ロット1: house(35, 130) 「ガーデニング」→ grass 花壇敷地
+      _G('grass', 35, 152, 50, 40),
+      // ロット2: duplex(85, 130) 「二世帯」→ concrete 大駐車+grass共用裏庭
+      _G('concrete', 88, 145, 55, 30),
+      _G('grass', 88, 175, 55, 14),
+      // ロット3: mansion(145, 130) 「大邸宅」→ concrete 駐車+grass 噴水庭
+      _G('concrete', 145, 145, 65, 30),
+      _G('grass', 145, 175, 65, 14),
+
+      // ═══ 裏路地: 1 本の concrete 帯で統一 (dy=192 全幅) ═══
+      _G('concrete', 0, 195, 360, 12),
 
       // ═══ 中央生活路地 (stone_pavement) ═══
       _G('stone_pavement', -65, 100, 12, 200),
