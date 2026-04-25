@@ -915,19 +915,19 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's1_raw', raw: {
     buildings: [
       // 焦点周辺: 公園に面した生活店舗
-      _B('convenience', -45, 42), _B('laundromat', 35, 40),
+      _B('convenience', -55, 42), _B('laundromat', 35, 40),
       // 上段 住宅列 (avenue 側ファサード)
       _B('townhouse', -100, 20), _B('kominka', 80, 20),
-      _B('house', -160, 32), _B('townhouse', -30, 40), _B('shed', -135, 75),
-      _B('greenhouse', 55, 75), _B('mansion', 130, 75), _B('townhouse', 165, 42),
+      _B('house', -160, 32), _B('townhouse', -25, 40), _B('shed', -135, 75),
+      _B('greenhouse', 55, 75), _B('mansion', 130, 60), _B('townhouse', 165, 42),
       // 下段 住宅 (公園の西側に住宅街)
       _B('house', -100, 120), _B('mansion', -160, 130), _B('townhouse', -55, 138),
       _B('garage', -130, 178), _B('shed', -50, 180),
       // 公園周辺の小屋
       _B('kura', 175, 178),
       // タイトパッキング補強 (子ども向け店・道場・住宅店舗)
-      _B('wagashi', -75, 60), _B('snack', 0, 60), _B('dojo', 100, 60),
-      _B('kura', -160, 78), _B('kimono_shop', -100, 178), _B('shed', -160, 180),
+      _B('wagashi', -90, 60), _B('snack', 20, 60), _B('dojo', 100, 60),
+      _B('kura', -160, 70), _B('kimono_shop', -100, 178), _B('shed', -160, 180),
     ],
     furniture: [
       // ── 焦点: 児童公園 ──
@@ -1071,19 +1071,19 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's1_raw', raw: {
     buildings: [
       // 焦点: 公共3連
-      _B('daycare', -110, 22), _B('clinic', 0, 22), _B('post_office', 110, 22),
+      _B('daycare', -110, 22), _B('clinic', 25, 22), _B('post_office', 130, 22),
       // 公共施設の補助 (奥行き)
-      _B('dojo', -75, 78), _B('townhouse', 145, 78), _B('greenhouse', -150, 78),
-      _B('wagashi', 60, 78),
+      _B('dojo', -75, 68), _B('townhouse', 145, 68), _B('greenhouse', -150, 72),
+      _B('wagashi', 60, 70),
       // 下段 住宅街 (公共区画の対岸)
       _B('kominka', -100, 130), _B('duplex', 100, 130),
       _B('house', -170, 138), _B('townhouse', -45, 138), _B('house', 145, 138),
       _B('house', 60, 138),
-      _B('garage', -160, 180), _B('shed', -130, 178), _B('greenhouse', 50, 175),
-      _B('kura', 145, 178), _B('shed', -45, 180),
+      _B('garage', -160, 175), _B('shed', -130, 178), _B('greenhouse', 50, 175),
+      _B('kura', 145, 170), _B('shed', -45, 178),
       // タイトパッキング補強 (公共圏の周辺商店)
-      _B('kimono_shop', -25, 78), _B('wagashi', 25, 78), _B('kura', 165, 78),
-      _B('snack', -75, 178), _B('sushi_ya', 100, 178), _B('shed', 0, 178),
+      _B('kimono_shop', -25, 70), _B('wagashi', -45, 70), _B('kura', 165, 70),
+      _B('snack', -75, 170), _B('sushi_ya', 100, 170),
     ],
     furniture: [
       // ── 焦点: 保育園庭 (送迎エリア) ──
@@ -1237,19 +1237,19 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's1_raw', raw: {
     buildings: [
       // 焦点: 3連テラス
-      _B('bakery', -112, 122), _B('bookstore', 0, 122), _B('cafe', 112, 122),
+      _B('bakery', -112, 122), _B('bookstore', 25, 122), _B('cafe', 112, 122),
       // 商店街の予兆 (上段)
       _B('laundromat', 42, 40), _B('pharmacy', 125, 40), _B('florist', -45, 40),
-      _B('shop', -160, 38), _B('shop', 75, 78), _B('cafe', -75, 60),
+      _B('shop', -160, 38), _B('shop', 75, 60), _B('cafe', -75, 60),
       // 上段 住宅と生活店
-      _B('townhouse', -110, 38), _B('mansion', -100, 78),
-      _B('chaya', -160, 78), _B('greenhouse', 155, 78), _B('snack', 30, 78),
-      _B('wagashi', -25, 60), _B('sushi_ya', 30, 60),
+      _B('townhouse', -110, 38), _B('mansion', -100, 64),
+      _B('chaya', -160, 70), _B('greenhouse', 155, 72),
+      _B('wagashi', -25, 60), _B('sushi_ya', 50, 60),
       // 下段 残り (テラス周辺と端 — 専門店を増やす)
-      _B('townhouse', -55, 165), _B('townhouse', 65, 165),
+      _B('townhouse', -55, 152), _B('townhouse', 65, 152),
       _B('shed', -170, 178), _B('garage', -45, 178), _B('greenhouse', 55, 178), _B('shed', 165, 178),
       _B('house', 165, 132), _B('house', -160, 132),
-      _B('snack', -110, 178), _B('wagashi', 40, 175), _B('kimono_shop', 130, 175),
+      _B('snack', -110, 178), _B('wagashi', 30, 165), _B('kimono_shop', 130, 165),
       _B('chaya', -130, 178),
     ],
     furniture: [
@@ -1410,15 +1410,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 焦点周辺 (下段ラーメンと住宅)
       _B('ramen', -40, 122), _B('townhouse', 95, 132),
       // 上段 補助
-      _B('chaya', -155, 75), _B('shed', 0, 75), _B('greenhouse', 78, 78), _B('mansion', 165, 75),
-      _B('dojo', -85, 78),
+      _B('chaya', -155, 70), _B('greenhouse', 78, 72), _B('mansion', 165, 60),
+      _B('dojo', -75, 68),
       // 下段 住宅街
       _B('house', -160, 132), _B('townhouse', -110, 138), _B('house', 165, 138),
       _B('garage', -160, 178), _B('kura', -75, 178), _B('greenhouse', 50, 178), _B('kura', 145, 178),
-      _B('shed', 0, 178),
       // タイトパッキング補強 (銭湯文化の周辺商店・娯楽)
-      _B('wagashi', -75, 60), _B('shed', 0, 60), _B('kimono_shop', 95, 60),
-      _B('mahjong_parlor', -25, 165), _B('sushi_ya', 25, 165),
+      _B('kimono_shop', 135, 70),
+      _B('mahjong_parlor', -25, 152), _B('sushi_ya', 25, 152),
     ],
     furniture: [
       // ── 焦点: 銭湯入口 ──
@@ -1563,15 +1562,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 広場の一角: カフェと小商店
       _B('cafe', 120, 122), _B('shop', -45, 132),
       // 上段 補助
-      _B('shop', -100, 78), _B('shed', -160, 78), _B('shed', 30, 78),
-      _B('greenhouse', 100, 78), _B('mansion', 168, 78), _B('shed', 0, 78),
+      _B('shop', -100, 60), _B('shed', -160, 78),
+      _B('greenhouse', 100, 72),
       // 下段 (広場周辺住宅と店)
       _B('townhouse', -160, 132), _B('house', -100, 138),
       _B('garage', -160, 178), _B('shed', -110, 178), _B('shed', 60, 178), _B('shed', 165, 178),
       _B('shed', -45, 178), _B('townhouse', 80, 175),
       // タイトパッキング補強 (公共施設前のサテライト商店・道場)
-      _B('kimono_shop', -75, 60), _B('shed', 0, 60), _B('wagashi', 30, 60), _B('dojo', 130, 60),
-      _B('sushi_ya', -160, 22), _B('shed', 30, 178), _B('kimono_shop', 165, 22),
+      _B('kimono_shop', -75, 60), _B('wagashi', 30, 60),
+      _B('sushi_ya', -160, 22), _B('shed', 30, 178), _B('kimono_shop', 175, 38),
     ],
     furniture: [
       // ── 焦点: 中央広場 ──
@@ -1725,16 +1724,16 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 東側 商店列
       _B('bookstore', 80, 122), _B('shop', 145, 122), _B('cafe', 35, 122),
       // 上段 補助
-      _B('shed', -150, 78), _B('shed', 50, 78), _B('greenhouse', 145, 78),
-      _B('mansion', 170, 78), _B('kimono_shop', 165, 38),
+      _B('shed', -150, 78), _B('shed', 50, 78), _B('greenhouse', 145, 72),
+      _B('mansion', 130, 28), _B('kimono_shop', 165, 38),
       // 下段 住宅街
       _B('house', -150, 132), _B('townhouse', -110, 138), _B('house', -45, 138),
-      _B('townhouse', -10, 178),
-      _B('kura', -170, 178), _B('garage', -110, 178), _B('shed', -45, 178),
-      _B('greenhouse', 30, 178), _B('sushi_ya', 90, 178), _B('kura', 130, 178), _B('wagashi', 170, 178),
+      _B('townhouse', 25, 158),
+      _B('kura', -170, 170), _B('garage', -110, 178), _B('shed', -45, 178),
+      _B('greenhouse', 60, 175), _B('sushi_ya', 90, 170), _B('kura', 130, 170), _B('wagashi', 170, 158),
       // タイトパッキング補強 (通学路の店と道場)
-      _B('dojo', -110, 60), _B('wagashi', -45, 60), _B('snack', 30, 60),
-      _B('shed', -25, 78), _B('shed', 25, 178),
+      _B('dojo', -130, 60), _B('snack', 30, 60),
+      _B('shed', -25, 78), _B('shed', 165, 178),
     ],
     furniture: [
       // ── 焦点: 学校玄関と校庭 ──
@@ -1892,7 +1891,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('cafe', 35, 38), _B('shop', 95, 38), _B('game_center', 150, 38),
       // 上段 補助 (店舗の奥)
       _B('shed', -125, 78), _B('shed', -25, 78), _B('shed', 55, 78), _B('shed', 165, 78),
-      _B('greenhouse', 110, 78), _B('shed', -75, 78), _B('shed', 25, 78),
+      _B('greenhouse', 110, 72), _B('shed', -75, 78), _B('shed', 25, 78),
       // 下段 住宅街 (アーケード裏)
       _B('house', -140, 132),
       _B('townhouse', -100, 138), _B('house', -45, 138), _B('townhouse', 40, 138),
@@ -2070,22 +2069,22 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's1_raw', raw: {
     buildings: [
       // 焦点: 駅
-      _B('train_station', 95, 42),
+      _B('train_station', 95, 22),
       // 駅前商店
       _B('bookstore', -120, 42), _B('cafe', -45, 42), _B('shop', -160, 42),
       _B('ramen', 50, 122), _B('convenience', -120, 138),
       // 上段 補助
-      _B('shed', -90, 78), _B('shed', 0, 78),
-      _B('mansion', -160, 78), _B('greenhouse', 35, 78), _B('shed', 165, 78),
+      _B('shed', -90, 78),
+      _B('greenhouse', 35, 38), _B('shed', 165, 78),
       // 下段 住宅街
       _B('townhouse', 130, 132), _B('house', -160, 138), _B('shop', -40, 138),
       _B('house', 165, 138), _B('wagashi', 95, 178),
       _B('garage', -160, 178), _B('sushi_ya', -110, 178), _B('snack', -40, 178),
       _B('kura', 165, 178),
       // タイトパッキング補強 (駅前のバス停と小商店)
-      _B('bus_terminal_shelter', -75, 60), _B('shed', 0, 60), _B('wagashi', 25, 178),
+      _B('bus_terminal_shelter', -75, 60), _B('wagashi', 25, 178),
       _B('shed', -25, 78), _B('shed', 65, 78), _B('shed', 130, 78),
-      _B('kura', 60, 178),
+      _B('kura', 60, 170),
     ],
     furniture: [
       // ── 焦点: 駅舎 + プラットフォーム + 線路 ──
@@ -2246,16 +2245,16 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('kura', 70, 155), _B('greenhouse', 95, 75),
       // 街はずれの住宅・小商店 (街の終端)
       _B('house', -135, 42), _B('garage', -90, 60), _B('shop', 40, 42),
-      _B('house', -160, 78),
+      _B('house', -160, 70),
       // 上段 補助
-      _B('shed', -50, 78), _B('mansion', 165, 75),
-      _B('kominka', 0, 78),
+      _B('shed', -50, 78), _B('mansion', 165, 60),
+      _B('kominka', -25, 70),
       // 下段 補助 (物置・温室・町家・蔵)
       _B('kura', -160, 138), _B('machiya', -100, 138), _B('kura', -45, 138),
       _B('greenhouse', -130, 178), _B('wagashi', -60, 178), _B('kura', 30, 178),
       _B('kura', 175, 178),
       // タイトパッキング補強 (農地ヤード)
-      _B('kura', -25, 60), _B('kura', 25, 60), _B('kura', -160, 178),
+      _B('kura', 60, 60), _B('kura', 130, 60), _B('kura', -160, 178),
       _B('greenhouse', 65, 175),
     ],
     furniture: [
@@ -2396,14 +2395,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('warehouse', 50, 132),
       // 上段 補助
       _B('shed', -160, 78), _B('shed', 35, 78), _B('shed', 170, 78),
-      _B('shed', 0, 78),
       // 下段 補助 (生活要素を残す)
       _B('garage', -135, 132), _B('house', 95, 132), _B('townhouse', 145, 138),
-      _B('kura', -170, 178), _B('kura', -75, 178), _B('garage', 30, 178),
-      _B('kura', 95, 178), _B('kura', 165, 178), _B('kura', -120, 178),
+      _B('kura', -170, 170), _B('kura', -75, 170), _B('garage', 30, 178),
+      _B('kura', 95, 170), _B('kura', 165, 170), _B('kura', -120, 170),
       // タイトパッキング補強 (倉庫ヤードと裏側、生活痕跡)
-      _B('shed', -75, 60), _B('shed', 30, 60), _B('shed', 110, 60),
-      _B('shed', -25, 78), _B('snack', 60, 178), _B('wagashi', -45, 178),
+      _B('shed', -85, 60), _B('shed', 30, 60), _B('shed', 110, 60),
+      _B('shed', -25, 78), _B('snack', 60, 170), _B('wagashi', -45, 170),
     ],
     furniture: [
       // ── 焦点: 倉庫前ヤード (作業員エリア) ──
@@ -2532,9 +2530,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ═══ _TOP_HR の地面連続 (Ch11 への handoff) ═══
       _G('asphalt', 0, 198, 360, 12),
     ],
-    // 道路: 中央 avenue + 倉庫搬入の縦路地 (中段) + Ch11 への上端接続
+    // 道路: 中央 avenue + Ch11 への上端接続 (倉庫搬入路は撤廃して衝突回避)
     horizontalRoads: [_MID_HR, _TOP_HR],
-    verticalRoads: [_AVE, _VR(-45, 42, 130)],
+    verticalRoads: [_AVE],
   } },
 
   // ── S1-Ch11: 踏切と街はずれの終端 ──
@@ -2550,15 +2548,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('machiya', -120, 132), _B('townhouse', -50, 132), _B('shop', 50, 132),
       _B('house', 145, 132),
       // 上段 補助
-      _B('shed', -160, 78), _B('shed', -90, 78), _B('greenhouse', 0, 78),
-      _B('shed', 110, 78), _B('mansion', 165, 75),
+      _B('shed', -160, 78), _B('shed', -90, 78), _B('greenhouse', -25, 70),
+      _B('shed', 110, 78), _B('mansion', 165, 60),
       _B('shed', 35, 78),
       // 下段 補助 (踏切前の古い蔵と町並み)
-      _B('kura', -160, 178), _B('kura', -45, 178), _B('kura', 90, 178),
-      _B('kura', 165, 178), _B('shed', 0, 178),
+      _B('kura', -160, 170), _B('kura', -45, 170), _B('kura', 90, 170),
+      _B('kura', 165, 170),
       // タイトパッキング補強 (踏切前のバス停と店)
-      _B('bus_terminal_shelter', -75, 60), _B('shed', 0, 60), _B('kimono_shop', 130, 60),
-      _B('shed', -25, 78), _B('shed', 65, 78),
+      _B('bus_terminal_shelter', -75, 60), _B('kimono_shop', 130, 60),
+      _B('shed', 65, 78),
     ],
     furniture: [
       // ── 焦点: 踏切 ──
@@ -2689,8 +2687,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ═══ _TOP_HR の地面連続 (Stage 2 への handoff) ═══
       _G('asphalt', 0, 198, 360, 12),
     ],
-    // 道路: 中央 avenue + 線路と並行する道路 (踏切前後を結ぶ) + Stage 2 への上端接続
-    horizontalRoads: [_MID_HR, _TOP_HR, _HR(155, -130, 130)],
+    // 道路: 中央 avenue + Stage 2 への上端接続 (線路並行 HR は撤廃して衝突回避)
+    horizontalRoads: [_MID_HR, _TOP_HR],
     verticalRoads: [_AVE],
   } },
 ];
