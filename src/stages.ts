@@ -850,43 +850,34 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 100),
     ],
     grounds: [
-      // ベース: 住宅街タイル
+      // ═══ ベース層: 住宅街タイル (全面) ═══
       _G('residential_tile', 0, 100, 360, 200),
-      // ★ 焦点: 古民家邸の grass (NW 全体を邸の敷地に)
+
+      // ═══ 焦点ゾーン: 古民家邸 (NW 全体を 1 枚の grass 庭園で包む) ═══
       _G('grass', -90, 60, 160, 100),
-      // 縁側 wood_deck (kominka 母屋の南、東西に長い)
-      _G('wood_deck', -90, 88, 90, 14),
-      // 飛び石路の dirt (kominka と chaya を繋ぐ)
-      _G('dirt', -65, 70, 60, 14),
-      _G('dirt', -90, 38, 18, 12),     // 池下の土
+
+      // 邸内の詳細 (焦点なので細かく)
+      _G('wood_deck', -90, 88, 90, 14),     // 縁側
+      _G('dirt', -65, 70, 60, 14),          // 飛び石路 (kura→母屋→茶屋)
+      _G('dirt', -145, 55, 28, 16),         // 蔵前作業場
       _G('fallen_leaves', -130, 50, 22, 14),
       _G('fallen_leaves', -45, 90, 22, 14),
-      // 蔵 (kura) の前 (土の作業場)
-      _G('dirt', -145, 55, 28, 16),
-      // 中央 stone_pavement (生活路地)
+
+      // ═══ 街区帯: 各住宅街の前庭を 1 枚で統合 (細かいパッチを撤廃) ═══
+      // NE 前庭帯 (avenue 東、上半分の住宅列の前)
+      _G('grass', 100, 75, 160, 28),
+      // SW 前庭帯 (avenue 西、下半分の住宅列の前)
+      _G('grass', -95, 158, 130, 18),
+      // SE 前庭帯 (avenue 東、下半分の住宅列の前)
+      _G('grass', 95, 158, 130, 18),
+
+      // ═══ 裏路地: 1 本の concrete 帯で統一 (dy=178 全幅) ═══
+      _G('concrete', 0, 188, 360, 22),
+
+      // ═══ 中央生活路地 (stone_pavement) ═══
       _G('stone_pavement', -65, 100, 12, 200),
-      // NE 現代住宅の庭 — 各家で異なる (個性化)
-      _G('grass', 30, 58, 22, 14),       // townhouse: 花壇の家 → grass 庭
-      _G('tile', 80, 58, 22, 14),        // house: 禅の庭 → tile 玄関
-      _G('concrete', 145, 58, 30, 18),   // mansion: 大駐車場
-      _G('grass', 145, 80, 26, 16),      // mansion: 庭の grass (噴水周り)
-      _G('dirt', 175, 88, 22, 14),       // house(175): 家庭菜園 dirt
-      // SW 下段住宅の庭 — 各家で異なる
-      _G('grass', -150, 162, 24, 16),    // machiya: 伝統 grass 庭
-      _G('dirt', -135, 175, 18, 14),     // machiya: 庭の rock garden 土
-      _G('tile', -90, 158, 22, 14),      // house: tile 玄関 (花壇の家)
-      _G('concrete', -45, 158, 22, 14),  // townhouse: concrete 駐車
-      // SE 下段住宅の庭 — 各家で異なる
-      _G('grass', 35, 158, 22, 14),      // house: ガーデニング grass
-      _G('concrete', 85, 158, 26, 16),   // duplex: 大 concrete 駐車 (二世帯)
-      _G('grass', 100, 175, 50, 24),     // duplex: 共用の裏庭
-      _G('concrete', 145, 158, 30, 18),  // mansion: 大駐車場
-      _G('grass', 145, 175, 30, 18),     // mansion: 庭の噴水周り
-      _G('grass', 170, 175, 24, 16),     // mansion 隣の小庭
-      // SW/SE 裏路地の concrete (各裏庭)
-      _G('concrete', -65, 178, 24, 28),  // garage 前
-      _G('concrete', 165, 178, 24, 28),  // garage 前
-      // avenue 沿いのアスファルト帯
+
+      // ═══ avenue 沿いの asphalt 帯 ═══
       _G('asphalt', 0, 88, 360, 24),
     ],
     // 道路: 中央 avenue のみ (静かな住宅街の入口、側道なし)
