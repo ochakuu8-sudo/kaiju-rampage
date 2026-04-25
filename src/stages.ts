@@ -784,6 +784,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 現代住宅のコンクリ駐車スペース
       _G('concrete', 150, 178, 32, 30),
       _G('concrete', 105, 50, 30, 18),
+      _G('concrete', 40, 158, 28, 16),
+      // 東側住宅の小庭 (空白埋め)
+      _G('grass', 40, 50, 30, 14),
+      _G('grass', 155, 130, 24, 14),
+      _G('dirt', 105, 130, 18, 12),
       // avenue 沿いのアスファルト帯
       _G('asphalt', 0, 88, 360, 24),
     ],
@@ -915,6 +920,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 住宅街の落ち葉
       _G('fallen_leaves', -160, 165, 26, 16),
       _G('fallen_leaves', -110, 60, 20, 12),
+      _G('fallen_leaves', -30, 158, 20, 12),
+      // 西側住宅の小庭・路地 (空白埋め)
+      _G('grass', -100, 60, 24, 16),
+      _G('grass', -160, 138, 24, 18),
+      _G('dirt', -55, 165, 18, 14),
+      _G('concrete', -130, 178, 24, 28),
       // avenue 沿いのアスファルト帯
       _G('asphalt', 0, 88, 360, 24),
     ],
@@ -1052,6 +1063,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('dirt', -130, 95, 30, 14),
       // 生活路地
       _G('stone_pavement', -65, 100, 12, 200),
+      // 下段住宅街の小庭・路地 (空白埋め)
+      _G('grass', 145, 158, 24, 18),
+      _G('grass', -45, 158, 26, 16),
+      _G('grass', 60, 158, 22, 16),
+      _G('fallen_leaves', -130, 168, 22, 14),
+      _G('concrete', 100, 178, 30, 28),
       // _TOP_HR の地面連続 (Ch3 への handoff)
       _G('concrete', 0, 198, 360, 12),
       _G('asphalt', 0, 88, 360, 24),
@@ -1084,8 +1101,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('townhouse', -55, 165), _B('townhouse', 65, 165),
       _B('shed', -170, 178), _B('garage', -45, 178), _B('greenhouse', 55, 178), _B('shed', 165, 178),
       _B('house', 165, 132), _B('house', -160, 132),
-      _B('kura', -110, 178), _B('wagashi', 40, 175), _B('kimono_shop', 130, 175),
-      _B('kura', -130, 178),
+      _B('snack', -110, 178), _B('wagashi', 40, 175), _B('kimono_shop', 130, 175),
+      _B('chaya', -130, 178),
     ],
     furniture: [
       // ── 焦点: 3連テラスの各店帰属 ──
@@ -1352,6 +1369,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 商店街の生活路地
       _G('stone_pavement', -65, 100, 12, 200),
       _G('stone_pavement', -45, 60, 8, 80),  // 銭湯と商店を分ける路地
+      // 下段住宅街の小庭 (空白埋め)
+      _G('grass', -160, 165, 22, 16),
+      _G('grass', 130, 165, 22, 16),
+      _G('fallen_leaves', -110, 168, 20, 14),
+      _G('concrete', 95, 165, 26, 16),
       // avenue 沿い
       _G('asphalt', 0, 88, 360, 24),
     ],
@@ -1381,7 +1403,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -45, 178), _B('townhouse', 80, 175),
       // タイトパッキング補強 (公共施設前のサテライト商店・道場)
       _B('kimono_shop', -75, 60), _B('shed', 0, 60), _B('wagashi', 30, 60), _B('dojo', 130, 60),
-      _B('sushi_ya', -55, 178), _B('shed', 30, 178), _B('kimono_shop', 130, 178),
+      _B('sushi_ya', -160, 22), _B('shed', 30, 178), _B('kimono_shop', 165, 22),
     ],
     furniture: [
       // ── 焦点: 中央広場 ──
@@ -1535,8 +1557,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 下段 住宅街
       _B('house', -150, 132), _B('townhouse', -110, 138), _B('house', -45, 138),
       _B('townhouse', -10, 178),
-      _B('kura', -170, 178), _B('garage', -110, 178), _B('sushi_ya', -45, 178),
-      _B('greenhouse', 30, 178), _B('kura', 130, 178), _B('wagashi', 170, 178),
+      _B('kura', -170, 178), _B('garage', -110, 178), _B('shed', -45, 178),
+      _B('greenhouse', 30, 178), _B('sushi_ya', 90, 178), _B('kura', 130, 178), _B('wagashi', 170, 178),
       // タイトパッキング補強 (通学路の店と道場)
       _B('dojo', -110, 60), _B('wagashi', -45, 60), _B('snack', 30, 60),
       _B('shed', -25, 78), _B('shed', 25, 178),
@@ -1664,6 +1686,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 通学路の生活路地
       _G('stone_pavement', -65, 100, 12, 200),
       _G('asphalt', 0, 95, 360, 18),
+      // 校庭東の住宅地補強 (空白埋め)
+      _G('residential_tile', 85, 165, 50, 70),
       // _TOP_HR の地面連続 (Ch7 への handoff)
       _G('asphalt', 0, 198, 360, 12),
     ],
@@ -2415,6 +2439,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 50, 145, 60, 60),       // ラーメン店前の踏切待ちエリア
       _G('asphalt', 0, 152, 300, 14),    // 線路の路盤 (踏切の中心線)
       _G('asphalt', 0, 165, 300, 14),    // 線路の路盤2 (もう1本)
+      // 踏切手前の古い町並み (machiya 下に住宅街タイル)
+      _G('residential_tile', -120, 138, 60, 50),
+      // 着物屋の店先タイル
+      _G('tile', 130, 70, 40, 32),
       // 各店舗フロント (用途差)
       _G('concrete', -135, 60, 70, 38),  // ガソリンスタンド (アスファルトに近い)
       _G('concrete', -45, 58, 80, 40),   // コンビニ前
