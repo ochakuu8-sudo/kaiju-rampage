@@ -675,164 +675,191 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   // 桜並木 / 電柱+電線 / 生活歩道 (stone_pavement x=-65) を連続軸として通す。
 
   // ── S1-Ch0: 日本庭園と縁側のある住宅街入口 ──
-  // 焦点: 古民家庭園 (西側 grass の上に kominka + 池 + 飛び石 + 石灯籠 + 松)
-  // 取り巻き: 縁側 (wood_deck) / 庭石 / 茶屋 (chaya) / 落ち葉
-  // 境界: 中央 stone_pavement の生活路地、grass で庭園を切り出す
-  // 動線: 庭を眺める住人、縁側の猫、avenue 通行人、各住宅の玄関前住人
+  // 焦点: NW を「古民家邸」として一体設計 (kominka 母屋 + 北西の kura 蔵 + 東の chaya 茶屋 + 庭)
+  //       東西の現代住宅列は avenue に面しファサードを向ける
+  //       下段の裏路地 (dy=178) は各住宅の裏庭物置として帰属
+  //       wagashi は SE の街角に立つ近所の和菓子屋 (avenue 通りすがりの客)
+  // 物語: 「街道を進むと古民家邸が左手に見える、対岸は新しい家並み、和菓子屋の角」
   { patternId: 's1_raw', raw: {
     buildings: [
-      // ── NW 街区: 焦点の古民家庭園 (grass の上) ──
-      _B('kominka', -55, 68),       // 主役: 古民家
-      _B('chaya', -130, 68),        // 茶屋 (庭園内)
-      // ── NW 街区: 庭外の現代住宅 (residential_tile の上) ──
-      _B('bungalow', -160, 28),     // 上端 facade
-      _B('house', -110, 28),        // 上端 facade
-      // ── NE 街区: 現代住宅列 ──
-      _B('house', 105, 28),         // 上端 facade
-      _B('house', 155, 28),         // 上端 facade
-      _B('townhouse', 45, 28),      // 上端 facade
-      _B('mansion', 125, 60),       // 中段の大きい家
-      _B('shed', 75, 70),           // 物置
-      // ── SW 街区: 下段住宅街 ──
-      _B('bungalow', -150, 130),    // 下段 facade
-      _B('machiya', -90, 130),      // 伝統町家 (古民家の延長)
-      _B('townhouse', -30, 130),    // 下段 facade
-      _B('shed', -170, 178),        // 下段裏物置
-      _B('shed', -130, 178),        // 下段裏物置
-      _B('kura', -110, 178),        // 蔵
-      _B('garage', -60, 178),       // 車庫
-      // ── SE 街区: 下段住宅街 + 小商店 ──
-      _B('duplex', 95, 130),        // 下段 facade
-      _B('bungalow', 40, 130),      // 下段 facade
-      _B('townhouse', 150, 130),    // 下段 facade
-      _B('wagashi', 70, 165),       // 和菓子屋 (住宅街の店)
-      _B('shed', 50, 178),          // 下段裏物置
-      _B('greenhouse', 115, 178),   // 下段裏温室
+      // ─────────────────────────────────────────────────
+      // 【NW 街区】古民家邸 (一体設計、grass の上)
+      // ─────────────────────────────────────────────────
+      _B('kominka', -90, 60),       // 母屋 (邸の中心、grass の上)
+      _B('kura', -145, 30),         // 蔵 (邸の北西奥、母屋の裏手)
+      _B('chaya', -30, 70),         // 茶室 (邸の南東、avenue 寄り)
+      // ─────────────────────────────────────────────────
+      // 【NE 街区】avenue に面する現代住宅列 (residential_tile)
+      // ─────────────────────────────────────────────────
+      _B('townhouse', 30, 30),      // avenue 寄り、間口の狭い町屋風
+      _B('house', 80, 30),          // 中型住宅
+      _B('mansion', 145, 30),       // 大型ファミリー住宅
+      _B('house', 175, 60),         // 邸の角、東端
+      // ─────────────────────────────────────────────────
+      // 【SW 街区】下段住宅列 + 裏路地
+      // ─────────────────────────────────────────────────
+      _B('machiya', -150, 130),     // 伝統町家 (SW の主役、古民家邸の対岸)
+      _B('house', -90, 130),        // 隣の現代住宅
+      _B('townhouse', -45, 130),    // avenue 寄りの町屋
+      // SW 裏路地 (各住宅の裏庭、dy=178)
+      _B('kura', -150, 178),        // 町家の蔵 (machiya 帰属)
+      _B('shed', -110, 178),        // 物置 (house 帰属)
+      _B('garage', -65, 178),       // 車庫 (townhouse 帰属)
+      // ─────────────────────────────────────────────────
+      // 【SE 街区】下段住宅列 + 街角の和菓子屋
+      // ─────────────────────────────────────────────────
+      _B('house', 35, 130),         // avenue 寄りの現代住宅
+      _B('duplex', 85, 130),        // 二世帯住宅
+      _B('mansion', 145, 130),      // 大型住宅
+      _B('wagashi', 70, 175),       // 街角の和菓子屋 (avenue 通りの客向け)
+      // SE 裏路地 (各住宅の裏庭、dy=178)
+      _B('shed', 30, 178),          // 物置 (house 帰属)
+      _B('greenhouse', 120, 178),   // 温室 (duplex 帰属)
+      _B('garage', 165, 178),       // 車庫 (mansion 帰属)
     ],
     furniture: [
-      // ── 焦点クラスタ: 古民家庭園 (kominka 周辺の grass 上) ──
-      _F('koi_pond', -50, 50),      // 庭の池
-      _F('stepping_stones', -50, 75),
-      _F('stepping_stones', -30, 60),
-      _F('bonsai', -78, 35), _F('bonsai', -30, 78), _F('bonsai', -65, 90),
-      _F('stone_lantern', -75, 35), _F('stone_lantern', -30, 50),
-      _F('pine_tree', -95, 35), _F('pine_tree', -30, 90),
-      _F('rock', -65, 30), _F('rock', -40, 88), _F('rock', -85, 65),
-      _F('potted_plant', -78, 25),
-      // 縁側 (wood_deck 上の猫) — kominka 帰属
-      _F('cat', -65, 90), _F('cat', -50, 92),
-      // 庭の囲い (wood_fence) — 庭園と路の境
-      _F('wood_fence', -15, 80), _F('wood_fence', -15, 60), _F('wood_fence', -15, 38),
-      // ── chaya 帰属 ──
-      _F('noren', -130, 58), _F('chouchin', -130, 56),
-      _F('bench', -118, 88), _F('potted_plant', -145, 60),
-      // ── NW 現代住宅 帰属 ──
-      // bungalow(-160, 28)
-      _F('mailbox', -160, 18), _F('ac_unit', -150, 38), _F('potted_plant', -170, 22),
-      // house(-110, 28)
-      _F('mailbox', -110, 18), _F('ac_unit', -115, 48), _F('bicycle', -100, 22),
-      // ── NE 現代住宅 帰属 ──
-      // house(105, 28)
-      _F('mailbox', 105, 18), _F('ac_unit', 95, 48), _F('potted_plant', 115, 22),
-      // house(155, 28)
-      _F('mailbox', 155, 18), _F('ac_unit', 155, 48), _F('bicycle', 165, 22),
-      // townhouse(45, 28)
-      _F('mailbox', 45, 18), _F('ac_unit', 50, 52), _F('potted_plant', 35, 22),
-      // mansion(125, 60)
-      _F('mailbox', 120, 50), _F('ac_unit', 140, 80), _F('bicycle', 110, 80),
-      _F('laundry_balcony', 125, 88),
-      // shed(75, 70) - 物置
-      _F('milk_crate_stack', 75, 65), _F('wood_fence', 75, 80),
-      // ── SW 下段住宅 帰属 ──
-      // bungalow(-150, 130)
-      _F('mailbox', -150, 118), _F('ac_unit', -145, 142), _F('potted_plant', -160, 122),
-      // machiya(-90, 130)
-      _F('noren', -90, 118), _F('bonsai', -105, 125),
-      _F('wood_fence', -75, 135), _F('potted_plant', -90, 165),
-      _F('cat', -90, 158),
-      // townhouse(-30, 130)
-      _F('mailbox', -30, 118), _F('ac_unit', -25, 154), _F('potted_plant', -15, 122),
-      // shed/kura/garage 帰属 (裏路地の生活痕跡)
-      _F('garbage', -170, 168), _F('recycling_bin', -170, 195),
-      _F('garbage', -130, 168), _F('milk_crate_stack', -130, 195),
-      _F('wood_fence', -110, 168), _F('pallet_stack', -110, 195),
-      _F('bicycle_rack', -60, 168), _F('traffic_cone', -50, 168),
-      // ── SE 下段住宅 帰属 ──
-      // duplex(95, 130)
-      _F('mailbox', 95, 118), _F('ac_unit', 95, 158), _F('laundry_balcony', 105, 130),
-      // bungalow(40, 130)
-      _F('mailbox', 40, 118), _F('ac_unit', 45, 142), _F('potted_plant', 50, 122),
-      // townhouse(150, 130)
-      _F('mailbox', 150, 118), _F('ac_unit', 155, 154), _F('bicycle', 140, 122),
-      // wagashi(70, 165) - 和菓子屋
-      _F('noren', 70, 155), _F('shop_awning', 70, 158), _F('a_frame_sign', 60, 188),
-      _F('chouchin', 70, 152), _F('flower_planter_row', 80, 188),
-      // greenhouse(115, 178)
-      _F('potted_plant', 115, 168), _F('flower_bed', 130, 195),
-      // shed(50, 178)
-      _F('milk_crate_stack', 50, 168), _F('wood_fence', 50, 195),
-      // ── 連続軸: 桜並木 (Ch0-Ch5) ──
-      _F('sakura_tree', -135, 50), _F('sakura_tree', 25, 50), _F('sakura_tree', 165, 88),
-      _F('sakura_tree', -22, 175), _F('sakura_tree', 130, 175),
-      // ── 連続軸: 電柱+電線 (奥層 4 隅) ──
+      // ═══ 古民家邸 (kominka 邸全体の物語) ═══
+      // 母屋の前庭: 鯉の池 (主役焦点)
+      _F('koi_pond', -90, 40),
+      // 飛び石: 茶屋から母屋へ続く道
+      _F('stepping_stones', -65, 75), _F('stepping_stones', -78, 65),
+      _F('stepping_stones', -90, 80),
+      // 庭の松 (邸の象徴): 北端と東端で「庭の枠」を作る
+      _F('pine_tree', -160, 70), _F('pine_tree', -30, 50),
+      // 石灯籠: 飛び石路に沿って
+      _F('stone_lantern', -110, 78), _F('stone_lantern', -55, 60),
+      // 盆栽: 母屋と茶屋の周辺
+      _F('bonsai', -78, 30), _F('bonsai', -115, 60), _F('bonsai', -30, 60),
+      // 庭石
+      _F('rock', -125, 78), _F('rock', -65, 50), _F('rock', -45, 88),
+      // 縁側 (kominka 母屋の南、wood_deck 上の猫)
+      _F('cat', -100, 88), _F('cat', -78, 90),
+      // 蔵 (kura) 帰属: 古い農具の蔵
+      _F('milk_crate_stack', -135, 22), _F('wood_fence', -160, 50),
+      // 茶屋 (chaya) 帰属: 暖簾と提灯
+      _F('noren', -30, 64), _F('chouchin', -30, 62),
+      _F('bench', -45, 92), _F('potted_plant', -15, 78),
+      // 庭の囲い (邸を avenue から区切る wood_fence)
+      _F('wood_fence', -15, 30), _F('wood_fence', -15, 50),
+      _F('wood_fence', -15, 70), _F('wood_fence', -15, 90),
+      // ═══ NE 現代住宅列 (avenue に面する mailbox + driveway) ═══
+      // townhouse(30, 30): mailbox は avenue 側
+      _F('mailbox', 22, 28), _F('ac_unit', 30, 50), _F('potted_plant', 38, 22),
+      // house(80, 30)
+      _F('mailbox', 70, 28), _F('ac_unit', 80, 50), _F('bicycle', 90, 22),
+      _F('potted_plant', 88, 28),
+      // mansion(145, 30): 大型なので豊富な家具
+      _F('mailbox', 130, 28), _F('ac_unit', 160, 56), _F('bicycle', 130, 22),
+      _F('laundry_balcony', 145, 50), _F('potted_plant', 158, 28),
+      // house(175, 60): 邸の角
+      _F('mailbox', 165, 50), _F('ac_unit', 178, 70), _F('potted_plant', 178, 50),
+      // ═══ SW 下段住宅列 ═══
+      // machiya(-150, 130): 暖簾と植木 (伝統)
+      _F('noren', -150, 118), _F('bonsai', -160, 122),
+      _F('wood_fence', -135, 145), _F('potted_plant', -150, 162),
+      // house(-90, 130)
+      _F('mailbox', -90, 118), _F('ac_unit', -90, 152), _F('bicycle', -100, 122),
+      _F('potted_plant', -78, 122),
+      // townhouse(-45, 130)
+      _F('mailbox', -45, 118), _F('ac_unit', -38, 154), _F('potted_plant', -52, 122),
+      // SW 裏路地家具 (各裏庭の生活痕跡)
+      _F('garbage', -150, 168), _F('recycling_bin', -150, 195),  // kura 横
+      _F('milk_crate_stack', -130, 195),                         // shed 横
+      _F('bicycle_rack', -65, 168), _F('traffic_cone', -55, 168),  // garage 帰属
+      // ═══ SE 下段住宅列 + 和菓子屋 ═══
+      // house(35, 130)
+      _F('mailbox', 25, 118), _F('ac_unit', 35, 150), _F('potted_plant', 45, 122),
+      // duplex(85, 130): 二世帯なので mailbox 2つ
+      _F('mailbox', 75, 118), _F('mailbox', 95, 118),
+      _F('ac_unit', 85, 158), _F('laundry_balcony', 95, 130),
+      _F('bicycle', 75, 122),
+      // mansion(145, 130): 大型
+      _F('mailbox', 130, 118), _F('ac_unit', 160, 158),
+      _F('bicycle', 135, 122), _F('potted_plant', 158, 122),
+      // wagashi(70, 175): 街角の和菓子屋 (avenue 寄り)
+      _F('noren', 70, 165), _F('shop_awning', 70, 168),
+      _F('chouchin', 70, 162), _F('a_frame_sign', 60, 188),
+      _F('flower_planter_row', 80, 188),
+      // SE 裏路地家具
+      _F('garbage', 30, 168),                                     // shed 帰属
+      _F('flower_bed', 120, 195),                                  // greenhouse 横
+      _F('milk_crate_stack', 120, 168), _F('bicycle_rack', 165, 168),  // garage 帰属
+      // ═══ 連続軸: 桜並木 (avenue 沿いに点在、Ch0-Ch5) ═══
+      _F('sakura_tree', -135, 88), _F('sakura_tree', 30, 88),
+      _F('sakura_tree', 165, 88),
+      _F('sakura_tree', -22, 178), _F('sakura_tree', 130, 178),
+      // ═══ 連続軸: 電柱+電線 (奥層 4 隅) ═══
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 沿いの地点小物 (歩道家具は自動配置) ──
+      // ═══ avenue 沿いの地点小物 ═══
       _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      // ── 庭園・住宅街境界 (hedge / flower_bed) ──
-      _F('hedge', -10, 50), _F('hedge', -10, 75), _F('hedge', -10, 92),
-      _F('flower_bed', -130, 90), _F('flower_bed', 145, 50),
-      _F('flower_bed', 145, 165), _F('flower_bed', -150, 195),
-      // ── 落ち葉のアクセント ──
-      _F('cat', 145, 148),  // 縁側猫の延長 (mansion近く)
-      _F('cat', -130, 175), // 蔵裏の猫
+      // ═══ 縁側猫の延長 (residential 上のリアル感) ═══
+      _F('cat', 145, 158),  // mansion の縁側
+      _F('cat', -130, 175), // 蔵裏の地猫
     ],
     humans: [
-      // 焦点: 庭を眺める住人 / 縁側
-      _H(-50, 60),   // 池を眺める
-      _H(-50, 80),   // 飛び石を歩く
-      _H(-65, 92),   // 縁側に座る
-      // chaya 客
-      _H(-130, 80),
-      // 各住宅の玄関前 (mailbox 近く)
-      _H(-160, 50),  // bungalow NW
-      _H(-110, 50),  // house NW
-      _H(105, 50),   // house NE
-      _H(155, 50),   // house NE
-      _H(45, 60),    // townhouse NE
-      // 下段住宅の玄関前
-      _H(-150, 145), _H(-30, 155), _H(95, 158), _H(40, 145), _H(150, 155),
-      // wagashi 客
-      _H(70, 178),
-      // avenue 通行人
+      // 古民家邸 (4): 池を眺める / 飛び石 / 縁側 / 蔵
+      _H(-90, 50),    // 池の前
+      _H(-78, 75),    // 飛び石を歩く
+      _H(-100, 90),   // 縁側に座る
+      _H(-145, 50),   // 蔵から出てきた人
+      // 茶屋 (1): 客
+      _H(-30, 90),
+      // NE 現代住宅 (4): 各家の玄関前
+      _H(22, 50),     // townhouse(30, 30)
+      _H(70, 50),     // house(80, 30)
+      _H(130, 50),    // mansion(145, 30)
+      _H(165, 80),    // house(175, 60)
+      // SW 下段住宅 (3): 各家の玄関前
+      _H(-150, 152),  // machiya
+      _H(-90, 152),   // house
+      _H(-45, 152),   // townhouse
+      // SE 下段住宅 (3): 各家の玄関前
+      _H(25, 152),    // house
+      _H(85, 152),    // duplex
+      _H(130, 152),   // mansion
+      // wagashi 客 (1)
+      _H(70, 195),
+      // avenue 通行人 (1)
       _H(0, 100),
     ],
     grounds: [
       // ベース: 住宅街タイル
       _G('residential_tile', 0, 100, 360, 200),
-      // ★ 焦点: 古民家庭園の grass (中核のみに絞る)
-      _G('grass', -50, 60, 100, 80),
-      // 茶屋周辺の小庭
-      _G('grass', -130, 80, 30, 18),
-      // 縁側 (wood_deck) — kominka 南側
-      _G('wood_deck', -55, 90, 50, 16),
-      // 庭の生活路地 (中央縦)
+      // ★ 焦点: 古民家邸の grass (NW 全体を邸の敷地に)
+      _G('grass', -90, 60, 160, 100),
+      // 縁側 wood_deck (kominka 母屋の南、東西に長い)
+      _G('wood_deck', -90, 88, 90, 14),
+      // 飛び石路の dirt (kominka と chaya を繋ぐ)
+      _G('dirt', -65, 70, 60, 14),
+      _G('dirt', -90, 38, 18, 12),     // 池下の土
+      _G('fallen_leaves', -130, 50, 22, 14),
+      _G('fallen_leaves', -45, 90, 22, 14),
+      // 蔵 (kura) の前 (土の作業場)
+      _G('dirt', -145, 55, 28, 16),
+      // 中央 stone_pavement (生活路地)
       _G('stone_pavement', -65, 100, 12, 200),
-      // 庭園内: 落ち葉 + 庭の土
-      _G('fallen_leaves', -75, 75, 22, 14),
-      _G('fallen_leaves', -25, 130, 22, 14),
-      _G('dirt', -65, 45, 18, 12),
-      _G('dirt', -45, 75, 16, 12),
-      // 現代住宅のコンクリ駐車・庭
-      _G('concrete', 105, 50, 30, 18),     // house(105, 28) 駐車
-      _G('concrete', 150, 178, 32, 30),    // townhouse(150, 130) 駐車
-      _G('concrete', 40, 158, 28, 16),     // bungalow(40, 130) 駐車
-      _G('grass', 40, 50, 30, 14),         // townhouse(45, 28) 庭
-      _G('grass', 155, 130, 24, 14),       // townhouse(150, 130) 庭
-      _G('grass', 105, 175, 60, 30),       // duplex(95, 130) 庭
-      _G('dirt', 105, 130, 18, 12),        // 中央庭の土
+      // NE 現代住宅の駐車・庭 (avenue 寄りに concrete)
+      _G('concrete', 30, 58, 22, 14),    // townhouse 駐車
+      _G('concrete', 80, 58, 22, 14),    // house 駐車
+      _G('concrete', 145, 58, 30, 18),   // mansion 駐車
+      _G('grass', 165, 80, 26, 16),      // house(175,60) の小庭
+      _G('grass', 110, 70, 24, 14),      // mansion 横の植え込み
+      // SW 下段住宅の庭・駐車
+      _G('grass', -150, 162, 24, 16),    // machiya 庭
+      _G('concrete', -90, 158, 22, 14),  // house 駐車
+      _G('concrete', -45, 158, 22, 14),  // townhouse 駐車
+      // SE 下段住宅の庭・駐車
+      _G('concrete', 35, 158, 22, 14),   // house 駐車
+      _G('concrete', 85, 158, 26, 16),   // duplex 駐車
+      _G('concrete', 145, 158, 30, 18),  // mansion 駐車
+      _G('grass', 100, 175, 50, 24),     // duplex の裏庭
+      _G('grass', 170, 175, 24, 16),     // mansion 横の小庭
+      // SW/SE 裏路地の concrete (各裏庭)
+      _G('concrete', -65, 178, 24, 28),  // garage 前
+      _G('concrete', 165, 178, 24, 28),  // garage 前
       // avenue 沿いのアスファルト帯
       _G('asphalt', 0, 88, 360, 24),
     ],
