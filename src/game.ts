@@ -709,7 +709,7 @@ export class Game {
           }
           break;  // バンパーで処理したのでこのフリッパーの本体は飛ばす
         }
-        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.35, 0.998);
+        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.15, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
