@@ -29,8 +29,14 @@ const push = (level: Level, rule: string, chunk: number, msg: string) =>
 
 // ─── 補助 ────────────────────────────────────────
 const SPINE_TYPES = new Set([
+  // 連続軸 (Stage 1 街路樹)
   'sakura_tree', 'pine_tree', 'cherry_blossom',
-  'power_pole', 'power_line', 'street_lamp',
+  // 連続軸 (全 Stage 共通: 電力 / 照明 / avenue 横断)
+  'power_pole', 'power_line', 'street_lamp', 'manhole_cover', 'bollard',
+  // Stage 2 シグネチャ (chouchin 帯 / 暖簾 / 屋台)
+  'chouchin', 'noren', 'banner_pole',
+  // Stage 5 祭り
+  'matsuri_drum', 'balloon_cluster',
 ]);
 const FACADE_TYPES = new Set([
   'mailbox', 'sign_board', 'a_frame_sign', 'noren', 'chouchin',

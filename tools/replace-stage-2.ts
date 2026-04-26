@@ -17,15 +17,17 @@ const startMarker = 'const STAGE_2_TEMPLATES: ChunkTemplate[] = [';
 const startIdx = src.indexOf(startMarker);
 if (startIdx < 0) throw new Error('STAGE_2_TEMPLATES not found');
 
-// 配列の閉じを探す: 直後の '\n];' (Stage 3 開始の `\n\n// ─── Stage 3` の手前)
-const endMarker = '\n];\n\n// ─── Stage 3:';
-const endIdx = src.indexOf(endMarker, startIdx);
+// 配列の閉じを探す: STAGE_2_TEMPLATES の '\n];' (Stage 3 の手前)
+// 検索: 'const STAGE_3_TEMPLATES' の手前にある '];'
+const stage3Idx = src.indexOf('const STAGE_3_TEMPLATES', startIdx);
+if (stage3Idx < 0) throw new Error('STAGE_3_TEMPLATES not found');
+// stage3Idx より前の最後の '\n];' を探す
+const endIdx = src.lastIndexOf('\n];', stage3Idx);
 if (endIdx < 0) throw new Error('Stage 2 end not found');
 
-// 置換
+// 置換: '\n];' の 3 文字後まで削除
 const before = src.slice(0, startIdx);
-const after = src.slice(endIdx + 3);  // 'n];' の 3 文字後 (改行 + ; + 改行)
-// newContent は冒頭コメント + `const STAGE_2_TEMPLATES = [...`+`];` を含む
+const after = src.slice(endIdx + 3);
 const result = before + newContent + '\n' + after;
 
 fs.writeFileSync(STAGES_PATH, result);
