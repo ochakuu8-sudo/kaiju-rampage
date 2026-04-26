@@ -542,6 +542,39 @@ export interface ChunkSpecialArea {
   h: number;   // height (full width = 360)
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Semantic Cluster — 配置に視覚的意味を持たせる上位レイヤー (v6.3+)
+// 既存の RawChunkBody.buildings/furniture を破壊せず、index 参照で
+// 「どれが焦点」「どれが取り巻き」「どれが境界・動線・痕跡」を宣言する。
+// 指示書 §3.6 (ヒーロー/アンビエント) / §4 (公園モデル 4 層) に対応。
+// ═══════════════════════════════════════════════════════════════════
+export type ClusterRole = 'hero' | 'ambient';
+export type ClusterCell = 'NW' | 'NE' | 'SW' | 'SE' | 'merged';
+/** buildings[i] への参照 */
+export type BRef = { kind: 'b'; i: number };
+/** furniture[i] への参照 */
+export type FRef = { kind: 'f'; i: number };
+export type Ref  = BRef | FRef;
+
+export interface SemanticCluster {
+  /** Lint レポート用の識別子 (例: 'ch1.SE.park') */
+  id: string;
+  role: ClusterRole;
+  cell: ClusterCell;
+  /** 焦点 1 個 (建物 or 家具) */
+  focal: Ref;
+  /** 取り巻き (hero は 3-5 個目安) — §4 companions */
+  companions?: Ref[];
+  /** 境界 (hedge / wood_fence / planter 列) — §4 boundary */
+  boundary?: Ref[];
+  /** 動線 (stepping_stones / lamp / sign 列) — §4 access */
+  access?: Ref[];
+  /** §6 生活痕跡 (laundry / garbage / bicycle …) */
+  livingTrace?: Ref;
+  /** §6 隣接チャンクへの連続軸マーカー (桜並木・電線・facade 帯) */
+  handoffTo?: 'next' | 'prev';
+}
+
 export interface ChunkData {
   chunkId: number;
   baseY: number;            // チャンク下端Y（ワールド座標）
@@ -562,6 +595,8 @@ export interface ChunkData {
   grounds: GroundTile[];
   /** シーンが事前配置した humans (ワールド座標) — _spawnChunk 時に spawnAt() */
   prePlacedHumans: Array<{ x: number; y: number }>;
+  /** v6.3+ 意味付けクラスタ (オプショナル、Lint と焦点演出で使用) */
+  clusters?: SemanticCluster[];
 }
 
 // ===== 完走型ステージ定義 =====
@@ -588,6 +623,8 @@ export interface RawChunkBody {
   grounds: Array<{ type: GroundType; dx: number; dy: number; w: number; h: number }>;
   horizontalRoads: Array<{ dy: number; h: number; xMin: number; xMax: number; cls: 'avenue' | 'street' }>;
   verticalRoads: Array<{ dx: number; w: number; yMinLocal: number; yMaxLocal: number; cls: 'avenue' | 'street' }>;
+  /** v6.3+ 意味付けクラスタ (オプショナル) — buildings/furniture への index 参照 */
+  clusters?: SemanticCluster[];
 }
 
 export interface StageDef {
@@ -658,6 +695,25 @@ const _AVE = _VR(0, 0, 200, 'avenue');
 const _SPINE_V = [_VR(-90, 0, 200), _VR(0, 0, 200, 'avenue'), _VR(+90, 0, 200)];
 const _MID_HR = _HR(100, -180, 180);       // 中央クロス街路 (全チャンク共通の唯一の横道路)
 const _TOP_HR = _HR(200, -180, 180);       // 上端クロス街路 (クロスポイントのみ)
+
+// ─── 意味付けクラスタ用 DSL (v6.3+) ────────────────────────────────
+// 既存の buildings/furniture 配列に push しつつ index 参照を返す。
+// 配列途中への挿入は禁止 — 必ず末尾追加で Ref が安定する。
+const $B = (out: RawChunkBody, size: C.BuildingSize, dx: number, dy: number): BRef => {
+  out.buildings.push({ size, dx, dy });
+  return { kind: 'b', i: out.buildings.length - 1 };
+};
+const $F = (out: RawChunkBody, type: FurnitureType, dx: number, dy: number): FRef => {
+  out.furniture.push({ type, dx, dy });
+  return { kind: 'f', i: out.furniture.length - 1 };
+};
+/** 同 dx・複数 dy の家具列を一発で作る (例: hedge を y=130/145/162/178 に並べる) */
+const _ROW = (out: RawChunkBody, type: FurnitureType, dx: number, dys: number[]): FRef[] =>
+  dys.map(dy => $F(out, type, dx, dy));
+/** クラスタ宣言 — RawChunkBody.clusters?? に push */
+const _CLUSTER = (out: RawChunkBody, c: SemanticCluster): void => {
+  (out.clusters ??= []).push(c);
+};
 
 // ─── Stage 1: 住宅街から街はずれへ (12 チャンク, raw 配置) ────────
 // 【全体の物語】: プレイヤーは怪獣として北→南 (y=0→2400) を進む。4 Acts で構成:
@@ -7808,6 +7864,7 @@ function buildRawChunk(
     specialAreas: [],
     grounds,
     prePlacedHumans,
+    clusters: raw.clusters,
   };
 }
 
