@@ -268,18 +268,29 @@ const RULES: Array<(raw: RawChunkBody, chunk: number) => void> = [
   checkFacadeLine,
 ];
 
-const stage1 = STAGES[0];
-const templates = stage1.templates;
+// CLI 引数: --stage=N で対象ステージ指定 (デフォルト: 全ステージ)
+const argStage = process.argv.find(a => a.startsWith('--stage='));
+const targetStage = argStage ? parseInt(argStage.split('=')[1], 10) : null;
+const stagesToCheck = targetStage !== null ? [targetStage] : [0, 1];  // Stage 1 と 2 を対象
+
 let totalClusters = 0;
+let totalChunks = 0;
 
-console.log('═══ Stage 1 配置リンタ (v6.3) ═══\n');
+for (const stageIdx of stagesToCheck) {
+  const stage = STAGES[stageIdx];
+  if (!stage) continue;
+  const templates = stage.templates;
+  totalChunks += templates.length;
+  console.log(`\n═══ Stage ${stageIdx + 1} (${stage.name}) 配置リンタ ═══`);
 
-for (let chunkId = 0; chunkId < templates.length; chunkId++) {
-  const tmpl = templates[chunkId];
-  if (!tmpl.raw) continue;
-  if (tmpl.raw.clusters) totalClusters += tmpl.raw.clusters.length;
-  for (const rule of RULES) {
-    rule(tmpl.raw, chunkId);
+  for (let chunkId = 0; chunkId < templates.length; chunkId++) {
+    const tmpl = templates[chunkId];
+    if (!tmpl.raw) continue;
+    if (tmpl.raw.clusters) totalClusters += tmpl.raw.clusters.length;
+    for (const rule of RULES) {
+      // chunk ID をステージ別に表示するため、prefix を変える
+      rule(tmpl.raw, chunkId);
+    }
   }
 }
 
@@ -308,7 +319,7 @@ if (infos.length) {
 }
 
 console.log('───────────────────────────────────');
-console.log(`Stage 1: ${templates.length} chunks, ${totalClusters} clusters defined`);
+console.log(`Total: ${totalChunks} chunks, ${totalClusters} clusters defined`);
 console.log(`Errors: ${errors.length}  Warnings: ${warns.length}  Info: ${infos.length}`);
 
 // CI で error は失敗扱い、warn は通過

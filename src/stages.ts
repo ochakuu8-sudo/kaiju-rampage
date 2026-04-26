@@ -3226,1103 +3226,1295 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
 //   裏側: garbage / dumpster / ac_outdoor_cluster / cable_junction_box
 //   交通: taxi_rank_sign / bus_stop / vending / street_lamp
 // 【密度目安】: 建物 20-30 / 家具 80-120 / 人 10-22 (夜街の高密度)
+// ═══════════════════════════════════════════════════════════════════
+// Stage 2: 夜の歓楽街 NEON DISTRICT (12 chunks, raw 配置, v1.0 設計指示書準拠)
+// 連続軸: chouchin 帯 / noren / puddle_reflection / 街灯ネオン
+// ground 基調: asphalt + Ch10-11 で stone_pavement 移行
+// 道路ポリシー: 中央 _AVE のみ固定、横道路はチャンクごと (v6.2 継承)
+// ═══════════════════════════════════════════════════════════════════
 const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
-  // ═══ Act I: 駅前繁華 (C0-C2) ═══════════════════════════════════════
+  // ── S2-Ch0: 終電後の地方駅と北口ロータリー (NE hero) ──
+  // Stage 1 末尾の踏切 → 夜の駅前広場へ切替
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // NE hero: train_station + 駅前広場
+    const station = $B(out, 'train_station', 80, 22);
+    $B(out, 'business_hotel', -130, 22);   // NW
+    $B(out, 'ramen', -100, 130);           // SW
+    $B(out, 'convenience', 130, 130);      // SE
+    $B(out, 'apartment', -160, 60);
+    $B(out, 'office', -45, 22);
 
-  // ── C0: 駅前ロータリー — 小さな駅舎 + タクシー + バス乗り場 ──
-  // Stage 1 終端の踏切から駅北口へ。帰宅サラリーマンと駅員が主役。
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 ─ 前列ファサード (Y をずらす) ===
-      _B('ramen', -148, 42),                                    // Cell A 駅前ラーメン
-      _B('snack', -115, 38),
-      _B('train_station', -35, 52),                             // ★ Cell B 駅舎 (奥に構える)
-      _B('convenience', 55, 40),
-      _B('cafe', 107, 44),
-      _B('business_hotel', 135, 64.5),                            // ★ 背が高いため奥
-      _B('shop', 172, 40),
-      // === 上段 ─ 奥列 (小屋/物置/人力車置き場) ===
-      _B('shed', -170, 76),                                     // 駅裏の倉庫
-      _B('garage', -128, 80),
-      _B('greenhouse', -71, 78),                                // 花屋の温室
-      _B('shed', 30, 72),
-      _B('garage', 72, 74),
-      _B('shed', 110, 76),
-      _B('shed', 168, 80),
-      // === 下段 ─ 前列ファサード ===
-      _B('mahjong_parlor', -150, 132),                          // ★ 麻雀荘
-      _B('izakaya', -118, 138),
-      _B('bus_terminal_shelter', -55, 142),                     // Cell F バス乗り場 (長庇)
-      _B('bakery', 38, 130),
-      _B('karaoke', 70, 144),                                   // 少し奥
-      _B('capsule_hotel', 135, 146),                            // ★ カプセル (横長、少し奥)
-      _B('apartment', 175, 148),
-      // === 下段 ─ 奥列 (駐輪場/物置/タクシー溜まり) ===
-      _B('shed', -170, 172),
-      _B('garage', -128, 178),                                  // タクシー車庫
-      _B('shed', -104, 174),
-      _B('yatai', -22, 170),                                    // ★ 駅前の夜鳴き屋台
-      _B('shed', 16, 176),
-      _B('garage', 108, 178),
-      _B('shed', 156, 172),
-      _B('house', 195, 170),                                    // 駅前の古い家
-    ],
-    furniture: [
-      // ─── 軸: ネオン提灯帯 (facade y=22 上段) ───
-      _F('chouchin', -148, 22), _F('noren', -148, 28),
-      _F('chouchin', -115, 22), _F('noren', -115, 28),
-      _F('sign_board', -25, 22),                                // 駅名標
-      _F('a_frame_sign', -55, 22), _F('a_frame_sign', 55, 22),
-      _F('chouchin', 90, 22), _F('kerbside_vending_pair', 120, 25),
-      // ─── 駅前設備 ───
-      _F('newspaper_stand', -5, 75), _F('post_box', 8, 75),
-      _F('telephone_booth', -38, 72),
-      _F('taxi_rank_sign', 32, 75), _F('bus_stop', -55, 75),
-      _F('plaza_tile_circle', -25, 80),                         // 駅前広場の石畳
-      // ─── 軸: 電線・電柱 (全チャンク共通) ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 軸: 提灯帯 (facade y=118 下段) ───
-      _F('chouchin', -150, 118), _F('noren', -150, 124),
-      _F('chouchin', -118, 118), _F('noren', -118, 124),
-      _F('a_frame_sign', -55, 118), _F('chouchin', 72, 118), _F('noren', 72, 124),
-      _F('a_frame_sign', 38, 118), _F('sign_board', 118, 118),
-      // ─── ロータリー (下段中央) ───
-      _F('car', -28, 170), _F('car', 32, 170),                  // 停車タクシー
-      _F('bicycle_row', -90, 170), _F('bicycle_rack', 68, 172),
-      _F('dumpster', -150, 172), _F('manhole_cover', 0, 165),
-      // ─── 軸: puddle_reflection (夜街シグネチャ) ───
-      _F('puddle_reflection', -130, 72), _F('puddle_reflection', 60, 78),
-      _F('puddle_reflection', -50, 168), _F('puddle_reflection', 70, 170),
-      _F('puddle_reflection', 0, 100),
-      // ─── 街灯 (avenue 両側) ───
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-25, 55),                                              // 駅員
-      _H(-5, 78), _H(-38, 75),                                  // 駅前通行人
-      _H(-40, 170), _H(60, 170),                                // タクシー乗客
-      _H(-115, 55), _H(90, 55),                                 // 帰宅サラリーマン
-      _H(38, 152),                                              // 深夜コンビニ客
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -25, 65, 55, 40),                              // 駅舎前石畳
-      _G('tile', -55, 158, 42, 42),                             // バス乗り場
-      _G('tile', 35, 165, 38, 35),                              // タクシーレーン
-      _G('asphalt', 0, 15, 180, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // NE 駅前焦点取り巻き
+    const platform = $F(out, 'platform_edge', 80, 70);
+    const track1 = $F(out, 'railway_track', 80, 78);
+    const track2 = $F(out, 'railway_track', 80, 86);
+    const signal = $F(out, 'signal_tower', 80, 95);
+    const flagPole = $F(out, 'flag_pole', 30, 62);
+    const benchN1 = $F(out, 'bench', 20, 85);
+    const benchN2 = $F(out, 'bench', 65, 85);
+    const benchN3 = $F(out, 'bench', 120, 85);
+    const planter1 = $F(out, 'flower_planter_row', 80, 60);
+    const planter2 = $F(out, 'flower_planter_row', 80, 92);
+    const taxiSign = $F(out, 'taxi_rank_sign', 130, 72);
+    const busStop1 = $F(out, 'bus_stop', 30, 68);
+    const busStop2 = $F(out, 'bus_stop', 130, 68);
+    const newsStand = $F(out, 'newspaper_stand', 110, 88);  // NE livingTrace
 
-  // ── C1: サラリーマン動線 — 夜食と一杯の多彩な小店 ──
-  // 帰宅サラリーマンが夜食を取る帯。同系統の店が被らないよう 1 チャンク内で
-  // 全て異なる業種を並べる (ラーメン/牛丼/立ち飲み/スナック/麻雀/ブックカフェ等)。
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 ─ 前列ファサード (y=38-46、業種で Y を少しずらす) ===
-      _B('ramen', -156, 42),                                    // Cell A ラーメン
-      _B('snack', -128, 38),                                    // 前方 (小さく手前)
-      _B('bakery', -106, 44),                                   // 奥めに
-      _B('izakaya', -62, 40),                                   // Cell B 立ち飲み
-      _B('shop', -28, 46),                                      // 牛丼 (見立て)
-      _B('cafe', 19, 38),
-      _B('convenience', 40, 44),                                // Cell C 24h
-      _B('pharmacy', 72, 40),
-      _B('bookstore', 107, 42),                                 // Cell D
-      _B('karaoke', 142, 48),                                   // ★ カラオケ (奥めに、背が高い)
-      // === 上段 ─ 奥列 (y=65-85) 物置/室外機小屋/小さな店 ===
-      _B('shed', -170, 72),                                     // 路地裏の物置
-      _B('garage', -115, 78),                                   // 車庫
-      _B('shed', -76, 74),
-      _B('yatai', -42, 68),                                     // ★ 路地に置かれた屋台
-      _B('shed', 22, 76),
-      _B('garage', 72, 80),                                     // 奥の車庫
-      _B('shed', 125, 72),
-      _B('house', 172, 68),                                     // ★ 奥の古い家
-      // === 下段 ─ 前列ファサード (y=128-138) ===
-      _B('mahjong_parlor', -160, 132),                          // ★ Cell E 麻雀荘
-      _B('laundromat', -128, 138),
-      _B('florist', -105, 130),
-      _B('gas_station', -60, 136),                              // Cell F 深夜ガソスタ (少し奥)
-      _B('post_office', -22, 132),
-      _B('business_hotel', 30, 150),                            // ★ Cell G (背が高いため少し奥)
-      _B('clinic', 69, 128),                                    // Cell H
-      _B('restaurant', 108, 134),
-      _B('snack', 132, 130),                                    // ★ スナック 2 軒目
-      // === 下段 ─ 奥列 (y=160-180) ===
-      _B('shed', -175, 170),
-      _B('garage', -128, 178),                                  // 麻雀荘の裏
-      _B('shed', -104, 174),
-      _B('greenhouse', -48, 172),                               // ★ 深夜営業の八百屋風
-      _B('shed', -16, 168),
-      _B('yatai', 58, 170),                                     // ★ 駐車場脇の屋台
-      _B('shed', 118, 176),
-      _B('apartment', 170, 168),                                // Cell H 駅前アパート (背景)
-      _B('shed', 195, 172),
-    ],
-    furniture: [
-      // ─── 上段 facade (業種別に看板を変える) ───
-      _F('chouchin', -156, 22), _F('noren', -156, 28),           // ramen
-      _F('sign_board', -128, 22),                                // snack ピンク看板
-      _F('a_frame_sign', -102, 22),                              // bakery
-      _F('chouchin', -62, 22), _F('noren', -62, 28),             // izakaya
-      _F('a_frame_sign', -28, 22),                               // shop
-      _F('shop_awning', 5, 28),                                  // cafe
-      _F('sign_board', 40, 22),                                  // convenience
-      _F('a_frame_sign', 72, 22),                                // pharmacy (+ 十字)
-      _F('flag_pole', 72, 25),
-      _F('banner_pole', 105, 22),                                // bookstore
-      _F('sign_board', 140, 22),                                 // karaoke 大看板
-      _F('mailbox', 175, 22),                                    // house
-      // ─── 中間小物 ───
-      _F('kerbside_vending_pair', -85, 72),
-      _F('bicycle_row', -45, 72), _F('bicycle_rack', 55, 75),
-      _F('dumpster', 90, 75), _F('dumpster', 125, 75),
-      _F('milk_crate_stack', -130, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade (業種別) ───
-      _F('sign_board', -160, 118),                               // mahjong_parlor 緑看板
-      _F('a_frame_sign', -130, 118),                             // laundromat
-      _F('shop_awning', -105, 124),                              // florist
-      _F('sign_board', -60, 118),                                // gas_station
-      _F('flag_pole', -60, 115),
-      _F('post_box', -20, 122),                                  // post_office
-      _F('sign_board', -20, 118),
-      _F('banner_pole', 28, 118),                                // business_hotel
-      _F('a_frame_sign', 68, 118),                               // clinic
-      _F('chouchin', 102, 118), _F('noren', 102, 124),           // restaurant
-      _F('sign_board', 130, 118),                                // snack 2
-      _F('mailbox', 170, 118),                                   // apartment
-      // ─── 下段小物 ───
-      _F('bicycle_row', -100, 172), _F('bicycle_rack', 45, 172),
-      _F('dumpster', -45, 170), _F('dumpster', 85, 170),
-      _F('kerbside_vending_pair', -85, 170),
-      _F('traffic_cone', -58, 172), _F('traffic_cone', -48, 172), // ガソスタ前
-      _F('car', -60, 170),                                       // 給油中
-      _F('milk_crate_stack', 155, 172),
-      // ─── 軸: 水たまり ───
-      _F('puddle_reflection', -70, 72), _F('puddle_reflection', 40, 78),
-      _F('puddle_reflection', -110, 168), _F('puddle_reflection', 80, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-156, 55), _H(-62, 55),                                // ラーメン・居酒屋客
-      _H(5, 55), _H(72, 55),                                     // カフェ・ドラッグ客
-      _H(140, 55),                                               // カラオケ客
-      _H(-160, 152),                                             // 麻雀客
-      _H(-60, 152),                                              // 給油待ち
-      _H(102, 152),                                              // レストラン客
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -125, 58, 70, 42),                             // ラーメン通り前タイル
-      _G('tile', 22, 58, 80, 42),                               // 夜カフェ前タイル
-      _G('tile', -28, 158, 45, 42),                             // pachinko 前
-      _G('tile', 62, 158, 70, 42),
-      _G('asphalt', 0, 15, 200, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // NW business_hotel facade
+    $F(out, 'sign_board', -130, 8);
+    const nwMail = $F(out, 'mailbox', -150, 22);  // NW livingTrace
+    $F(out, 'flag_pole', -100, 62);
 
-  // ── C2: アーケード入口 — shotengai_arcade + 提灯ガーランド ──
-  // Act II 歓楽街への扉。提灯が避ける間もなく連続し、ネオンが近づく。
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 ─ 前列 (アーケード + 多様小店) ===
-      _B('shotengai_arcade', -118, 48),                         // ★ 大型アーケード (奥)
-      _B('bookstore', -30, 40),
-      _B('izakaya', 30, 38),
-      _B('ramen', 60, 42),
-      _B('pachinko', 113, 46),                                  // ★ Act II 予兆
-      _B('snack', 148, 40),
-      _B('shop', 175, 42),
-      // === 上段 ─ 奥列 (小屋/物置/花屋の温室など) ===
-      _B('shed', -170, 74),
-      _B('garage', -60, 78),
-      _B('florist', -25, 75),                                   // 花屋 (小さく)
-      _B('shed', 40, 82),
-      _B('greenhouse', 71, 76),
-      _B('shed', 135, 74),
-      _B('garage', 168, 80),
-      // === 下段 ─ 前列 ===
-      _B('mahjong_parlor', -160, 132),
-      _B('ramen', -128, 138),
-      _B('snack', -106, 130),
-      _B('bookstore', -62, 134),
-      _B('karaoke', -22, 144),                                  // ★ 奥に
-      _B('shotengai_arcade', 118, 140),                         // ★ 下段大型アーケード
-      _B('shop', 35, 130),
-      _B('cafe', 60, 136),
-      // === 下段 ─ 奥列 ===
-      _B('shed', -175, 170),
-      _B('garage', -140, 176),
-      _B('shed', -76, 172),
-      _B('yatai', -32, 168),                                    // ★ 屋台
-      _B('shed', 18, 176),
-      _B('garage', 48, 172),
-      _B('shed', 165, 178),
-    ],
-    furniture: [
-      // ─── ★★ Act I→II 遷移シグネチャ: 提灯ガーランド全幅連続 ★★ ───
-      // y=12 の高さに x=-170 から x=170 まで点々と提灯を 12 個並べる
-      _F('chouchin', -170, 12), _F('chouchin', -140, 10), _F('chouchin', -110, 12),
-      _F('chouchin', -80, 10), _F('chouchin', -50, 12), _F('chouchin', -20, 10),
-      _F('chouchin', 10, 12), _F('chouchin', 40, 10), _F('chouchin', 70, 12),
-      _F('chouchin', 100, 10), _F('chouchin', 130, 12), _F('chouchin', 160, 10),
-      // ─── 上段 facade ───
-      _F('shop_awning', -110, 30),                              // アーケード庇
-      _F('banner_pole', -140, 22), _F('banner_pole', -80, 22),  // 商店街幟
-      _F('noren', -30, 28), _F('a_frame_sign', 0, 22),
-      _F('noren', 30, 28), _F('noren', 60, 28),
-      _F('sign_board', 108, 22),                                // pachinko 看板
-      _F('chouchin', 148, 28), _F('noren', 148, 32),
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', -50, 72), _F('kerbside_vending_pair', 135, 72),
-      _F('bicycle_row', 0, 72), _F('dumpster', 70, 75),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade ───
-      _F('shop_awning', 105, 128),
-      _F('banner_pole', 75, 118), _F('banner_pole', 140, 118),
-      _F('chouchin', -160, 118), _F('noren', -160, 124),
-      _F('chouchin', -128, 118), _F('chouchin', -95, 118), _F('noren', -95, 124),
-      _F('a_frame_sign', -62, 118),
-      _F('sign_board', -15, 118),                                // karaoke 看板
-      _F('a_frame_sign', 35, 118), _F('chouchin', 60, 118), _F('noren', 60, 124),
-      // ─── 下段小物 ───
-      _F('bicycle_row', 145, 172), _F('bicycle_rack', -115, 172),
-      _F('dumpster', -35, 170), _F('dumpster', 45, 172),
-      _F('milk_crate_stack', -160, 170),
-      // ─── 軸: puddle + manhole ───
-      _F('puddle_reflection', -40, 75), _F('puddle_reflection', 120, 78),
-      _F('puddle_reflection', -80, 170), _F('puddle_reflection', 100, 170),
-      _F('manhole_cover', 0, 165),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-110, 62),                                              // アーケード通行客
-      _H(0, 55), _H(60, 55),                                     // カフェ・ラーメン客
-      _H(108, 55),                                               // pachinko 開店待ち
-      _H(-95, 152), _H(-15, 152),                                // 横丁客 + カラオケ客
-      _H(105, 158),                                              // アーケード出口
-      _H(35, 152),
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -110, 65, 120, 45),                             // アーケード上段床
-      _G('tile', 105, 162, 130, 40),                             // アーケード下段床
-      _G('tile', -15, 158, 40, 42),                              // karaoke 前
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // SW ramen
+    $F(out, 'chouchin', -120, 118);
+    $F(out, 'chouchin', -80, 118);
+    $F(out, 'noren', -100, 122);
+    $F(out, 'a_frame_sign', -75, 148);
+    const swBike = $F(out, 'bicycle', -75, 158);  // SW livingTrace
 
-  // ═══ Act II: 歓楽街の極み (C3-C5) ════════════════════════════════
+    // SE convenience
+    $F(out, 'shop_awning', 130, 122);
+    $F(out, 'vending', 100, 158);
+    $F(out, 'bicycle_rack', 160, 158);
+    const seGarbage = $F(out, 'garbage', 160, 188);  // SE livingTrace
 
-  // ── C3: 高層雑居ビル街 — カラオケ 1 棟 + 多様な大型店 ──
-  // 歓楽街の入り口。高層雑居ビル・ホテル・ラウンジが天を衝くが、カラオケは
-  // 1 棟に絞り、club / love_hotel / business_hotel などで多様性を出す。
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 ─ 前列 (小店で facade を揺らす) ===
-      _B('karaoke', -150, 50),                                  // ★ 唯一のカラオケ (奥に)
-      _B('snack', -115, 38),                                    // 前方
-      _B('club', -58, 46),                                      // ★ クラブ (少し奥)
-      _B('izakaya', -22, 40),
-      _B('bookstore', 19, 44),
-      _B('cafe', 73, 38),
-      _B('bank', 128, 46),
-      _B('shop', 165, 42),
-      // === 上段 ─ 奥列 (高層ビル + 物置) ===
-      _B('shed', -170, 70),
-      _B('garage', -72, 74),
-      _B('shed', 25, 68),
-      _B('shed', 105, 76),
-      _B('greenhouse', 138, 72),
-      // === 下段 ─ 前列 ===
-      _B('snack', -115, 132),
-      _B('ramen', -74, 138),
-      _B('mahjong_parlor', 20, 134),
-      _B('pharmacy', 108, 130),
-      _B('laundromat', 175, 134),
-      // === 下段 ─ 奥列 (高層/大型はここ) ===
-      _B('business_hotel', -150, 160),                          // ★ ビジネスホテル (奥)
-      _B('office', -22, 158),
-      _B('movie_theater', 62, 162),                             // ★ ミニシアター
-      _B('capsule_hotel', 145, 165),                            // ★ カプセルホテル
-      _B('shed', -175, 175),
-      _B('garage', -48, 172),
-      _B('yatai', 50, 187),                                     // ★ 屋台
-      _B('shed', 118, 178),
-    ],
-    furniture: [
-      // ─── ★★ シグネチャ: 巨大カラオケ看板の連続 ★★ ───
-      _F('sign_board', -150, 22),                               // Cell A karaoke 大看板
-      _F('sign_board', -55, 22),                                // Cell B karaoke 看板
-      _F('sign_board', 68, 118),                                // Cell G karaoke 看板
-      _F('sign_board', -150, 118),                              // Cell E karaoke 看板
-      _F('banner_pole', -130, 22), _F('banner_pole', 88, 22),
-      // ─── ネオン提灯帯 (上段) ───
-      _F('chouchin', -20, 22), _F('noren', -20, 28),
-      _F('chouchin', 10, 22), _F('chouchin', 95, 22), _F('noren', 95, 28),
-      _F('chouchin', 122, 22), _F('noren', 122, 28),
-      _F('a_frame_sign', 55, 22),                               // タワー 1F 案内
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', -80, 72),
-      _F('bicycle_rack', 35, 75), _F('bicycle_rack', 138, 75),
-      _F('dumpster', -180, 72), _F('dumpster', 180, 72),
-      _F('street_mirror', -95, 62),                             // 歓楽街の街角ミラー
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 提灯帯 (下段) ───
-      _F('chouchin', -110, 118), _F('noren', -110, 124),
-      _F('chouchin', -80, 118), _F('noren', -80, 124),
-      _F('chouchin', 32, 118), _F('noren', 32, 124),
-      _F('sign_board', -18, 118), _F('sign_board', 128, 118),
-      _F('chouchin', 172, 118), _F('noren', 172, 124),
-      // ─── 下段小物 (夜の路駐) ───
-      _F('bicycle_row', -50, 172), _F('bicycle_row', 100, 172),
-      _F('dumpster', -180, 170), _F('dumpster', 180, 170),
-      _F('car', 10, 172),                                       // 路駐タクシー
-      _F('kerbside_vending_pair', 60, 172),
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -85, 75), _F('puddle_reflection', 85, 75),
-      _F('puddle_reflection', -40, 170), _F('puddle_reflection', 50, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-150, 72), _H(-55, 72),                                // カラオケ客
-      _H(68, 162), _H(-150, 162),
-      _H(55, 88),                                               // タワー雑居帰り
-      _H(-20, 55), _H(95, 55),                                  // 居酒屋客
-      _H(-18, 172),                                             // オフィス残業帰り
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -100, 65, 140, 45),                            // カラオケ街タイル
-      _G('tile', 60, 75, 60, 30),                               // タワー前
-      _G('tile', -110, 158, 100, 42),                           // カラオケ下段
-      _G('tile', 68, 162, 50, 38),
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 128.5, 'avenue'), _VR(0, 187.5, 200, 'avenue'), _VR(90, 0, 200)],
-  } },
+    // 連続軸: chouchin 帯 (上空 y=12)
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', -90, 15);
+    $F(out, 'chouchin', 87, 15); $F(out, 'chouchin', 155, 15);
 
-  // ── C4: ゲーセンとパチンコのメイン通り — 交番 + 多業種混在 ──
-  // Stage 2 の最盛期。パチンコとゲーセンは各 1 軒に絞り、周囲を多業種で彩る。
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 ─ 前列 ===
-      _B('pachinko', -148, 46),                                 // ★ 唯一のパチンコ
-      _B('game_center', -112, 40),                              // ★ ゲーセン
-      _B('karaoke', -65, 50),                                   // 少し奥
-      _B('police_station', -25, 52),                            // ★ 交番 (奥)
-      _B('club', 38, 48),                                       // ★ クラブ
-      _B('bookstore', 73, 40),
-      _B('izakaya', 158, 38),
-      _B('ramen', 180, 42),
-      // === 上段 ─ 奥列 ===
-      _B('movie_theater', 117, 124),                             // 映画館 (奥)
-      _B('shed', -175, 72),
-      _B('garage', -130, 78),
-      _B('shed', -76, 74),
-      _B('greenhouse', -35, 78),
-      _B('shed', 18, 72),
-      _B('yatai', 60, 72),                                      // ★ 屋台
-      _B('shed', 138, 78),
-      // === 下段 ─ 前列 ===
-      _B('bank', -150, 148),                                    // 少し奥
-      _B('mahjong_parlor', -115, 132),
-      _B('cafe', -35, 138),
-      _B('pharmacy', 42, 130),
-      _B('snack', 75, 134),
-      _B('bakery', 155, 132),
-      // === 下段 ─ 奥列 ===
-      _B('love_hotel', -66, 160),                               // ★ 奥
-      _B('business_hotel', 112, 168),                           // ★ 奥 (縦長)
-      _B('apartment', 180, 158),
-      _B('shed', -178, 172),
-      _B('garage', -30, 175),
-      _B('shed', 45, 178),
-      _B('shed', 145, 172),
-    ],
-    furniture: [
-      // ─── ★★ シグネチャ: パチンコ大看板 5 連 ★★ ───
-      _F('sign_board', -145, 22), _F('sign_board', -55, 22),
-      _F('sign_board', 55, 22),
-      _F('sign_board', -148, 118), _F('sign_board', -15, 118),
-      // ─── 交番の看板 + 赤色灯 ───
-      _F('a_frame_sign', 0, 22),                                // KOBAN 案内板
-      _F('flag_pole', -10, 24), _F('flag_pole', 10, 24),
-      _F('traffic_cone', -15, 75), _F('traffic_cone', 15, 75),  // 交番前のコーン
-      // ─── 上段提灯帯 + 看板 ───
-      _F('banner_pole', -120, 22), _F('banner_pole', 80, 22),
-      _F('chouchin', -100, 22), _F('noren', -100, 28),
-      _F('chouchin', 105, 22), _F('noren', 105, 28),
-      _F('chouchin', 155, 22), _F('noren', 155, 28),
-      _F('chouchin', 178, 22),
-      // ─── 上段小物 (パチンコ出玉) ───
-      _F('bicycle_row', -145, 72), _F('bicycle_row', -55, 72),
-      _F('bicycle_row', 55, 72), _F('dumpster', -175, 72),
-      _F('kerbside_vending_pair', -30, 72), _F('kerbside_vending_pair', 78, 72),
-      _F('milk_crate_stack', 130, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade ───
-      _F('sign_board', -108, 118),                              // ゲーセン看板
-      _F('sign_board', -55, 118),                               // 銀行看板
-      _F('chouchin', 30, 118), _F('noren', 30, 124),
-      _F('chouchin', 55, 118), _F('noren', 55, 124),
-      _F('sign_board', 105, 118),                               // ゲーセン看板
-      _F('chouchin', 155, 118), _F('noren', 155, 124),
-      _F('chouchin', 178, 118),
-      // ─── 下段小物 ───
-      _F('bicycle_row', -148, 172), _F('bicycle_row', -15, 172),
-      _F('bicycle_row', 105, 172),
-      _F('dumpster', -175, 170), _F('dumpster', 175, 170),
-      _F('kerbside_vending_pair', -85, 170),
-      _F('atm', -55, 168),                                       // 銀行前 ATM
-      _F('traffic_cone', 78, 172), _F('traffic_cone', 85, 172),
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -125, 72), _F('puddle_reflection', 25, 78),
-      _F('puddle_reflection', 125, 72),
-      _F('puddle_reflection', -130, 170), _F('puddle_reflection', 85, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-145, 72), _H(-55, 72), _H(55, 72),                    // パチンコ行列 3 箇所
-      _H(-148, 172), _H(-15, 172), _H(105, 172),                // 下段パチンコ
-      _H(0, 72),                                                 // 交番前の警官
-      _H(-100, 55), _H(155, 55),                                 // ゲーセン + 居酒屋客
-      _H(-55, 170),                                              // ATM 利用者
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -145, 65, 80, 45),                             // パチンコ街タイル
-      _G('tile', 55, 65, 70, 45),
-      _G('tile', 0, 72, 40, 38),                                // 交番前
-      _G('tile', -145, 158, 80, 42),
-      _G('tile', -15, 162, 40, 38),
-      _G('tile', 105, 162, 60, 38),
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // 街灯ネオン + puddle (連続軸)
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 90, 108);
+    $F(out, 'puddle_reflection', -45, 95);
+    $F(out, 'puddle_reflection', 45, 105);
+    $F(out, 'puddle_reflection', -100, 145);
 
-  // ── C5: 雑居ビル + 飲み屋横丁 — 3 つの区画で街を構成 ──
-  // 街区分け:
-  //   上段 西 (x=-180〜-97): 老舗飲み屋横丁 (snack/麻雀/居酒屋が密集)
-  //   上段 中 (x=-83〜+83): メインのビジネスホテル区画 (奥に高層、表に 1F 店)
-  //   上段 東 (x=+97〜+180): 銀行 + カプセルホテル区画
-  //   下段 西: ラブホテル + クラブの派手区画
-  //   下段 中: パチンコ + カラオケの娯楽区画
-  //   下段 東: ミニシアター + 1F 店の映画街区
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 西 (x=-180〜-97): 老舗飲み屋横丁 ===
-      _B('snack', -160, 38),                                    // ピンクの小さなママの店
-      _B('mahjong_parlor', -130, 44),                           // 緑看板の老舗雀荘
-      _B('izakaya', -108, 40),                                  // 隣の老舗居酒屋
-      _B('shed', -172, 76),                                     // 横丁の店裏 (3 軒共用)
-      _B('garage', -130, 80),                                   // 古い車庫
+    // bollard 横断帯 (鏡像対称避け、§6 準拠)
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
 
-      // === 上段 中 (x=-83〜+83): ビジネスホテル区画 ===
-      _B('business_hotel', -22, 64.5),                            // ★ メインのホテル (奥、高層)
-      _B('cafe', -60, 40),                                      // ホテル隣のカフェ (1F)
-      _B('bookstore', 30, 44),                                  // ホテル隣の書店 (1F)
-      _B('ramen', 60, 38),                                      // 反対側のラーメン (1F)
-      _B('shed', -45, 75),                                      // ホテル裏の物置
-      _B('garage', 50, 78),                                     // ホテル裏の駐車場
+    // 電柱+電線 (4 隅)
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
 
-      // === 上段 東 (x=+97〜+180): 銀行 + カプセルホテル区画 ===
-      _B('bank', 112, 46),                                      // 落ち着いた銀行
-      _B('capsule_hotel', 155, 78),                             // ★ 横長カプセル (奥)
-      _B('shop', 178, 40),                                      // 角の小売店
-      _B('shed', 125, 76),                                      // 銀行裏
+    // SW/SE で猫
+    $F(out, 'cat', -45, 178);
 
-      // === 下段 西 (x=-180〜-97): ラブホテル + クラブ派手区画 ===
-      _B('love_hotel', -150, 168),                              // ★ 紫派手 (奥)
-      _B('club', -112, 170),                                    // ★ 黒金クラブ (奥)
-      _B('pharmacy', -110, 132),                                // 24h ドラッグ (表)
-      _B('shed', -178, 175),                                    // ラブホ裏
-      _B('garage', -160, 139),                                  // ラブホ駐車場
+    out.humans = [
+      _H(80, 65), _H(80, 80),                    // 駅構内
+      _H(35, 85), _H(120, 85), _H(70, 80),       // 駅前
+      _H(-30, 100), _H(40, 100), _H(-90, 100),   // avenue 通勤客
+      _H(-100, 145), _H(-75, 152),               // ramen
+      _H(130, 152), _H(115, 158),                // convenience
+    ];
 
-      // === 下段 中 (x=-83〜+83): パチンコ + カラオケ娯楽区画 ===
-      _B('pachinko', -50, 142),                                 // ★ メインのパチンコ
-      _B('karaoke', 25, 144),                                   // ★ 隣のカラオケ
-      _B('restaurant', -20, 132),                               // 娯楽帰りのレストラン
-      _B('shed', 60, 175),                                      // 娯楽店裏
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),                  // 基調
+      _G('concrete', 80, 80, 180, 120),                 // NE 駅舎前
+      _G('tile', 80, 70, 80, 20),                       // ホーム
+      _G('stone_pavement', -65, 100, 12, 200),          // 中央生活路地 (Stage 1 継続)
+      _G('asphalt', -100, 152, 60, 30),                 // SW ramen 前
+      _G('tile', 130, 152, 50, 30),                     // SE convenience 前
+    ];
 
-      // === 下段 東 (x=+97〜+180): 映画街区 ===
-      _B('movie_theater', 130, 168),                            // ★ 奥にシアター
-      _B('bakery', 105, 132),                                   // 映画館前のパン屋
-      _B('laundromat', 165, 132),                               // ランドリー
-      _B('shed', 178, 175),                                     // シアター裏
-    ],
-    furniture: [
-      // ─── 上段 facade (業種ごとに違う看板) ───
-      _F('sign_board', -150, 22),                               // office
-      _F('banner_pole', -112, 22),                              // apartment_tall
-      _F('sign_board', -75, 22),                                // snack ピンク
-      _F('sign_board', -48, 22),                                // mahjong_parlor 緑
-      _F('chouchin', -20, 22), _F('noren', -20, 28),            // izakaya (唯一)
-      _F('sign_board', 15, 22),                                 // club (金)
-      _F('chouchin', 55, 22), _F('noren', 55, 28),              // ramen
-      _F('sign_board', 98, 22),                                 // bank
-      _F('banner_pole', 150, 22),                               // business_hotel
-      _F('shop_awning', 178, 28),                               // cafe
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', -90, 72),
-      _F('bicycle_row', 30, 75), _F('bicycle_rack', 130, 75),
-      _F('dumpster', -180, 72), _F('dumpster', 125, 72),
-      _F('milk_crate_stack', -35, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade (業種ごと) ───
-      _F('sign_board', -148, 118),                              // love_hotel 紫
-      _F('a_frame_sign', -110, 118),                            // pharmacy
-      _F('flag_pole', -115, 115),
-      _F('sign_board', -78, 118),                               // pachinko 派手
-      _F('chouchin', -40, 118), _F('noren', -40, 124),          // restaurant
-      _F('banner_pole', -12, 118),                              // bookstore
-      _F('sign_board', 20, 118),                                // karaoke
-      _F('sign_board', 62, 118),                                // movie_theater
-      _F('a_frame_sign', 102, 118),                             // bakery
-      _F('banner_pole', 138, 118),                              // capsule_hotel
-      _F('a_frame_sign', 175, 118),                             // laundromat
-      // ─── 下段小物 ───
-      _F('bicycle_row', -78, 172), _F('bicycle_row', 62, 172),
-      _F('bicycle_rack', 102, 172),
-      _F('dumpster', -180, 170), _F('dumpster', 180, 170),
-      _F('kerbside_vending_pair', -40, 170),
-      _F('car', -148, 170),                                     // ラブホ前のタクシー
-      _F('milk_crate_stack', 20, 172),
-      // ─── 水たまり ───
-      _F('puddle_reflection', -50, 75), _F('puddle_reflection', 60, 75),
-      _F('puddle_reflection', 135, 75),
-      _F('puddle_reflection', -120, 170), _F('puddle_reflection', 35, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-75, 55),                                              // スナック客
-      _H(-20, 55), _H(55, 55),                                  // 居酒屋 + ラーメン客
-      _H(15, 55),                                               // クラブ入場
-      _H(-150, 82),                                             // オフィス残業帰り
-      _H(-148, 172),                                            // ラブホ前
-      _H(-78, 152),                                             // パチンコ帰り
-      _H(20, 152), _H(62, 152),                                 // カラオケ + 映画客
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -55, 60, 80, 42),                              // 立ち飲み列タイル
-      _G('tile', 92, 72, 40, 32),                               // 銀行前
-      _G('tile', -88, 158, 180, 42),                            // 横丁全幅タイル
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    _CLUSTER(out, {
+      id: 's2.ch0.NE.station', role: 'hero', cell: 'NE',
+      focal: station,
+      companions: [platform, track1, track2, signal, flagPole],
+      boundary: [planter1, planter2, benchN1, benchN3],
+      access: [taxiSign, busStop1, busStop2],
+      livingTrace: newsStand,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch0.NW.hotel', role: 'ambient', cell: 'NW',
+      focal: { kind: 'b', i: 1 },  // business_hotel
+      companions: [{ kind: 'f', i: 16 }],  // sign_board NW
+      livingTrace: nwMail,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch0.SW.ramen', role: 'ambient', cell: 'SW',
+      focal: { kind: 'b', i: 2 },  // ramen
+      companions: [
+        { kind: 'f', i: 19 },  // chouchin SW1
+        { kind: 'f', i: 20 },  // chouchin SW2
+        { kind: 'f', i: 21 },  // noren
+      ],
+      livingTrace: swBike,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch0.SE.convenience', role: 'ambient', cell: 'SE',
+      focal: { kind: 'b', i: 3 },  // convenience
+      companions: [
+        { kind: 'f', i: 24 },  // shop_awning
+        { kind: 'f', i: 25 },  // vending
+        { kind: 'f', i: 26 },  // bicycle_rack
+      ],
+      livingTrace: seGarbage,
+    });
 
-  // ═══ Act III: 深夜の路地 (C6-C8) ══════════════════════════════════
+    return out;
+  })() },
 
-  // ── C6: ホテルとキャバレーの街 — 6 区画でホテル街を構成 ──
-  // 街区分け:
-  //   上段 西: ラブホテル区画 (love_hotel + snack 2 軒)
-  //   上段 中: カプセルホテル + 1F 店区画
-  //   上段 東: クラブ街区画
-  //   下段 西: ビジネスホテル + 1F コンビニ区画
-  //   下段 中: パチンコ + 麻雀の娯楽区画
-  //   下段 東: ミニシアター街区
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 西: ラブホテル区画 ===
-      _B('love_hotel', -150, 70),                               // ★ メインのラブホ (奥、派手)
-      _B('snack', -108, 38),                                    // 客引きスナック
-      _B('snack', -180, 38),                                    // ★ 端のスナック (色違い隣接 OK)
-      _B('garage', -123, 78),                                   // ラブホ駐車場
+  // ── S2-Ch1: 終電後の食事街 (SW hero: ramen+izakaya+karaoke 3 連) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // SW hero: 3 連飲食店
+    const ramen = $B(out, 'ramen', -145, 128);
+    const izakaya = $B(out, 'izakaya', -95, 128);
+    const karaoke = $B(out, 'karaoke', -35, 128);
+    // ambient
+    $B(out, 'business_hotel', -130, 22);  // NW
+    $B(out, 'convenience', 110, 22);      // NE
+    $B(out, 'townhouse', 80, 130);        // SE
+    $B(out, 'townhouse', 140, 130);
+    $B(out, 'apartment', -50, 22);
+    $B(out, 'shop', 165, 22);
 
-      // === 上段 中: カプセルホテル + 1F 店区画 ===
-      _B('capsule_hotel', -30, 78),                             // ★ 横長カプセル (奥)
-      _B('cafe', -60, 40),                                      // 1F カフェ
-      _B('bookstore', 30, 44),                                  // 1F 書店
-      _B('bakery', 60, 40),                                     // 1F パン屋
-      _B('shed', 50, 75),                                       // ホテル裏
+    // SW 焦点取り巻き (各店 chouchin + noren + a_frame_sign)
+    const ramenChouchinL = $F(out, 'chouchin', -160, 118);
+    const ramenChouchinR = $F(out, 'chouchin', -130, 118);
+    $F(out, 'noren', -145, 125);
+    $F(out, 'a_frame_sign', -145, 148);
+    const izakayaChouchinL = $F(out, 'chouchin', -110, 118);
+    const izakayaChouchinR = $F(out, 'chouchin', -80, 118);
+    $F(out, 'noren', -95, 125);
+    $F(out, 'a_frame_sign', -95, 148);
+    $F(out, 'sign_board', -35, 110);
+    $F(out, 'a_frame_sign', -35, 148);
+    $F(out, 'chouchin', -50, 118); $F(out, 'chouchin', -20, 118);
+    // 焦点囲み
+    const sw_b1 = $F(out, 'bollard', -160, 110);
+    const sw_b2 = $F(out, 'bollard', -10, 110);
+    const sw_p1 = $F(out, 'flower_planter_row', -120, 110);
+    const sw_p2 = $F(out, 'flower_planter_row', -65, 110);
+    // access (動線)
+    const sw_lamp1 = $F(out, 'street_lamp', -90, 130);
+    const sw_lamp2 = $F(out, 'street_lamp', -10, 130);
+    const sw_pud1 = $F(out, 'puddle_reflection', -130, 145);
+    const sw_pud2 = $F(out, 'puddle_reflection', -60, 148);
+    const sw_pud3 = $F(out, 'puddle_reflection', -20, 145);
+    const sw_garbage = $F(out, 'garbage', -158, 162);  // SW livingTrace
 
-      // === 上段 東: クラブ街区画 ===
-      _B('club', 145, 70),                                      // ★ 黒金クラブ (奥)
-      _B('izakaya', 108, 40),                                   // クラブ隣の老舗居酒屋
-      _B('mahjong_parlor', 178, 40),                            // 雀荘
-      _B('shed', 124, 78),                                      // クラブ裏
-      _B('garage', 175, 78),                                    // クラブ裏
+    // NW business_hotel
+    $F(out, 'sign_board', -130, 8);
+    const nwMail = $F(out, 'mailbox', -150, 22);
 
-      // === 下段 西: ビジネスホテル + 1F コンビニ区画 ===
-      _B('business_hotel', -150, 168),                          // ★ 高層 (奥)
-      _B('convenience', -110, 132),                             // 1F コンビニ
-      _B('ramen', -180, 132),                                   // 端のラーメン
-      _B('shed', -130, 178),                                    // ホテル裏
-      _B('garage', -72, 175),                                   // 駐車場
+    // NE convenience
+    $F(out, 'shop_awning', 110, 30);
+    $F(out, 'vending', 80, 56); $F(out, 'vending', 140, 56);
+    const neBike = $F(out, 'bicycle_rack', 110, 60);
+    $F(out, 'a_frame_sign', 145, 28);
 
-      // === 下段 中: 娯楽区画 (パチンコ + 麻雀) ===
-      _B('pachinko', -28, 142),                                 // ★ メイン
-      _B('game_center', 24, 138),                               // 隣のゲーセン
-      _B('shop', 50, 132),                                      // 駐車場前の小店
-      _B('shed', 35, 175),                                      // 娯楽店裏
+    // SE townhouse
+    $F(out, 'mailbox', 75, 122); $F(out, 'mailbox', 138, 122);
+    $F(out, 'ac_unit', 80, 158);
+    const seCat = $F(out, 'cat', 105, 168);
 
-      // === 下段 東: ミニシアター街区 ===
-      _B('movie_theater', 132, 168),                            // ★ 奥にシアター
-      _B('pharmacy', 108, 132),                                 // シアター前の 24h ドラッグ
-      _B('florist', 165, 132),                                  // 花屋
-      _B('shed', 175, 178),                                     // シアター裏
-    ],
-    furniture: [
-      // ─── ★★ シグネチャ: 提灯密集 (全幅連続) ★★ ───
-      // 上段 facade を提灯で覆い尽くす
-      _F('chouchin', -162, 22), _F('chouchin', -138, 22),
-      _F('chouchin', -115, 22), _F('chouchin', -92, 22),
-      _F('chouchin', -65, 22), _F('chouchin', -40, 22),
-      _F('chouchin', -15, 22), _F('chouchin', 12, 22),
-      _F('chouchin', 40, 22), _F('chouchin', 65, 22),
-      _F('chouchin', 92, 22), _F('chouchin', 118, 22),
-      _F('chouchin', 145, 22), _F('chouchin', 172, 22),
-      // 下段 facade も同様に提灯列
-      _F('chouchin', -168, 118), _F('chouchin', -142, 118),
-      _F('chouchin', -115, 118), _F('chouchin', -90, 118),
-      _F('chouchin', -62, 118), _F('chouchin', -38, 118),
-      _F('chouchin', -12, 118), _F('chouchin', 15, 118),
-      _F('chouchin', 42, 118), _F('chouchin', 68, 118),
-      _F('chouchin', 95, 118), _F('chouchin', 120, 118),
-      _F('chouchin', 148, 118), _F('chouchin', 175, 118),
-      // ─── のれん (中央列に絞る) ───
-      _F('noren', -115, 28), _F('noren', -40, 28),
-      _F('noren', 40, 28), _F('noren', 118, 28),
-      _F('noren', -115, 124), _F('noren', -38, 124),
-      _F('noren', 42, 124), _F('noren', 120, 124),
-      // ─── 上段小物 ───
-      _F('milk_crate_stack', -140, 72), _F('milk_crate_stack', 70, 72),
-      _F('bicycle_row', -40, 72), _F('bicycle_row', 80, 72),
-      _F('dumpster', -180, 72), _F('dumpster', 180, 72),
-      _F('a_frame_sign', 0, 32), _F('a_frame_sign', -95, 32),
-      _F('a_frame_sign', 95, 32),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段小物 ───
-      _F('milk_crate_stack', -90, 172), _F('milk_crate_stack', 120, 172),
-      _F('bicycle_row', -150, 172), _F('bicycle_row', 50, 172),
-      _F('dumpster', -180, 172), _F('dumpster', 180, 172),
-      _F('kerbside_vending_pair', -10, 172), _F('kerbside_vending_pair', 95, 172),
-      _F('cat', 65, 195),                                       // ★ 路地の野良猫
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -70, 75), _F('puddle_reflection', 35, 75),
-      _F('puddle_reflection', 125, 75),
-      _F('puddle_reflection', -100, 172), _F('puddle_reflection', 80, 172),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-115, 55), _H(-40, 55), _H(65, 55),                    // 上段スナック客
-      _H(-90, 152), _H(15, 152), _H(95, 152),                   // 下段スナック客
-      _H(-140, 172),                                            // よろめく酔客
-      _H(120, 55),                                              // 呼び込み
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -60, 60, 280, 42),                             // スナック街上段タイル
-      _G('tile', -60, 158, 280, 42),                            // スナック街下段タイル
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // 連続軸: 上空 chouchin 帯 (avenue 沿い)
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', -90, 15);
+    $F(out, 'chouchin', 87, 15); $F(out, 'chouchin', 157, 15);
+    // 街灯
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 90, 108);
+    // bollard 横断帯
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
 
-  // ── C7: 屋台横丁 — 屋台 4-5 台が中央に集約された夜店通り ──
-  // 街区分け: 屋台クラスタを中央 (上段中心) に集約し、その周りを夜店で囲む。
-  // 背景にはラブホ・ビジネスホテルが奥に控える「夜の終わり」感。
-  //   上段 西: 横丁入口 (ramen + snack + 屋台 1)
-  //   上段 中: ★ 屋台横丁の核 (yatai 3 台密集 + 立ち飲み)
-  //   上段 東: 横丁出口 (bookstore + 居酒屋 + バー)
-  //   下段 西: 娯楽区画 (karaoke + game_center)
-  //   下段 中: 大型ホテル区画 (love_hotel + business_hotel が奥)
-  //   下段 東: ガソリンスタンド + 帰路区画
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 西: 横丁入口 ===
-      _B('ramen', -160, 40),                                    // 横丁角のラーメン
-      _B('yatai', -130, 32),                                    // ★ 入口の屋台 (手前)
-      _B('snack', -105, 44),                                    // ピンクスナック
-      _B('shed', -175, 76),                                     // 入口裏
+    out.humans = [
+      _H(-145, 145), _H(-95, 145), _H(-35, 145),  // 各店客
+      _H(-130, 158), _H(-65, 158), _H(-15, 158),
+      _H(-30, 100), _H(40, 100), _H(-90, 100),    // avenue 通勤
+      _H(110, 56),                                  // NE convenience
+      _H(80, 152),                                  // SE townhouse
+    ];
 
-      // === 上段 中: ★ 屋台横丁の核 (yatai 3 台密集) ===
-      _B('yatai', -55, 30),                                     // ★ 1 台目 (手前)
-      _B('yatai', -25, 30),                                     // ★ 2 台目 (隣接)
-      _B('izakaya', 35, 42),                                    // 屋台奥の立ち飲み
-      _B('cafe', 65, 38),                                       // 横の夜カフェ
-      _B('shed', -25, 76),                                      // 屋台共用倉庫
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('concrete', -90, 145, 160, 40),       // SW 3 連店前
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('tile', 110, 56, 50, 40),              // NE convenience
+    ];
 
-      // === 上段 東: 横丁出口 (静かな店) ===
-      _B('mahjong_parlor', 108, 44),                            // 雀荘
-      _B('bookstore', 138, 40),                                 // ブックバー
-      _B('pharmacy', 175, 38),                                  // 24h ドラッグ
-      _B('garage', 130, 78),                                    // 出口裏
+    _CLUSTER(out, {
+      id: 's2.ch1.SW.dining_trio', role: 'hero', cell: 'SW',
+      focal: izakaya,  // 中央
+      companions: [ramen, karaoke, ramenChouchinL, izakayaChouchinR],
+      boundary: [sw_b1, sw_b2, sw_p1, sw_p2],
+      access: [sw_lamp1, sw_lamp2, sw_pud1, sw_pud2],
+      livingTrace: sw_garbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch1.NW.hotel', role: 'ambient', cell: 'NW',
+      focal: { kind: 'b', i: 3 },  // business_hotel
+      companions: [{ kind: 'f', i: 26 }],  // sign_board NW
+      livingTrace: nwMail,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch1.NE.convenience', role: 'ambient', cell: 'NE',
+      focal: { kind: 'b', i: 4 },  // convenience
+      companions: [{ kind: 'f', i: 28 }, { kind: 'f', i: 29 }],
+      livingTrace: neBike,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch1.SE.townhouse', role: 'ambient', cell: 'SE',
+      focal: { kind: 'b', i: 5 },  // townhouse
+      companions: [{ kind: 'b', i: 6 }, { kind: 'f', i: 33 }],
+      livingTrace: seCat,
+    });
 
-      // === 下段 西: 娯楽区画 ===
-      _B('karaoke', -160, 144),                                 // ★ カラオケ
-      _B('game_center', -118, 138),                             // ゲーセン
-      _B('shed', -175, 178),                                    // 娯楽店裏
-      _B('garage', -135, 175),                                  // 駐車場
+    return out;
+  })() },
 
-      // === 下段 中: ★ 大型ホテル区画 (奥に並ぶ) ===
-      _B('love_hotel', -55, 168),                               // ★ ラブホ (奥)
-      _B('business_hotel', 22, 172),                             // ★ ビジネスホテル (奥)
-      _B('club', 50, 170),                                      // ★ クラブ (奥)
-      _B('restaurant', -25, 132),                               // 1F レストラン (表)
-      _B('snack', 30, 132),                                     // 1F スナック (表、別区画)
+  // ── S2-Ch2: 商店街アーケード入口 (NW+NE merged hero) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR, _TOP_HR],  // Act 境界予告
+      verticalRoads: [_AVE],
+    };
+    // merged hero: shotengai_arcade × 2 (avenue 両端でゲート)
+    const arcadeW = $B(out, 'shotengai_arcade', -118, 22);
+    const arcadeE = $B(out, 'shotengai_arcade', 118, 22);
+    // ambient (下段)
+    const pachinkoPrev = $B(out, 'pachinko', -130, 130);  // SW Ch4 予告
+    const karaokePrev = $B(out, 'karaoke', 130, 130);     // SE Ch3-4 予告
+    $B(out, 'office', -50, 22);
+    $B(out, 'office', 50, 22);
+    $B(out, 'townhouse', -100, 178);
+    $B(out, 'townhouse', 100, 178);
 
-      // === 下段 東: ガソリンスタンド + 帰路 ===
-      _B('gas_station', 113, 135),                              // ガソスタ
-      _B('capsule_hotel', 150, 168),                            // ★ カプセル (奥)
-      _B('convenience', 178, 132),                              // 帰路コンビニ
-      _B('shed', 123, 178),                                     // ガソスタ裏
-    ],
-    furniture: [
-      // ─── 屋台の湯気 ── noren + chouchin ───
-      _F('noren', -120, 22), _F('chouchin', -120, 16),
-      _F('noren', -95, 22), _F('chouchin', -95, 16),
-      _F('noren', -25, 22), _F('chouchin', -25, 16),
-      _F('noren', 45, 22), _F('chouchin', 45, 16),
-      _F('noren', 170, 22), _F('chouchin', 170, 16),
-      _F('noren', -100, 118), _F('chouchin', -100, 112),
-      _F('noren', 20, 118), _F('chouchin', 20, 112),
-      // ─── 通常 facade ───
-      _F('chouchin', -155, 22), _F('chouchin', -58, 22), _F('chouchin', 10, 22),
-      _F('chouchin', 80, 22),
-      _F('chouchin', -160, 118), _F('chouchin', -130, 118),
-      _F('chouchin', -65, 118), _F('chouchin', -38, 118),
-      _F('chouchin', -10, 118), _F('chouchin', 55, 118),
-      _F('chouchin', 172, 118),
-      _F('sign_board', 135, 22),                                // 高層看板
-      // ─── ★★ シグネチャ: 倒れ物 + ゴミ袋 (終電後の荒れ) ★★ ───
-      _F('bicycle', -78, 78),                                   // 倒れ自転車
-      _F('bicycle', 65, 78),
-      _F('bicycle', -80, 172),                                  // 倒れ自転車
-      _F('dumpster', -40, 72), _F('dumpster', 30, 72),
-      _F('dumpster', -55, 170), _F('dumpster', 95, 170),
-      _F('milk_crate_stack', -155, 72), _F('milk_crate_stack', 100, 72),
-      _F('milk_crate_stack', 85, 172),
-      _F('garbage', 0, 75), _F('garbage', -120, 172),
-      _F('garbage', 145, 170),
-      _F('traffic_cone', -50, 78), _F('traffic_cone', 55, 78),
-      _F('traffic_cone', 60, 172),
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', 115, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -90, 75), _F('puddle_reflection', 40, 78),
-      _F('puddle_reflection', 130, 75),
-      _F('puddle_reflection', -70, 172), _F('puddle_reflection', 30, 172),
-      _F('puddle_reflection', 140, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -45, 100), _F('manhole_cover', 45, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      _F('cat', -120, 80),                                      // ★ 屋台裏の野良猫
-      _F('cat', 50, 195),
-    ],
-    humans: [
-      _H(-120, 55), _H(-95, 55),                                // 屋台客 2 組
-      _H(-25, 55), _H(45, 55),                                  // 屋台客
-      _H(-100, 150), _H(20, 150),                               // 下段屋台客
-      _H(-78, 72),                                              // 倒れた酔客
-      _H(130, 172),                                             // よろめく通行人
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -120, 60, 50, 42),                             // 屋台街タイル
-      _G('tile', 10, 60, 70, 42),
-      _G('tile', -100, 158, 50, 42),
-      _G('tile', 10, 158, 50, 42),
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // merged 焦点: chouchin 帯 14 本 (avenue 全幅、不揃い間隔で行進回避)
+    const c1 = $F(out, 'chouchin', -165, 22);
+    $F(out, 'chouchin', -135, 22); $F(out, 'chouchin', -108, 22);
+    $F(out, 'chouchin', -82, 22); $F(out, 'chouchin', -55, 22);
+    $F(out, 'chouchin', -30, 22); $F(out, 'chouchin', -5, 22);
+    $F(out, 'chouchin', 22, 22); $F(out, 'chouchin', 48, 22);
+    $F(out, 'chouchin', 72, 22); $F(out, 'chouchin', 98, 22);
+    $F(out, 'chouchin', 125, 22); $F(out, 'chouchin', 152, 22);
+    const c14 = $F(out, 'chouchin', 175, 22);
+    // 取り巻き banner_pole × 4
+    const bp1 = $F(out, 'banner_pole', -160, 28);
+    const bp2 = $F(out, 'banner_pole', -50, 28);
+    const bp3 = $F(out, 'banner_pole', 47, 28);
+    const bp4 = $F(out, 'banner_pole', 157, 28);
+    // 境界 flag_pole + flower_planter_row
+    const flag1 = $F(out, 'flag_pole', -30, 12);
+    const flag2 = $F(out, 'flag_pole', 27, 12);
+    const fp1 = $F(out, 'flower_planter_row', -170, 88);
+    const fp2 = $F(out, 'flower_planter_row', 167, 88);
+    // 動線 街灯 + puddle
+    const lamp1 = $F(out, 'street_lamp', -90, 88);
+    const lamp2 = $F(out, 'street_lamp', 90, 88);
+    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 90, 108);
+    const pud1 = $F(out, 'puddle_reflection', -45, 95);
+    const pud2 = $F(out, 'puddle_reflection', 48, 105);
+    $F(out, 'puddle_reflection', 0, 100);
+    $F(out, 'puddle_reflection', -100, 145);
+    // SW/SE 痕跡 (Ch4 予告の sign_board)
+    const swSign = $F(out, 'sign_board', -130, 110);  // pachinko ネオン
+    const seSign = $F(out, 'sign_board', 127, 110);   // karaoke ネオン
+    const swGarbage = $F(out, 'garbage', -158, 188);
+    const seBike = $F(out, 'bicycle', 158, 188);
+    // bollard
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
 
-  // ── C8: 駐車場と裏通り — 賑わいが消えた静かな区画 ──
-  // 街区分け:
-  //   上段 西: シャッター古商店街 (snack 閉店、古いアパート)
-  //   上段 中: ★ 中央コインパーキング (大広場)
-  //   上段 東: 古い雑居ビル + ガレージ
-  //   下段 西: ★ もう 1 つの大駐車場 (連結)
-  //   下段 中: 雑居オフィスビル + 1F コンビニ
-  //   下段 東: 高層雑居 + 端の倉庫
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 西: シャッター街 (廃れた商店) ===
-      _B('snack', -160, 38),                                    // 閉店のスナック (シャッター)
-      _B('apartment', -125, 72),                                // 古いアパート (奥)
-      _B('shop', -108, 38),                                     // 古い小売店 (閉)
-      _B('shed', -175, 76),                                     // 店裏
+    out.humans = [
+      _H(-90, 100), _H(0, 100), _H(90, 100),  // avenue 多
+      _H(-45, 92), _H(48, 108), _H(-100, 88),
+      _H(120, 92), _H(-130, 152), _H(130, 152),
+    ];
 
-      // === 上段 中: ★ 中央コインパーキング (広場) ===
-      _B('parking', -28, 50),                                   // ★ メイン駐車場 (表に大広場)
-      _B('shed', -65, 75),                                      // 駐車場脇の物置
-      _B('shed', 25, 78),                                       // 駐車場脇
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('tile', 0, 100, 360, 24),              // アーケード床
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('concrete', -130, 152, 60, 40),
+      _G('concrete', 130, 152, 60, 40),
+    ];
 
-      // === 上段 東: 古い雑居ビル + ガレージ ===
-      _B('office', 130, 64.5),                                    // ★ 古い雑居 (奥)
-      _B('mahjong_parlor', 71, 42),                            // 古い雀荘
-      _B('garage', 155, 40),                                    // 1F ガレージ
-      _B('shed', 175, 78),                                      // 端の倉庫
+    _CLUSTER(out, {
+      id: 's2.ch2.merged.arcade_gate', role: 'hero', cell: 'merged',
+      focal: c1,  // 提灯帯起点
+      companions: [c14, arcadeW, arcadeE, bp1],
+      boundary: [bp2, bp3, bp4, flag1, flag2, fp1, fp2],
+      access: [lamp1, lamp2, pud1, pud2],
+      livingTrace: swGarbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch2.SW.pachinko_preview', role: 'ambient', cell: 'SW',
+      focal: pachinkoPrev,
+      companions: [swSign],
+      livingTrace: swGarbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch2.SE.karaoke_preview', role: 'ambient', cell: 'SE',
+      focal: karaokePrev,
+      companions: [seSign],
+      livingTrace: seBike,
+    });
 
-      // === 下段 西: ★ もう 1 つの大駐車場 (連結) ===
-      _B('parking', -130, 148),                                 // ★ 大駐車場
-      _B('shed', -178, 178),                                    // 駐車場端
-      _B('garage', -72, 175),                                   // 駐車場脇
+    return out;
+  })() },
 
-      // === 下段 中: 雑居オフィスビル + 1F コンビニ ===
-      _B('office', -25, 170),                                   // ★ 古い雑居 (奥)
-      _B('convenience', 22, 132),                                // 1F の 24h コンビニ (孤独に明かり)
-      _B('pharmacy', -55, 132),                                 // 隣の 24h ドラッグ
-      _B('shed', 30, 175),                                      // ビル裏
+  // ── S2-Ch3: 高層雑居ビル (NE hero: karaoke + apartment_tall) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE, _VR(-90, 0, 100)],  // 雑居ビル裏路地
+    };
+    // NE hero: 高層
+    const karaoke = $B(out, 'karaoke', 130, 22);
+    const aptTall = $B(out, 'apartment_tall', 80, 22);
+    // ambient
+    const club = $B(out, 'club', -130, 22);     // NW
+    $B(out, 'business_hotel', -100, 130);       // SW
+    $B(out, 'mansion', 80, 130);                 // SE
+    $B(out, 'mansion', 140, 130);
+    $B(out, 'office', -50, 22);
+    $B(out, 'apartment', 30, 22);
 
-      // === 下段 東: 高層雑居 + 倉庫 ===
-      _B('apartment_tall', 150, 175),                           // ★ 高層 (奥)
-      _B('cafe', 107, 132),                                     // 1F カフェ
-      _B('garage', 175, 132),                                   // ガレージ
-      _B('shed', 178, 178),                                     // 倉庫
-    ],
-    furniture: [
-      // ─── 上段 facade (オフィスの看板 + 夜閉まった店) ───
-      _F('sign_board', -150, 22), _F('sign_board', 30, 22),
-      _F('sign_board', 85, 22),                                 // 高層看板
-      _F('a_frame_sign', -45, 22),                              // 駐車場案内
-      _F('sign_board', -108, 22),                               // アパート看板
-      _F('chouchin', 140, 22),                                  // 倉庫の明かり
-      // ─── ★★ シグネチャ: 室外機の唸り + ゴミ山 ★★ ───
-      _F('ac_outdoor_cluster', -150, 72),
-      _F('ac_outdoor_cluster', 30, 72),
-      _F('ac_outdoor_cluster', -108, 72),
-      _F('ac_outdoor_cluster', -40, 168),
-      _F('ac_outdoor_cluster', 15, 168),
-      _F('ac_outdoor_cluster', 150, 178),
-      _F('dumpster', -180, 72), _F('dumpster', -15, 72),
-      _F('dumpster', 65, 72), _F('dumpster', 180, 72),
-      _F('dumpster', -180, 170), _F('dumpster', 50, 172),
-      _F('dumpster', 180, 172),
-      _F('garbage', -75, 75), _F('garbage', 125, 75),
-      _F('garbage', -60, 172), _F('garbage', 120, 172),
-      _F('recycling_bin', 5, 75), _F('recycling_bin', -5, 172),
-      // ─── コインパーキング (車並び) ───
-      _F('car', -55, 65), _F('car', -35, 65), _F('car', -55, 80),
-      _F('car', -145, 160), _F('car', -115, 160),
-      _F('car', -145, 178), _F('car', -115, 178),
-      _F('car', 70, 160), _F('car', 90, 160),
-      _F('car', 70, 178), _F('car', 90, 178),
-      _F('traffic_cone', -35, 78), _F('traffic_cone', -75, 78),
-      _F('traffic_cone', 50, 172), _F('traffic_cone', 110, 172),
-      // ─── 電線 + 電柱 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      _F('electric_box', -55, 102), _F('electric_box', 55, 102),
-      // ─── 下段 facade ───
-      _F('a_frame_sign', -130, 118),                            // 駐車場案内
-      _F('a_frame_sign', 80, 118),
-      _F('sign_board', -40, 118), _F('sign_board', 15, 118),
-      _F('sign_board', 150, 118),
-      _F('chouchin', 175, 118),
-      // ─── 野良猫 (静けさの演出) ───
-      _F('cat', -75, 78), _F('cat', 45, 195),
-      _F('cat', 160, 172),
-      // ─── 水たまり ───
-      _F('puddle_reflection', -110, 78), _F('puddle_reflection', 75, 78),
-      _F('puddle_reflection', -80, 172), _F('puddle_reflection', 130, 172),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-    ],
-    humans: [
-      _H(-55, 70),                                              // 深夜の駐車場利用者
-      _H(80, 160),                                              // もう一人
-      _H(-150, 82),                                             // オフィス残業
-      _H(15, 152),                                              // コンビニ帰り (見立て)
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('concrete', -45, 72, 60, 40),                          // パーキング上段床
-      _G('concrete', -130, 170, 120, 50),                       // パーキング下段床
-      _G('concrete', 80, 170, 60, 50),
-      _G('asphalt', 0, 15, 360, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // NE 焦点取り巻き
+    const karaokeBigSign = $F(out, 'sign_board', 127, 8);  // 大ネオン
+    const c1 = $F(out, 'chouchin', 80, 58); $F(out, 'chouchin', 105, 58);
+    $F(out, 'chouchin', 130, 58); $F(out, 'chouchin', 155, 58);
+    const a1 = $F(out, 'a_frame_sign', 110, 88);
+    const a2 = $F(out, 'a_frame_sign', 145, 88);
+    const flag = $F(out, 'flag_pole', 127, 12);
+    // 境界
+    const b1 = $F(out, 'bollard', 70, 92);
+    const b2 = $F(out, 'bollard', 100, 92);
+    const b3 = $F(out, 'bollard', 165, 92);
+    // 動線
+    const lampNE1 = $F(out, 'street_lamp', 80, 88);
+    const lampNE2 = $F(out, 'street_lamp', 165, 88);
+    const pud1 = $F(out, 'puddle_reflection', 95, 115);
+    const pud2 = $F(out, 'puddle_reflection', 145, 110);
+    const recyc = $F(out, 'recycling_bin', 165, 158);  // NE livingTrace
 
-  // ═══ Act IV: 朝の気配 (C9) — Stage 3 への handoff ═══════════════
+    // NW club
+    $F(out, 'sign_board', -130, 8);  // 黒+金
+    $F(out, 'parasol', -130, 58);
+    $F(out, 'flag_pole', -130, 12);
+    const nwRecyc = $F(out, 'recycling_bin', -158, 60);
 
-  // ── C9: 小さな神社の裏手 — 夜明け前、石灯籠の気配 ──
-  // 歓楽街の騒めきが消え、神社の裏手で夜明けを待つ。次ステージ (和風古都) への
-  // 予兆として鳥居・石灯籠・松・古民家を配置。人影まばら、野良猫が主役。
-  { patternId: 's2_raw', raw: {
-    buildings: [
-      // === 上段 ─ 前列 (古民家の並びと神社) ===
-      _B('kominka', -158, 40),
-      _B('kominka', -130, 44),
-      _B('shrine', -69, 48),                                    // ★ 小さな神社 (奥)
-      _B('chaya', -30, 38),
-      _B('kominka', 21, 42),
-      _B('apartment', 55, 52),                                  // 古アパート (奥)
-      _B('kominka', 109, 40),
-      _B('chaya', 130, 44),
-      // === 上段 ─ 奥列 (物置/小屋/温室) ===
-      _B('shed', -175, 70),
-      _B('greenhouse', -115, 74),                               // 古い温室
-      _B('shed', -60, 78),
-      _B('shed', 25, 72),
-      _B('shed', 76, 76),
-      _B('greenhouse', 148, 78),
-      _B('shed', 175, 70),
-      // === 下段 ─ 前列 (境内 + 古民家) ===
-      _B('kominka', -160, 132),
-      _B('kominka', -135, 138),
-      _B('shrine', -69, 146),                                   // ★ 摂社 (奥)
-      _B('kominka', -25, 132),
-      _B('chaya', 20, 138),
-      _B('kominka', 48, 130),
-      _B('house', 75, 134),
-      _B('kominka', 120, 132),
-      _B('kominka', 148, 138),
-      // === 下段 ─ 奥列 (物置/小さな家) ===
-      _B('shed', -178, 172),
-      _B('greenhouse', -109, 178),
-      _B('shed', -45, 174),
-      _B('garage', 25, 172),
-      _B('shed', 76, 178),
-      _B('shed', 175, 174),
-    ],
-    furniture: [
-      // ─── ★★ シグネチャ: 鳥居 + 石灯籠の列 (Stage 3 予兆) ★★ ───
-      _F('torii', -75, 22),                                     // ★ 上段神社の鳥居
-      _F('torii', -75, 118),                                    // ★ 下段摂社の鳥居
-      _F('stone_lantern', -95, 72), _F('stone_lantern', -55, 72),
-      _F('stone_lantern', -95, 170), _F('stone_lantern', -55, 170),
-      _F('stone_lantern', 90, 72), _F('stone_lantern', 120, 172),
-      _F('shinto_rope', -75, 28),                               // しめ縄
-      _F('shinto_rope', -75, 124),
-      _F('offering_box', -75, 75),                              // 賽銭箱
-      _F('koma_inu', -90, 78), _F('koma_inu', -60, 78),         // 狛犬
-      // ─── 松 + 桜 (和風の縦軸) ───
-      _F('pine_tree', -170, 80), _F('pine_tree', 175, 80),
-      _F('pine_tree', -170, 175), _F('pine_tree', 175, 175),
-      _F('sakura_tree', -105, 165),                             // 桜古木
-      _F('sakura_tree', 60, 65),
-      // ─── 古民家 facade (提灯は消え、mailbox と wood_fence) ───
-      _F('wood_fence', -178, 22), _F('wood_fence', 178, 22),
-      _F('wood_fence', -178, 118), _F('wood_fence', 178, 118),
-      _F('mailbox', -158, 22), _F('mailbox', -130, 22),
-      _F('mailbox', 0, 22), _F('mailbox', 105, 22), _F('mailbox', 130, 22),
-      _F('mailbox', -160, 118), _F('mailbox', -135, 118),
-      _F('mailbox', 48, 118), _F('mailbox', 120, 118), _F('mailbox', 148, 118),
-      _F('noren', -30, 28), _F('noren', 5, 124),                // 茶屋ののれん
-      // ─── 境内の装飾 ───
-      _F('bonsai', -95, 30), _F('bonsai', 95, 172),
-      _F('bamboo_cluster', 55, 75), _F('bamboo_cluster', 75, 168),
-      _F('potted_plant', -158, 30), _F('potted_plant', 0, 28),
-      _F('potted_plant', -25, 120), _F('potted_plant', 148, 120),
-      // ─── ゴミ収集車が来る朝 (handoff 演出) ───
-      _F('car', 160, 172),                                      // ゴミ収集車 (見立て)
-      _F('dumpster', -180, 172), _F('dumpster', 180, 172),
-      _F('garbage', 170, 170),
-      // ─── 電線 (街の気配の最後) ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 野良猫の時間 (★★ Stage 2 最後の主役) ★★ ───
-      _F('cat', -70, 80),                                       // 賽銭箱の前
-      _F('cat', -70, 170),                                      // 摂社の前
-      _F('cat', 40, 195),                                       // 境内奥
-      _F('cat', 150, 190),
-      // ─── 水たまり (まだ夜の痕跡) ───
-      _F('puddle_reflection', -110, 100), _F('puddle_reflection', 110, 100),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      // ─── 朝の手水 (Stage 3 への予兆) ───
-      _F('temizuya', -60, 65),                                  // 手水舎
-      _F('bamboo_water_fountain', -55, 165),                    // 竹の鹿威し
-      _F('sando_stone_pillar', -178, 100),                      // 参道の石柱
-      _F('sando_stone_pillar', 178, 100),
-    ],
-    humans: [
-      _H(-75, 78),                                              // 早朝の参拝者
-      _H(-75, 172),                                             // 境内の老人
-      _H(160, 170),                                             // ゴミ収集業者
-      _H(5, 152),                                               // 茶屋の女将
-      _H(-30, 55),                                              // 朝の散歩
-    ],
-    grounds: [
-      _G('asphalt', 0, 46.5, 180, 93),                          // 左半は asphalt (街の名残)
-      _G('gravel', 90, 46.5, 180, 93),                          // ★ 右半は玉砂利 (Stage 3 予兆)
-      _G('gravel', 0, 153.5, 360, 93),                          // 下段は全面玉砂利
-      _G('stone_pavement', -75, 65, 50, 40),                    // 神社の参道
-      _G('stone_pavement', -75, 170, 50, 55),                   // 摂社の参道
-      _G('moss', 40, 180, 40, 20),                              // 苔 (古都の気配)
-      _G('asphalt', 0, 15, 120, 25),
-    ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
-  } },
+    // SW business_hotel
+    $F(out, 'sign_board', -100, 110);
+    const swMail = $F(out, 'mailbox', -125, 122);
+    $F(out, 'flag_pole', -100, 120);
+
+    // SE mansion (高層)
+    $F(out, 'mailbox', 75, 122); $F(out, 'mailbox', 138, 122);
+    $F(out, 'ac_unit', 80, 158); $F(out, 'ac_unit', 140, 158);
+    const seBike = $F(out, 'bicycle_rack', 105, 168);
+
+    // 連続軸: chouchin 上空 + 街灯ネオン
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
+    $F(out, 'chouchin', 165, 15);
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', -90, 108);
+    $F(out, 'puddle_reflection', -45, 105);
+    $F(out, 'puddle_reflection', -130, 60);
+    // bollard
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(130, 60), _H(110, 80), _H(80, 60), _H(165, 80),  // NE karaoke 客
+      _H(-130, 60), _H(-150, 80), _H(-100, 80),            // NW club
+      _H(-30, 100), _H(40, 100),                            // avenue
+      _H(-100, 152), _H(80, 152), _H(140, 152),
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('red_carpet', -130, 60, 60, 20),    // NW club 入口
+      _G('concrete', 130, 60, 60, 30),        // NE karaoke 前
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('tile', 105, 152, 100, 30),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch3.NE.karaoke_tall', role: 'hero', cell: 'NE',
+      focal: karaoke,
+      companions: [aptTall, karaokeBigSign, c1, flag],
+      boundary: [b1, b2, b3, a1, a2],
+      access: [lampNE1, lampNE2, pud1, pud2],
+      livingTrace: recyc,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch3.NW.club', role: 'ambient', cell: 'NW',
+      focal: club,
+      companions: [{ kind: 'f', i: 14 }, { kind: 'f', i: 15 }, { kind: 'f', i: 16 }],
+      livingTrace: nwRecyc,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch3.SW.hotel', role: 'ambient', cell: 'SW',
+      focal: { kind: 'b', i: 3 },  // business_hotel
+      companions: [{ kind: 'f', i: 19 }],
+      livingTrace: swMail,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch3.SE.mansions', role: 'ambient', cell: 'SE',
+      focal: { kind: 'b', i: 4 },  // mansion
+      companions: [{ kind: 'b', i: 5 }],
+      livingTrace: seBike,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch4: パチンコ + 交番交差点 (merged hero, クライマックス) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR, _TOP_HR],  // 4 方向交差点
+      verticalRoads: [_AVE],
+    };
+    // merged hero: パチンコ + 交番 + ゲーセン
+    const pachinko = $B(out, 'pachinko', -100, 22);
+    const koban = $B(out, 'police_station', 0, 130);
+    const gameCenter = $B(out, 'game_center', 100, 22);
+    // 周辺の店
+    $B(out, 'love_hotel', -80, 130);
+    $B(out, 'business_hotel', 110, 130);
+    $B(out, 'snack', -160, 22);
+    $B(out, 'izakaya', 160, 22);
+
+    // 焦点取り巻き
+    const pachinkoBigSign = $F(out, 'sign_board', -100, 8);  // 巨大ネオン
+    const flagKoban1 = $F(out, 'flag_pole', -12, 120);
+    const flagKoban2 = $F(out, 'flag_pole', 12, 120);
+    const cone1 = $F(out, 'traffic_cone', -25, 145);
+    const cone2 = $F(out, 'traffic_cone', 22, 145);
+    const cone3 = $F(out, 'traffic_cone', -15, 165);
+    const cone4 = $F(out, 'traffic_cone', 18, 165);
+    const a1 = $F(out, 'a_frame_sign', -80, 60);
+    const a2 = $F(out, 'a_frame_sign', -120, 60);
+    const a3 = $F(out, 'a_frame_sign', 100, 60);
+    // 境界
+    const bar1 = $F(out, 'barrier', -160, 68);
+    const bar2 = $F(out, 'barrier', 157, 68);
+    const b1 = $F(out, 'bollard', -65, 92);
+    const b2 = $F(out, 'bollard', 62, 92);
+    const b3 = $F(out, 'bollard', -150, 108);
+    const b4 = $F(out, 'bollard', 145, 108);
+    // 動線
+    const lamp1 = $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    const lamp2 = $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 90, 108);
+    const mirror1 = $F(out, 'street_mirror', -45, 92);
+    const mirror2 = $F(out, 'street_mirror', 48, 92);
+    const pud1 = $F(out, 'puddle_reflection', -100, 60);
+    const pud2 = $F(out, 'puddle_reflection', 97, 60);
+    $F(out, 'puddle_reflection', 0, 145);
+    $F(out, 'puddle_reflection', -45, 105);
+    const garbage = $F(out, 'garbage', -160, 148);
+
+    // 周辺の店 facade
+    $F(out, 'sign_board', -160, 8);    // snack
+    $F(out, 'chouchin', -160, 30);
+    $F(out, 'sign_board', 157, 8);     // izakaya
+    $F(out, 'chouchin', 157, 30); $F(out, 'noren', 160, 32);
+    $F(out, 'sign_board', -80, 110);   // love_hotel
+    $F(out, 'parasol', -80, 148);
+    $F(out, 'sign_board', 110, 110);   // business_hotel
+    // chouchin 上空
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
+    $F(out, 'chouchin', 157, 15);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(-100, 60), _H(-80, 80), _H(-130, 80),  // パチンコ客
+      _H(-115, 95), _H(-105, 95),                // 行列
+      _H(0, 145), _H(-15, 130),                   // 交番
+      _H(100, 60), _H(85, 80),                    // ゲーセン
+      _H(-30, 100), _H(40, 100), _H(-90, 100), _H(90, 100),  // avenue 多
+      _H(-80, 152), _H(110, 152), _H(-160, 60),
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('tile', -100, 60, 90, 50),         // パチンコ前
+      _G('concrete', 0, 130, 80, 50),        // 交番前
+      _G('tile', 100, 60, 90, 50),           // ゲーセン
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('red_carpet', -80, 152, 50, 30),    // love_hotel
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch4.merged.pachinko_koban', role: 'hero', cell: 'merged',
+      focal: pachinko,  // クライマックス
+      companions: [koban, gameCenter, pachinkoBigSign, flagKoban1],
+      boundary: [bar1, bar2, b1, b2, b3, b4],
+      access: [mirror1, mirror2, lamp1, pud1, pud2, cone1, cone2],
+      livingTrace: garbage,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch5: 老舗飲み屋横丁 (SW+SE merged hero) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // merged 下段 hero: 飲み屋横丁 4 軒
+    const snack1 = $B(out, 'snack', -160, 130);
+    const mahjong = $B(out, 'mahjong_parlor', -100, 130);
+    const izakaya = $B(out, 'izakaya', -30, 130);
+    const snack2 = $B(out, 'snack', 60, 130);
+    $B(out, 'sushi_ya', 130, 130);
+    // ambient (上段)
+    $B(out, 'bank', -130, 22);
+    $B(out, 'capsule_hotel', 130, 22);
+    $B(out, 'office', -45, 22);
+    $B(out, 'office', 45, 22);
+
+    // 横丁取り巻き
+    const c1 = $F(out, 'chouchin', -160, 122);
+    const c2 = $F(out, 'chouchin', -100, 122);
+    $F(out, 'noren', -160, 128); $F(out, 'noren', -100, 128);
+    const c3 = $F(out, 'chouchin', -30, 122);
+    const c4 = $F(out, 'chouchin', 60, 122);
+    $F(out, 'noren', 130, 128);
+    $F(out, 'a_frame_sign', -160, 152);
+    $F(out, 'a_frame_sign', -100, 152);
+    $F(out, 'a_frame_sign', -25, 152);
+    $F(out, 'a_frame_sign', 65, 148);
+    $F(out, 'sign_board', -100, 110); // mahjong 緑看板
+    $F(out, 'sign_board', -160, 110); // snack ピンク
+    $F(out, 'sign_board', 60, 110);
+    // 境界 横丁感
+    const fence1 = $F(out, 'wood_fence', -178, 120);
+    const fence2 = $F(out, 'wood_fence', 175, 120);
+    const hedge1 = $F(out, 'hedge', 20, 145);
+    // 動線
+    const lamp1 = $F(out, 'street_lamp', -90, 130);
+    const lamp2 = $F(out, 'street_lamp', 30, 130);
+    const lamp3 = $F(out, 'street_lamp', 130, 130);
+    const pud1 = $F(out, 'puddle_reflection', -130, 148);
+    const pud2 = $F(out, 'puddle_reflection', -45, 152);
+    const pud3 = $F(out, 'puddle_reflection', 30, 148);
+    const pud4 = $F(out, 'puddle_reflection', 95, 152);
+    const pud5 = $F(out, 'puddle_reflection', 127, 148);
+    const garbage = $F(out, 'garbage', -158, 188);
+
+    // NW bank
+    $F(out, 'flag_pole', -130, 12);
+    $F(out, 'atm', -150, 32); $F(out, 'atm', -110, 32);
+    const nwMail = $F(out, 'mailbox', -130, 22);
+    // NE capsule_hotel
+    $F(out, 'sign_board', 130, 8);
+    $F(out, 'vending', 110, 56); $F(out, 'vending', 150, 56);
+    const neGarbage = $F(out, 'garbage', 158, 60);
+    // 上段 chouchin
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
+    $F(out, 'chouchin', 157, 15);
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 90, 108);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    $F(out, 'cat', -130, 178);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(-160, 145), _H(-100, 145), _H(-30, 145), _H(60, 145), _H(130, 145),
+      _H(-130, 158), _H(-65, 158), _H(0, 158), _H(95, 158),
+      _H(-130, 60), _H(130, 60),  // bank/capsule
+      _H(-30, 100), _H(40, 100),
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('concrete', 0, 145, 360, 30),       // 横丁通り
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('tile', -130, 56, 60, 40),           // bank 前
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch5.merged.yokocho', role: 'hero', cell: 'merged',
+      focal: izakaya,
+      companions: [snack1, mahjong, snack2, c1, c3],
+      boundary: [fence1, fence2, hedge1],
+      access: [lamp1, lamp2, lamp3, pud1, pud2, pud3],
+      livingTrace: garbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch5.NW.bank', role: 'ambient', cell: 'NW',
+      focal: { kind: 'b', i: 5 },  // bank
+      companions: [{ kind: 'f', i: 32 }, { kind: 'f', i: 33 }],
+      livingTrace: nwMail,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch5.NE.capsule', role: 'ambient', cell: 'NE',
+      focal: { kind: 'b', i: 6 },  // capsule_hotel
+      companions: [{ kind: 'f', i: 36 }, { kind: 'f', i: 37 }],
+      livingTrace: neGarbage,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch6: ラブホテル街 (NW hero) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // NW hero: ラブホテル 2 軒
+    const loveBig = $B(out, 'love_hotel', -110, 22);
+    const loveSm = $B(out, 'love_hotel', -50, 22);
+    // ambient
+    const club = $B(out, 'club', 130, 22);   // NE
+    const snack = $B(out, 'snack', -130, 130); // SW
+    const mahjong = $B(out, 'mahjong_parlor', 130, 130); // SE
+    $B(out, 'business_hotel', 70, 22);
+    $B(out, 'townhouse', 80, 130);
+    $B(out, 'townhouse', -50, 130);
+
+    // NW 焦点取り巻き
+    const sign = $F(out, 'sign_board', -110, 8); // ピンク大ネオン
+    const parasol1 = $F(out, 'parasol', -110, 58);
+    const parasol2 = $F(out, 'parasol', -50, 58);
+    const flag = $F(out, 'flag_pole', -110, 12);
+    // 境界 (高めの hedge、目隠し)
+    const h1 = $F(out, 'hedge', -178, 10);
+    const h2 = $F(out, 'hedge', -178, 50);
+    const h3 = $F(out, 'hedge', -178, 90);
+    const h4 = $F(out, 'hedge', 10, 10);
+    // 動線
+    const lamp = $F(out, 'street_lamp', -150, 88);
+    const pud1 = $F(out, 'puddle_reflection', -100, 70);
+    const pud2 = $F(out, 'puddle_reflection', -40, 75);
+    const fb = $F(out, 'flower_bed', -75, 88);
+    const recyc = $F(out, 'recycling_bin', -158, 88);  // NW livingTrace 控えめ
+
+    // NE club
+    $F(out, 'sign_board', 130, 8);
+    $F(out, 'parasol', 130, 58);
+    $F(out, 'flag_pole', 130, 12);
+    const neRecyc = $F(out, 'recycling_bin', 158, 60);
+    // SW snack
+    $F(out, 'chouchin', -130, 122);  // ピンク
+    $F(out, 'noren', -130, 128);
+    $F(out, 'a_frame_sign', -100, 148);
+    const swGarbage = $F(out, 'garbage', -158, 188);
+    // SE mahjong
+    $F(out, 'sign_board', 130, 110);  // 緑老舗
+    $F(out, 'noren', 127, 128);
+    const seBike = $F(out, 'bicycle', 158, 168);
+    // 連続軸
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
+    $F(out, 'chouchin', 157, 15);
+    $F(out, 'street_lamp', 90, 88); $F(out, 'street_lamp', 90, 108);
+    $F(out, 'puddle_reflection', 60, 100);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    $F(out, 'cat', -45, 178);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(-110, 60), _H(-50, 60),                     // カップル
+      _H(130, 60), _H(150, 80),                      // ホステス
+      _H(-130, 145), _H(-100, 158),                  // snack 客
+      _H(130, 158),                                   // mahjong
+      _H(-30, 100), _H(40, 100),                     // avenue 少
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('red_carpet', -80, 60, 100, 40),    // ラブホ前
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('tile', 130, 60, 60, 40),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch6.NW.lovehotel', role: 'hero', cell: 'NW',
+      focal: loveBig,
+      companions: [loveSm, sign, parasol1, parasol2, flag],
+      boundary: [h1, h2, h3, h4],
+      access: [lamp, pud1, pud2, fb],
+      livingTrace: recyc,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch6.NE.club', role: 'ambient', cell: 'NE',
+      focal: club,
+      companions: [{ kind: 'f', i: 14 }, { kind: 'f', i: 15 }, { kind: 'f', i: 16 }],
+      livingTrace: neRecyc,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch6.SW.snack', role: 'ambient', cell: 'SW',
+      focal: snack,
+      companions: [{ kind: 'f', i: 18 }, { kind: 'f', i: 19 }, { kind: 'f', i: 20 }],
+      livingTrace: swGarbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch6.SE.mahjong', role: 'ambient', cell: 'SE',
+      focal: mahjong,
+      companions: [{ kind: 'f', i: 22 }, { kind: 'f', i: 23 }],
+      livingTrace: seBike,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch7: 屋台横丁 (NW+NE merged hero, 横道路ゼロ) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [],   // 屋台中央集約のため横道路ゼロ
+      verticalRoads: [_AVE],
+    };
+    // merged hero: yatai 5 連 (中央)
+    const y1 = $B(out, 'yatai', -105, 68);
+    const y2 = $B(out, 'yatai', -52, 68);
+    const y3 = $B(out, 'yatai', 0, 68);
+    const y4 = $B(out, 'yatai', 55, 68);
+    const y5 = $B(out, 'yatai', 105, 68);
+    // ambient (下段)
+    const chaya = $B(out, 'chaya', -100, 130);  // SW
+    const ramen = $B(out, 'ramen', 100, 130);   // SE
+    $B(out, 'townhouse', -160, 22);
+    $B(out, 'townhouse', 160, 22);
+    $B(out, 'apartment', -30, 22);
+
+    // 屋台取り巻き
+    const c1 = $F(out, 'chouchin', -105, 58);
+    const c2 = $F(out, 'chouchin', -52, 58);
+    const c3 = $F(out, 'chouchin', 0, 58);
+    const c4 = $F(out, 'chouchin', 55, 58);
+    const c5 = $F(out, 'chouchin', 102, 58);
+    const par1 = $F(out, 'parasol', -105, 78);
+    const par2 = $F(out, 'parasol', -52, 78);
+    const par3 = $F(out, 'parasol', 0, 78);
+    const par4 = $F(out, 'parasol', 55, 78);
+    const par5 = $F(out, 'parasol', 102, 78);
+    // 客の bench (準対称)
+    const bench1 = $F(out, 'bench', -78, 88);
+    const bench2 = $F(out, 'bench', 28, 88);
+    const bench3 = $F(out, 'bench', 75, 88);
+    // 境界
+    const fence1 = $F(out, 'wood_fence', -178, 68);
+    const fence2 = $F(out, 'wood_fence', 175, 68);
+    const fp1 = $F(out, 'flower_planter_row', -160, 88);
+    const fp2 = $F(out, 'flower_planter_row', 157, 88);
+    // 動線
+    const popcorn = $F(out, 'popcorn_cart', -150, 78);
+    const balloon1 = $F(out, 'balloon_cluster', -50, 30);
+    const balloon2 = $F(out, 'balloon_cluster', 47, 30);
+    const lamp1 = $F(out, 'street_lamp', -90, 88);
+    const lamp2 = $F(out, 'street_lamp', 90, 88);
+    const garbage = $F(out, 'garbage', -160, 88);
+
+    // SW chaya
+    $F(out, 'noren', -100, 122);
+    $F(out, 'chouchin', -100, 118);
+    const swCat = $F(out, 'cat', -130, 178);
+    // SE ramen
+    $F(out, 'chouchin', 97, 118); $F(out, 'noren', 97, 122);
+    const seBike = $F(out, 'bicycle', 130, 158);
+    // 連続軸
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
+    $F(out, 'chouchin', 157, 15);
+    $F(out, 'puddle_reflection', -45, 105);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(-105, 88), _H(-52, 88), _H(0, 88), _H(55, 88), _H(105, 88),  // 各屋台客
+      _H(-78, 80), _H(28, 80), _H(78, 80),                              // 屋台店主
+      _H(-100, 152), _H(100, 152),                                      // 茶店/ラーメン
+      _H(0, 100),
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('red_carpet', 0, 78, 220, 30),     // 屋台床 (祭り感)
+      _G('concrete', 0, 100, 280, 30),       // 屋台前
+      _G('stone_pavement', -65, 100, 12, 200),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch7.merged.yatai_yokocho', role: 'hero', cell: 'merged',
+      focal: y3,  // 中央屋台
+      companions: [y1, y2, y4, y5, c3],
+      boundary: [fence1, fence2, fp1, fp2],
+      access: [lamp1, lamp2, popcorn, balloon1, balloon2],
+      livingTrace: garbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch7.SW.chaya', role: 'ambient', cell: 'SW',
+      focal: chaya,
+      companions: [{ kind: 'f', i: 26 }, { kind: 'f', i: 27 }],
+      livingTrace: swCat,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch7.SE.ramen', role: 'ambient', cell: 'SE',
+      focal: ramen,
+      companions: [{ kind: 'f', i: 29 }, { kind: 'f', i: 30 }],
+      livingTrace: seBike,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch8: 映画館 + ミニシアター街 (SE hero) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // SE hero: movie_theater
+    const theater = $B(out, 'movie_theater', 130, 130);
+    // ambient
+    const karaoke = $B(out, 'karaoke', -130, 22);   // NW
+    const pachinko = $B(out, 'pachinko', 130, 22);  // NE
+    $B(out, 'mansion', -100, 130);                  // SW
+    $B(out, 'mansion', -45, 130);
+    $B(out, 'business_hotel', -45, 22);
+    $B(out, 'shop', 50, 22);
+
+    // SE 焦点取り巻き
+    const poster = $F(out, 'sign_board', 130, 118);  // ポスター見立て
+    const banner1 = $F(out, 'banner_pole', 100, 120);
+    const banner2 = $F(out, 'banner_pole', 158, 120);
+    const flag = $F(out, 'flag_pole', 130, 128);
+    // 境界
+    const fp1 = $F(out, 'flower_planter_row', 110, 170);
+    const fp2 = $F(out, 'flower_planter_row', 168, 170);
+    const b1 = $F(out, 'bollard', 80, 140);
+    const b2 = $F(out, 'bollard', 178, 140);
+    // 動線
+    const lamp = $F(out, 'street_lamp', 130, 140);
+    const benchT1 = $F(out, 'bench', 110, 148);
+    const benchT2 = $F(out, 'bench', 152, 148);
+    const pud1 = $F(out, 'puddle_reflection', 100, 158);
+    const garbage = $F(out, 'garbage', 158, 188);
+
+    // NW karaoke
+    $F(out, 'sign_board', -130, 8);  // 黄
+    $F(out, 'chouchin', -160, 30); $F(out, 'chouchin', -100, 30);
+    const nwGarbage = $F(out, 'garbage', -158, 60);
+    // NE pachinko
+    $F(out, 'sign_board', 127, 8);  // 赤
+    $F(out, 'a_frame_sign', 100, 60);
+    const neBike = $F(out, 'bicycle', 158, 60);
+    // SW mansion
+    $F(out, 'mailbox', -100, 122); $F(out, 'mailbox', -45, 122);
+    const swMail = $F(out, 'mailbox', -75, 122);
+    $F(out, 'ac_unit', -100, 158);
+    // 連続軸
+    $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
+    $F(out, 'chouchin', 157, 15);
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 90, 108);
+    $F(out, 'puddle_reflection', -45, 105);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    $F(out, 'cat', -130, 178);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(130, 145), _H(110, 158), _H(152, 158),  // 映画客
+      _H(-130, 60), _H(130, 60),                   // NW/NE 酔客
+      _H(-30, 100), _H(40, 100),
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('tile', 130, 152, 100, 60),         // 映画館前
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('concrete', -75, 152, 110, 30),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch8.SE.theater', role: 'hero', cell: 'SE',
+      focal: theater,
+      companions: [poster, banner1, banner2, flag],
+      boundary: [fp1, fp2, b1, b2],
+      access: [lamp, benchT1, benchT2, pud1],
+      livingTrace: garbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch8.NW.karaoke', role: 'ambient', cell: 'NW',
+      focal: karaoke,
+      companions: [{ kind: 'f', i: 18 }, { kind: 'f', i: 19 }],
+      livingTrace: nwGarbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch8.NE.pachinko', role: 'ambient', cell: 'NE',
+      focal: pachinko,
+      companions: [{ kind: 'f', i: 22 }, { kind: 'f', i: 23 }],
+      livingTrace: neBike,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch8.SW.mansion', role: 'ambient', cell: 'SW',
+      focal: { kind: 'b', i: 3 },  // mansion
+      companions: [{ kind: 'b', i: 4 }],
+      livingTrace: swMail,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch9: 駐車場と裏通り (NE hero, 静寂転換の入口) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // NE hero: parking
+    const parking = $B(out, 'parking', 130, 68);
+    // ambient
+    $B(out, 'house', -130, 22);   // NW
+    $B(out, 'house', -90, 22);
+    $B(out, 'kura', -130, 130);   // SW
+    $B(out, 'townhouse', 80, 130); // SE
+    $B(out, 'townhouse', 140, 130);
+    $B(out, 'shed', -160, 130);
+
+    // NE 駐車場取り巻き
+    const cone1 = $F(out, 'traffic_cone', 80, 78);
+    const cone2 = $F(out, 'traffic_cone', 178, 78);
+    const cone3 = $F(out, 'traffic_cone', 100, 95);
+    const cone4 = $F(out, 'traffic_cone', 158, 95);
+    const bar1 = $F(out, 'barrier', 90, 88);
+    const bar2 = $F(out, 'barrier', 170, 88);
+    const car1 = $F(out, 'car', 80, 80);
+    const car2 = $F(out, 'car', 130, 80);
+    const car3 = $F(out, 'car', 170, 80);
+    // 境界
+    const wfence1 = $F(out, 'wood_fence', 75, 60); $F(out, 'wood_fence', 75, 80);
+    const hedge1 = $F(out, 'hedge', 178, 100);
+    // 動線
+    const lamp = $F(out, 'street_lamp', 130, 95);
+    const vending = $F(out, 'vending', 75, 85);  // 孤立感
+    const garbage = $F(out, 'garbage', 158, 60);  // NE livingTrace
+
+    // NW house
+    $F(out, 'mailbox', -130, 22); $F(out, 'mailbox', -90, 22);
+    const nwMail = $F(out, 'mailbox', -110, 22);
+    $F(out, 'ac_unit', -130, 50);
+    $F(out, 'potted_plant', -90, 28);
+    // SW kura (寂しさ)
+    $F(out, 'wood_fence', -178, 130); $F(out, 'wood_fence', -178, 168);
+    const swGarbage = $F(out, 'garbage', -160, 188);
+    $F(out, 'cat', -130, 178);
+    // SE townhouse + 猫多 (静寂)
+    $F(out, 'mailbox', 75, 122); $F(out, 'mailbox', 138, 122);
+    $F(out, 'ac_unit', 80, 158);
+    const seCat = $F(out, 'cat', 100, 168);
+    $F(out, 'cat', 145, 178); $F(out, 'cat', 80, 188);
+    // 連続軸 (Stage 2 終盤)
+    $F(out, 'chouchin', -160, 15);  // 1 本だけ残る (寂しさ)
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'puddle_reflection', -45, 105);
+    $F(out, 'puddle_reflection', 0, 100);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(130, 95),                  // 深夜散歩客
+      _H(0, 100),                    // avenue 少
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('oil_stained_concrete', 130, 80, 100, 50),  // 駐車場
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('concrete', -130, 152, 90, 40),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch9.NE.parking', role: 'hero', cell: 'NE',
+      focal: parking,
+      companions: [car1, car2, car3, bar1],
+      boundary: [wfence1, hedge1, bar2],
+      access: [lamp, cone1, cone3, vending],
+      livingTrace: garbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch9.NW.house', role: 'ambient', cell: 'NW',
+      focal: { kind: 'b', i: 1 },  // house
+      companions: [{ kind: 'b', i: 2 }],
+      livingTrace: nwMail,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch9.SW.kura', role: 'ambient', cell: 'SW',
+      focal: { kind: 'b', i: 3 },  // kura
+      companions: [{ kind: 'b', i: 6 }],
+      livingTrace: swGarbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch9.SE.townhouses', role: 'ambient', cell: 'SE',
+      focal: { kind: 'b', i: 4 },  // townhouse
+      companions: [{ kind: 'b', i: 5 }],
+      livingTrace: seCat,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch10: 古い住宅 + 神社の裏手 (SW hero, stone_pavement 開始) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // SW hero: 神社の裏 (kura が小社見立て)
+    const kura = $B(out, 'kura', -100, 130);
+    // ambient
+    $B(out, 'kominka', -130, 22);     // NW
+    $B(out, 'townhouse', 80, 22);     // NE
+    $B(out, 'townhouse', 130, 22);
+    $B(out, 'shed', 60, 130);          // SE
+    $B(out, 'shed', 130, 130);
+    $B(out, 'machiya', -50, 22);
+
+    // SW 焦点取り巻き (神社の裏)
+    const lant1 = $F(out, 'stone_lantern', -130, 145);
+    const lant2 = $F(out, 'stone_lantern', -70, 145);
+    const bf1 = $F(out, 'bamboo_fence', -178, 130);
+    const bf2 = $F(out, 'bamboo_fence', -178, 170);
+    const bf3 = $F(out, 'bamboo_fence', 0, 130);
+    const bwf = $F(out, 'bamboo_water_fountain', -70, 158);
+    const hedge1 = $F(out, 'hedge', -178, 145);
+    // 動線 (参道)
+    const swCat1 = $F(out, 'cat', -130, 168);
+
+    // NW kominka
+    $F(out, 'noren', -130, 28);
+    const nwMail = $F(out, 'mailbox', -150, 22);
+    $F(out, 'potted_plant', -110, 28);
+    // NE townhouse
+    $F(out, 'mailbox', 80, 22); $F(out, 'mailbox', 130, 22);
+    $F(out, 'ac_unit', 80, 50);
+    const neCat = $F(out, 'cat', 105, 50);
+    // SE shed
+    $F(out, 'wood_fence', 60, 145); $F(out, 'wood_fence', 130, 145);
+    const seGarbage = $F(out, 'garbage', 100, 168);
+    // 連続軸 (chouchin 終了、puddle 増)
+    $F(out, 'puddle_reflection', -45, 105);
+    $F(out, 'puddle_reflection', 0, 100);
+    $F(out, 'puddle_reflection', 42, 105);
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    $F(out, 'cat', 0, 178);
+    // 電柱 (Stage 2 末尾、密度低)
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(0, 100),                  // 早朝散歩
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('stone_pavement', -100, 145, 80, 80),     // SW 神社参道
+      _G('fallen_leaves', -130, 168, 30, 20),       // 落ち葉
+      _G('fallen_leaves', -75, 178, 25, 15),
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('concrete', 130, 50, 100, 40),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch10.SW.shrine_back', role: 'hero', cell: 'SW',
+      focal: kura,
+      companions: [lant1, lant2, bwf],
+      boundary: [bf1, bf2, bf3, hedge1],
+      access: [{ kind: 'f', i: 6 }],  // bwf = 動線にも兼用
+      livingTrace: swCat1,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch10.NW.kominka', role: 'ambient', cell: 'NW',
+      focal: { kind: 'b', i: 1 },  // kominka
+      companions: [{ kind: 'f', i: 9 }, { kind: 'f', i: 10 }],
+      livingTrace: nwMail,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch10.NE.townhouses', role: 'ambient', cell: 'NE',
+      focal: { kind: 'b', i: 2 },  // townhouse
+      companions: [{ kind: 'b', i: 3 }],
+      livingTrace: neCat,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch10.SE.sheds', role: 'ambient', cell: 'SE',
+      focal: { kind: 'b', i: 4 },  // shed
+      companions: [{ kind: 'b', i: 5 }],
+      livingTrace: seGarbage,
+    });
+
+    return out;
+  })() },
+
+  // ── S2-Ch11: 神社の表参道 (NE hero, Stage 3 への handoff) ──
+  { patternId: 's2_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR],
+      verticalRoads: [_AVE],
+    };
+    // NE hero: torii + 表参道
+    // (注意: torii は家具タイプ。建物は無し、オープンスペース焦点 = 基本形 A)
+    $B(out, 'chaya', -100, 22);     // NW (Stage 3 予告)
+    const swKura1 = $B(out, 'kura', -130, 130);   // SW
+    const swKura2 = $B(out, 'kura', -70, 130);
+    $B(out, 'kominka', 130, 130);   // SE
+    $B(out, 'shed', -160, 178);
+    $B(out, 'shed', 70, 178);
+
+    // NE 焦点: torii ★ ランドマーク
+    const torii = $F(out, 'torii', 80, 22);
+    const sandoP1 = $F(out, 'sando_stone_pillar', 40, 58);
+    const sandoP2 = $F(out, 'sando_stone_pillar', 120, 58);
+    const lant1 = $F(out, 'stone_lantern', 40, 88);
+    const lant2 = $F(out, 'stone_lantern', 120, 88);
+    const koma1 = $F(out, 'koma_inu', 60, 68);
+    const koma2 = $F(out, 'koma_inu', 100, 68);
+    const rope = $F(out, 'shinto_rope', 80, 22);
+    // 境界
+    const bf1 = $F(out, 'bamboo_fence', 10, 10);
+    const bf2 = $F(out, 'bamboo_fence', 10, 50);
+    const bf3 = $F(out, 'bamboo_fence', 10, 90);
+    const bf4 = $F(out, 'bamboo_fence', 150, 10);
+    const bf5 = $F(out, 'bamboo_fence', 150, 50);
+    const bf6 = $F(out, 'bamboo_fence', 150, 90);
+    // 動線
+    const newsStand = $F(out, 'newspaper_stand', 80, 95);  // NE livingTrace 控えめ
+
+    // NW chaya (Stage 3 予告)
+    $F(out, 'noren', -100, 28);
+    const nwBike = $F(out, 'bicycle', -125, 60);
+    // SW kura
+    $F(out, 'wood_fence', -130, 145); $F(out, 'wood_fence', -70, 145);
+    const swGarbage = $F(out, 'garbage', -160, 188);
+    $F(out, 'cat', -100, 178); $F(out, 'cat', -160, 168);
+    // SE kominka
+    $F(out, 'mailbox', 130, 122);
+    $F(out, 'noren', 130, 128);
+    const seMail = $F(out, 'mailbox', 110, 122);
+    $F(out, 'cat', 145, 168);
+    // 連続軸 (Stage 3 への handoff)
+    $F(out, 'puddle_reflection', -45, 105);
+    $F(out, 'puddle_reflection', 0, 100);
+    $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 90, 88);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
+    $F(out, 'manhole_cover', -30, 100); $F(out, 'manhole_cover', 33, 100);
+    // 電柱
+    $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
+    $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole', 178, 195); $F(out, 'power_line', 175, 192);
+
+    out.humans = [
+      _H(80, 80), _H(60, 95),    // 早朝参拝者
+    ];
+
+    out.grounds = [
+      _G('asphalt', 0, 100, 360, 200),
+      _G('stone_pavement', 80, 100, 100, 100),    // NE 表参道
+      _G('fallen_leaves', 40, 88, 25, 15),
+      _G('fallen_leaves', 120, 88, 25, 15),
+      _G('fallen_leaves', 60, 168, 30, 20),
+      _G('fallen_leaves', 100, 178, 28, 18),
+      _G('stone_pavement', -65, 100, 12, 200),
+    ];
+
+    _CLUSTER(out, {
+      id: 's2.ch11.NE.torii_sando', role: 'hero', cell: 'NE',
+      focal: torii,
+      companions: [sandoP1, sandoP2, lant1, lant2, koma1],
+      boundary: [bf1, bf2, bf3, bf4, bf5, bf6],
+      access: [rope, koma2],
+      livingTrace: newsStand,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch11.NW.chaya', role: 'ambient', cell: 'NW',
+      focal: { kind: 'b', i: 0 },  // chaya
+      companions: [{ kind: 'f', i: 14 }],  // noren
+      livingTrace: nwBike,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch11.SW.kura', role: 'ambient', cell: 'SW',
+      focal: swKura1,
+      companions: [swKura2],
+      livingTrace: swGarbage,
+    });
+    _CLUSTER(out, {
+      id: 's2.ch11.SE.kominka', role: 'ambient', cell: 'SE',
+      focal: { kind: 'b', i: 3 },  // kominka
+      companions: [],
+      livingTrace: seMail,
+    });
+
+    return out;
+  })() },
+
 ];
+
+
 
 // ─── Stage 3: 都心オフィス・公共中枢 (raw 配置) ─────────────────
 // 【全体の物語】: Stage 2 の雑多な夜街から、整然とした都心へ移行する。高層建物・

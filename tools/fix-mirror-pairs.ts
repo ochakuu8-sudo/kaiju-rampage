@@ -46,22 +46,25 @@ console.log(`L5 警告 ${pairs.length} 件を取得`);
 
 let src = fs.readFileSync(STAGES_PATH, 'utf8');
 
-// チャンクごとの範囲を特定する: ChN 開始 = `// ── S1-ChN:` の行頭、
-// 終端 = 次の `// ── S1-Ch(N+1):` または Stage 2 開始
+// チャンクごとの範囲を特定する。Stage 1 (S1-) と Stage 2 (S2-) を判別。
+// CLI 引数 --stage=N (0=Stage 1, 1=Stage 2) で対象ステージ
+const argStage = process.argv.find(a => a.startsWith('--stage='));
+const stagePrefix = argStage && argStage.split('=')[1] === '1' ? 'S2' : 'S1';
+const nextStageRaw = stagePrefix === 'S1' ? "'s2_raw'" : "'s3_raw'";
+
 function chunkRange(chunkId: number): { start: number; end: number } | null {
-  const startMarker = `// ── S1-Ch${chunkId}:`;
+  const startMarker = `// ── ${stagePrefix}-Ch${chunkId}:`;
   const startIdx = src.indexOf(startMarker);
   if (startIdx < 0) return null;
-  // 次のチャンクマーカーを探す (ChN+1, ChN+2, ... を順に)
   let endIdx = src.length;
   for (let next = chunkId + 1; next <= 20; next++) {
-    const nextMarker = `// ── S1-Ch${next}:`;
+    const nextMarker = `// ── ${stagePrefix}-Ch${next}:`;
     const nextIdx = src.indexOf(nextMarker);
     if (nextIdx > startIdx) { endIdx = nextIdx; break; }
   }
-  // Stage 2 への切り替え (s2_raw が出てくるところ)
-  const s2Idx = src.indexOf("'s2_raw'", startIdx);
-  if (s2Idx > 0 && s2Idx < endIdx) endIdx = s2Idx;
+  // 次ステージへの切り替えで切る
+  const nextStageIdx = src.indexOf(nextStageRaw, startIdx);
+  if (nextStageIdx > 0 && nextStageIdx < endIdx) endIdx = nextStageIdx;
   return { start: startIdx, end: endIdx };
 }
 
