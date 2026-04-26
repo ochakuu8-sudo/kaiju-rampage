@@ -1337,7 +1337,7 @@ export class Game {
    */
   private _updateAmbient(dt: number) {
     this._ambientAccumulator += dt;
-    if (this._ambientAccumulator < 0.5) return;  // ~2 emission opportunities/sec
+    if (this._ambientAccumulator < 0.2) return;  // ~5 emission opportunities/sec (v2: 5x density)
     this._ambientAccumulator = 0;
 
     const camTop = this.camera.top + 30;

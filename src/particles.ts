@@ -358,36 +358,40 @@ export class ParticleManager {
   spawnAmbient(x: number, y: number, type: 'sakura' | 'steam' | 'water' | 'dust' | 'firefly') {
     switch (type) {
       case 'sakura':
-        // 桜吹雪 (1 枚) — 既存 spawnSakuraPetals を 1 個版で
-        this.spawnSakuraPetals(x, y, 1);
+        // 桜吹雪 (2 枚) — 視認性向上のため 2 個 emit
+        this.spawnSakuraPetals(x, y, 2);
         return;
       case 'steam':
-        // 蒸気 (1 個) — 既存 spawnSteam を 1 個版で
-        this.spawnSteam(x, y, 1);
+        // 蒸気 (2 個) — 煙突感を出すため 2 個
+        this.spawnSteam(x, y, 2);
         return;
       case 'water':
-        // 水しぶき (1 個) — 既存 spawnWater を 1 個版で
-        this.spawnWater(x, y, 1);
+        // 水しぶき (2 個) — 池/噴水感を出すため
+        this.spawnWater(x, y, 2);
         return;
       case 'dust':
-        // 砂塵 (1 個) — 茶系のゆっくり上昇する小さい粒
-        this.emit(
-          x + rand(-10, 10), y + rand(-4, 4),
-          rand(-8, 8), rand(15, 35),
-          rand(0.55, 0.72), rand(0.50, 0.65), rand(0.40, 0.55),
-          rand(2, 4), rand(0.5, 1.0),
-          false, true, 0
-        );
+        // 砂塵 (2 個) — 子供が遊ぶ感、農地の感
+        for (let i = 0; i < 2; i++) {
+          this.emit(
+            x + rand(-12, 12), y + rand(-4, 4),
+            rand(-10, 10), rand(15, 35),
+            rand(0.55, 0.72), rand(0.50, 0.65), rand(0.40, 0.55),
+            rand(2, 4), rand(0.5, 1.0),
+            false, true, 0
+          );
+        }
         return;
       case 'firefly':
-        // ホタル (1 個) — 黄緑色の小さな光、ゆっくり浮遊
-        this.emit(
-          x + rand(-15, 15), y + rand(-10, 10),
-          rand(-12, 12), rand(-8, 8),
-          rand(0.85, 1.00), rand(0.95, 1.00), rand(0.40, 0.60),
-          rand(2, 3), rand(0.8, 1.5),
-          false, true, 0
-        );
+        // ホタル (2 個) — 広場の柔らかな光
+        for (let i = 0; i < 2; i++) {
+          this.emit(
+            x + rand(-18, 18), y + rand(-12, 12),
+            rand(-12, 12), rand(-8, 8),
+            rand(0.85, 1.00), rand(0.95, 1.00), rand(0.40, 0.60),
+            rand(2, 3), rand(0.8, 1.5),
+            false, true, 0
+          );
+        }
         return;
     }
   }
