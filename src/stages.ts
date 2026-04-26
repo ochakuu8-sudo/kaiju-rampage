@@ -3345,7 +3345,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ SE ロット 1: 24h コンビニ『ローソン』 (青、機能的) ═══
     const conv = $B(out, 'convenience', 130, 130);
     $B(out, 'apartment', 110, 175);
-    $F(out, 'sign_board', 130, 110);
     $F(out, 'shop_awning', 130, 122);
     $F(out, 'vending', 100, 158); $F(out, 'vending', 158, 158);
     $F(out, 'bicycle_rack', 160, 158);
@@ -3354,16 +3353,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ SE ロット 2: 24h カフェ『WIRED』 (テラス、ガラス) ═══
     const cafe = $B(out, 'cafe', 70, 130);
-    $F(out, 'shop_awning', 70, 122);
     $F(out, 'parasol', 50, 148); $F(out, 'parasol', 90, 148);
     $F(out, 'a_frame_sign', 70, 148);
-    $F(out, 'puddle_reflection', 70, 148);
     $F(out, 'bicycle', 50, 165);
 
     // ═══ SE ロット 3: 古書店『深夜堂』 ═══
     $B(out, 'bookstore', 30, 130);
     $B(out, 'mansion', 165, 175);
-    $F(out, 'a_frame_sign', 30, 148);
     $F(out, 'newspaper_stand', 30, 148);
     $F(out, 'mailbox', 165, 165);
     const seGarbage = $F(out, 'garbage', 155, 188);  // SE livingTrace
@@ -3374,13 +3370,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ 連続軸 (chouchin 上空 + 街灯ネオン + 横断帯) ═══
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', -90, 15);
     $F(out, 'chouchin', 87, 15); $F(out, 'chouchin', 155, 15);
-    $F(out, 'chouchin', -30, 15); $F(out, 'chouchin', 30, 15);
+
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', -45, 95);
-    $F(out, 'puddle_reflection', 45, 105);
+
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -3529,7 +3523,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ NW ロット 2: オフィス裏 ═══
     $B(out, 'office', -50, 70);
     $F(out, 'cable_junction_box', -100, 90);
-    $F(out, 'puddle_reflection', -110, 75);
 
     // ═══ NE ロット 1: コンビニ + 雑居店 ═══
     const conv = $B(out, 'convenience', 110, 22);
@@ -3548,7 +3541,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'office', 75, 70);
     $B(out, 'apartment', 165, 70);
     $F(out, 'ac_outdoor_cluster', 75, 92);
-    $F(out, 'puddle_reflection', 95, 75);
 
     // ═══ SE ロット 1: 住宅 + 古書店 ═══
     $B(out, 'townhouse', 80, 130);
@@ -3572,13 +3564,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ 連続軸 ═══
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', -90, 15);
     $F(out, 'chouchin', 87, 15); $F(out, 'chouchin', 155, 15);
-    $F(out, 'chouchin', -30, 15); $F(out, 'chouchin', 30, 15);
+
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', -45, 95);
-    $F(out, 'puddle_reflection', 45, 105);
+
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -3693,7 +3683,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const fp2 = $F(out, 'flower_planter_row', 167, 88);
     const lamp1 = $F(out, 'street_lamp', -90, 88);
     const lamp2 = $F(out, 'street_lamp', 90, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
+
     const pud1 = $F(out, 'puddle_reflection', -45, 95);
     const pud2 = $F(out, 'puddle_reflection', 48, 105);
     $F(out, 'puddle_reflection', 0, 100);
@@ -3721,7 +3711,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const swGarbage = $F(out, 'garbage', -158, 188);
     $F(out, 'recycling_bin', -100, 188);
     $F(out, 'milk_crate_stack', -130, 168);
-    $F(out, 'puddle_reflection', -100, 145);
     $F(out, 'cat', -45, 178);
 
     // ═══ SW ロット 2: 横丁の続き ═══
@@ -3740,7 +3729,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const seBike = $F(out, 'bicycle', 105, 188);
     $F(out, 'recycling_bin', 158, 188);
     $F(out, 'cable_junction_box', 130, 188);
-    $F(out, 'puddle_reflection', 97, 145);
 
     // ═══ SE ロット 2: 24h 薬局 + 物置 ═══
     $B(out, 'pharmacy', 165, 178);
@@ -3750,7 +3738,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ 連続軸 ═══
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -3880,7 +3868,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'ac_outdoor_cluster', -160, 92);
     $F(out, 'cable_junction_box', -130, 88);
     $F(out, 'puddle_reflection', -130, 60);
-    $F(out, 'puddle_reflection', -75, 60);
     $F(out, 'cat', -160, 92);
 
     // ═══ SW ロット 1: ビジネスホテル + 雀荘 + 蔵 ═══
@@ -3903,7 +3890,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'garbage', -160, 188);
     $F(out, 'recycling_bin', -100, 188);
     $F(out, 'cat', -100, 178);
-    $F(out, 'puddle_reflection', -50, 160);
 
     // ═══ SE ロット 1: マンション 2 棟 ═══
     const mansSE = $B(out, 'mansion', 80, 130);
@@ -3916,25 +3902,20 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'shop_awning', 165, 130);
     $F(out, 'parasol', 165, 148); $F(out, 'parasol', 145, 148);
     $F(out, 'a_frame_sign', 165, 158);
-    $F(out, 'sign_board', 30, 110);
     $F(out, 'shop_awning', 30, 122);
     $F(out, 'ac_unit', 80, 158); $F(out, 'ac_unit', 140, 158);
     $F(out, 'flower_bed', 100, 168);
     $F(out, 'potted_plant', 30, 165);
     const seBike = $F(out, 'bicycle_rack', 105, 188);
     $F(out, 'bicycle', 75, 165);
-    $F(out, 'recycling_bin', 97, 188);
 
     // ═══ 連続軸 ═══
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', -90, 15);
     $F(out, 'chouchin', 87, 15); $F(out, 'chouchin', 155, 15);
     $F(out, 'chouchin', 0, 15);
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', -90, 108);
-    $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', -45, 105);
-    $F(out, 'puddle_reflection', 0, 100);
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -4059,11 +4040,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const b2 = $F(out, 'bollard', 62, 92);
     const b3 = $F(out, 'bollard', -150, 108);
     const b4 = $F(out, 'bollard', 148, 108);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     const lamp1 = $F(out, 'street_lamp', -90, 88);
     $F(out, 'street_lamp', 90, 88);
-    $F(out, 'street_lamp', -90, 108);
-    $F(out, 'street_lamp', 87, 108);
+
     const mirror1 = $F(out, 'street_mirror', -45, 92);
     const mirror2 = $F(out, 'street_mirror', 48, 92);
     const pud1 = $F(out, 'puddle_reflection', -100, 60);
@@ -4071,8 +4051,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', 0, 145);
     $F(out, 'puddle_reflection', -45, 105);
     $F(out, 'puddle_reflection', 42, 105);
-    $F(out, 'puddle_reflection', -100, 100);
-    $F(out, 'puddle_reflection', 97, 100);
     const garbage = $F(out, 'garbage', -160, 148);
     $F(out, 'recycling_bin', 158, 148);
     $F(out, 'newspaper_stand', -75, 88);
@@ -4105,7 +4083,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'chouchin', -90, 15); $F(out, 'chouchin', 90, 15);
     $F(out, 'chouchin', -45, 15); $F(out, 'chouchin', 45, 15);
     $F(out, 'manhole_cover', -120, 100);
-    $F(out, 'manhole_cover', -60, 100);
+
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
     $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
@@ -4156,7 +4134,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     return out;
   })() },
-
 
   // ── S2-Ch5: 老舗飲み屋横丁 (SW+SE merged hero) ──
   // 物語: 「3 ロットの横丁: 西『金星通り』 + 中央『はたや』 + 東『鮨はま』」
@@ -4246,7 +4223,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'ac_unit', -130, 50);
     $F(out, 'ac_outdoor_cluster', -160, 92);
     $F(out, 'cable_junction_box', -100, 92);
-    $F(out, 'puddle_reflection', -100, 60);
 
     // ═══ NE ロット 1: カプセルホテル『フィット』 + スナック ═══
     const capsule = $B(out, 'capsule_hotel', 130, 22);
@@ -4259,20 +4235,16 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'recycling_bin', 100, 92);
     $F(out, 'ac_unit', 127, 50);
     $F(out, 'ac_outdoor_cluster', 157, 92);
-    $F(out, 'cable_junction_box', 97, 92);
-    $F(out, 'puddle_reflection', 97, 60);
 
     // 連続軸
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
     $F(out, 'chouchin', 160, 15);
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', -45, 95);
-    $F(out, 'puddle_reflection', 45, 105);
+
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100);
-    $F(out, 'manhole_cover', -60, 100);
+
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
     $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
@@ -4404,7 +4376,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'townhouse', -160, 138);
     $B(out, 'shed', -130, 178);
     $F(out, 'sign_board', -130, 110);
-    $F(out, 'sign_board', -75, 110);
     $F(out, 'chouchin', -130, 122);
     $F(out, 'chouchin', -75, 122);
     $F(out, 'noren', -130, 128);
@@ -4418,7 +4389,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'recycling_bin', -100, 188);
     $F(out, 'milk_crate_stack', -130, 168);
     $F(out, 'puddle_reflection', -100, 145);
-    $F(out, 'puddle_reflection', -50, 152);
     $F(out, 'cat', -130, 178); $F(out, 'cat', -45, 178);
 
     // ═══ SE ロット 1: 雀荘『竜』 + 24h カフェ ═══
@@ -4427,29 +4397,23 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'cafe', 30, 138);
     $B(out, 'mansion', 165, 138);
     $B(out, 'apartment', 100, 178);
-    $F(out, 'sign_board', 127, 110); $F(out, 'sign_board', 72, 110);
     $F(out, 'noren', 130, 128); $F(out, 'noren', 75, 128);
     $F(out, 'shop_awning', 30, 130);
     $F(out, 'parasol', 30, 148); $F(out, 'parasol', 50, 148);
-    $F(out, 'a_frame_sign', 30, 158);
     $F(out, 'mailbox', 165, 122);
     $F(out, 'ac_unit', 127, 158); $F(out, 'ac_unit', 165, 158);
     $F(out, 'ac_unit', 30, 158);
     const seBike = $F(out, 'bicycle', 158, 168);
     $F(out, 'bicycle_rack', 100, 168);
-    $F(out, 'recycling_bin', 158, 188);
     $F(out, 'milk_crate_stack', 100, 188);
-    $F(out, 'puddle_reflection', 97, 145);
-    $F(out, 'puddle_reflection', 60, 152);
     $F(out, 'cat', 75, 178);
 
     // 連続軸
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
     $F(out, 'chouchin', 160, 15);
     $F(out, 'street_lamp', 90, 88); $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', 60, 100);
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -4614,22 +4578,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'chouchin', 100, 118); $F(out, 'chouchin', 160, 122);
     $F(out, 'noren', 100, 122); $F(out, 'noren', 160, 128);
     $F(out, 'a_frame_sign', 97, 148);
-    $F(out, 'a_frame_sign', 157, 148);
     $F(out, 'sign_board', 157, 110);
     $F(out, 'wood_fence', 47, 145);
     $F(out, 'wood_fence', 127, 168);
-    $F(out, 'milk_crate_stack', 127, 188);
     $F(out, 'recycling_bin', 158, 188);
     const seBike = $F(out, 'bicycle', 72, 188);
     $F(out, 'cat', 47, 188);
     $F(out, 'puddle_reflection', 97, 145);
-    $F(out, 'puddle_reflection', 147, 158);
 
     // 連続軸
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
     $F(out, 'chouchin', 160, 15);
-    $F(out, 'puddle_reflection', -45, 105);
-    $F(out, 'puddle_reflection', 42, 105);
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', 120, 100);
     $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
@@ -4758,7 +4717,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'ac_outdoor_cluster', -75, 92);
     $F(out, 'cable_junction_box', -160, 92);
     $F(out, 'puddle_reflection', -130, 60);
-    $F(out, 'puddle_reflection', -50, 75);
 
     // ═══ NE ロット 1: 雑居『K 棟』(パチンコ + ゲーセン) ═══
     const pachinko = $B(out, 'pachinko', 130, 22);
@@ -4769,15 +4727,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'shop', 165, 75);
     $F(out, 'sign_board', 127, 8); $F(out, 'sign_board', 70, 8);
     $F(out, 'sign_board', 165, 8); $F(out, 'sign_board', 30, 8);
-    $F(out, 'a_frame_sign', 100, 60);
-    $F(out, 'a_frame_sign', 127, 60);
     const neBike = $F(out, 'bicycle', 158, 60);
     $F(out, 'vending', 50, 56); $F(out, 'vending', 165, 56);
-    $F(out, 'recycling_bin', 97, 92);
     $F(out, 'ac_outdoor_cluster', 130, 92);
     $F(out, 'cable_junction_box', 70, 92);
-    $F(out, 'puddle_reflection', 100, 60);
-    $F(out, 'puddle_reflection', 165, 75);
 
     // ═══ SW ロット 1: マンション + 雀荘 ═══
     const mansSW = $B(out, 'mansion', -100, 130);
@@ -4793,19 +4746,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'ac_unit', -100, 158); $F(out, 'ac_unit', -45, 158);
     $F(out, 'ac_unit', -160, 168);
     $F(out, 'bicycle_rack', -75, 168);
-    $F(out, 'recycling_bin', -130, 188);
-    $F(out, 'puddle_reflection', -100, 145);
     $F(out, 'cat', -160, 188);
 
     // 連続軸
     $F(out, 'chouchin', -160, 15); $F(out, 'chouchin', 0, 15);
     $F(out, 'chouchin', 160, 15);
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', -45, 105);
-    $F(out, 'puddle_reflection', 42, 105);
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -4975,21 +4923,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'cat', 145, 178); $F(out, 'cat', 80, 188);
     $F(out, 'cat', 30, 188);
     $F(out, 'wood_fence', 0, 145); $F(out, 'wood_fence', 0, 168);
-    $F(out, 'recycling_bin', 30, 188);
     $F(out, 'milk_crate_stack', 130, 188);
-    $F(out, 'puddle_reflection', 97, 145);
-    $F(out, 'puddle_reflection', 60, 188);
 
     // 連続軸 (chouchin 1 本だけ残る)
     $F(out, 'chouchin', -160, 15);
     $F(out, 'chouchin', 160, 15);
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
-    $F(out, 'puddle_reflection', -45, 105);
-    $F(out, 'puddle_reflection', 0, 100);
-    $F(out, 'puddle_reflection', 42, 105);
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -5143,18 +5084,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // 連続軸
     $F(out, 'puddle_reflection', -45, 105);
-    $F(out, 'puddle_reflection', 0, 100);
-    $F(out, 'puddle_reflection', 42, 105);
-    $F(out, 'puddle_reflection', -120, 105);
-    $F(out, 'puddle_reflection', 117, 105);
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
+
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
-    $F(out, 'cat', 0, 178);
     $F(out, 'power_pole', -178, 5); $F(out, 'power_line', -175, 8);
     $F(out, 'power_pole', 178, 5); $F(out, 'power_line', 175, 8);
     $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
@@ -5317,13 +5253,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'recycling_bin', 130, 188);
 
     // 連続軸 (Stage 3 への handoff)
-    $F(out, 'puddle_reflection', -45, 105);
-    $F(out, 'puddle_reflection', 0, 100);
-    $F(out, 'puddle_reflection', 42, 105);
     $F(out, 'street_lamp', -90, 88); $F(out, 'street_lamp', 87, 88);
-    $F(out, 'street_lamp', -90, 108); $F(out, 'street_lamp', 87, 108);
+
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);
-    $F(out, 'bollard', -40, 108); $F(out, 'bollard', 40, 108);
+
     $F(out, 'manhole_cover', -120, 100); $F(out, 'manhole_cover', -60, 100);
     $F(out, 'manhole_cover', 0, 100); $F(out, 'manhole_cover', 60, 100);
     $F(out, 'manhole_cover', 120, 100);
@@ -5397,12 +5330,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   })() },
 
 ];
-
-
-
-
-
-
 
 // ─── Stage 3: 都心オフィス・公共中枢 (raw 配置) ─────────────────
 // 【全体の物語】: Stage 2 の雑多な夜街から、整然とした都心へ移行する。高層建物・
