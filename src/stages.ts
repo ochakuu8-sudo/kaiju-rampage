@@ -879,6 +879,57 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('cat', 145, 158),  // mansion の縁側
       _F('cat', -130, 175), // 蔵裏の地猫
     ],
+    // ▼ v6.3 cluster: NW = HERO 古民家邸 / NE+SW+SE = AMBIENT 住宅
+    // (建物・家具 index は上記配列の出現順)
+    clusters: [
+      // ★ HERO: NW 古民家邸 (基本形 B = 焦点建物 + 焦点ground)
+      { id: 'ch0.NW.kominka_estate', role: 'hero', cell: 'NW',
+        focal: { kind: 'f', i: 0 },           // koi_pond (-90,40)
+        companions: [
+          { kind: 'b', i: 0 },                // kominka 母屋 (-90,60)
+          { kind: 'f', i: 4 },                // pine_tree (-160,70)
+          { kind: 'f', i: 6 },                // stone_lantern (-110,78)
+          { kind: 'f', i: 8 },                // bonsai (-78,30)
+        ],
+        boundary: [
+          { kind: 'f', i: 22 },               // wood_fence (-15,30)
+          { kind: 'f', i: 23 },               // wood_fence (-15,50)
+          { kind: 'f', i: 24 },               // wood_fence (-15,70)
+          { kind: 'f', i: 25 },               // wood_fence (-15,90)
+        ],
+        livingTrace: { kind: 'f', i: 14 },    // cat (-100,88) 縁側
+      },
+      // AMBIENT: NE 現代住宅列 (mansion 邸宅を焦点)
+      { id: 'ch0.NE.mansion', role: 'ambient', cell: 'NE',
+        focal: { kind: 'b', i: 5 },           // mansion (145,30)
+        companions: [
+          { kind: 'b', i: 3 },                // townhouse (30,30)
+          { kind: 'b', i: 4 },                // house (80,30)
+          { kind: 'b', i: 6 },                // house (175,60)
+        ],
+        livingTrace: { kind: 'f', i: 49 },    // bicycle (mansion lot, 130,22)
+      },
+      // AMBIENT: SW 伝統住宅 (machiya を焦点)
+      { id: 'ch0.SW.machiya', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 7 },           // machiya (-150,130)
+        companions: [
+          { kind: 'b', i: 8 },                // house (-90,130)
+          { kind: 'b', i: 9 },                // townhouse (-45,130)
+          { kind: 'b', i: 10 },               // kura (-150,178) 裏蔵
+        ],
+        livingTrace: { kind: 'f', i: 96 },    // bicycle (-100,122) 子育て家庭
+      },
+      // AMBIENT: SE 街角 (mansion 邸 + wagashi 街角)
+      { id: 'ch0.SE.corner', role: 'ambient', cell: 'SE',
+        focal: { kind: 'b', i: 15 },          // mansion (145,130)
+        companions: [
+          { kind: 'b', i: 13 },               // house (35,130)
+          { kind: 'b', i: 14 },               // duplex (85,130)
+          { kind: 'b', i: 16 },               // wagashi (70,175) 街角
+        ],
+        livingTrace: { kind: 'f', i: 116 },   // laundry_balcony (95,130)
+      },
+    ],
     humans: [
       // 古民家邸 (4): 池を眺める / 飛び石 / 縁側 / 蔵
       _H(-90, 50),    // 池の前
@@ -1327,6 +1378,38 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('flower_bed', 60, 170),
       _F('hedge', 75, 90), _F('potted_plant', -45, 148),
     ],
+    // ▼ v6.3 cluster: NW+NE = HERO 公共3連 (merged) / SW+SE = AMBIENT 住宅
+    clusters: [
+      // ★ HERO: 公共3連 (daycare + clinic + post_office) — merged 上段
+      { id: 'ch2.merged.civic_trio', role: 'hero', cell: 'merged',
+        focal: { kind: 'b', i: 1 },           // clinic 中央
+        companions: [
+          { kind: 'b', i: 0 },                // daycare
+          { kind: 'b', i: 2 },                // post_office
+          { kind: 'f', i: 0 },                // swing_set 保育園庭
+          { kind: 'f', i: 1 },                // slide
+        ],
+        livingTrace: { kind: 'f', i: 3 },     // sandbox 保育園 (生活痕跡)
+      },
+      // AMBIENT: SW 住宅 (kominka が焦点)
+      { id: 'ch2.SW.kominka', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 7 },           // kominka (-100,130)
+        companions: [
+          { kind: 'b', i: 9 },                // house (-170,138)
+          { kind: 'b', i: 10 },               // townhouse (-45,138)
+          { kind: 'b', i: 14 },               // shed (-130,178) 裏物置
+        ],
+      },
+      // AMBIENT: SE 住宅 (duplex が焦点)
+      { id: 'ch2.SE.duplex', role: 'ambient', cell: 'SE',
+        focal: { kind: 'b', i: 8 },           // duplex (100,130)
+        companions: [
+          { kind: 'b', i: 11 },               // house (145,138)
+          { kind: 'b', i: 12 },               // house (60,138)
+          { kind: 'b', i: 16 },               // kura (145,170) 裏蔵
+        ],
+      },
+    ],
     humans: [
       // 保育園送迎
       _H(-120, 82), _H(-80, 78), _H(-110, 42),
@@ -1510,6 +1593,38 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('flower_bed', 0, 195), _F('flower_bed', -100, 192), _F('flower_bed', 100, 192),
       _F('flower_bed', -160, 192), _F('flower_bed', 165, 192),
     ],
+    // ▼ v6.3 cluster: SW+SE = HERO 3連テラス (merged)
+    clusters: [
+      // ★ HERO: 3連カフェテラス (基本形 C = 3 棟連続焦点)
+      { id: 'ch3.merged.terrace_trio', role: 'hero', cell: 'merged',
+        focal: { kind: 'b', i: 1 },           // bookstore 中央 (25,122)
+        companions: [
+          { kind: 'b', i: 0 },                // bakery (-112,122)
+          { kind: 'b', i: 2 },                // cafe (112,122)
+          { kind: 'f', i: 0 },                // shop_awning bakery
+          { kind: 'f', i: 1 },                // a_frame_sign bakery
+        ],
+        livingTrace: { kind: 'f', i: 1 },     // a_frame_sign (テラス開店中の痕跡)
+      },
+      // AMBIENT: NW 住宅+商店 (florist+townhouse)
+      { id: 'ch3.NW.residential_shops', role: 'ambient', cell: 'NW',
+        focal: { kind: 'b', i: 5 },           // florist (-45,40)
+        companions: [
+          { kind: 'b', i: 6 },                // shop (-160,38)
+          { kind: 'b', i: 9 },                // townhouse (-110,38)
+          { kind: 'b', i: 10 },               // mansion (-100,64)
+        ],
+      },
+      // AMBIENT: NE 住宅+商店 (laundromat+pharmacy)
+      { id: 'ch3.NE.shops', role: 'ambient', cell: 'NE',
+        focal: { kind: 'b', i: 4 },           // pharmacy (125,40)
+        companions: [
+          { kind: 'b', i: 3 },                // laundromat (42,40)
+          { kind: 'b', i: 7 },                // shop (75,60)
+          { kind: 'b', i: 12 },               // greenhouse (155,72)
+        ],
+      },
+    ],
     humans: [
       // テラス客 (3連) — 各店3-4人
       _H(-132, 158), _H(-100, 158), _H(-112, 138), _H(-120, 168),
@@ -1655,6 +1770,36 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bench', 65, 152), _F('cat', 130, 148), _F('cat', -160, 168),
       _F('flower_planter_row', 95, 172),
       _F('garbage', -75, 178), _F('dumpster', 145, 162),
+    ],
+    // ▼ v6.3 cluster: NW = HERO 銭湯
+    clusters: [
+      // ★ HERO: 銭湯 (onsen_inn + bathhouse_chimney + noren で識別)
+      { id: 'ch4.NW.bathhouse', role: 'hero', cell: 'NW',
+        focal: { kind: 'b', i: 0 },           // onsen_inn (-118,38)
+        companions: [
+          { kind: 'f', i: 0 },                // bathhouse_chimney (-145,72)
+          { kind: 'f', i: 1 },                // noren
+          { kind: 'f', i: 2 },                // chouchin
+          { kind: 'f', i: 3 },                // shop_awning
+        ],
+      },
+      // AMBIENT: NE スーパー+薬局
+      { id: 'ch4.NE.commerce', role: 'ambient', cell: 'NE',
+        focal: { kind: 'b', i: 1 },           // supermarket (45,42)
+        companions: [
+          { kind: 'b', i: 2 },                // pharmacy (120,42)
+          { kind: 'b', i: 7 },                // greenhouse (78,72)
+          { kind: 'b', i: 8 },                // mansion (165,60)
+        ],
+      },
+      // AMBIENT: SW ラーメン+住宅
+      { id: 'ch4.SW.ramen', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 4 },           // ramen (-40,122)
+        companions: [
+          { kind: 'b', i: 10 },               // house (-160,132)
+          { kind: 'b', i: 11 },               // townhouse (-110,138)
+        ],
+      },
     ],
     humans: [
       // 銭湯客
@@ -1824,6 +1969,34 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('hedge', -160, 195), _F('hedge', 165, 195),
       _F('hedge', -130, 110), _F('hedge', 130, 110),
     ],
+    // ▼ v6.3 cluster: SW+SE = HERO civic plaza (merged) / NW+NE = AMBIENT 公共
+    clusters: [
+      // ★ HERO: civic plaza (statue + plaza_tile_circle で識別)
+      { id: 'ch5.merged.civic_plaza', role: 'hero', cell: 'merged',
+        focal: { kind: 'f', i: 1 },           // statue (-8,148)
+        companions: [
+          { kind: 'f', i: 0 },                // plaza_tile_circle (0,145)
+          { kind: 'f', i: 2 },                // fountain_large (32,150)
+        ],
+      },
+      // AMBIENT: NW 公共施設 (post_office + bank)
+      { id: 'ch5.NW.public', role: 'ambient', cell: 'NW',
+        focal: { kind: 'b', i: 0 },           // post_office (-130,42)
+        companions: [
+          { kind: 'b', i: 1 },                // bank (-45,42)
+          { kind: 'b', i: 6 },                // shop (-100,60)
+          { kind: 'b', i: 7 },                // shed (-160,78)
+        ],
+      },
+      // AMBIENT: NE 公共施設 (city_hall + library)
+      { id: 'ch5.NE.civic', role: 'ambient', cell: 'NE',
+        focal: { kind: 'b', i: 2 },           // city_hall (65,38)
+        companions: [
+          { kind: 'b', i: 3 },                // library (140,42)
+          { kind: 'b', i: 8 },                // greenhouse (100,72)
+        ],
+      },
+    ],
     humans: [
       // 公共施設利用者
       _H(-130, 55), _H(-45, 55), _H(140, 56), _H(65, 56),
@@ -1985,6 +2158,27 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('cat', 150, 168),
       // ── 境界 ──
       _F('hedge', -150, 110), _F('hedge', 30, 110),
+    ],
+    // ▼ v6.3 cluster: 全マージ HERO 小学校キャンパス
+    clusters: [
+      // ★ HERO: 小学校 (school + daycare 校門 + 校庭)
+      { id: 'ch6.merged.school_campus', role: 'hero', cell: 'merged',
+        focal: { kind: 'b', i: 0 },           // school (-70,38)
+        companions: [
+          { kind: 'b', i: 1 },                // daycare (95,42)
+          { kind: 'f', i: 0 },                // jungle_gym (校庭)
+          { kind: 'f', i: 1 },                // swing_set
+          { kind: 'f', i: 2 },                // slide
+        ],
+      },
+      // AMBIENT: SE 商店列 (3店)
+      { id: 'ch6.SE.shops', role: 'ambient', cell: 'SE',
+        focal: { kind: 'b', i: 2 },           // bookstore (80,122)
+        companions: [
+          { kind: 'b', i: 3 },                // shop (145,122)
+          { kind: 'b', i: 4 },                // cafe (35,122)
+        ],
+      },
     ],
     humans: [
       // 校門・校庭 (児童と見守り)
@@ -2169,6 +2363,35 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('flower_bed', -130, 195), _F('flower_bed', 130, 195),
       _F('flower_bed', -45, 195), _F('flower_bed', 45, 195),
     ],
+    // ▼ v6.3 cluster: NW+NE = HERO 提灯アーケード (merged)
+    clusters: [
+      // ★ HERO: 提灯アーケード (chouchin 14+ 本のアーチが識別)
+      { id: 'ch7.merged.chouchin_arcade', role: 'hero', cell: 'merged',
+        focal: { kind: 'b', i: 2 },           // bookstore (-35,38) 中央
+        companions: [
+          { kind: 'b', i: 0 },                // ramen (-145,38)
+          { kind: 'b', i: 1 },                // izakaya (-95,38)
+          { kind: 'b', i: 3 },                // cafe (35,38)
+          { kind: 'b', i: 5 },                // game_center (150,38)
+        ],
+      },
+      // AMBIENT: SW 住宅+裏路地
+      { id: 'ch7.SW.residential', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 13 },          // house (-140,132)
+        companions: [
+          { kind: 'b', i: 14 },               // townhouse (-100,138)
+          { kind: 'b', i: 15 },               // house (-45,138)
+        ],
+      },
+      // AMBIENT: SE 住宅+裏路地
+      { id: 'ch7.SE.residential', role: 'ambient', cell: 'SE',
+        focal: { kind: 'b', i: 18 },          // mansion (165,138)
+        companions: [
+          { kind: 'b', i: 16 },               // townhouse (40,138)
+          { kind: 'b', i: 17 },               // house (110,138)
+        ],
+      },
+    ],
     humans: [
       // アーケードの客 (各店フロント)
       _H(-145, 55), _H(-95, 55), _H(-35, 55), _H(35, 60), _H(95, 55), _H(150, 55),
@@ -2334,6 +2557,35 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 境界 ──
       _F('flower_bed', 165, 188), _F('hedge', -170, 110), _F('hedge', 170, 110),
       _F('guardrail_short', 35, 92), _F('guardrail_short', 155, 92),
+    ],
+    // ▼ v6.3 cluster: NE = HERO 地方の小駅
+    clusters: [
+      // ★ HERO: train_station + platform_edge + railway_track 駅
+      { id: 'ch8.NE.train_station', role: 'hero', cell: 'NE',
+        focal: { kind: 'b', i: 0 },           // train_station (95,22)
+        companions: [
+          { kind: 'f', i: 0 },                // platform_edge
+          { kind: 'f', i: 1 },                // railway_track
+          { kind: 'f', i: 3 },                // signal_tower
+          { kind: 'b', i: 18 },               // bus_terminal_shelter (-75,60)
+        ],
+      },
+      // AMBIENT: NW 駅前商店
+      { id: 'ch8.NW.station_shops', role: 'ambient', cell: 'NW',
+        focal: { kind: 'b', i: 1 },           // bookstore (-120,42)
+        companions: [
+          { kind: 'b', i: 2 },                // cafe (-45,42)
+          { kind: 'b', i: 3 },                // shop (-160,42)
+        ],
+      },
+      // AMBIENT: SW 住宅+商店
+      { id: 'ch8.SW.residential', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 5 },           // convenience (-120,138)
+        companions: [
+          { kind: 'b', i: 9 },                // house (-160,138)
+          { kind: 'b', i: 10 },               // shop (-40,138)
+        ],
+      },
     ],
     humans: [
       // 駅の待ち人 (ホーム端)
@@ -2505,6 +2757,36 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('flower_bed', -160, 192), _F('flower_bed', 30, 192),
       _F('rock', 130, 195),
     ],
+    // ▼ v6.3 cluster: SE = HERO 田園農家
+    clusters: [
+      // ★ HERO: 農家本体 (kominka + grain_silo + water_tank が識別)
+      { id: 'ch9.SE.farmhouse', role: 'hero', cell: 'SE',
+        focal: { kind: 'b', i: 0 },           // kominka (105,122)
+        companions: [
+          { kind: 'b', i: 1 },                // greenhouse (145,150)
+          { kind: 'b', i: 2 },                // kura (70,155)
+          { kind: 'f', i: 0 },                // grain_silo
+          { kind: 'f', i: 1 },                // water_tank
+        ],
+        livingTrace: { kind: 'f', i: 4 },     // laundry_pole (80,145)
+      },
+      // AMBIENT: NW 街はずれの住宅
+      { id: 'ch9.NW.outskirt_homes', role: 'ambient', cell: 'NW',
+        focal: { kind: 'b', i: 4 },           // house (-135,42)
+        companions: [
+          { kind: 'b', i: 5 },                // garage (-90,60)
+          { kind: 'b', i: 7 },                // house (-160,70)
+        ],
+      },
+      // AMBIENT: SW 町家+蔵集落
+      { id: 'ch9.SW.machiya', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 12 },          // machiya (-100,138)
+        companions: [
+          { kind: 'b', i: 11 },               // kura (-160,138)
+          { kind: 'b', i: 13 },               // kura (-45,138)
+        ],
+      },
+    ],
     humans: [
       // 農作業中
       _H(105, 140), _H(145, 160), _H(70, 168),
@@ -2651,6 +2933,28 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 境界・植栽 ──
       _F('flower_bed', -100, 195), _F('hedge', -160, 195),
       _F('cat', -75, 195),
+    ],
+    // ▼ v6.3 cluster: NW+NE = HERO 倉庫消防 (merged)
+    clusters: [
+      // ★ HERO: 倉庫+消防分署 (warehouse 3つ + fire_station + police_station)
+      { id: 'ch10.merged.warehouse_civic', role: 'hero', cell: 'merged',
+        focal: { kind: 'b', i: 2 },           // fire_station (65,42) 中央分署
+        companions: [
+          { kind: 'b', i: 0 },                // warehouse (-120,42)
+          { kind: 'b', i: 1 },                // warehouse (-45,42)
+          { kind: 'b', i: 3 },                // police_station (135,42)
+          { kind: 'b', i: 4 },                // warehouse (50,132)
+        ],
+      },
+      // AMBIENT: SW 街はずれの住宅
+      { id: 'ch10.SW.outskirt', role: 'ambient', cell: 'SW',
+        focal: { kind: 'b', i: 8 },           // garage (-135,132)
+        companions: [
+          { kind: 'b', i: 11 },               // kura (-170,170)
+          { kind: 'b', i: 12 },               // kura (-75,170)
+          { kind: 'b', i: 16 },               // kura (-120,170)
+        ],
+      },
     ],
     humans: [
       // 倉庫前 作業員
@@ -2807,6 +3111,35 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 198), _F('power_line', 175, 196),
       // ── 境界 ──
       _F('cat', 70, 168), _F('cat', -135, 178),
+    ],
+    // ▼ v6.3 cluster: SW+SE = HERO 踏切 (merged) — Stage 1 終端
+    clusters: [
+      // ★ HERO: 踏切 (railroad_crossing + signal_tower で識別、Stage 1 締め)
+      { id: 'ch11.merged.railroad_crossing', role: 'hero', cell: 'merged',
+        focal: { kind: 'f', i: 4 },           // railroad_crossing (-55,145)
+        companions: [
+          { kind: 'f', i: 0 },                // railway_track (0,145)
+          { kind: 'f', i: 5 },                // railroad_crossing (55,145)
+          { kind: 'f', i: 6 },                // signal_tower (-90,150)
+          { kind: 'f', i: 7 },                // signal_tower (90,150)
+        ],
+      },
+      // AMBIENT: NW ガソリンスタンド (gas_station 焦点)
+      { id: 'ch11.NW.gas_station', role: 'ambient', cell: 'NW',
+        focal: { kind: 'b', i: 0 },           // gas_station (-135,42)
+        companions: [
+          { kind: 'b', i: 1 },                // convenience (-45,42)
+          { kind: 'b', i: 7 },                // shed (-160,78)
+        ],
+      },
+      // AMBIENT: NE ramen + 周辺
+      { id: 'ch11.NE.ramen', role: 'ambient', cell: 'NE',
+        focal: { kind: 'b', i: 2 },           // ramen (70,42)
+        companions: [
+          { kind: 'b', i: 11 },               // mansion (165,60)
+          { kind: 'b', i: 17 },               // bus_terminal_shelter (-75,60)
+        ],
+      },
     ],
     humans: [
       // 踏切待ち
