@@ -3189,1111 +3189,982 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
   } },
 ];
 
-// ─── Stage 2: 夜の歓楽街・飲食街 (raw 配置) ───────────────────
-// 【全体の物語】: 踏切の先で一気に夜へ切り替える。赤提灯、暖簾、ネオン、自販機、
-//   タクシー待ち、濡れた路面、裏口、ゴミ置き場で、夜の人流が見える高密度ジオラマ。
-//   Stage 3 (都心オフィス) へは大通り・bollard・stone_pavement で handoff。
+// ─── Stage 2: 夜の歓楽街・飲食街 (v1.3 Stage 1 形式準拠版、raw 配置) ───────────────────
+// 【全体の物語】: 終電後の地方駅から朝の神社表参道へ、4 Acts × 12 Chunks で抜ける。
+//   Act I  (Ch0-Ch2):  駅前繁華 — 駅 / 食事街 3 連 / アーケード入口
+//   Act II (Ch3-Ch5):  歓楽街最盛期 — 高層雑居 / パチンコ+交番(★) / 横丁
+//   Act III(Ch6-Ch8):  ホテルと屋台 — ラブホ街 / 屋台横丁(merged) / 映画館
+//   Act IV (Ch9-Ch11): 静寂への転換 — 駐車場 / 神社の裏 / 表参道(Stage 3 handoff)
 // 【連続軸】:
-//   chouchin と noren の飲食街帯 (Ch0-Ch7)
+//   chouchin / noren の飲食街帯 (Ch0-Ch7)
 //   全体: asphalt + puddle_reflection の濡れた夜路面
-//   裏側: garbage / dumpster / ac_outdoor_cluster / cable_junction_box
-//   交通: taxi_rank_sign / bus_stop / vending / street_lamp
-// 【密度目安】: 建物 20-30 / 家具 80-120 / 人 10-22 (夜街の高密度)
+//   stone_pavement (x=-65) 歩道帯 (Stage 1 から継続、Stage 3 へ受け渡し)
+//   power_pole / power_line / cable_junction_box の電線軸
+// 【密度目安】: 建物 15-22 / 家具 70-100 / 人 8-15 (夜街の高密度、ロット集中)
+// 【座標系】: dx ∈ [-180, +180] / dy ∈ [0, 200] チャンクローカル
 const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
-  // ═══ Act I: 駅前繁華 (C0-C2) ═══════════════════════════════════════
+  // ═══ Act I: 駅前繁華 (Ch0-Ch2) ═══════════════════════════════════════
 
-  // ── C0: 駅前ロータリー — 小さな駅舎 + タクシー + バス乗り場 ──
-  // Stage 1 終端の踏切から駅北口へ。帰宅サラリーマンと駅員が主役。
+  // ── Ch0: 終電後の地方駅と北口ロータリー ──
+  // NE = ヒーロー (駅前広場、基本形 A オープンスペース) / NW・SW・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 ─ 前列ファサード (Y をずらす) ===
-      _B('ramen', -148, 42),                                    // Cell A 駅前ラーメン
-      _B('snack', -115, 38),
-      _B('train_station', -35, 52),                             // ★ Cell B 駅舎 (奥に構える)
-      _B('convenience', 55, 40),
-      _B('cafe', 107, 44),
-      _B('business_hotel', 135, 64.5),                            // ★ 背が高いため奥
-      _B('shop', 172, 40),
-      // === 上段 ─ 奥列 (小屋/物置/人力車置き場) ===
-      _B('shed', -170, 76),                                     // 駅裏の倉庫
-      _B('garage', -128, 80),
-      _B('greenhouse', -71, 78),                                // 花屋の温室
-      _B('shed', 30, 72),
-      _B('garage', 72, 74),
-      _B('shed', 110, 76),
-      _B('shed', 168, 80),
-      // === 下段 ─ 前列ファサード ===
-      _B('mahjong_parlor', -150, 132),                          // ★ 麻雀荘
-      _B('izakaya', -118, 138),
-      _B('bus_terminal_shelter', -55, 142),                     // Cell F バス乗り場 (長庇)
-      _B('bakery', 38, 130),
-      _B('karaoke', 70, 144),                                   // 少し奥
-      _B('capsule_hotel', 135, 146),                            // ★ カプセル (横長、少し奥)
-      _B('apartment', 175, 148),
-      // === 下段 ─ 奥列 (駐輪場/物置/タクシー溜まり) ===
-      _B('shed', -170, 172),
-      _B('garage', -128, 178),                                  // タクシー車庫
-      _B('shed', -104, 174),
-      _B('yatai', -22, 170),                                    // ★ 駅前の夜鳴き屋台
-      _B('shed', 16, 176),
-      _B('garage', 108, 178),
-      _B('shed', 156, 172),
-      _B('house', 195, 170),                                    // 駅前の古い家
+      // === NE 焦点: 駅舎 ===
+      _B('train_station', 80, 22),
+      // === NW アンビエント: ビジネスホテル ===
+      _B('business_hotel', -130, 22),
+      // === SW アンビエント: 食事街 ===
+      _B('ramen', -160, 130),
+      _B('izakaya', -100, 130),
+      // === SE アンビエント: コンビニ + カフェ + 本屋 ===
+      _B('convenience', 130, 130),
+      _B('cafe', 70, 130),
+      _B('bookstore', 30, 130),
     ],
     furniture: [
-      // ─── 軸: ネオン提灯帯 (facade y=22 上段) ───
-      _F('chouchin', -148, 22), _F('noren', -148, 28),
-      _F('chouchin', -115, 22), _F('noren', -115, 28),
-      _F('sign_board', -25, 22),                                // 駅名標
-      _F('a_frame_sign', -55, 22), _F('a_frame_sign', 55, 22),
-      _F('chouchin', 90, 22), _F('kerbside_vending_pair', 120, 25),
-      // ─── 駅前設備 ───
-      _F('newspaper_stand', -5, 75), _F('post_box', 8, 75),
-      _F('telephone_booth', -38, 72),
-      _F('taxi_rank_sign', 32, 75), _F('bus_stop', -55, 75),
-      _F('plaza_tile_circle', -25, 80),                         // 駅前広場の石畳
-      // ─── 軸: 電線・電柱 (全チャンク共通) ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
+      // ─── NE 焦点 4 層: 駅前広場 ───
+      _F('platform_edge', 50, 70), _F('platform_edge', 110, 70),
+      _F('railway_track', 50, 78), _F('railway_track', 80, 80),
+      _F('railway_track', 110, 82), _F('railway_track', 80, 86),
+      _F('signal_tower', 80, 95),
+      // 取り巻き (駅前広場): bench × 4 不揃い
+      _F('bench', 20, 85), _F('bench', 65, 85), _F('bench', 120, 85), _F('bench', 165, 85),
+      _F('flower_planter_row', 30, 62), _F('flower_planter_row', 90, 62), _F('flower_planter_row', 150, 62),
+      _F('flag_pole', 30, 62), _F('flag_pole', 130, 62),
+      // 境界: bollard 横断
+      _F('bollard', -65, 92), _F('bollard', 62, 92), _F('bollard', -150, 108), _F('bollard', 148, 108),
+      // 動線
+      _F('bus_stop', 30, 88), _F('bus_stop', 130, 88),
+      _F('taxi_rank_sign', 145, 88), _F('taxi_rank_sign', 165, 88),
+      _F('manhole_cover', 50, 100), _F('manhole_cover', 110, 100), _F('manhole_cover', 80, 105),
+      _F('street_lamp', 30, 88), _F('street_lamp', 165, 88),
+      // ─── NW アンビエント: ビジネスホテル ───
+      _F('sign_board', -130, 22),
+      _F('atm', -150, 38), _F('atm', -110, 38),
+      _F('mailbox', -100, 22),
+      // ─── SW アンビエント: ラーメン + 居酒屋 ───
+      _F('chouchin', -160, 118), _F('chouchin', -100, 118),
+      _F('noren', -160, 124), _F('noren', -100, 124),
+      _F('a_frame_sign', -130, 148),
+      _F('bicycle', -75, 152),
+      // ─── SE アンビエント: コンビニ + カフェ + 本屋 ───
+      _F('parasol', 70, 152), _F('parasol', 50, 158),
+      _F('a_frame_sign', 30, 148),
+      _F('garbage', 165, 175),
+      _F('vending', 110, 138), _F('vending', 150, 138),
+      // ─── 取り巻き 3 パターン ───
+      // facade 沿い (y=22): sign_board × 4 不均等
+      _F('sign_board', -100, 22), _F('sign_board', 30, 22), _F('sign_board', 130, 22),
+      _F('mailbox', -130, 22), _F('mailbox', 30, 22), _F('mailbox', 165, 22),
+      // 歩道沿い (y=15 上空 chouchin × 4)
+      _F('chouchin', -100, 15), _F('chouchin', -30, 15), _F('chouchin', 30, 15), _F('chouchin', 100, 15),
+      _F('puddle_reflection', -50, 168), _F('puddle_reflection', 70, 175),
+      // ─── 連続軸: 電柱・電線 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 92), _F('power_line', 90, 92),
       _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 軸: 提灯帯 (facade y=118 下段) ───
-      _F('chouchin', -150, 118), _F('noren', -150, 124),
-      _F('chouchin', -118, 118), _F('noren', -118, 124),
-      _F('a_frame_sign', -55, 118), _F('chouchin', 72, 118), _F('noren', 72, 124),
-      _F('a_frame_sign', 38, 118), _F('sign_board', 118, 118),
-      // ─── ロータリー (下段中央) ───
-      _F('car', -28, 170), _F('car', 32, 170),                  // 停車タクシー
-      _F('bicycle_row', -90, 170), _F('bicycle_rack', 68, 172),
-      _F('dumpster', -150, 172), _F('manhole_cover', 0, 165),
-      // ─── 軸: puddle_reflection (夜街シグネチャ) ───
-      _F('puddle_reflection', -130, 72), _F('puddle_reflection', 60, 78),
-      _F('puddle_reflection', -50, 168), _F('puddle_reflection', 70, 170),
-      _F('puddle_reflection', 0, 100),
-      // ─── 街灯 (avenue 両側) ───
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // SE 裏の cat
+      _F('cat', 170, 175),
     ],
     humans: [
-      _H(-25, 55),                                              // 駅員
-      _H(-5, 78), _H(-38, 75),                                  // 駅前通行人
-      _H(-40, 170), _H(60, 170),                                // タクシー乗客
-      _H(-115, 55), _H(90, 55),                                 // 帰宅サラリーマン
-      _H(38, 152),                                              // 深夜コンビニ客
+      _H(80, 80),                                               // 駅員
+      _H(20, 85), _H(65, 85), _H(120, 85),                      // 終電客 (bench)
+      _H(-130, 38), _H(-100, 38),                               // ホテル前
+      _H(-160, 145), _H(-100, 145),                             // 酔客 SW
+      _H(70, 145),                                              // カフェ客 SE
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -25, 65, 55, 40),                              // 駅舎前石畳
-      _G('tile', -55, 158, 42, 42),                             // バス乗り場
-      _G('tile', 35, 165, 38, 35),                              // タクシーレーン
-      _G('asphalt', 0, 15, 180, 25),
+      // 基調: asphalt 全面
+      _G('asphalt', 0, 100, 360, 200),
+      // NE 焦点: 駅舎前 concrete + ホーム tile
+      _G('concrete', 80, 80, 200, 120),
+      _G('tile', 80, 70, 100, 20),
+      // 歩道帯 (Stage 1 継続軸)
+      _G('stone_pavement', -65, 100, 12, 200),
+      // ロット
+      _G('tile', -130, 38, 60, 24),                              // NW ホテル前
+      _G('concrete', -130, 145, 130, 30),                        // SW 食事街前
+      _G('wood_deck', 70, 152, 40, 18),                          // SE カフェテラス
+      // アクセント
+      _G('oil_stained_concrete', 0, 100, 30, 14),                // avenue 中央
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
   } },
 
-  // ── C1: サラリーマン動線 — 夜食と一杯の多彩な小店 ──
-  // 帰宅サラリーマンが夜食を取る帯。同系統の店が被らないよう 1 チャンク内で
-  // 全て異なる業種を並べる (ラーメン/牛丼/立ち飲み/スナック/麻雀/ブックカフェ等)。
+  // ── Ch1: 終電後の食事街 (ramen + izakaya + karaoke 3 連) ──
+  // SW = ヒーロー (基本形 C: 3 連飲食店) / NW・NE・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 ─ 前列ファサード (y=38-46、業種で Y を少しずらす) ===
-      _B('ramen', -156, 42),                                    // Cell A ラーメン
-      _B('snack', -128, 38),                                    // 前方 (小さく手前)
-      _B('bakery', -106, 44),                                   // 奥めに
-      _B('izakaya', -62, 40),                                   // Cell B 立ち飲み
-      _B('shop', -28, 46),                                      // 牛丼 (見立て)
-      _B('cafe', 19, 38),
-      _B('convenience', 40, 44),                                // Cell C 24h
-      _B('pharmacy', 72, 40),
-      _B('bookstore', 107, 42),                                 // Cell D
-      _B('karaoke', 142, 48),                                   // ★ カラオケ (奥めに、背が高い)
-      // === 上段 ─ 奥列 (y=65-85) 物置/室外機小屋/小さな店 ===
-      _B('shed', -170, 72),                                     // 路地裏の物置
-      _B('garage', -115, 78),                                   // 車庫
-      _B('shed', -76, 74),
-      _B('yatai', -42, 68),                                     // ★ 路地に置かれた屋台
-      _B('shed', 22, 76),
-      _B('garage', 72, 80),                                     // 奥の車庫
-      _B('shed', 125, 72),
-      _B('house', 172, 68),                                     // ★ 奥の古い家
-      // === 下段 ─ 前列ファサード (y=128-138) ===
-      _B('mahjong_parlor', -160, 132),                          // ★ Cell E 麻雀荘
-      _B('laundromat', -128, 138),
-      _B('florist', -105, 130),
-      _B('gas_station', -60, 136),                              // Cell F 深夜ガソスタ (少し奥)
-      _B('post_office', -22, 132),
-      _B('business_hotel', 30, 150),                            // ★ Cell G (背が高いため少し奥)
-      _B('clinic', 69, 128),                                    // Cell H
-      _B('restaurant', 108, 134),
-      _B('snack', 132, 130),                                    // ★ スナック 2 軒目
-      // === 下段 ─ 奥列 (y=160-180) ===
-      _B('shed', -175, 170),
-      _B('garage', -128, 178),                                  // 麻雀荘の裏
-      _B('shed', -104, 174),
-      _B('greenhouse', -48, 172),                               // ★ 深夜営業の八百屋風
-      _B('shed', -16, 168),
-      _B('yatai', 58, 170),                                     // ★ 駐車場脇の屋台
-      _B('shed', 118, 176),
-      _B('apartment', 170, 168),                                // Cell H 駅前アパート (背景)
-      _B('shed', 195, 172),
+      // === SW 焦点: 3 連飲食店 dy=128 揃え ===
+      _B('ramen', -145, 128),
+      _B('izakaya', -95, 128),
+      _B('karaoke', -35, 128),
+      // === NW アンビエント: ビジネスホテル + カプセル ===
+      _B('business_hotel', -130, 22),
+      _B('capsule_hotel', -160, 60),
+      // === NE アンビエント: コンビニ + 高層集合住宅 ===
+      _B('convenience', 110, 22),
+      _B('apartment_tall', 35, 22),
+      // === SE アンビエント: 町家 × 2 + 本屋 ===
+      _B('townhouse', 80, 130),
+      _B('townhouse', 140, 130),
+      _B('bookstore', 30, 130),
     ],
     furniture: [
-      // ─── 上段 facade (業種別に看板を変える) ───
-      _F('chouchin', -156, 22), _F('noren', -156, 28),           // ramen
-      _F('sign_board', -128, 22),                                // snack ピンク看板
-      _F('a_frame_sign', -102, 22),                              // bakery
-      _F('chouchin', -62, 22), _F('noren', -62, 28),             // izakaya
-      _F('a_frame_sign', -28, 22),                               // shop
-      _F('shop_awning', 5, 28),                                  // cafe
-      _F('sign_board', 40, 22),                                  // convenience
-      _F('a_frame_sign', 72, 22),                                // pharmacy (+ 十字)
-      _F('flag_pole', 72, 25),
-      _F('banner_pole', 105, 22),                                // bookstore
-      _F('sign_board', 140, 22),                                 // karaoke 大看板
-      _F('mailbox', 175, 22),                                    // house
-      // ─── 中間小物 ───
-      _F('kerbside_vending_pair', -85, 72),
-      _F('bicycle_row', -45, 72), _F('bicycle_rack', 55, 75),
-      _F('dumpster', 90, 75), _F('dumpster', 125, 75),
-      _F('milk_crate_stack', -130, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade (業種別) ───
-      _F('sign_board', -160, 118),                               // mahjong_parlor 緑看板
-      _F('a_frame_sign', -130, 118),                             // laundromat
-      _F('shop_awning', -105, 124),                              // florist
-      _F('sign_board', -60, 118),                                // gas_station
-      _F('flag_pole', -60, 115),
-      _F('post_box', -20, 122),                                  // post_office
-      _F('sign_board', -20, 118),
-      _F('banner_pole', 28, 118),                                // business_hotel
-      _F('a_frame_sign', 68, 118),                               // clinic
-      _F('chouchin', 102, 118), _F('noren', 102, 124),           // restaurant
-      _F('sign_board', 130, 118),                                // snack 2
-      _F('mailbox', 170, 118),                                   // apartment
-      // ─── 下段小物 ───
-      _F('bicycle_row', -100, 172), _F('bicycle_rack', 45, 172),
-      _F('dumpster', -45, 170), _F('dumpster', 85, 170),
-      _F('kerbside_vending_pair', -85, 170),
-      _F('traffic_cone', -58, 172), _F('traffic_cone', -48, 172), // ガソスタ前
-      _F('car', -60, 170),                                       // 給油中
-      _F('milk_crate_stack', 155, 172),
-      // ─── 軸: 水たまり ───
-      _F('puddle_reflection', -70, 72), _F('puddle_reflection', 40, 78),
-      _F('puddle_reflection', -110, 168), _F('puddle_reflection', 80, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── SW 焦点 4 層: 3 連店 ───
+      // 取り巻き (各店 chouchin × 2、noren × 3、a_frame × 3、shop_awning × 2)
+      _F('chouchin', -155, 118), _F('chouchin', -135, 118),
+      _F('chouchin', -105, 118), _F('chouchin', -85, 118),
+      _F('chouchin', -45, 118), _F('chouchin', -25, 118),
+      _F('noren', -145, 122), _F('noren', -95, 122), _F('noren', -35, 122),
+      _F('a_frame_sign', -145, 148), _F('a_frame_sign', -95, 148), _F('a_frame_sign', -35, 148),
+      _F('shop_awning', -120, 138), _F('shop_awning', -65, 138),
+      // 境界: bollard 横丁入口、flower_planter 店間
+      _F('bollard', -160, 110), _F('bollard', -10, 110),
+      _F('flower_planter_row', -120, 130), _F('flower_planter_row', -65, 130),
+      _F('wood_fence', -178, 148),
+      // 動線: street_lamp + puddle
+      _F('street_lamp', -120, 130), _F('street_lamp', -10, 130),
+      _F('puddle_reflection', -145, 148), _F('puddle_reflection', -95, 148), _F('puddle_reflection', -35, 148),
+      // ─── NW アンビエント ───
+      _F('sign_board', -130, 22),
+      _F('atm', -110, 38),
+      _F('mailbox', -160, 22),
+      // ─── NE アンビエント ───
+      _F('vending', 90, 38), _F('vending', 130, 38),
+      _F('bicycle_rack', 60, 60),
+      _F('sign_board', 110, 22), _F('sign_board', 35, 22),
+      // ─── SE アンビエント ───
+      _F('cat', 170, 175),
+      _F('mailbox', 30, 130),
+      // ─── 取り巻き 3 パターン ───
+      // facade 沿い 上空 chouchin × 4
+      _F('chouchin', -100, 15), _F('chouchin', -30, 15),
+      _F('chouchin', 35, 15), _F('chouchin', 110, 15),
+      // 歩道沿い (avenue 両脇)
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100), _F('manhole_cover', 65, 100),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 92), _F('power_line', 90, 92),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      // 客引き SW 端
+      _F('a_frame_sign', -178, 132),
     ],
     humans: [
-      _H(-156, 55), _H(-62, 55),                                // ラーメン・居酒屋客
-      _H(5, 55), _H(72, 55),                                     // カフェ・ドラッグ客
-      _H(140, 55),                                               // カラオケ客
-      _H(-160, 152),                                             // 麻雀客
-      _H(-60, 152),                                              // 給油待ち
-      _H(102, 152),                                              // レストラン客
+      _H(-145, 138), _H(-95, 138),                              // 飲み客 ramen / izakaya
+      _H(-145, 145), _H(-95, 145), _H(-35, 138), _H(-35, 145),  // 各店 2 人
+      _H(0, 100), _H(50, 100), _H(-30, 100),                    // サラリーマン (avenue)
+      _H(-178, 132),                                             // 客引き (SW 端)
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -125, 58, 70, 42),                             // ラーメン通り前タイル
-      _G('tile', 22, 58, 80, 42),                               // 夜カフェ前タイル
-      _G('tile', -28, 158, 45, 42),                             // pachinko 前
-      _G('tile', 62, 158, 70, 42),
-      _G('asphalt', 0, 15, 200, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // SW 焦点
+      _G('concrete', -90, 145, 200, 40),
+      _G('oil_stained_concrete', -100, 175, 180, 25),
+      // 歩道帯
+      _G('stone_pavement', -65, 100, 12, 200),
+      // ロット
+      _G('tile', -145, 38, 70, 24),                              // NW ホテル前
+      _G('tile', 110, 38, 60, 24),                               // NE コンビニ
+      _G('concrete', 110, 152, 80, 30),                          // SE 駐車
+      // アクセント
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
   } },
 
-  // ── C2: アーケード入口 — shotengai_arcade + 提灯ガーランド ──
-  // Act II 歓楽街への扉。提灯が避ける間もなく連続し、ネオンが近づく。
+  // ── Ch2: 商店街アーケード入口 (merged hero) ──
+  // NW+NE merged = ヒーロー (提灯ガーランドのアーケードゲート) / SW・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 ─ 前列 (アーケード + 多様小店) ===
-      _B('shotengai_arcade', -118, 48),                         // ★ 大型アーケード (奥)
-      _B('bookstore', -30, 40),
-      _B('izakaya', 30, 38),
-      _B('ramen', 60, 42),
-      _B('pachinko', 113, 46),                                  // ★ Act II 予兆
-      _B('snack', 148, 40),
-      _B('shop', 175, 42),
-      // === 上段 ─ 奥列 (小屋/物置/花屋の温室など) ===
-      _B('shed', -170, 74),
-      _B('garage', -60, 78),
-      _B('florist', -25, 75),                                   // 花屋 (小さく)
-      _B('shed', 40, 82),
-      _B('greenhouse', 71, 76),
-      _B('shed', 135, 74),
-      _B('garage', 168, 80),
-      // === 下段 ─ 前列 ===
-      _B('mahjong_parlor', -160, 132),
-      _B('ramen', -128, 138),
-      _B('snack', -106, 130),
-      _B('bookstore', -62, 134),
-      _B('karaoke', -22, 144),                                  // ★ 奥に
-      _B('shotengai_arcade', 118, 140),                         // ★ 下段大型アーケード
-      _B('shop', 35, 130),
-      _B('cafe', 60, 136),
-      // === 下段 ─ 奥列 ===
-      _B('shed', -175, 170),
-      _B('garage', -140, 176),
-      _B('shed', -76, 172),
-      _B('yatai', -32, 168),                                    // ★ 屋台
-      _B('shed', 18, 176),
-      _B('garage', 48, 172),
-      _B('shed', 165, 178),
+      // === merged 焦点: shotengai_arcade × 2 ゲート両柱 + pachinko + karaoke ===
+      _B('shotengai_arcade', -118, 22),
+      _B('shotengai_arcade', 118, 22),
+      _B('pachinko', 60, 22),
+      _B('karaoke', -60, 22),
+      // === SW アンビエント: pachinko 予告 + business_hotel ===
+      _B('pachinko', -130, 130),
+      _B('business_hotel', -50, 130),
+      // === SE アンビエント: club 予告 + townhouse × 2 ===
+      _B('club', 130, 130),
+      _B('townhouse', 70, 130),
+      _B('townhouse', 30, 130),
     ],
     furniture: [
-      // ─── ★★ Act I→II 遷移シグネチャ: 提灯ガーランド全幅連続 ★★ ───
-      // y=12 の高さに x=-170 から x=170 まで点々と提灯を 12 個並べる
-      _F('chouchin', -170, 12), _F('chouchin', -140, 10), _F('chouchin', -110, 12),
-      _F('chouchin', -80, 10), _F('chouchin', -50, 12), _F('chouchin', -20, 10),
-      _F('chouchin', 10, 12), _F('chouchin', 40, 10), _F('chouchin', 70, 12),
-      _F('chouchin', 100, 10), _F('chouchin', 130, 12), _F('chouchin', 160, 10),
-      // ─── 上段 facade ───
-      _F('shop_awning', -110, 30),                              // アーケード庇
-      _F('banner_pole', -140, 22), _F('banner_pole', -80, 22),  // 商店街幟
-      _F('noren', -30, 28), _F('a_frame_sign', 0, 22),
-      _F('noren', 30, 28), _F('noren', 60, 28),
-      _F('sign_board', 108, 22),                                // pachinko 看板
-      _F('chouchin', 148, 28), _F('noren', 148, 32),
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', -50, 72), _F('kerbside_vending_pair', 135, 72),
-      _F('bicycle_row', 0, 72), _F('dumpster', 70, 75),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade ───
-      _F('shop_awning', 105, 128),
-      _F('banner_pole', 75, 118), _F('banner_pole', 140, 118),
-      _F('chouchin', -160, 118), _F('noren', -160, 124),
-      _F('chouchin', -128, 118), _F('chouchin', -95, 118), _F('noren', -95, 124),
-      _F('a_frame_sign', -62, 118),
-      _F('sign_board', -15, 118),                                // karaoke 看板
-      _F('a_frame_sign', 35, 118), _F('chouchin', 60, 118), _F('noren', 60, 124),
-      // ─── 下段小物 ───
-      _F('bicycle_row', 145, 172), _F('bicycle_rack', -115, 172),
-      _F('dumpster', -35, 170), _F('dumpster', 45, 172),
-      _F('milk_crate_stack', -160, 170),
-      // ─── 軸: puddle + manhole ───
-      _F('puddle_reflection', -40, 75), _F('puddle_reflection', 120, 78),
-      _F('puddle_reflection', -80, 170), _F('puddle_reflection', 100, 170),
-      _F('manhole_cover', 0, 165),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── merged 焦点: アーケード ───
+      // chouchin × 14 (avenue 全幅 y=22 不揃い間隔)
+      _F('chouchin', -160, 22), _F('chouchin', -135, 22), _F('chouchin', -105, 22),
+      _F('chouchin', -75, 22), _F('chouchin', -45, 22), _F('chouchin', -15, 22),
+      _F('chouchin', 15, 22), _F('chouchin', 45, 22), _F('chouchin', 78, 22),
+      _F('chouchin', 105, 22), _F('chouchin', 135, 22), _F('chouchin', 160, 22),
+      _F('chouchin', -90, 28), _F('chouchin', 90, 28),
+      // banner_pole × 4 各端
+      _F('banner_pole', -150, 28), _F('banner_pole', -90, 28),
+      _F('banner_pole', 90, 28), _F('banner_pole', 150, 28),
+      // 境界: flag_pole + flower_planter
+      _F('flag_pole', -30, 12), _F('flag_pole', 30, 12),
+      _F('flower_planter_row', -160, 88), _F('flower_planter_row', 160, 88),
+      // 動線: street_lamp + puddle + bollard
+      _F('street_lamp', -120, 88), _F('street_lamp', 120, 88),
+      _F('puddle_reflection', -50, 105), _F('puddle_reflection', 60, 105), _F('puddle_reflection', 0, 110),
+      _F('bollard', -65, 92), _F('bollard', -25, 92), _F('bollard', 25, 92), _F('bollard', 65, 92),
+      // ─── SW アンビエント: pachinko 予告 ───
+      _F('sign_board', -130, 130),                               // 赤
+      _F('garbage', -75, 175),
+      // ─── SE アンビエント: club 予告 ───
+      _F('sign_board', 130, 130),                                // 黒+金
+      _F('bicycle', 70, 175), _F('bicycle', 100, 175),
+      // ─── 取り巻き 3 パターン ───
+      // 歩道沿い: bicycle_rack + vending
+      _F('bicycle_rack', -60, 88), _F('bicycle_rack', 80, 88),
+      _F('vending', -178, 38), _F('vending', 178, 38),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100), _F('manhole_cover', 65, 100),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', 170, 178),
     ],
     humans: [
-      _H(-110, 62),                                              // アーケード通行客
-      _H(0, 55), _H(60, 55),                                     // カフェ・ラーメン客
-      _H(108, 55),                                               // pachinko 開店待ち
-      _H(-95, 152), _H(-15, 152),                                // 横丁客 + カラオケ客
-      _H(105, 158),                                              // アーケード出口
-      _H(35, 152),
+      _H(-120, 88), _H(-60, 95), _H(0, 95), _H(60, 95), _H(120, 88),  // 商店街客 × 5
+      _H(-90, 88), _H(90, 88), _H(30, 88),                       // 商店街客 × 多
+      _H(-178, 132), _H(178, 132),                               // 客引き
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -110, 65, 120, 45),                             // アーケード上段床
-      _G('tile', 105, 162, 130, 40),                             // アーケード下段床
-      _G('tile', -15, 158, 40, 42),                              // karaoke 前
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // アーケード床: tile 全幅
+      _G('tile', 0, 100, 360, 30),
+      // ロット
+      _G('concrete', -130, 152, 80, 30),                         // SW pachinko
+      _G('red_carpet', 130, 152, 80, 30),                        // SE club
+      // 歩道帯
+      _G('stone_pavement', -65, 100, 12, 200),
+      // アクセント
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [_AVE],
   } },
 
-  // ═══ Act II: 歓楽街の極み (C3-C5) ════════════════════════════════
+  // ═══ Act II: 歓楽街最盛期 (Ch3-Ch5) ══════════════════════════════════
 
-  // ── C3: 高層雑居ビル街 — カラオケ 1 棟 + 多様な大型店 ──
-  // 歓楽街の入り口。高層雑居ビル・ホテル・ラウンジが天を衝くが、カラオケは
-  // 1 棟に絞り、club / love_hotel / business_hotel などで多様性を出す。
+  // ── Ch3: 高層雑居ビル (karaoke 街) ──
+  // NE = ヒーロー (karaoke 大看板の縦帯、基本形 B 高層) / NW・SW・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 ─ 前列 (小店で facade を揺らす) ===
-      _B('karaoke', -150, 50),                                  // ★ 唯一のカラオケ (奥に)
-      _B('snack', -115, 38),                                    // 前方
-      _B('club', -58, 46),                                      // ★ クラブ (少し奥)
-      _B('izakaya', -22, 40),
-      _B('bookstore', 19, 44),
-      _B('cafe', 73, 38),
-      _B('bank', 128, 46),
-      _B('shop', 165, 42),
-      // === 上段 ─ 奥列 (高層ビル + 物置) ===
-      _B('shed', -170, 70),
-      _B('garage', -72, 74),
-      _B('shed', 25, 68),
-      _B('shed', 105, 76),
-      _B('greenhouse', 138, 72),
-      // === 下段 ─ 前列 ===
-      _B('snack', -115, 132),
-      _B('ramen', -74, 138),
-      _B('mahjong_parlor', 20, 134),
-      _B('pharmacy', 108, 130),
-      _B('laundromat', 175, 134),
-      // === 下段 ─ 奥列 (高層/大型はここ) ===
-      _B('business_hotel', -150, 160),                          // ★ ビジネスホテル (奥)
-      _B('office', -22, 158),
-      _B('movie_theater', 62, 162),                             // ★ ミニシアター
-      _B('capsule_hotel', 145, 165),                            // ★ カプセルホテル
-      _B('shed', -175, 175),
-      _B('garage', -48, 172),
-      _B('yatai', 50, 187),                                     // ★ 屋台
-      _B('shed', 118, 178),
+      // === NE 焦点: 高層 3 棟 ===
+      _B('karaoke', 130, 22),
+      _B('apartment_tall', 80, 22),
+      _B('club', 30, 22),
+      // === NW アンビエント: club + capsule ===
+      _B('club', -130, 22),
+      _B('capsule_hotel', -75, 22),
+      // === SW アンビエント: ホテル + 町家 + 麻雀 ===
+      _B('business_hotel', -100, 130),
+      _B('townhouse', -160, 138),
+      _B('mahjong_parlor', -50, 138),
+      // === SE アンビエント: マンション × 2 + 薬局 + カフェ ===
+      _B('mansion', 80, 130),
+      _B('mansion', 140, 130),
+      _B('pharmacy', 30, 138),
+      _B('cafe', 165, 138),
     ],
     furniture: [
-      // ─── ★★ シグネチャ: 巨大カラオケ看板の連続 ★★ ───
-      _F('sign_board', -150, 22),                               // Cell A karaoke 大看板
-      _F('sign_board', -55, 22),                                // Cell B karaoke 看板
-      _F('sign_board', 68, 118),                                // Cell G karaoke 看板
-      _F('sign_board', -150, 118),                              // Cell E karaoke 看板
-      _F('banner_pole', -130, 22), _F('banner_pole', 88, 22),
-      // ─── ネオン提灯帯 (上段) ───
-      _F('chouchin', -20, 22), _F('noren', -20, 28),
-      _F('chouchin', 10, 22), _F('chouchin', 95, 22), _F('noren', 95, 28),
-      _F('chouchin', 122, 22), _F('noren', 122, 28),
-      _F('a_frame_sign', 55, 22),                               // タワー 1F 案内
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', -80, 72),
-      _F('bicycle_rack', 35, 75), _F('bicycle_rack', 138, 75),
-      _F('dumpster', -180, 72), _F('dumpster', 180, 72),
-      _F('street_mirror', -95, 62),                             // 歓楽街の街角ミラー
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 提灯帯 (下段) ───
-      _F('chouchin', -110, 118), _F('noren', -110, 124),
-      _F('chouchin', -80, 118), _F('noren', -80, 124),
-      _F('chouchin', 32, 118), _F('noren', 32, 124),
-      _F('sign_board', -18, 118), _F('sign_board', 128, 118),
-      _F('chouchin', 172, 118), _F('noren', 172, 124),
-      // ─── 下段小物 (夜の路駐) ───
-      _F('bicycle_row', -50, 172), _F('bicycle_row', 100, 172),
-      _F('dumpster', -180, 170), _F('dumpster', 180, 170),
-      _F('car', 10, 172),                                       // 路駐タクシー
-      _F('kerbside_vending_pair', 60, 172),
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -85, 75), _F('puddle_reflection', 85, 75),
-      _F('puddle_reflection', -40, 170), _F('puddle_reflection', 50, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── NE 焦点 4 層 ───
+      _F('sign_board', 130, 8),                                   // 屋上ネオン大
+      _F('chouchin', 110, 58), _F('chouchin', 130, 58),
+      _F('chouchin', 80, 58), _F('chouchin', 30, 58),
+      _F('a_frame_sign', 130, 88), _F('a_frame_sign', 80, 88), _F('a_frame_sign', 30, 88),
+      _F('flag_pole', 130, 12),
+      // 境界
+      _F('bollard', 70, 92), _F('bollard', 100, 92), _F('bollard', 170, 92),
+      // 動線
+      _F('street_lamp', 80, 88), _F('street_lamp', 170, 88),
+      _F('puddle_reflection', 80, 110), _F('puddle_reflection', 130, 110),
+      _F('recycling_bin', 165, 75),
+      // ─── NW アンビエント ───
+      _F('sign_board', -130, 8),                                  // 黒+金
+      _F('parasol', -75, 38),
+      _F('recycling_bin', -150, 38),
+      // ─── SW アンビエント ───
+      _F('mailbox', -160, 130),
+      _F('a_frame_sign', -100, 148),
+      _F('chouchin', -50, 122),
+      // ─── SE アンビエント ───
+      _F('bicycle_rack', 80, 152), _F('bicycle_rack', 140, 152),
+      _F('parasol', 165, 152),
+      // ─── 取り巻き 3 パターン ───
+      _F('sign_board', -75, 8), _F('sign_board', 30, 8), _F('sign_board', 80, 8),
+      _F('puddle_reflection', -50, 110), _F('puddle_reflection', 50, 110), _F('puddle_reflection', 0, 105),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 65, 100),
+      _F('cat', -170, 175),
     ],
     humans: [
-      _H(-150, 72), _H(-55, 72),                                // カラオケ客
-      _H(68, 162), _H(-150, 162),
-      _H(55, 88),                                               // タワー雑居帰り
-      _H(-20, 55), _H(95, 55),                                  // 居酒屋客
-      _H(-18, 172),                                             // オフィス残業帰り
+      _H(130, 38), _H(80, 38), _H(30, 38),                       // 飲み客 NE × 3
+      _H(110, 60), _H(50, 60),                                   // 飲み客 NE × 2
+      _H(-130, 38), _H(-130, 60), _H(-75, 38), _H(-75, 60),      // ホスト/ホステス NW × 4
+      _H(0, 100), _H(50, 100), _H(-30, 100),                     // サラリーマン (avenue)
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -100, 65, 140, 45),                            // カラオケ街タイル
-      _G('tile', 60, 75, 60, 30),                               // タワー前
-      _G('tile', -110, 158, 100, 42),                           // カラオケ下段
-      _G('tile', 68, 162, 50, 38),
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // NE 焦点
+      _G('concrete', 130, 60, 60, 30),
+      _G('tile', 80, 60, 50, 30),
+      _G('red_carpet', 30, 60, 50, 20),
+      // ロット
+      _G('red_carpet', -130, 60, 50, 20),                        // NW club
+      _G('concrete', -100, 150, 80, 30),                         // SW
+      _G('tile', 110, 150, 90, 30),                              // SE mansion 駐車
+      _G('wood_deck', 165, 152, 30, 18),                         // SE cafe
+      // 歩道帯
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_HR(100, -180, 180)], verticalRoads: [_VR(-90, 0, 200), _VR(0, 0, 128.5, 'avenue'), _VR(0, 187.5, 200, 'avenue'), _VR(90, 0, 200)],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE, _VR(-90, 0, 100)],
   } },
 
-  // ── C4: ゲーセンとパチンコのメイン通り — 交番 + 多業種混在 ──
-  // Stage 2 の最盛期。パチンコとゲーセンは各 1 軒に絞り、周囲を多業種で彩る。
+  // ── Ch4: パチンコ + 交番交差点 (merged hero、Stage 2 クライマックス) ──
+  // 全マージ merged = ヒーロー (街の交差点、Stage 2 視覚的ピーク)
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 ─ 前列 ===
-      _B('pachinko', -148, 46),                                 // ★ 唯一のパチンコ
-      _B('game_center', -112, 40),                              // ★ ゲーセン
-      _B('karaoke', -65, 50),                                   // 少し奥
-      _B('police_station', -25, 52),                            // ★ 交番 (奥)
-      _B('club', 38, 48),                                       // ★ クラブ
-      _B('bookstore', 73, 40),
-      _B('izakaya', 158, 38),
-      _B('ramen', 180, 42),
-      // === 上段 ─ 奥列 ===
-      _B('movie_theater', 117, 124),                             // 映画館 (奥)
-      _B('shed', -175, 72),
-      _B('garage', -130, 78),
-      _B('shed', -76, 74),
-      _B('greenhouse', -35, 78),
-      _B('shed', 18, 72),
-      _B('yatai', 60, 72),                                      // ★ 屋台
-      _B('shed', 138, 78),
-      // === 下段 ─ 前列 ===
-      _B('bank', -150, 148),                                    // 少し奥
-      _B('mahjong_parlor', -115, 132),
-      _B('cafe', -35, 138),
-      _B('pharmacy', 42, 130),
-      _B('snack', 75, 134),
-      _B('bakery', 155, 132),
-      // === 下段 ─ 奥列 ===
-      _B('love_hotel', -66, 160),                               // ★ 奥
-      _B('business_hotel', 112, 168),                           // ★ 奥 (縦長)
-      _B('apartment', 180, 158),
-      _B('shed', -178, 172),
-      _B('garage', -30, 175),
-      _B('shed', 45, 178),
-      _B('shed', 145, 172),
+      // === merged 焦点: pachinko ★ + police ★ + game_center ===
+      _B('pachinko', -100, 22),
+      _B('police_station', 0, 130),
+      _B('game_center', 100, 22),
+      // === merged 周辺: 上段アンビエント (狭い) ===
+      _B('snack', -160, 22),
+      _B('snack', 160, 22),
+      _B('love_hotel', -55, 22),
+      _B('club', 60, 22),
+      _B('capsule_hotel', -25, 70),
+      // === merged 周辺: 下段アンビエント ===
+      _B('mahjong_parlor', -150, 130),
+      _B('business_hotel', -90, 130),
+      _B('izakaya', -45, 138),
+      _B('ramen', 60, 138),
+      _B('townhouse', 110, 130),
+      _B('apartment', 165, 130),
     ],
     furniture: [
-      // ─── ★★ シグネチャ: パチンコ大看板 5 連 ★★ ───
-      _F('sign_board', -145, 22), _F('sign_board', -55, 22),
-      _F('sign_board', 55, 22),
-      _F('sign_board', -148, 118), _F('sign_board', -15, 118),
-      // ─── 交番の看板 + 赤色灯 ───
-      _F('a_frame_sign', 0, 22),                                // KOBAN 案内板
-      _F('flag_pole', -10, 24), _F('flag_pole', 10, 24),
-      _F('traffic_cone', -15, 75), _F('traffic_cone', 15, 75),  // 交番前のコーン
-      // ─── 上段提灯帯 + 看板 ───
-      _F('banner_pole', -120, 22), _F('banner_pole', 80, 22),
-      _F('chouchin', -100, 22), _F('noren', -100, 28),
-      _F('chouchin', 105, 22), _F('noren', 105, 28),
-      _F('chouchin', 155, 22), _F('noren', 155, 28),
-      _F('chouchin', 178, 22),
-      // ─── 上段小物 (パチンコ出玉) ───
-      _F('bicycle_row', -145, 72), _F('bicycle_row', -55, 72),
-      _F('bicycle_row', 55, 72), _F('dumpster', -175, 72),
-      _F('kerbside_vending_pair', -30, 72), _F('kerbside_vending_pair', 78, 72),
-      _F('milk_crate_stack', 130, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade ───
-      _F('sign_board', -108, 118),                              // ゲーセン看板
-      _F('sign_board', -55, 118),                               // 銀行看板
-      _F('chouchin', 30, 118), _F('noren', 30, 124),
-      _F('chouchin', 55, 118), _F('noren', 55, 124),
-      _F('sign_board', 105, 118),                               // ゲーセン看板
-      _F('chouchin', 155, 118), _F('noren', 155, 124),
-      _F('chouchin', 178, 118),
-      // ─── 下段小物 ───
-      _F('bicycle_row', -148, 172), _F('bicycle_row', -15, 172),
-      _F('bicycle_row', 105, 172),
-      _F('dumpster', -175, 170), _F('dumpster', 175, 170),
-      _F('kerbside_vending_pair', -85, 170),
-      _F('atm', -55, 168),                                       // 銀行前 ATM
-      _F('traffic_cone', 78, 172), _F('traffic_cone', 85, 172),
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -125, 72), _F('puddle_reflection', 25, 78),
-      _F('puddle_reflection', 125, 72),
-      _F('puddle_reflection', -130, 170), _F('puddle_reflection', 85, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── merged 焦点 4 層 ───
+      _F('sign_board', -100, 8),                                  // パチンコ屋上ネオン
+      _F('sign_board', 100, 8),                                   // ゲーセン屋上ネオン
+      _F('flag_pole', -12, 105), _F('flag_pole', 12, 105),       // 交番前
+      _F('traffic_cone', -20, 110), _F('traffic_cone', 20, 110),
+      _F('traffic_cone', -10, 115), _F('traffic_cone', 10, 115),
+      // 境界: bollard + barrier
+      _F('bollard', -65, 92), _F('bollard', -25, 92), _F('bollard', 25, 92), _F('bollard', 65, 92),
+      _F('barrier', -100, 38), _F('barrier', 100, 38),
+      // 動線
+      _F('street_lamp', -65, 100), _F('street_lamp', 65, 100),
+      _F('street_mirror', -30, 92), _F('street_mirror', 30, 92),
+      _F('puddle_reflection', -55, 105), _F('puddle_reflection', 55, 105),
+      _F('puddle_reflection', -55, 95), _F('puddle_reflection', 55, 95),
+      // ─── アンビエント (狭い) ───
+      _F('sign_board', -160, 8), _F('sign_board', 160, 8),       // snack 赤 / ピンク
+      _F('sign_board', -55, 8), _F('sign_board', 60, 8),         // love_hotel ピンク / club 黒+金
+      _F('chouchin', -45, 118), _F('chouchin', 60, 118),         // izakaya / ramen 前
+      _F('noren', -45, 122), _F('noren', 60, 122),
+      _F('a_frame_sign', -150, 148), _F('a_frame_sign', 110, 148),
+      // 取り巻き 3 パターン
+      _F('newspaper_stand', -65, 88), _F('newspaper_stand', 65, 88),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100), _F('manhole_cover', 65, 100),
+      _F('garbage', -100, 60),
+      _F('bicycle', 110, 175), _F('bicycle', 165, 175),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', -170, 175),
     ],
     humans: [
-      _H(-145, 72), _H(-55, 72), _H(55, 72),                    // パチンコ行列 3 箇所
-      _H(-148, 172), _H(-15, 172), _H(105, 172),                // 下段パチンコ
-      _H(0, 72),                                                 // 交番前の警官
-      _H(-100, 55), _H(155, 55),                                 // ゲーセン + 居酒屋客
-      _H(-55, 170),                                              // ATM 利用者
+      _H(-100, 38), _H(-100, 50), _H(-90, 38),                   // パチンコ客
+      _H(100, 38), _H(100, 50), _H(90, 38),                      // ゲーセン客
+      _H(0, 145),                                                 // 警察官
+      _H(-178, 88), _H(178, 88), _H(-160, 88),                   // 客引き × 3
+      _H(-55, 38), _H(60, 38), _H(-45, 145), _H(60, 145),        // 酔客
+      _H(0, 100), _H(50, 100),                                   // サラリーマン
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -145, 65, 80, 45),                             // パチンコ街タイル
-      _G('tile', 55, 65, 70, 45),
-      _G('tile', 0, 72, 40, 38),                                // 交番前
-      _G('tile', -145, 158, 80, 42),
-      _G('tile', -15, 162, 40, 38),
-      _G('tile', 105, 162, 60, 38),
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // 焦点
+      _G('tile', -100, 38, 90, 50),
+      _G('concrete', 0, 145, 80, 50),                            // 交番前
+      _G('tile', 100, 38, 90, 50),
+      // ロット
+      _G('red_carpet', -55, 38, 30, 24),                         // love_hotel
+      _G('red_carpet', 60, 38, 30, 24),                          // club
+      _G('concrete', -160, 38, 24, 24),                          // snack
+      _G('concrete', 160, 38, 24, 24),                           // snack
+      // 歩道帯 + アクセント
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('oil_stained_concrete', 0, 100, 30, 16),
+      _G('oil_stained_concrete', -100, 50, 40, 14),              // パチンコ前路地
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR, _TOP_HR], verticalRoads: [_AVE],
   } },
 
-  // ── C5: 雑居ビル + 飲み屋横丁 — 3 つの区画で街を構成 ──
-  // 街区分け:
-  //   上段 西 (x=-180〜-97): 老舗飲み屋横丁 (snack/麻雀/居酒屋が密集)
-  //   上段 中 (x=-83〜+83): メインのビジネスホテル区画 (奥に高層、表に 1F 店)
-  //   上段 東 (x=+97〜+180): 銀行 + カプセルホテル区画
-  //   下段 西: ラブホテル + クラブの派手区画
-  //   下段 中: パチンコ + カラオケの娯楽区画
-  //   下段 東: ミニシアター + 1F 店の映画街区
+  // ── Ch5: 老舗飲み屋横丁 (merged hero) ──
+  // SW+SE merged = ヒーロー (横丁感、5 連の小店並び) / NW・NE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 西 (x=-180〜-97): 老舗飲み屋横丁 ===
-      _B('snack', -160, 38),                                    // ピンクの小さなママの店
-      _B('mahjong_parlor', -130, 44),                           // 緑看板の老舗雀荘
-      _B('izakaya', -108, 40),                                  // 隣の老舗居酒屋
-      _B('shed', -172, 76),                                     // 横丁の店裏 (3 軒共用)
-      _B('garage', -130, 80),                                   // 古い車庫
-
-      // === 上段 中 (x=-83〜+83): ビジネスホテル区画 ===
-      _B('business_hotel', -22, 64.5),                            // ★ メインのホテル (奥、高層)
-      _B('cafe', -60, 40),                                      // ホテル隣のカフェ (1F)
-      _B('bookstore', 30, 44),                                  // ホテル隣の書店 (1F)
-      _B('ramen', 60, 38),                                      // 反対側のラーメン (1F)
-      _B('shed', -45, 75),                                      // ホテル裏の物置
-      _B('garage', 50, 78),                                     // ホテル裏の駐車場
-
-      // === 上段 東 (x=+97〜+180): 銀行 + カプセルホテル区画 ===
-      _B('bank', 112, 46),                                      // 落ち着いた銀行
-      _B('capsule_hotel', 155, 78),                             // ★ 横長カプセル (奥)
-      _B('shop', 178, 40),                                      // 角の小売店
-      _B('shed', 125, 76),                                      // 銀行裏
-
-      // === 下段 西 (x=-180〜-97): ラブホテル + クラブ派手区画 ===
-      _B('love_hotel', -150, 168),                              // ★ 紫派手 (奥)
-      _B('club', -112, 170),                                    // ★ 黒金クラブ (奥)
-      _B('pharmacy', -110, 132),                                // 24h ドラッグ (表)
-      _B('shed', -178, 175),                                    // ラブホ裏
-      _B('garage', -160, 139),                                  // ラブホ駐車場
-
-      // === 下段 中 (x=-83〜+83): パチンコ + カラオケ娯楽区画 ===
-      _B('pachinko', -50, 142),                                 // ★ メインのパチンコ
-      _B('karaoke', 25, 144),                                   // ★ 隣のカラオケ
-      _B('restaurant', -20, 132),                               // 娯楽帰りのレストラン
-      _B('shed', 60, 175),                                      // 娯楽店裏
-
-      // === 下段 東 (x=+97〜+180): 映画街区 ===
-      _B('movie_theater', 130, 168),                            // ★ 奥にシアター
-      _B('bakery', 105, 132),                                   // 映画館前のパン屋
-      _B('laundromat', 165, 132),                               // ランドリー
-      _B('shed', 178, 175),                                     // シアター裏
+      // === merged 焦点: 5 連横丁 ===
+      _B('snack', -160, 130),
+      _B('mahjong_parlor', -100, 130),
+      _B('izakaya', -30, 130),
+      _B('snack', 60, 130),
+      _B('sushi_ya', 130, 130),
+      // === NW アンビエント: 銀行 ===
+      _B('bank', -130, 22),
+      // === NE アンビエント: カプセル ===
+      _B('capsule_hotel', 130, 22),
     ],
     furniture: [
-      // ─── 上段 facade (業種ごとに違う看板) ───
-      _F('sign_board', -150, 22),                               // office
-      _F('banner_pole', -112, 22),                              // apartment_tall
-      _F('sign_board', -75, 22),                                // snack ピンク
-      _F('sign_board', -48, 22),                                // mahjong_parlor 緑
-      _F('chouchin', -20, 22), _F('noren', -20, 28),            // izakaya (唯一)
-      _F('sign_board', 15, 22),                                 // club (金)
-      _F('chouchin', 55, 22), _F('noren', 55, 28),              // ramen
-      _F('sign_board', 98, 22),                                 // bank
-      _F('banner_pole', 150, 22),                               // business_hotel
-      _F('shop_awning', 178, 28),                               // cafe
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', -90, 72),
-      _F('bicycle_row', 30, 75), _F('bicycle_rack', 130, 75),
-      _F('dumpster', -180, 72), _F('dumpster', 125, 72),
-      _F('milk_crate_stack', -35, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段 facade (業種ごと) ───
-      _F('sign_board', -148, 118),                              // love_hotel 紫
-      _F('a_frame_sign', -110, 118),                            // pharmacy
-      _F('flag_pole', -115, 115),
-      _F('sign_board', -78, 118),                               // pachinko 派手
-      _F('chouchin', -40, 118), _F('noren', -40, 124),          // restaurant
-      _F('banner_pole', -12, 118),                              // bookstore
-      _F('sign_board', 20, 118),                                // karaoke
-      _F('sign_board', 62, 118),                                // movie_theater
-      _F('a_frame_sign', 102, 118),                             // bakery
-      _F('banner_pole', 138, 118),                              // capsule_hotel
-      _F('a_frame_sign', 175, 118),                             // laundromat
-      // ─── 下段小物 ───
-      _F('bicycle_row', -78, 172), _F('bicycle_row', 62, 172),
-      _F('bicycle_rack', 102, 172),
-      _F('dumpster', -180, 170), _F('dumpster', 180, 170),
-      _F('kerbside_vending_pair', -40, 170),
-      _F('car', -148, 170),                                     // ラブホ前のタクシー
-      _F('milk_crate_stack', 20, 172),
-      // ─── 水たまり ───
-      _F('puddle_reflection', -50, 75), _F('puddle_reflection', 60, 75),
-      _F('puddle_reflection', 135, 75),
-      _F('puddle_reflection', -120, 170), _F('puddle_reflection', 35, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── merged 焦点 4 層 ───
+      // chouchin × 5 (各店前 y=122)
+      _F('chouchin', -160, 122), _F('chouchin', -100, 122),
+      _F('chouchin', -30, 122), _F('chouchin', 60, 122), _F('chouchin', 130, 122),
+      // noren × 5
+      _F('noren', -160, 128), _F('noren', -100, 128),
+      _F('noren', -30, 128), _F('noren', 60, 128), _F('noren', 130, 128),
+      // a_frame_sign × 4 不揃い
+      _F('a_frame_sign', -130, 148), _F('a_frame_sign', -65, 148),
+      _F('a_frame_sign', 30, 148), _F('a_frame_sign', 95, 148),
+      // 境界
+      _F('wood_fence', -178, 120), _F('wood_fence', 178, 120),
+      _F('hedge', 20, 145),
+      // 動線
+      _F('street_lamp', -120, 130), _F('street_lamp', 0, 130), _F('street_lamp', 120, 130),
+      _F('puddle_reflection', -130, 148), _F('puddle_reflection', -50, 148),
+      _F('puddle_reflection', 60, 148), _F('puddle_reflection', 130, 148),
+      // ─── NW アンビエント: 銀行 ───
+      _F('flag_pole', -130, 12),
+      _F('atm', -150, 38), _F('atm', -110, 38),
+      _F('mailbox', -100, 22),
+      _F('sign_board', -130, 8),
+      // ─── NE アンビエント: カプセル ───
+      _F('sign_board', 130, 8),
+      _F('vending', 110, 38), _F('vending', 150, 38),
+      _F('garbage', 165, 60),
+      // ─── 取り巻き 3 パターン ───
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100), _F('manhole_cover', 65, 100),
+      _F('bollard', -65, 95), _F('bollard', 65, 95),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('garbage', -160, 175),
+      _F('cat', -170, 175), _F('cat', 170, 175),
     ],
     humans: [
-      _H(-75, 55),                                              // スナック客
-      _H(-20, 55), _H(55, 55),                                  // 居酒屋 + ラーメン客
-      _H(15, 55),                                               // クラブ入場
-      _H(-150, 82),                                             // オフィス残業帰り
-      _H(-148, 172),                                            // ラブホ前
-      _H(-78, 152),                                             // パチンコ帰り
-      _H(20, 152), _H(62, 152),                                 // カラオケ + 映画客
+      _H(-160, 138), _H(-100, 138), _H(-30, 138),                // 飲み客 横丁
+      _H(60, 138), _H(130, 138), _H(-100, 145),                  // 飲み客 横丁
+      _H(-30, 145), _H(60, 145),                                 // 飲み客 横丁
+      _H(-160, 132),                                             // ママさん snack 前
+      _H(0, 100), _H(50, 100),                                   // サラリーマン
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -55, 60, 80, 42),                              // 立ち飲み列タイル
-      _G('tile', 92, 72, 40, 32),                               // 銀行前
-      _G('tile', -88, 158, 180, 42),                            // 横丁全幅タイル
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // 焦点
+      _G('concrete', 0, 145, 360, 30),
+      _G('oil_stained_concrete', 0, 175, 280, 20),
+      // ロット
+      _G('tile', -130, 38, 60, 24),                              // NW bank
+      _G('tile', 130, 38, 60, 24),                               // NE capsule
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
   } },
 
-  // ═══ Act III: 深夜の路地 (C6-C8) ══════════════════════════════════
+  // ═══ Act III: ホテルと屋台 (Ch6-Ch8) ══════════════════════════════════
 
-  // ── C6: ホテルとキャバレーの街 — 6 区画でホテル街を構成 ──
-  // 街区分け:
-  //   上段 西: ラブホテル区画 (love_hotel + snack 2 軒)
-  //   上段 中: カプセルホテル + 1F 店区画
-  //   上段 東: クラブ街区画
-  //   下段 西: ビジネスホテル + 1F コンビニ区画
-  //   下段 中: パチンコ + 麻雀の娯楽区画
-  //   下段 東: ミニシアター街区
+  // ── Ch6: ラブホテル街 ──
+  // NW = ヒーロー (love_hotel 街、基本形 B) / NE・SW・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 西: ラブホテル区画 ===
-      _B('love_hotel', -150, 70),                               // ★ メインのラブホ (奥、派手)
-      _B('snack', -108, 38),                                    // 客引きスナック
-      _B('snack', -180, 38),                                    // ★ 端のスナック (色違い隣接 OK)
-      _B('garage', -123, 78),                                   // ラブホ駐車場
-
-      // === 上段 中: カプセルホテル + 1F 店区画 ===
-      _B('capsule_hotel', -30, 78),                             // ★ 横長カプセル (奥)
-      _B('cafe', -60, 40),                                      // 1F カフェ
-      _B('bookstore', 30, 44),                                  // 1F 書店
-      _B('bakery', 60, 40),                                     // 1F パン屋
-      _B('shed', 50, 75),                                       // ホテル裏
-
-      // === 上段 東: クラブ街区画 ===
-      _B('club', 145, 70),                                      // ★ 黒金クラブ (奥)
-      _B('izakaya', 108, 40),                                   // クラブ隣の老舗居酒屋
-      _B('mahjong_parlor', 178, 40),                            // 雀荘
-      _B('shed', 124, 78),                                      // クラブ裏
-      _B('garage', 175, 78),                                    // クラブ裏
-
-      // === 下段 西: ビジネスホテル + 1F コンビニ区画 ===
-      _B('business_hotel', -150, 168),                          // ★ 高層 (奥)
-      _B('convenience', -110, 132),                             // 1F コンビニ
-      _B('ramen', -180, 132),                                   // 端のラーメン
-      _B('shed', -130, 178),                                    // ホテル裏
-      _B('garage', -72, 175),                                   // 駐車場
-
-      // === 下段 中: 娯楽区画 (パチンコ + 麻雀) ===
-      _B('pachinko', -28, 142),                                 // ★ メイン
-      _B('game_center', 24, 138),                               // 隣のゲーセン
-      _B('shop', 50, 132),                                      // 駐車場前の小店
-      _B('shed', 35, 175),                                      // 娯楽店裏
-
-      // === 下段 東: ミニシアター街区 ===
-      _B('movie_theater', 132, 168),                            // ★ 奥にシアター
-      _B('pharmacy', 108, 132),                                 // シアター前の 24h ドラッグ
-      _B('florist', 165, 132),                                  // 花屋
-      _B('shed', 175, 178),                                     // シアター裏
+      // === NW 焦点: love_hotel × 3 ===
+      _B('love_hotel', -110, 22),
+      _B('love_hotel', -50, 22),
+      _B('love_hotel', -160, 75),
+      // === NE アンビエント: club × 2 + 麻雀 ===
+      _B('club', 130, 22),
+      _B('club', 70, 22),
+      _B('mahjong_parlor', 30, 22),
+      // === SW アンビエント: snack + 麻雀 + 居酒屋 ===
+      _B('snack', -130, 130),
+      _B('mahjong_parlor', -75, 130),
+      _B('izakaya', -25, 138),
+      // === SE アンビエント: 麻雀 + cafe + mansion ===
+      _B('mahjong_parlor', 130, 130),
+      _B('cafe', 30, 138),
+      _B('mansion', 165, 138),
     ],
     furniture: [
-      // ─── ★★ シグネチャ: 提灯密集 (全幅連続) ★★ ───
-      // 上段 facade を提灯で覆い尽くす
-      _F('chouchin', -162, 22), _F('chouchin', -138, 22),
-      _F('chouchin', -115, 22), _F('chouchin', -92, 22),
-      _F('chouchin', -65, 22), _F('chouchin', -40, 22),
-      _F('chouchin', -15, 22), _F('chouchin', 12, 22),
-      _F('chouchin', 40, 22), _F('chouchin', 65, 22),
-      _F('chouchin', 92, 22), _F('chouchin', 118, 22),
-      _F('chouchin', 145, 22), _F('chouchin', 172, 22),
-      // 下段 facade も同様に提灯列
-      _F('chouchin', -168, 118), _F('chouchin', -142, 118),
-      _F('chouchin', -115, 118), _F('chouchin', -90, 118),
-      _F('chouchin', -62, 118), _F('chouchin', -38, 118),
-      _F('chouchin', -12, 118), _F('chouchin', 15, 118),
-      _F('chouchin', 42, 118), _F('chouchin', 68, 118),
-      _F('chouchin', 95, 118), _F('chouchin', 120, 118),
-      _F('chouchin', 148, 118), _F('chouchin', 175, 118),
-      // ─── のれん (中央列に絞る) ───
-      _F('noren', -115, 28), _F('noren', -40, 28),
-      _F('noren', 40, 28), _F('noren', 118, 28),
-      _F('noren', -115, 124), _F('noren', -38, 124),
-      _F('noren', 42, 124), _F('noren', 120, 124),
-      // ─── 上段小物 ───
-      _F('milk_crate_stack', -140, 72), _F('milk_crate_stack', 70, 72),
-      _F('bicycle_row', -40, 72), _F('bicycle_row', 80, 72),
-      _F('dumpster', -180, 72), _F('dumpster', 180, 72),
-      _F('a_frame_sign', 0, 32), _F('a_frame_sign', -95, 32),
-      _F('a_frame_sign', 95, 32),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 下段小物 ───
-      _F('milk_crate_stack', -90, 172), _F('milk_crate_stack', 120, 172),
-      _F('bicycle_row', -150, 172), _F('bicycle_row', 50, 172),
-      _F('dumpster', -180, 172), _F('dumpster', 180, 172),
-      _F('kerbside_vending_pair', -10, 172), _F('kerbside_vending_pair', 95, 172),
-      _F('cat', 65, 195),                                       // ★ 路地の野良猫
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -70, 75), _F('puddle_reflection', 35, 75),
-      _F('puddle_reflection', 125, 75),
-      _F('puddle_reflection', -100, 172), _F('puddle_reflection', 80, 172),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -60, 100), _F('manhole_cover', 60, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── NW 焦点 4 層 ───
+      _F('sign_board', -110, 8), _F('sign_board', -50, 8),       // ピンクネオン × 2
+      _F('parasol', -110, 58), _F('parasol', -50, 58),
+      _F('flag_pole', -130, 12), _F('flag_pole', -30, 12),
+      // 境界: hedge 目隠し
+      _F('hedge', -178, 10), _F('hedge', -178, 50), _F('hedge', -178, 90),
+      _F('hedge', 10, 10), _F('hedge', 10, 50),
+      // 動線
+      _F('street_lamp', -150, 88),
+      _F('puddle_reflection', -100, 105), _F('puddle_reflection', -40, 105),
+      _F('flower_bed', -75, 88),
+      // ─── NE アンビエント: club × 2 + 麻雀 ───
+      _F('sign_board', 130, 8), _F('sign_board', 70, 8),         // 黒+金 × 2
+      _F('chouchin', 30, 58),
+      _F('recycling_bin', 165, 38),
+      // ─── SW アンビエント ───
+      _F('chouchin', -130, 122),                                  // ピンク
+      _F('garbage', -100, 175),
+      _F('a_frame_sign', -75, 148),
+      // ─── SE アンビエント ───
+      _F('parasol', 30, 158),
+      _F('sign_board', 130, 130),                                 // 緑
+      _F('bicycle', 100, 175), _F('bicycle', 60, 175),
+      // ─── 取り巻き 3 パターン ───
+      _F('puddle_reflection', -50, 110), _F('puddle_reflection', 50, 110), _F('puddle_reflection', 0, 105),
+      _F('bollard', -65, 95), _F('bollard', 65, 95),
+      _F('street_lamp', -65, 100), _F('street_lamp', 65, 100),
+      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', 170, 175),
     ],
     humans: [
-      _H(-115, 55), _H(-40, 55), _H(65, 55),                    // 上段スナック客
-      _H(-90, 152), _H(15, 152), _H(95, 152),                   // 下段スナック客
-      _H(-140, 172),                                            // よろめく酔客
-      _H(120, 55),                                              // 呼び込み
+      _H(-110, 38), _H(-50, 38),                                  // カップル NW
+      _H(130, 38), _H(70, 38),                                    // ホステス NE
+      _H(-130, 138), _H(-130, 145), _H(-75, 138),                 // 酔客 snack
+      _H(0, 100), _H(50, 100),                                    // 通行人
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -60, 60, 280, 42),                             // スナック街上段タイル
-      _G('tile', -60, 158, 280, 42),                            // スナック街下段タイル
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // NW 焦点
+      _G('red_carpet', -80, 60, 100, 40),
+      _G('red_carpet', -160, 88, 30, 24),
+      // ロット
+      _G('red_carpet', 130, 38, 30, 24),                          // NE club
+      _G('red_carpet', 70, 38, 30, 24),                           // NE club
+      _G('concrete', -130, 145, 90, 30),                          // SW snack
+      _G('oil_stained_concrete', -75, 175, 80, 20),               // SW 路地
+      _G('wood_deck', 30, 152, 30, 18),                           // SE cafe
+      _G('tile', 130, 152, 60, 30),                               // SE mahjong
+      // 歩道帯 + アクセント
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
   } },
 
-  // ── C7: 屋台横丁 — 屋台 4-5 台が中央に集約された夜店通り ──
-  // 街区分け: 屋台クラスタを中央 (上段中心) に集約し、その周りを夜店で囲む。
-  // 背景にはラブホ・ビジネスホテルが奥に控える「夜の終わり」感。
-  //   上段 西: 横丁入口 (ramen + snack + 屋台 1)
-  //   上段 中: ★ 屋台横丁の核 (yatai 3 台密集 + 立ち飲み)
-  //   上段 東: 横丁出口 (bookstore + 居酒屋 + バー)
-  //   下段 西: 娯楽区画 (karaoke + game_center)
-  //   下段 中: 大型ホテル区画 (love_hotel + business_hotel が奥)
-  //   下段 東: ガソリンスタンド + 帰路区画
+  // ── Ch7: 屋台横丁 (merged hero、横道路ゼロ) ──
+  // NW+NE merged = ヒーロー (屋台 5 連が中央集約、基本形 A オープンスペース) / SW・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 西: 横丁入口 ===
-      _B('ramen', -160, 40),                                    // 横丁角のラーメン
-      _B('yatai', -130, 32),                                    // ★ 入口の屋台 (手前)
-      _B('snack', -105, 44),                                    // ピンクスナック
-      _B('shed', -175, 76),                                     // 入口裏
-
-      // === 上段 中: ★ 屋台横丁の核 (yatai 3 台密集) ===
-      _B('yatai', -55, 30),                                     // ★ 1 台目 (手前)
-      _B('yatai', -25, 30),                                     // ★ 2 台目 (隣接)
-      _B('izakaya', 35, 42),                                    // 屋台奥の立ち飲み
-      _B('cafe', 65, 38),                                       // 横の夜カフェ
-      _B('shed', -25, 76),                                      // 屋台共用倉庫
-
-      // === 上段 東: 横丁出口 (静かな店) ===
-      _B('mahjong_parlor', 108, 44),                            // 雀荘
-      _B('bookstore', 138, 40),                                 // ブックバー
-      _B('pharmacy', 175, 38),                                  // 24h ドラッグ
-      _B('garage', 130, 78),                                    // 出口裏
-
-      // === 下段 西: 娯楽区画 ===
-      _B('karaoke', -160, 144),                                 // ★ カラオケ
-      _B('game_center', -118, 138),                             // ゲーセン
-      _B('shed', -175, 178),                                    // 娯楽店裏
-      _B('garage', -135, 175),                                  // 駐車場
-
-      // === 下段 中: ★ 大型ホテル区画 (奥に並ぶ) ===
-      _B('love_hotel', -55, 168),                               // ★ ラブホ (奥)
-      _B('business_hotel', 22, 172),                             // ★ ビジネスホテル (奥)
-      _B('club', 50, 170),                                      // ★ クラブ (奥)
-      _B('restaurant', -25, 132),                               // 1F レストラン (表)
-      _B('snack', 30, 132),                                     // 1F スナック (表、別区画)
-
-      // === 下段 東: ガソリンスタンド + 帰路 ===
-      _B('gas_station', 113, 135),                              // ガソスタ
-      _B('capsule_hotel', 150, 168),                            // ★ カプセル (奥)
-      _B('convenience', 178, 132),                              // 帰路コンビニ
-      _B('shed', 123, 178),                                     // ガソスタ裏
+      // === merged 焦点: 屋台 × 5 微不揃い ===
+      _B('yatai', -110, 68),
+      _B('yatai', -55, 68),
+      _B('yatai', 0, 70),
+      _B('yatai', 55, 68),
+      _B('yatai', 108, 70),
+      // === merged 上段ロット ===
+      _B('townhouse', -150, 22),
+      _B('apartment', 150, 22),
+      _B('shop', -75, 22),
+      _B('shop', 75, 22),
+      // === SW アンビエント ===
+      _B('chaya', -100, 130),
+      _B('izakaya', -160, 138),
+      // === SE アンビエント ===
+      _B('ramen', 100, 130),
+      _B('sushi_ya', 160, 138),
     ],
     furniture: [
-      // ─── 屋台の湯気 ── noren + chouchin ───
-      _F('noren', -120, 22), _F('chouchin', -120, 16),
-      _F('noren', -95, 22), _F('chouchin', -95, 16),
-      _F('noren', -25, 22), _F('chouchin', -25, 16),
-      _F('noren', 45, 22), _F('chouchin', 45, 16),
-      _F('noren', 170, 22), _F('chouchin', 170, 16),
-      _F('noren', -100, 118), _F('chouchin', -100, 112),
-      _F('noren', 20, 118), _F('chouchin', 20, 112),
-      // ─── 通常 facade ───
-      _F('chouchin', -155, 22), _F('chouchin', -58, 22), _F('chouchin', 10, 22),
-      _F('chouchin', 80, 22),
-      _F('chouchin', -160, 118), _F('chouchin', -130, 118),
-      _F('chouchin', -65, 118), _F('chouchin', -38, 118),
-      _F('chouchin', -10, 118), _F('chouchin', 55, 118),
-      _F('chouchin', 172, 118),
-      _F('sign_board', 135, 22),                                // 高層看板
-      // ─── ★★ シグネチャ: 倒れ物 + ゴミ袋 (終電後の荒れ) ★★ ───
-      _F('bicycle', -78, 78),                                   // 倒れ自転車
-      _F('bicycle', 65, 78),
-      _F('bicycle', -80, 172),                                  // 倒れ自転車
-      _F('dumpster', -40, 72), _F('dumpster', 30, 72),
-      _F('dumpster', -55, 170), _F('dumpster', 95, 170),
-      _F('milk_crate_stack', -155, 72), _F('milk_crate_stack', 100, 72),
-      _F('milk_crate_stack', 85, 172),
-      _F('garbage', 0, 75), _F('garbage', -120, 172),
-      _F('garbage', 145, 170),
-      _F('traffic_cone', -50, 78), _F('traffic_cone', 55, 78),
-      _F('traffic_cone', 60, 172),
-      // ─── 上段中間 ───
-      _F('kerbside_vending_pair', 115, 72),
-      // ─── 電線 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 水たまり + 街灯 ───
-      _F('puddle_reflection', -90, 75), _F('puddle_reflection', 40, 78),
-      _F('puddle_reflection', 130, 75),
-      _F('puddle_reflection', -70, 172), _F('puddle_reflection', 30, 172),
-      _F('puddle_reflection', 140, 170),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -45, 100), _F('manhole_cover', 45, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      _F('cat', -120, 80),                                      // ★ 屋台裏の野良猫
-      _F('cat', 50, 195),
+      // ─── merged 焦点 4 層: 屋台 5 連 ───
+      // 各屋台 chouchin × 1 上空 + parasol × 1 + noren
+      _F('chouchin', -110, 58), _F('chouchin', -55, 58),
+      _F('chouchin', 0, 60), _F('chouchin', 55, 58), _F('chouchin', 108, 60),
+      _F('parasol', -110, 78), _F('parasol', -55, 78),
+      _F('parasol', 0, 80), _F('parasol', 55, 78), _F('parasol', 108, 80),
+      _F('noren', -110, 64), _F('noren', -55, 64),
+      _F('noren', 0, 66), _F('noren', 55, 64), _F('noren', 108, 66),
+      // 客 bench × 5 (準対称、屋台間)
+      _F('bench', -85, 88), _F('bench', -28, 88),
+      _F('bench', 28, 88), _F('bench', 80, 88), _F('bench', 130, 88),
+      // 境界
+      _F('wood_fence', -178, 70), _F('wood_fence', 178, 70),
+      _F('flower_planter_row', -150, 88), _F('flower_planter_row', 150, 88),
+      // 動線
+      _F('popcorn_cart', -150, 60), _F('popcorn_cart', 150, 60),
+      _F('balloon_cluster', -100, 30), _F('balloon_cluster', 0, 30), _F('balloon_cluster', 100, 30),
+      _F('street_lamp', -65, 88), _F('street_lamp', 65, 88),
+      // ─── 上段ロット (取り巻き facade 沿い) ───
+      _F('sign_board', -150, 22), _F('sign_board', 150, 22),
+      _F('sign_board', -75, 22), _F('sign_board', 75, 22),
+      // ─── SW アンビエント ───
+      _F('noren', -100, 122),
+      _F('cat', -170, 175),
+      // ─── SE アンビエント ───
+      _F('chouchin', 100, 122), _F('chouchin', 160, 122),
+      _F('bicycle', 130, 175),
+      // ─── 取り巻き 3 パターン ───
+      _F('puddle_reflection', -50, 105), _F('puddle_reflection', 50, 105),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100), _F('manhole_cover', 65, 100),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('garbage', 0, 90),
     ],
     humans: [
-      _H(-120, 55), _H(-95, 55),                                // 屋台客 2 組
-      _H(-25, 55), _H(45, 55),                                  // 屋台客
-      _H(-100, 150), _H(20, 150),                               // 下段屋台客
-      _H(-78, 72),                                              // 倒れた酔客
-      _H(130, 172),                                             // よろめく通行人
+      _H(-110, 88), _H(-55, 88), _H(0, 88), _H(55, 88), _H(108, 88),  // 屋台客 各 1
+      _H(-110, 75), _H(-55, 75), _H(0, 75),                       // 屋台店主 (後ろ)
+      _H(-100, 145), _H(100, 145),                                // 酔客
+      _H(0, 100),                                                  // 通行人
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('tile', -120, 60, 50, 42),                             // 屋台街タイル
-      _G('tile', 10, 60, 70, 42),
-      _G('tile', -100, 158, 50, 42),
-      _G('tile', 10, 158, 50, 42),
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // 焦点
+      _G('red_carpet', 0, 78, 240, 30),                           // 屋台床
+      _G('concrete', 0, 100, 320, 30),                            // 屋台前
+      // ロット
+      _G('concrete', -100, 145, 130, 30),                         // SW chaya
+      _G('oil_stained_concrete', -100, 175, 100, 20),             // SW 路地
+      _G('concrete', 100, 145, 130, 30),                          // SE ramen
+      // 上段店
+      _G('tile', -150, 38, 24, 24),
+      _G('tile', 150, 38, 24, 24),
+      _G('concrete', -75, 38, 24, 24),
+      _G('concrete', 75, 38, 24, 24),
+      // 歩道帯
+      _G('stone_pavement', -65, 100, 12, 200),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [], verticalRoads: [_AVE],
   } },
 
-  // ── C8: 駐車場と裏通り — 賑わいが消えた静かな区画 ──
-  // 街区分け:
-  //   上段 西: シャッター古商店街 (snack 閉店、古いアパート)
-  //   上段 中: ★ 中央コインパーキング (大広場)
-  //   上段 東: 古い雑居ビル + ガレージ
-  //   下段 西: ★ もう 1 つの大駐車場 (連結)
-  //   下段 中: 雑居オフィスビル + 1F コンビニ
-  //   下段 東: 高層雑居 + 端の倉庫
+  // ── Ch8: 映画館 + ミニシアター街 ──
+  // SE = ヒーロー (movie_theater 大ポスター、基本形 B) / NW・NE・SW = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 西: シャッター街 (廃れた商店) ===
-      _B('snack', -160, 38),                                    // 閉店のスナック (シャッター)
-      _B('apartment', -125, 72),                                // 古いアパート (奥)
-      _B('shop', -108, 38),                                     // 古い小売店 (閉)
-      _B('shed', -175, 76),                                     // 店裏
-
-      // === 上段 中: ★ 中央コインパーキング (広場) ===
-      _B('parking', -28, 50),                                   // ★ メイン駐車場 (表に大広場)
-      _B('shed', -65, 75),                                      // 駐車場脇の物置
-      _B('shed', 25, 78),                                       // 駐車場脇
-
-      // === 上段 東: 古い雑居ビル + ガレージ ===
-      _B('office', 130, 64.5),                                    // ★ 古い雑居 (奥)
-      _B('mahjong_parlor', 71, 42),                            // 古い雀荘
-      _B('garage', 155, 40),                                    // 1F ガレージ
-      _B('shed', 175, 78),                                      // 端の倉庫
-
-      // === 下段 西: ★ もう 1 つの大駐車場 (連結) ===
-      _B('parking', -130, 148),                                 // ★ 大駐車場
-      _B('shed', -178, 178),                                    // 駐車場端
-      _B('garage', -72, 175),                                   // 駐車場脇
-
-      // === 下段 中: 雑居オフィスビル + 1F コンビニ ===
-      _B('office', -25, 170),                                   // ★ 古い雑居 (奥)
-      _B('convenience', 22, 132),                                // 1F の 24h コンビニ (孤独に明かり)
-      _B('pharmacy', -55, 132),                                 // 隣の 24h ドラッグ
-      _B('shed', 30, 175),                                      // ビル裏
-
-      // === 下段 東: 高層雑居 + 倉庫 ===
-      _B('apartment_tall', 150, 175),                           // ★ 高層 (奥)
-      _B('cafe', 107, 132),                                     // 1F カフェ
-      _B('garage', 175, 132),                                   // ガレージ
-      _B('shed', 178, 178),                                     // 倉庫
+      // === SE 焦点 ===
+      _B('movie_theater', 130, 130),
+      _B('cafe', 60, 138),
+      // === NW アンビエント ===
+      _B('karaoke', -130, 22),
+      _B('club', -75, 22),
+      _B('snack', -25, 22),
+      // === NE アンビエント ===
+      _B('pachinko', 130, 22),
+      _B('game_center', 70, 22),
+      _B('snack', 165, 22),
+      // === SW アンビエント ===
+      _B('mansion', -100, 130),
+      _B('mansion', -45, 130),
+      _B('mahjong_parlor', -130, 178),
     ],
     furniture: [
-      // ─── 上段 facade (オフィスの看板 + 夜閉まった店) ───
-      _F('sign_board', -150, 22), _F('sign_board', 30, 22),
-      _F('sign_board', 85, 22),                                 // 高層看板
-      _F('a_frame_sign', -45, 22),                              // 駐車場案内
-      _F('sign_board', -108, 22),                               // アパート看板
-      _F('chouchin', 140, 22),                                  // 倉庫の明かり
-      // ─── ★★ シグネチャ: 室外機の唸り + ゴミ山 ★★ ───
-      _F('ac_outdoor_cluster', -150, 72),
-      _F('ac_outdoor_cluster', 30, 72),
-      _F('ac_outdoor_cluster', -108, 72),
-      _F('ac_outdoor_cluster', -40, 168),
-      _F('ac_outdoor_cluster', 15, 168),
-      _F('ac_outdoor_cluster', 150, 178),
-      _F('dumpster', -180, 72), _F('dumpster', -15, 72),
-      _F('dumpster', 65, 72), _F('dumpster', 180, 72),
-      _F('dumpster', -180, 170), _F('dumpster', 50, 172),
-      _F('dumpster', 180, 172),
-      _F('garbage', -75, 75), _F('garbage', 125, 75),
-      _F('garbage', -60, 172), _F('garbage', 120, 172),
-      _F('recycling_bin', 5, 75), _F('recycling_bin', -5, 172),
-      // ─── コインパーキング (車並び) ───
-      _F('car', -55, 65), _F('car', -35, 65), _F('car', -55, 80),
-      _F('car', -145, 160), _F('car', -115, 160),
-      _F('car', -145, 178), _F('car', -115, 178),
-      _F('car', 70, 160), _F('car', 90, 160),
-      _F('car', 70, 178), _F('car', 90, 178),
-      _F('traffic_cone', -35, 78), _F('traffic_cone', -75, 78),
-      _F('traffic_cone', 50, 172), _F('traffic_cone', 110, 172),
-      // ─── 電線 + 電柱 ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      _F('electric_box', -55, 102), _F('electric_box', 55, 102),
-      // ─── 下段 facade ───
-      _F('a_frame_sign', -130, 118),                            // 駐車場案内
-      _F('a_frame_sign', 80, 118),
-      _F('sign_board', -40, 118), _F('sign_board', 15, 118),
-      _F('sign_board', 150, 118),
-      _F('chouchin', 175, 118),
-      // ─── 野良猫 (静けさの演出) ───
-      _F('cat', -75, 78), _F('cat', 45, 195),
-      _F('cat', 160, 172),
-      // ─── 水たまり ───
-      _F('puddle_reflection', -110, 78), _F('puddle_reflection', 75, 78),
-      _F('puddle_reflection', -80, 172), _F('puddle_reflection', 130, 172),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
+      // ─── SE 焦点 4 層 ───
+      _F('sign_board', 130, 118),                                 // ポスター
+      _F('banner_pole', 100, 120), _F('banner_pole', 158, 120), _F('banner_pole', 60, 120),
+      _F('flag_pole', 130, 110), _F('flag_pole', 60, 110),
+      _F('shop_awning', 130, 145), _F('shop_awning', 60, 145),
+      // 境界
+      _F('flower_planter_row', 110, 170), _F('flower_planter_row', 170, 170),
+      _F('bollard', 80, 140), _F('bollard', 178, 140), _F('bollard', 30, 140),
+      // 動線
+      _F('street_lamp', 65, 100), _F('street_lamp', 130, 88),
+      _F('bench', 90, 152), _F('bench', 130, 152), _F('bench', 165, 152),
+      _F('puddle_reflection', 100, 168), _F('puddle_reflection', 150, 168),
+      // ─── NW アンビエント ───
+      _F('sign_board', -130, 8), _F('sign_board', -75, 8), _F('sign_board', -25, 8),
+      _F('garbage', -160, 60),
+      // ─── NE アンビエント ───
+      _F('sign_board', 130, 8), _F('sign_board', 70, 8), _F('sign_board', 165, 8),
+      _F('bicycle', 100, 60), _F('bicycle', 50, 60),
+      // ─── SW アンビエント ───
+      _F('mailbox', -100, 130),
+      _F('chouchin', -130, 168),
+      // ─── 取り巻き 3 パターン ───
+      _F('puddle_reflection', -50, 105), _F('puddle_reflection', 50, 105), _F('puddle_reflection', 0, 105),
+      _F('street_lamp', -65, 100), _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', -170, 175),
     ],
     humans: [
-      _H(-55, 70),                                              // 深夜の駐車場利用者
-      _H(80, 160),                                              // もう一人
-      _H(-150, 82),                                             // オフィス残業
-      _H(15, 152),                                              // コンビニ帰り (見立て)
+      _H(130, 145), _H(130, 152), _H(90, 152), _H(165, 152), _H(60, 145),  // 映画客 SE × 5
+      _H(-130, 38), _H(-75, 38), _H(-25, 38),                     // ホスト NW
+      _H(130, 38), _H(70, 38), _H(165, 38),                       // パチンコ客 NE
+      _H(0, 100),                                                  // 通行人
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 360, 93),
-      _G('asphalt', 0, 153.5, 360, 93),
-      _G('concrete', -45, 72, 60, 40),                          // パーキング上段床
-      _G('concrete', -130, 170, 120, 50),                       // パーキング下段床
-      _G('concrete', 80, 170, 60, 50),
-      _G('asphalt', 0, 15, 360, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // SE 焦点
+      _G('tile', 130, 152, 100, 60),
+      _G('wood_deck', 60, 152, 50, 30),
+      // ロット
+      _G('concrete', -130, 38, 24, 24), _G('concrete', -75, 38, 24, 24),
+      _G('tile', -25, 38, 24, 24),                                // NW snack
+      _G('tile', 130, 38, 24, 24), _G('tile', 70, 38, 24, 24),
+      _G('concrete', 165, 38, 24, 24),
+      _G('concrete', -100, 152, 80, 30),                          // SW mansion 駐車
+      // 歩道帯 + アクセント
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
   } },
 
-  // ═══ Act IV: 朝の気配 (C9) — Stage 3 への handoff ═══════════════
+  // ═══ Act IV: 静寂への転換 (Ch9-Ch11) ══════════════════════════════════
 
-  // ── C9: 小さな神社の裏手 — 夜明け前、石灯籠の気配 ──
-  // 歓楽街の騒めきが消え、神社の裏手で夜明けを待つ。次ステージ (和風古都) への
-  // 予兆として鳥居・石灯籠・松・古民家を配置。人影まばら、野良猫が主役。
+  // ── Ch9: 駐車場と裏通り (静寂転換の入口) ──
+  // NE = ヒーロー (コインパーキング、基本形 A オープンスペース) / NW・SW・SE = アンビエント
   { patternId: 's2_raw', raw: {
     buildings: [
-      // === 上段 ─ 前列 (古民家の並びと神社) ===
-      _B('kominka', -158, 40),
-      _B('kominka', -130, 44),
-      _B('shrine', -69, 48),                                    // ★ 小さな神社 (奥)
-      _B('chaya', -30, 38),
-      _B('kominka', 21, 42),
-      _B('apartment', 55, 52),                                  // 古アパート (奥)
-      _B('kominka', 109, 40),
-      _B('chaya', 130, 44),
-      // === 上段 ─ 奥列 (物置/小屋/温室) ===
-      _B('shed', -175, 70),
-      _B('greenhouse', -115, 74),                               // 古い温室
-      _B('shed', -60, 78),
-      _B('shed', 25, 72),
-      _B('shed', 76, 76),
-      _B('greenhouse', 148, 78),
-      _B('shed', 175, 70),
-      // === 下段 ─ 前列 (境内 + 古民家) ===
-      _B('kominka', -160, 132),
-      _B('kominka', -135, 138),
-      _B('shrine', -69, 146),                                   // ★ 摂社 (奥)
-      _B('kominka', -25, 132),
-      _B('chaya', 20, 138),
-      _B('kominka', 48, 130),
-      _B('house', 75, 134),
-      _B('kominka', 120, 132),
-      _B('kominka', 148, 138),
-      // === 下段 ─ 奥列 (物置/小さな家) ===
-      _B('shed', -178, 172),
-      _B('greenhouse', -109, 178),
-      _B('shed', -45, 174),
-      _B('garage', 25, 172),
-      _B('shed', 76, 178),
-      _B('shed', 175, 174),
+      // === NE 焦点 ===
+      _B('parking', 130, 68),
+      _B('gas_station', 30, 22),
+      // === NW アンビエント: 古い住宅 ===
+      _B('house', -130, 22),
+      _B('house', -90, 22),
+      _B('snack', -45, 22),
+      // === SW アンビエント: 蔵 + 町家 ===
+      _B('kura', -130, 130),
+      _B('machiya', -70, 138),
+      // === SE アンビエント: 町家 + アパート ===
+      _B('townhouse', 80, 130),
+      _B('townhouse', 140, 130),
+      _B('apartment', 100, 178),
     ],
     furniture: [
-      // ─── ★★ シグネチャ: 鳥居 + 石灯籠の列 (Stage 3 予兆) ★★ ───
-      _F('torii', -75, 22),                                     // ★ 上段神社の鳥居
-      _F('torii', -75, 118),                                    // ★ 下段摂社の鳥居
-      _F('stone_lantern', -95, 72), _F('stone_lantern', -55, 72),
-      _F('stone_lantern', -95, 170), _F('stone_lantern', -55, 170),
-      _F('stone_lantern', 90, 72), _F('stone_lantern', 120, 172),
-      _F('shinto_rope', -75, 28),                               // しめ縄
-      _F('shinto_rope', -75, 124),
-      _F('offering_box', -75, 75),                              // 賽銭箱
-      _F('koma_inu', -90, 78), _F('koma_inu', -60, 78),         // 狛犬
-      // ─── 松 + 桜 (和風の縦軸) ───
-      _F('pine_tree', -170, 80), _F('pine_tree', 175, 80),
-      _F('pine_tree', -170, 175), _F('pine_tree', 175, 175),
-      _F('sakura_tree', -105, 165),                             // 桜古木
-      _F('sakura_tree', 60, 65),
-      // ─── 古民家 facade (提灯は消え、mailbox と wood_fence) ───
-      _F('wood_fence', -178, 22), _F('wood_fence', 178, 22),
-      _F('wood_fence', -178, 118), _F('wood_fence', 178, 118),
-      _F('mailbox', -158, 22), _F('mailbox', -130, 22),
-      _F('mailbox', 0, 22), _F('mailbox', 105, 22), _F('mailbox', 130, 22),
-      _F('mailbox', -160, 118), _F('mailbox', -135, 118),
-      _F('mailbox', 48, 118), _F('mailbox', 120, 118), _F('mailbox', 148, 118),
-      _F('noren', -30, 28), _F('noren', 5, 124),                // 茶屋ののれん
-      // ─── 境内の装飾 ───
-      _F('bonsai', -95, 30), _F('bonsai', 95, 172),
-      _F('bamboo_cluster', 55, 75), _F('bamboo_cluster', 75, 168),
-      _F('potted_plant', -158, 30), _F('potted_plant', 0, 28),
-      _F('potted_plant', -25, 120), _F('potted_plant', 148, 120),
-      // ─── ゴミ収集車が来る朝 (handoff 演出) ───
-      _F('car', 160, 172),                                      // ゴミ収集車 (見立て)
-      _F('dumpster', -180, 172), _F('dumpster', 180, 172),
-      _F('garbage', 170, 170),
-      // ─── 電線 (街の気配の最後) ───
-      _F('power_pole', -175, 92), _F('power_line', -178, 88),
-      _F('power_pole', 178, 92), _F('power_line', 175, 88),
-      _F('power_pole', -175, 195), _F('power_line', -178, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      _F('cable_junction_box', -170, 100), _F('cable_junction_box', 170, 100),
-      // ─── 野良猫の時間 (★★ Stage 2 最後の主役) ★★ ───
-      _F('cat', -70, 80),                                       // 賽銭箱の前
-      _F('cat', -70, 170),                                      // 摂社の前
-      _F('cat', 40, 195),                                       // 境内奥
-      _F('cat', 150, 190),
-      // ─── 水たまり (まだ夜の痕跡) ───
-      _F('puddle_reflection', -110, 100), _F('puddle_reflection', 110, 100),
-      _F('puddle_reflection', 0, 100),
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('street_lamp', -90, 100), _F('street_lamp', 90, 100),
-      // ─── 朝の手水 (Stage 3 への予兆) ───
-      _F('temizuya', -60, 65),                                  // 手水舎
-      _F('bamboo_water_fountain', -55, 165),                    // 竹の鹿威し
-      _F('sando_stone_pillar', -178, 100),                      // 参道の石柱
-      _F('sando_stone_pillar', 178, 100),
+      // ─── NE 焦点 4 層 ───
+      // 取り巻き: traffic_cone × 4 + barrier × 2 + 駐車車両 × 3
+      _F('traffic_cone', 80, 60), _F('traffic_cone', 130, 60),
+      _F('traffic_cone', 170, 60), _F('traffic_cone', 130, 95),
+      _F('barrier', 80, 88), _F('barrier', 178, 88),
+      _F('car', 80, 80), _F('car', 130, 80), _F('car', 170, 80),
+      // 境界
+      _F('wood_fence', 75, 60), _F('wood_fence', 75, 75), _F('wood_fence', 75, 90),
+      _F('hedge', 178, 30), _F('hedge', 178, 80),
+      // 動線
+      _F('street_lamp', 100, 95),
+      _F('vending', 60, 38),
+      _F('garbage', 165, 45),
+      // ─── NW アンビエント: 古い住宅 ───
+      _F('mailbox', -130, 22), _F('mailbox', -90, 22),
+      _F('mailbox', -45, 22), _F('mailbox', 0, 22),               // 不揃い × 4
+      _F('sign_board', -45, 8),                                    // snack 閉店間際
+      // ─── SW アンビエント: 蔵 + 町家 ───
+      _F('wood_fence', -150, 168), _F('wood_fence', -120, 168), _F('wood_fence', -50, 168),
+      _F('garbage', -100, 175),
+      _F('cat', -170, 145),
+      // ─── SE アンビエント: cat × 4 (静寂の主役) ───
+      _F('cat', 170, 165), _F('cat', 130, 195), _F('cat', 90, 165), _F('cat', 50, 175),
+      // ─── 取り巻き 3 パターン ───
+      _F('puddle_reflection', -50, 105), _F('puddle_reflection', 50, 105), _F('puddle_reflection', 0, 110),
+      _F('street_lamp', -65, 100), _F('street_lamp', 65, 100),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100),
+      _F('chouchin', -45, 38),                                     // 寂しさ表現 1 本残し
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', -170, 175),
     ],
     humans: [
-      _H(-75, 78),                                              // 早朝の参拝者
-      _H(-75, 172),                                             // 境内の老人
-      _H(160, 170),                                             // ゴミ収集業者
-      _H(5, 152),                                               // 茶屋の女将
-      _H(-30, 55),                                              // 朝の散歩
+      _H(0, 100),                                                  // 深夜散歩客
+      _H(-130, 38),                                                // 古い住宅
     ],
     grounds: [
-      _G('asphalt', 0, 46.5, 180, 93),                          // 左半は asphalt (街の名残)
-      _G('gravel', 90, 46.5, 180, 93),                          // ★ 右半は玉砂利 (Stage 3 予兆)
-      _G('gravel', 0, 153.5, 360, 93),                          // 下段は全面玉砂利
-      _G('stone_pavement', -75, 65, 50, 40),                    // 神社の参道
-      _G('stone_pavement', -75, 170, 50, 55),                   // 摂社の参道
-      _G('moss', 40, 180, 40, 20),                              // 苔 (古都の気配)
-      _G('asphalt', 0, 15, 120, 25),
+      _G('asphalt', 0, 100, 360, 200),
+      // NE 焦点: 駐車場 oil_stained_concrete
+      _G('oil_stained_concrete', 130, 80, 100, 50),
+      // ロット
+      _G('concrete', -130, 38, 24, 24), _G('concrete', -90, 38, 24, 24),  // NW 古い住宅
+      _G('concrete', -45, 38, 24, 24),                            // NW snack
+      _G('stone_pavement', -100, 145, 80, 40),                    // SW 神社予兆
+      _G('fallen_leaves', -130, 180, 30, 16),                     // SW 神社予兆
+      _G('concrete', 110, 152, 80, 30),                           // SE 町家駐車
+      // 歩道帯 + アクセント
+      _G('stone_pavement', -65, 100, 12, 200),
+      _G('oil_stained_concrete', 0, 100, 25, 14),
     ],
-    horizontalRoads: [_MID_HR], verticalRoads: [..._SPINE_V],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
+  } },
+
+  // ── Ch10: 古い住宅 + 神社の裏手 ──
+  // SW = ヒーロー (神社の裏 + 蔵集落、stone_pavement 参道予告) / NW・NE・SE = アンビエント
+  { patternId: 's2_raw', raw: {
+    buildings: [
+      // === SW 焦点: 神社蔵見立て + 摂社見立て ===
+      _B('kura', -100, 130),
+      _B('shed', -160, 130),
+      // === NW アンビエント: 古民家 + 茶屋 + 和菓子 ===
+      _B('kominka', -130, 22),
+      _B('chaya', -75, 22),
+      _B('wagashi', -25, 22),
+      // === NE アンビエント: 町家 ===
+      _B('townhouse', 80, 22),
+      _B('townhouse', 130, 22),
+      _B('machiya', 30, 22),
+      // === SE アンビエント: 蔵集落 ===
+      _B('shed', 60, 130),
+      _B('shed', 130, 130),
+      _B('machiya', 30, 138),
+      _B('kura', 165, 178),
+    ],
+    furniture: [
+      // ─── SW 焦点 4 層 ───
+      _F('stone_lantern', -130, 145), _F('stone_lantern', -70, 145), _F('stone_lantern', -100, 168),
+      _F('bamboo_water_fountain', -70, 158),
+      // 境界: bamboo_fence + hedge
+      _F('bamboo_fence', -178, 130), _F('bamboo_fence', -178, 168),
+      _F('bamboo_fence', 0, 130), _F('bamboo_fence', 0, 168),
+      _F('hedge', -50, 195), _F('hedge', -150, 195),
+      // ─── NW アンビエント: 古民家 + 茶屋 + 和菓子 ───
+      _F('noren', -130, 28), _F('noren', -75, 28), _F('noren', -25, 28),
+      _F('mailbox', -100, 22),
+      // ─── NE アンビエント: 町家 ───
+      _F('bonsai', 80, 38),
+      _F('cat', 170, 38),
+      // ─── SE アンビエント ───
+      _F('garbage', 100, 175),
+      _F('mailbox', 60, 130),
+      // ─── 取り巻き 3 パターン ───
+      _F('mailbox', -130, 22), _F('mailbox', -25, 22),            // 不揃い
+      _F('puddle_reflection', -50, 105), _F('puddle_reflection', 50, 105), _F('puddle_reflection', 0, 110),
+      _F('street_lamp', -65, 100), _F('street_lamp', 65, 100),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 0, 100),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', -170, 175), _F('cat', -150, 195),
+    ],
+    humans: [
+      _H(0, 100),                                                  // 早朝散歩
+    ],
+    grounds: [
+      _G('asphalt', 0, 100, 360, 200),
+      // SW 焦点: 神社境内
+      _G('stone_pavement', -100, 145, 80, 80),
+      _G('moss', -75, 168, 30, 20),
+      _G('fallen_leaves', -130, 180, 25, 14),
+      _G('fallen_leaves', -50, 180, 25, 14),
+      _G('gravel', -100, 195, 40, 14),
+      // ロット
+      _G('grass', -75, 60, 80, 40),                                // NW 古民家庭
+      _G('dirt', -100, 88, 30, 16),                                // NW 庭石
+      _G('grass', 80, 60, 50, 40),                                 // NE 庭
+      _G('concrete', 80, 95, 60, 18),                              // NE
+      _G('concrete', 100, 152, 100, 30),                           // SE 蔵集落
+      // 歩道帯
+      _G('stone_pavement', -65, 100, 12, 200),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
+  } },
+
+  // ── Ch11: 神社の表参道 (Stage 3 への handoff) ──
+  // NE = ヒーロー (torii と表参道、Stage 3 への移行点) / NW・SW・SE = アンビエント (Stage 3 予告)
+  { patternId: 's2_raw', raw: {
+    buildings: [
+      // === NE 焦点: torii ランドマーク ===
+      // torii は furniture (ランドマーク扱い)
+      // === NW アンビエント: 茶屋 + 和菓子 + 古民家 ===
+      _B('chaya', -100, 22),
+      _B('wagashi', -45, 22),
+      _B('kominka', -75, 75),
+      // === SW アンビエント: 蔵 × 2 + 町家 ===
+      _B('kura', -130, 130),
+      _B('kura', -70, 130),
+      _B('machiya', -25, 138),
+      // === SE アンビエント: 古民家 + 茶屋 ===
+      _B('kominka', 130, 130),
+      _B('chaya', 60, 138),
+    ],
+    furniture: [
+      // ─── NE 焦点 4 層: 表参道 ───
+      _F('torii', 80, 22),                                         // ★ ランドマーク
+      _F('offering_box', 80, 95),
+      _F('omikuji_stand', 60, 95),
+      _F('ema_rack', 100, 95),
+      // 取り巻き: sando_stone_pillar + stone_lantern + koma_inu
+      _F('sando_stone_pillar', 40, 58), _F('sando_stone_pillar', 80, 88), _F('sando_stone_pillar', 120, 58),
+      _F('stone_lantern', 40, 88), _F('stone_lantern', 120, 88),
+      _F('koma_inu', 60, 68), _F('koma_inu', 100, 68),
+      // 境界: bamboo_fence + shrine_fence_red
+      _F('bamboo_fence', 10, 10), _F('bamboo_fence', 10, 50), _F('bamboo_fence', 10, 90),
+      _F('bamboo_fence', 150, 10), _F('bamboo_fence', 150, 50), _F('bamboo_fence', 150, 90),
+      _F('shrine_fence_red', 30, 38), _F('shrine_fence_red', 130, 38),
+      // 動線: shinto_rope (鳥居上)
+      _F('shinto_rope', 80, 22),
+      // ─── NW アンビエント: 茶屋 + 和菓子 + 古民家 ───
+      _F('noren', -100, 28), _F('noren', -45, 28),
+      _F('bicycle', -75, 60),
+      // ─── SW アンビエント: 蔵 × 2 + 町家 ───
+      _F('wood_fence', -150, 175), _F('wood_fence', -100, 175), _F('wood_fence', -50, 175),
+      _F('garbage', -100, 168),
+      // ─── SE アンビエント ───
+      _F('mailbox', 130, 130),
+      _F('cat', 170, 145), _F('cat', 130, 175),
+      // ─── 取り巻き 3 パターン ───
+      _F('noren', -75, 75),                                        // NW 古民家
+      _F('chouchin', -100, 22), _F('chouchin', 130, 22),           // Stage 3 予告 (和風 facade)
+      _F('puddle_reflection', -50, 105), _F('puddle_reflection', 50, 105), _F('puddle_reflection', 0, 110),
+      _F('street_lamp', -65, 100), _F('street_lamp', 65, 100),
+      _F('manhole_cover', -65, 100), _F('manhole_cover', 65, 100),
+      _F('newspaper_stand', 0, 88),
+      // ─── 連続軸 ───
+      _F('power_pole', -178, 92), _F('power_pole', 178, 92),
+      _F('power_pole', -178, 195), _F('power_pole', 178, 195),
+      _F('power_line', -90, 195), _F('power_line', 90, 195),
+      _F('cable_junction_box', -170, 195), _F('cable_junction_box', 170, 195),
+      _F('cat', -170, 175),
+    ],
+    humans: [
+      _H(80, 100), _H(60, 95),                                     // 早朝参拝者 NE
+    ],
+    grounds: [
+      _G('asphalt', 0, 100, 360, 200),
+      // NE 焦点: 表参道
+      _G('stone_pavement', 80, 100, 100, 100),
+      _G('gravel', 80, 88, 80, 30),
+      _G('fallen_leaves', 40, 88, 25, 15),
+      _G('fallen_leaves', 120, 88, 25, 15),
+      _G('moss', 80, 178, 30, 20),
+      // ロット
+      _G('grass', -75, 60, 80, 40),                                // NW 茶屋庭
+      _G('dirt', -100, 88, 30, 16),                                // NW 庭石
+      _G('stone_pavement', -100, 145, 80, 40),                     // SW 蔵集落
+      _G('gravel', -100, 175, 60, 14),                             // SW
+      _G('moss', -150, 165, 25, 18),                               // SW
+      _G('stone_pavement', 100, 152, 60, 40),                      // SE
+      _G('gravel', 100, 178, 60, 14),                              // SE
+      _G('moss', 165, 175, 20, 18),                                // SE
+      // 歩道帯
+      _G('stone_pavement', -65, 100, 12, 200),
+    ],
+    horizontalRoads: [_MID_HR], verticalRoads: [_AVE],
   } },
 ];
 
