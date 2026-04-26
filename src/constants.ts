@@ -12,12 +12,12 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-// リアルピンボール寄り: 穏やかな打ち出し + 緩い重力で滞空時間を確保
+// ふんわり寄り: 緩い重力 + 速度上限低めで滞空時間を確保、衝撃感を和らげる
 // 建物ヒットでの減速は一切なし (HP > 0 なら反射、HP ≤ 0 なら貫通=破壊、速度そのまま)
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
-export const GRAVITY = 0.28;             // やや控えめにしてホールドタイムを確保
-export const MAX_BALL_SPEED = 22;        // クランプ上限 (ビル通過・降下時に頭打ちしない程度)
-export const WALL_DAMPING = 0.66;        // 壁での反発 (世界端のみ)
+export const GRAVITY = 0.22;             // ふんわり: 弾道を高めにし滞空時間を伸ばす (旧 0.28)
+export const MAX_BALL_SPEED = 19;        // ふんわり: 速度上限を下げ「弾丸感」を和らげる (旧 22)
+export const WALL_DAMPING = 0.58;        // ふんわり: 壁の跳ね返りを減衰強めで衝撃感を緩く (旧 0.66)
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
 export const BALL_START_X = -150;
 export const BALL_START_Y = -100;
