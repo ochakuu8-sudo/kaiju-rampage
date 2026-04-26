@@ -742,10 +742,16 @@ export class Game {
         b.lastPiercedBld = bld;
         this.onBuildingDestroyed(bld);
       } else {
-        // 反射: 向きだけ変えて速度の大きさは維持 (減速なし)
+        // 反射: 反発係数を適用してエネルギーを失わせる (ふんわり感)
+        // 「下から建物の底面に当たった」= ボールが上向き (vy>0) で反射後に下向き (newVy<0) のケース
+        // この場合は鉛直反転が発生するので、強めに減衰させて思い切り弾かれる感を消す
+        const isBottomHit = b.vy > 0.5 && bldResult.newVy < 0;
+        const restitution = isBottomHit ? C.RESTITUTION_BUILDING_BOTTOM : C.RESTITUTION_BUILDING;
+        // resolveCircleAABB は damping=0.78 で反射済み (= 旧コードはこれを巻き戻して 1.0 にしていた)。
+        // 今は preSpd 比で再スケールしてから restitution を掛けて目標反発係数に揃える。
         const preSpd  = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
         const postSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2) || 0.001;
-        const k = preSpd / postSpd;
+        const k = (preSpd / postSpd) * restitution;
         b.vx = bldResult.newVx * k;
         b.vy = bldResult.newVy * k;
         b.lastPiercedBld = null;

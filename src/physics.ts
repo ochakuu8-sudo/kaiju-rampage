@@ -51,14 +51,10 @@ export function resolveCircleAABB(
   const pen = br - dist;
   const newBx = bx + nx * pen;
   const newBy = by + ny * pen;
-  // 反射
+  // 反射 (反発係数の適用は呼び出し側で行う。ここは形状的な反射のみ)
   const dot = vx * nx + vy * ny;
-  // 下からの衝突 (ny が下向き = 法線が下方向、ボールが上に向かって建物の底に当たる)
-  // ふんわり感のため鉛直成分を強めに減衰させる (旧: 一律 0.78、新: 下方反射時 0.55 を掛ける)
-  const isBottomHit = ny < -0.7;
-  const verticalSoftening = isBottomHit ? 0.55 : 1.0;
   const newVx = (vx - 2 * dot * nx) * damping;
-  const newVy = (vy - 2 * dot * ny) * damping * verticalSoftening;
+  const newVy = (vy - 2 * dot * ny) * damping;
   return [newBx, newBy, newVx, newVy];
 }
 
