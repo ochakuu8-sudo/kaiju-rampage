@@ -15,8 +15,8 @@ export const FALLOFF_Y = -285;       // これ以下でボールロスト
 // ふんわり寄り: 緩い重力 + 速度上限低めで滞空時間を確保、衝撃感を和らげる
 // 建物ヒットでは反発係数 RESTITUTION_BUILDING を適用してエネルギーを少し失う
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
-export const GRAVITY = 0.18;             // ふんわり: 弾道を高めにし滞空時間を伸ばす (旧 0.28 → 0.22 → 0.18)
-export const MAX_BALL_SPEED = 19;        // ふんわり: 速度上限を下げ「弾丸感」を和らげる (旧 22)
+export const GRAVITY = 0.22;             // ふんわり: 弾道を高めにし滞空時間を伸ばす (旧 0.28)
+export const MAX_BALL_SPEED = 15;        // ふんわり: 速度上限を下げ「弾丸感」を和らげる (旧 22 → 19 → 15)
 export const WALL_DAMPING = 0.58;        // ふんわり: 壁の跳ね返りを減衰強めで衝撃感を緩く (旧 0.66)
 // 建物反発係数: 1.0 = 完全弾性、< 1.0 で衝突ごとに減速。下面ヒットには別係数。
 export const RESTITUTION_BUILDING = 0.82;          // 通常の建物反射 (上面/側面)
