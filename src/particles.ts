@@ -351,6 +351,47 @@ export class ParticleManager {
     }
   }
 
+  /**
+   * 環境エフェクト (v6.3 SemanticCluster の hero focal 周辺の常時 emit 用)
+   * 各 type は 1 個ずつ低レートで呼ぶ前提 (caller 側で間隔制御)
+   */
+  spawnAmbient(x: number, y: number, type: 'sakura' | 'steam' | 'water' | 'dust' | 'firefly') {
+    switch (type) {
+      case 'sakura':
+        // 桜吹雪 (1 枚) — 既存 spawnSakuraPetals を 1 個版で
+        this.spawnSakuraPetals(x, y, 1);
+        return;
+      case 'steam':
+        // 蒸気 (1 個) — 既存 spawnSteam を 1 個版で
+        this.spawnSteam(x, y, 1);
+        return;
+      case 'water':
+        // 水しぶき (1 個) — 既存 spawnWater を 1 個版で
+        this.spawnWater(x, y, 1);
+        return;
+      case 'dust':
+        // 砂塵 (1 個) — 茶系のゆっくり上昇する小さい粒
+        this.emit(
+          x + rand(-10, 10), y + rand(-4, 4),
+          rand(-8, 8), rand(15, 35),
+          rand(0.55, 0.72), rand(0.50, 0.65), rand(0.40, 0.55),
+          rand(2, 4), rand(0.5, 1.0),
+          false, true, 0
+        );
+        return;
+      case 'firefly':
+        // ホタル (1 個) — 黄緑色の小さな光、ゆっくり浮遊
+        this.emit(
+          x + rand(-15, 15), y + rand(-10, 10),
+          rand(-12, 12), rand(-8, 8),
+          rand(0.85, 1.00), rand(0.95, 1.00), rand(0.40, 0.60),
+          rand(2, 3), rand(0.8, 1.5),
+          false, true, 0
+        );
+        return;
+    }
+  }
+
   /** 花びら */
   spawnFlower(x: number, y: number, count: number) {
     const colors: Array<[number,number,number]> = [

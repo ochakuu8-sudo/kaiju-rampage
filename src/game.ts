@@ -148,6 +148,8 @@ export class Game {
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
+  // v6.3 SemanticCluster ambient emit のレート制御アキュムレータ
+  private _ambientAccumulator = 0;
   // 初期都市のセル地面タイル
   private initialCityGrounds: GroundTile[] = [];
 
@@ -538,6 +540,7 @@ export class Game {
     this.vehicles.update(dt, this.camera.y);
     this.humans.update(dt, this.ball.x, this.ball.y, this.camera.y);
     this.particles.update(dt);
+    this._updateAmbient(dt);
     this.updateChunks();
 
     // 距離表示を更新
@@ -1325,6 +1328,98 @@ export class Game {
     this.vehicles.removeChunkLanes(chunkId);
     this.humans.removeRoadsBelow(this.camera.bottom - C.CHUNK_DESPAWN_BEHIND);
     this.loadedChunks.delete(chunkId);
+  }
+
+  /**
+   * v6.3 SemanticCluster ambient emit
+   * 各 hero クラスタの focal 周辺で低レートで環境パーティクルを出す
+   * (kominka→steam, sakura_tree→sakura, koi_pond→water, ...)
+   */
+  private _updateAmbient(dt: number) {
+    this._ambientAccumulator += dt;
+    if (this._ambientAccumulator < 0.5) return;  // ~2 emission opportunities/sec
+    this._ambientAccumulator = 0;
+
+    const camTop = this.camera.top + 30;
+    const camBot = this.camera.bottom - 30;
+
+    for (const chunk of this.loadedChunks.values()) {
+      if (!chunk.clusters) continue;
+      for (const c of chunk.clusters) {
+        if (c.role !== 'hero') continue;
+        // focal の世界座標を取得
+        let fx: number, fy: number;
+        if (c.focal.kind === 'b') {
+          const b = chunk.buildings[c.focal.i];
+          if (!b) continue;
+          fx = b.x; fy = b.y;
+        } else {
+          const f = chunk.furniture[c.focal.i];
+          if (!f) continue;
+          fx = f.x; fy = f.y;
+        }
+        // 画面外チャンクはスキップ
+        if (fy > camTop || fy < camBot) continue;
+        // focal 種別から ambient type を派生
+        const ambientType = this._ambientTypeFromFocal(c.focal, chunk);
+        if (ambientType) {
+          this.particles.spawnAmbient(fx, fy, ambientType);
+        }
+      }
+    }
+  }
+
+  /** focal の種別 (建物 size or 家具 type) から ambient particle 種を決定 */
+  private _ambientTypeFromFocal(
+    focal: { kind: 'b' | 'f'; i: number },
+    chunk: ChunkData
+  ): 'sakura' | 'steam' | 'water' | 'dust' | 'firefly' | null {
+    if (focal.kind === 'b') {
+      const size = chunk.buildings[focal.i]?.size;
+      switch (size) {
+        case 'kominka':
+        case 'onsen_inn':
+        case 'train_station':
+          return 'steam';
+        case 'gas_station':
+        case 'school':
+        case 'warehouse':
+          return 'dust';
+        case 'mansion':
+        case 'machiya':
+        case 'duplex':
+          return null; // 住宅は控えめに無し
+        default:
+          return null;
+      }
+    } else {
+      const type = chunk.furniture[focal.i]?.type;
+      switch (type) {
+        case 'koi_pond':
+        case 'fountain':
+        case 'fountain_large':
+        case 'temizuya':
+          return 'water';
+        case 'bathhouse_chimney':
+          return 'steam';
+        case 'sakura_tree':
+        case 'cherry_blossom' as any:
+          return 'sakura';
+        case 'play_structure':
+        case 'sandbox':
+        case 'jungle_gym':
+          return 'dust';
+        case 'statue':
+        case 'plaza_tile_circle':
+          return 'firefly';
+        case 'grain_silo':
+          return 'dust';
+        case 'railroad_crossing':
+          return null; // 踏切は静的
+        default:
+          return null;
+      }
+    }
   }
 
   private onBallLost() {
