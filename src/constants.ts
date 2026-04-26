@@ -34,7 +34,7 @@ export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 // ===== フリッパー =====
 export const FLIPPER_W = 68;       // 視覚ギャップ ≈38 px (ボール直径 32 × 1.2)
 export const FLIPPER_H = 5;        // フリッパー本体の厚み。先端の丸み半径 = 2.5 で細く、根本は描画で太く見せる
-export const FLIPPER_REST_DEG = -20;
+export const FLIPPER_REST_DEG = -25;   // 待機角度 (より急な V 字、旧 -20)
 export const FLIPPER_ACTIVE_DEG = 25;
 export const FLIPPER_POWER = 14;     // リアルピンボール寄りの穏やかな蹴り出し
 export const FLIPPER_SPEED_DEG = 420; // deg/s
