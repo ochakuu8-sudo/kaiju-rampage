@@ -16,7 +16,7 @@ import * as fs from 'fs';
 
 const SPECS = [
   { name: 'Stage 1', path: '/home/user/kaiju-rampage/指示書/怪獣ランページ — Stage 1 街レイアウト v6 1 整合性アップデート版 9876eb7e8fc34a538afbf278edbf3460.md' },
-  { name: 'Stage 2', path: '/home/user/kaiju-rampage/指示書/怪獣ランページ — Stage 2 街レイアウト v1 3 Stage1形式準拠版 a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6.md' },
+  { name: 'Stage 2 v2.0', path: '/home/user/kaiju-rampage/指示書/怪獣ランページ — Stage 2 街レイアウト v2 0 品質保証フォーマット版 e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0.md' },
   { name: 'Stage 3', path: '/home/user/kaiju-rampage/指示書/怪獣ランページ — Stage 3 街レイアウト v1 1 Stage1形式準拠版 b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7.md' },
   { name: 'Stage 4', path: '/home/user/kaiju-rampage/指示書/怪獣ランページ — Stage 4 街レイアウト v1 1 Stage1形式準拠版 c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8.md' },
   { name: 'Stage 5', path: '/home/user/kaiju-rampage/指示書/怪獣ランページ — Stage 5 街レイアウト v1 1 Stage1形式準拠版 d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9.md' },
