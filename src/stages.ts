@@ -963,106 +963,210 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     verticalRoads: [_AVE],
   } },
 
-  // ── S1-Ch1: 児童公園を中心にした住宅街 ──
-  // 焦点: 児童公園 (滑り台・ブランコ・砂場・遊具・ベンチ・花壇)
-  // 取り巻き: 公園外周の生垣・花壇・街灯・ゴミ箱、入口の親子
-  // 境界: hedge と flower_bed による外周線、grass と tile で公園面を切る
-  // 動線: 遊具で遊ぶ子・見守る親・ベンチの大人・コンビニとランドロマットへ向かう客
-  { patternId: 's1_raw', raw: {
-    buildings: [
-      // 焦点周辺: 公園に面した生活店舗
-      _B('convenience', -55, 42), _B('laundromat', 35, 40),
-      // 上段 住宅列 (avenue 側ファサード)
-      _B('townhouse', -100, 20), _B('kominka', 80, 20),
-      _B('house', -160, 32), _B('townhouse', -25, 40), _B('shed', -135, 75),
-      _B('greenhouse', 55, 75), _B('mansion', 130, 60), _B('townhouse', 165, 42),
-      // 下段 住宅 (公園の西側に住宅街)
-      _B('house', -100, 120), _B('mansion', -160, 130), _B('townhouse', -55, 138),
-      _B('garage', -130, 178), _B('shed', -50, 180),
-      // 公園周辺の小屋
-      _B('kura', 175, 178),
-      // タイトパッキング補強 (子ども向け店・道場・住宅店舗)
-      _B('wagashi', -90, 60), _B('snack', 20, 60), _B('dojo', 100, 60),
-      _B('kura', -160, 70), _B('kimono_shop', -100, 178), _B('shed', -160, 180),
-    ],
-    furniture: [
-      // ── 焦点: 児童公園 ──
-      _F('play_structure', 90, 145), _F('swing_set', 50, 140), _F('slide', 130, 140),
-      _F('sandbox', 90, 175), _F('jungle_gym', 155, 175), _F('sandbox', 60, 178),
-      // 公園内のベンチ・遊び場の取り巻き
-      _F('bench', 30, 125), _F('bench', 150, 125), _F('bench', 110, 180), _F('bench', 50, 180),
-      _F('flower_planter_row', 60, 108), _F('flower_bed', 50, 108), _F('flower_bed', 130, 108),
-      _F('garbage', 30, 145), _F('garbage', 155, 145),
-      _F('cat', 122, 180), _F('cat', 70, 130),
-      // 公園の外周 (境界)
-      _F('hedge', 30, 195), _F('hedge', 90, 195), _F('hedge', 165, 195),
-      _F('hedge', 30, 165), _F('hedge', 175, 130),
-      _F('flower_bed', 110, 195), _F('flower_bed', 60, 195),
-      // ── 商店フロント (コンビニ + ランドロマット) ──
-      _F('shop_awning', -45, 30), _F('shop_awning', 35, 30),
-      _F('a_frame_sign', -62, 24), _F('vending', -32, 24),
-      _F('vending', -10, 56), _F('bicycle_rack', -45, 60), _F('newspaper_stand', -28, 56),
-      _F('a_frame_sign', 18, 28), _F('potted_plant', 55, 28), _F('bicycle', 55, 56),
-      _F('post_box', -68, 56),
-      // ── 上段 住宅 facade ──
-      _F('mailbox', -100, 8), _F('mailbox', 80, 8), _F('mailbox', -160, 22), _F('mailbox', 165, 22),
-      _F('ac_unit', -90, 28), _F('ac_unit', 165, 56), _F('ac_unit', -160, 52),
-      _F('potted_plant', -30, 28), _F('potted_plant', 130, 60),
-      _F('laundry_pole', -135, 90), _F('hedge', -30, 60),
-      // ── 下段 住宅 facade ──
-      _F('mailbox', -100, 108), _F('mailbox', -55, 122), _F('mailbox', -160, 122),
-      _F('ac_unit', -100, 148), _F('ac_unit', -55, 158), _F('ac_unit', -160, 158),
-      _F('laundry_pole', -160, 158), _F('laundry_balcony', -55, 130),
-      _F('flower_bed', -160, 150), _F('potted_plant', -100, 125), _F('bicycle', -55, 158),
-      // ── 連続軸: 桜並木 (Ch0-Ch5) ──
-      _F('sakura_tree', -135, 30), _F('sakura_tree', 90, 100), _F('sakura_tree', -170, 170),
-      _F('sakura_tree', -40, 188), _F('sakura_tree', 30, 60),
-      // ── 連続軸: 電柱+電線 ──
-      _F('power_pole', -178, 90), _F('power_line', -175, 88),
-      _F('power_pole', 178, 90), _F('power_line', 175, 88),
-      _F('power_pole', -178, 195), _F('power_line', -175, 192),
-      _F('power_pole', 178, 195), _F('power_line', 175, 192),
-      // ── avenue 地点小物 + 公園前の街路ミラー (横断地点) ──
-      _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
-      _F('street_mirror', 30, 92), _F('street_mirror', 150, 92),
-      _F('bollard', -65, 92), _F('bollard', 65, 92),
-      // ── タイトパッキング: 中間 dy 帯 ──
-      // dy=50 帯
-      _F('hedge', -150, 50), _F('hedge', -110, 50), _F('hedge', 50, 50),
-      _F('hedge', 130, 50), _F('hedge', 165, 50),
-      _F('bush', -75, 50), _F('bush', 0, 50), _F('bush', 100, 50),
-      _F('flower_bed', -130, 60), _F('flower_bed', 30, 60), _F('flower_bed', 130, 60),
-      _F('potted_plant', -100, 8), _F('potted_plant', 80, 8), _F('potted_plant', -30, 25),
-      // dy=110-120 中間帯
-      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 30, 115),
-      _F('hedge', 165, 115),
-      _F('bush', -100, 118), _F('bush', 60, 118), _F('bush', 130, 118),
-      // dy=160-175 中間帯
-      _F('hedge', -75, 175), _F('bush', -130, 168),
-      _F('flower_bed', 25, 175), _F('flower_bed', 165, 175),
-      _F('flower_planter_row', -100, 175),
-      // 裏路地・店裏
-      _F('garbage', -160, 88), _F('garbage', 160, 88),
-      _F('garbage', -45, 188), _F('garbage', 45, 188),
-      _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
-      _F('dumpster', 0, 88), _F('dumpster', -130, 188),
-      _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
-      _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
-      _F('milk_crate_stack', 0, 188), _F('milk_crate_stack', -160, 188),
-      _F('cat', 60, 60), _F('cat', -130, 130), _F('cat', 165, 60),
-      _F('cat', 100, 165), _F('cat', -50, 188),
-      // ── 境界・他の生活痕跡 ──
-      _F('hedge', -140, 95), _F('cat', -100, 132), _F('cat', -160, 168),
-      _F('flower_bed', -130, 195),
-      // ── ロット境界フェンス (各住宅の敷地区分) ──
-      // NE 上段: 大ロット間の境界
-      _F('hedge', -75, 30), _F('hedge', -75, 55), _F('hedge', -75, 80),
-      _F('wood_fence', 110, 30), _F('wood_fence', 110, 55), _F('wood_fence', 110, 80),
-      // SW 下段: 各家の境界
-      _F('wood_fence', -120, 130), _F('wood_fence', -120, 152), _F('wood_fence', -120, 175),
-      _F('hedge', -75, 130), _F('hedge', -75, 152), _F('hedge', -75, 175),
-    ],
-    humans: [
+  // ── S1-Ch1: 児童公園を中心にした住宅街 ──  (v6.3 パイロット: SemanticCluster 形式)
+  // ▼ ヒーロー: SE = 児童公園 (基本形 A・オープンスペース焦点)
+  // ▼ アンビエント 3 セル: NW = 商店フロント / NE = kominka 住宅 / SW = mansion 住宅
+  // 既存実装の建物・家具・grounds・humans を完全保持。cluster メタを上位で宣言。
+  { patternId: 's1_raw', raw: ((): RawChunkBody => {
+    const out: RawChunkBody = {
+      buildings: [], furniture: [], humans: [], grounds: [],
+      horizontalRoads: [_MID_HR, _HR(130, 10, 180)],
+      verticalRoads: [_AVE],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // BUILDINGS (順序保持)
+    // ═══════════════════════════════════════════════════════════
+    // NW セル: 商店フロント (公園に面した生活店舗)
+    const conv     = $B(out, 'convenience', -55, 42);
+    const laund    = $B(out, 'laundromat',   35, 40);
+    // NE セル: 上段住宅列 (kominka が焦点)
+    const tnNW     = $B(out, 'townhouse',  -100, 20);
+    const kominka  = $B(out, 'kominka',      80, 20);
+    $B(out, 'house',     -160, 32);
+    $B(out, 'townhouse',  -25, 40);
+    $B(out, 'shed',      -135, 75);
+    $B(out, 'greenhouse',  55, 75);
+    $B(out, 'mansion',   130, 60);
+    $B(out, 'townhouse', 165, 42);
+    // SW セル: 下段住宅列 (mansion が焦点)
+    $B(out, 'house',      -100, 120);
+    const mansionSW = $B(out, 'mansion',    -160, 130);
+    $B(out, 'townhouse',   -55, 138);
+    $B(out, 'garage',     -130, 178);
+    $B(out, 'shed',        -50, 180);
+    // SE セル: 公園エリア (建物は周辺の小屋のみ、焦点は家具)
+    $B(out, 'kura',        175, 178);
+    // タイトパッキング補強 (子ども向け店・道場・住宅店舗)
+    $B(out, 'wagashi',     -90, 60);
+    $B(out, 'snack',        20, 60);
+    $B(out, 'dojo',        100, 60);
+    $B(out, 'kura',       -160, 70);
+    $B(out, 'kimono_shop', -100, 178);
+    $B(out, 'shed',       -160, 180);
+
+    // ═══════════════════════════════════════════════════════════
+    // FURNITURE (順序保持)
+    // ═══════════════════════════════════════════════════════════
+    // ── SE 焦点: 児童公園 (基本形 A) ──
+    const playStruct = $F(out, 'play_structure', 90, 145);  // ★ HERO FOCAL
+    const swing      = $F(out, 'swing_set',      50, 140);
+    const slide      = $F(out, 'slide',         130, 140);
+    const sandbox1   = $F(out, 'sandbox',        90, 175);
+    $F(out, 'jungle_gym', 155, 175); $F(out, 'sandbox', 60, 178);
+    // 公園内のベンチ・遊び場の取り巻き
+    const benchNorth = $F(out, 'bench', 30, 125);    // 入口側 (avenue 寄り)
+    const benchEast  = $F(out, 'bench', 150, 125);   // 入口側 (kura 寄り)
+    $F(out, 'bench', 110, 180); $F(out, 'bench', 50, 180);
+    $F(out, 'flower_planter_row', 60, 108);
+    $F(out, 'flower_bed', 50, 108); $F(out, 'flower_bed', 130, 108);
+    const parkGarbage = $F(out, 'garbage', 30, 145); // ★ park livingTrace
+    $F(out, 'garbage', 155, 145);
+    $F(out, 'cat', 122, 180); $F(out, 'cat', 70, 130);
+    // 公園の外周 (境界)
+    const hedgeS1    = $F(out, 'hedge', 30, 195);
+    const hedgeS2    = $F(out, 'hedge', 90, 195);
+    const hedgeS3    = $F(out, 'hedge', 165, 195);
+    $F(out, 'hedge', 30, 165); $F(out, 'hedge', 175, 130);
+    $F(out, 'flower_bed', 110, 195); $F(out, 'flower_bed', 60, 195);
+
+    // ── NW 商店フロント (コンビニ + ランドロマット) ──
+    const convAwning = $F(out, 'shop_awning', -45, 30);  // convenience の屋根
+    $F(out, 'shop_awning', 35, 30);
+    const convSign   = $F(out, 'a_frame_sign', -62, 24);
+    const convVend   = $F(out, 'vending', -32, 24);
+    $F(out, 'vending', -10, 56);
+    const convBike   = $F(out, 'bicycle_rack', -45, 60); // ★ shop livingTrace
+    $F(out, 'newspaper_stand', -28, 56);
+    $F(out, 'a_frame_sign', 18, 28); $F(out, 'potted_plant', 55, 28);
+    $F(out, 'bicycle', 55, 56); $F(out, 'post_box', -68, 56);
+
+    // ── NE 上段 住宅 facade (kominka 邸とその取り巻き) ──
+    $F(out, 'mailbox', -100, 8);
+    const kominkaMail = $F(out, 'mailbox', 80, 8);   // ★ kominka facade
+    $F(out, 'mailbox', -160, 22); $F(out, 'mailbox', 165, 22);
+    $F(out, 'ac_unit', -90, 28);
+    const kominkaAc   = $F(out, 'ac_unit', 165, 56);
+    $F(out, 'ac_unit', -160, 52);
+    $F(out, 'potted_plant', -30, 28);
+    const kominkaPot  = $F(out, 'potted_plant', 130, 60);
+    const kominkaLaun = $F(out, 'laundry_pole', -135, 90); // ★ NE livingTrace (邸間の物干し)
+    $F(out, 'hedge', -30, 60);
+
+    // ── SW 下段 住宅 facade (mansion 邸とその取り巻き) ──
+    $F(out, 'mailbox', -100, 108);
+    $F(out, 'mailbox', -55, 122);
+    const mansionMail = $F(out, 'mailbox', -160, 122); // ★ mansion facade
+    $F(out, 'ac_unit', -100, 148);
+    $F(out, 'ac_unit', -55, 158);
+    const mansionAc   = $F(out, 'ac_unit', -160, 158);
+    $F(out, 'laundry_pole', -160, 158);
+    const swLaundry   = $F(out, 'laundry_balcony', -55, 130); // ★ SW livingTrace
+    const mansionFb   = $F(out, 'flower_bed', -160, 150);
+    $F(out, 'potted_plant', -100, 125);
+    $F(out, 'bicycle', -55, 158);
+
+    // ── 連続軸: 桜並木 (Ch0-Ch5、handoff:'next') ──
+    $F(out, 'sakura_tree', -135, 30); $F(out, 'sakura_tree', 90, 100);
+    $F(out, 'sakura_tree', -170, 170); $F(out, 'sakura_tree', -40, 188);
+    $F(out, 'sakura_tree', 30, 60);
+
+    // ── 連続軸: 電柱+電線 (4 隅、各 power_line と対) ──
+    $F(out, 'power_pole', -178, 90); $F(out, 'power_line', -175, 88);
+    $F(out, 'power_pole',  178, 90); $F(out, 'power_line',  175, 88);
+    $F(out, 'power_pole', -178, 195); $F(out, 'power_line', -175, 192);
+    $F(out, 'power_pole',  178, 195); $F(out, 'power_line',  175, 192);
+
+    // ── 動線: avenue 横断地点 (公園入口を avenue から導く) ──
+    const manholeAve = $F(out, 'manhole_cover', 0, 100);
+    const manhole2   = $F(out, 'manhole_cover', 60, 100);
+    const mirrorEW   = $F(out, 'street_mirror', 30, 92);   // park access mirror
+    $F(out, 'street_mirror', 150, 92);
+    $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);  // §6 2-5px shift
+
+    // ── タイトパッキング: 中間 dy 帯 ──
+    // dy=50 帯
+    $F(out, 'hedge', -150, 50); $F(out, 'hedge', -110, 50); $F(out, 'hedge', 50, 50);
+    $F(out, 'hedge', 130, 50); $F(out, 'hedge', 165, 50);
+    $F(out, 'bush', -75, 50); $F(out, 'bush', 0, 50); $F(out, 'bush', 100, 50);
+    $F(out, 'flower_bed', -130, 60); $F(out, 'flower_bed', 30, 60); $F(out, 'flower_bed', 133, 60);
+    $F(out, 'potted_plant', -100, 8); $F(out, 'potted_plant', 80, 8); $F(out, 'potted_plant', -30, 25);
+    // dy=110-120 中間帯
+    $F(out, 'hedge', -150, 115); $F(out, 'hedge', -45, 115); $F(out, 'hedge', 30, 115);
+    $F(out, 'hedge', 165, 115);
+    $F(out, 'bush', -100, 118); $F(out, 'bush', 60, 118); $F(out, 'bush', 130, 118);
+    // dy=160-175 中間帯
+    $F(out, 'hedge', -75, 175); $F(out, 'bush', -130, 168);
+    $F(out, 'flower_bed', 25, 175); $F(out, 'flower_bed', 165, 175);
+    $F(out, 'flower_planter_row', -100, 175);
+    // 裏路地・店裏
+    $F(out, 'garbage', -160, 88); $F(out, 'garbage', 156, 88);
+    $F(out, 'garbage', -45, 188); $F(out, 'garbage', 48, 188);
+    $F(out, 'recycling_bin', -100, 88); $F(out, 'recycling_bin', 103, 88);
+    $F(out, 'dumpster', 0, 88); $F(out, 'dumpster', -130, 188);
+    $F(out, 'ac_outdoor_cluster', -75, 92); $F(out, 'ac_outdoor_cluster', 78, 92);
+    $F(out, 'cable_junction_box', -130, 88); $F(out, 'cable_junction_box', 133, 88);
+    $F(out, 'milk_crate_stack', 0, 188); $F(out, 'milk_crate_stack', -160, 188);
+    $F(out, 'cat', 60, 60); $F(out, 'cat', -130, 130); $F(out, 'cat', 165, 60);
+    $F(out, 'cat', 100, 165); $F(out, 'cat', -50, 188);
+    // 境界・他の生活痕跡
+    $F(out, 'hedge', -140, 95); $F(out, 'cat', -100, 132); $F(out, 'cat', -160, 168);
+    $F(out, 'flower_bed', -130, 195);
+    // ロット境界フェンス
+    $F(out, 'hedge', -75, 30); $F(out, 'hedge', -75, 55); $F(out, 'hedge', -75, 80);
+    $F(out, 'wood_fence', 110, 30); $F(out, 'wood_fence', 110, 55); $F(out, 'wood_fence', 110, 80);
+    $F(out, 'wood_fence', -120, 130); $F(out, 'wood_fence', -120, 152); $F(out, 'wood_fence', -120, 175);
+    $F(out, 'hedge', -75, 130); $F(out, 'hedge', -75, 152); $F(out, 'hedge', -75, 175);
+
+    // ═══════════════════════════════════════════════════════════
+    // CLUSTERS (§3.6 ヒーロー/アンビエント / §4 公園モデル 4 層)
+    // ═══════════════════════════════════════════════════════════
+    // ★ HERO: SE 児童公園 (オープンスペース焦点 = 基本形 A)
+    _CLUSTER(out, {
+      id: 'ch1.SE.park',
+      role: 'hero',
+      cell: 'SE',
+      focal: playStruct,
+      companions: [swing, slide, sandbox1, benchNorth, benchEast],
+      boundary: [hedgeS1, hedgeS2, hedgeS3],
+      access: [manholeAve, manhole2, mirrorEW],  // avenue → 公園入口の動線
+      livingTrace: parkGarbage,
+    });
+
+    // AMBIENT: NW 商店フロント (convenience 焦点)
+    _CLUSTER(out, {
+      id: 'ch1.NW.shopfront',
+      role: 'ambient',
+      cell: 'NW',
+      focal: conv,
+      companions: [convAwning, convSign, convVend],
+      livingTrace: convBike,
+    });
+
+    // AMBIENT: NE 住宅街 (kominka 邸を焦点とする)
+    _CLUSTER(out, {
+      id: 'ch1.NE.kominka',
+      role: 'ambient',
+      cell: 'NE',
+      focal: kominka,
+      companions: [kominkaMail, kominkaAc, kominkaPot],
+      livingTrace: kominkaLaun,
+    });
+
+    // AMBIENT: SW 住宅街 (mansion 邸を焦点とする)
+    _CLUSTER(out, {
+      id: 'ch1.SW.mansion',
+      role: 'ambient',
+      cell: 'SW',
+      focal: mansionSW,
+      companions: [mansionMail, mansionAc, mansionFb],
+      livingTrace: swLaundry,
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // HUMANS
+    // ═══════════════════════════════════════════════════════════
+    out.humans = [
       // 公園 (子どもと見守る大人)
       _H(90, 175), _H(50, 140), _H(130, 140), _H(30, 125), _H(155, 178), _H(110, 180),
       _H(60, 178), _H(150, 130),
@@ -1072,8 +1176,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 住宅街の生活者
       _H(-100, 132), _H(-160, 138), _H(0, 100),
       _H(-50, 178), _H(-130, 178),
-    ],
-    grounds: [
+    ];
+
+    // ═══════════════════════════════════════════════════════════
+    // GROUNDS (ベース → 焦点 → ロット → 動線 の 4 層)
+    // ═══════════════════════════════════════════════════════════
+    out.grounds = [
       // ═══ ベース層 ═══
       _G('residential_tile', 0, 100, 360, 200),
 
@@ -1084,19 +1192,19 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('dirt', 60, 180, 18, 12),
 
       // ═══ NW 角店ロット (コンビニ + ランドロマット) ═══
-      _G('concrete', -45, 56, 56, 44),  // コンビニ駐車
-      _G('tile', 35, 56, 38, 44),       // ランドロマット店先
+      _G('concrete', -45, 56, 56, 44),
+      _G('tile', 35, 56, 38, 44),
 
       // ═══ NE 上段住宅ロット (各家を地面で区別) ═══
-      _G('grass', -130, 50, 60, 60),   // ロット house(-160,32) + townhouse(-100,20)
-      _G('tile', -30, 58, 50, 50),     // ロット townhouse(-30,40)
-      _G('grass', 130, 56, 70, 50),    // ロット mansion(130,75) + townhouse(165,42)
-      _G('concrete', 80, 38, 50, 30),  // ロット kominka(80,20) 駐車
+      _G('grass', -130, 50, 60, 60),
+      _G('tile', -30, 58, 50, 50),
+      _G('grass', 130, 56, 70, 50),
+      _G('concrete', 80, 38, 50, 30),
 
       // ═══ SW 下段住宅ロット ═══
-      _G('grass', -160, 152, 50, 35),  // ロット mansion(-160,130)
-      _G('concrete', -100, 152, 50, 35), // ロット house(-100,120)
-      _G('tile', -55, 152, 50, 35),    // ロット townhouse(-55,138)
+      _G('grass', -160, 152, 50, 35),
+      _G('concrete', -100, 152, 50, 35),
+      _G('tile', -55, 152, 50, 35),
 
       // ═══ 公園入口の生活歩道 ═══
       _G('stone_pavement', 30, 130, 70, 8),
@@ -1113,11 +1221,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ═══ 落ち葉アクセント ═══
       _G('fallen_leaves', -160, 165, 26, 16),
       _G('fallen_leaves', -110, 70, 20, 12),
-    ],
-    // 道路: 中央 avenue + 公園前アクセス道 (右側のみ、住宅街と公園を結ぶ)
-    horizontalRoads: [_MID_HR, _HR(130, 10, 180)],
-    verticalRoads: [_AVE],
-  } },
+    ];
+
+    return out;
+  })() },
 
   // ── S1-Ch2: 保育園・診療所・郵便局が並ぶ生活公共区画 ──
   // 焦点: 保育園 + 診療所 + 郵便局の3連公共ファサード、中央に歩道橋

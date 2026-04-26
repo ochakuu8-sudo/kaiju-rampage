@@ -113,7 +113,7 @@ function checkLivingTrace(raw: RawChunkBody, chunk: number): void {
   }
 }
 
-/** L4: 3+ 同種家具が同 dy 帯 (±5) で等間隔 dx の行進検出 */
+/** L4: 4+ 同種家具が同 dy 帯 (±5) で完全に等間隔の行進検出 (std < 5) */
 function checkMarch(raw: RawChunkBody, chunk: number): void {
   // type → 配置リスト
   const byType: Map<string, { dx: number; dy: number }[]> = new Map();
@@ -123,20 +123,21 @@ function checkMarch(raw: RawChunkBody, chunk: number): void {
     byType.get(f.type)!.push({ dx: f.dx, dy: f.dy });
   }
   for (const [type, items] of byType) {
-    if (items.length < 3) continue;
+    if (items.length < 4) continue;
     // dy 帯 (±5) でグループ化
     const sorted = [...items].sort((a, b) => a.dy - b.dy);
     let band: typeof sorted = [];
     let bandY = sorted[0].dy;
     const flushBand = () => {
-      if (band.length < 3) return;
+      if (band.length < 4) return;
       const dxs = band.map(b => b.dx).sort((a, b) => a - b);
       const diffs: number[] = [];
       for (let i = 1; i < dxs.length; i++) diffs.push(dxs[i] - dxs[i - 1]);
       const mean = diffs.reduce((s, x) => s + x, 0) / diffs.length;
       const variance = diffs.reduce((s, x) => s + (x - mean) ** 2, 0) / diffs.length;
       const std = Math.sqrt(variance);
-      if (std < 8 && mean > 10) {
+      // 4+ items, std < 5, mean step > 15 (隣接でない明確な行) で警告
+      if (std < 5 && mean > 15) {
         push('warn', 'L4', chunk,
           `'${type}' march: ${band.length} items at dy~${bandY.toFixed(0)}, dx step≈${mean.toFixed(1)}±${std.toFixed(1)}`);
       }
@@ -158,12 +159,13 @@ function checkMirror(raw: RawChunkBody, chunk: number): void {
     if (!byType.has(f.type)) byType.set(f.type, []);
     byType.get(f.type)!.push({ dx: f.dx, dy: f.dy, idx: i });
   }
+  // §6 「X を 2-5 px ずらす」 — 完全鏡像 (|a+b| < 3) のみ警告
   for (const [type, items] of byType) {
     if (items.length < 2) continue;
     for (let i = 0; i < items.length; i++) {
       for (let j = i + 1; j < items.length; j++) {
         const a = items[i], b = items[j];
-        if (Math.abs(a.dx + b.dx) < 5 && Math.abs(a.dy - b.dy) < 5 && Math.abs(a.dx) > 8) {
+        if (Math.abs(a.dx + b.dx) < 3 && Math.abs(a.dy - b.dy) < 3 && Math.abs(a.dx) > 15) {
           push('warn', 'L5', chunk,
             `'${type}' mirror pair: (${a.dx},${a.dy}) ↔ (${b.dx},${b.dy})`);
         }
