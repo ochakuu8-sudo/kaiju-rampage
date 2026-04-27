@@ -2512,30 +2512,32 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       verticalRoads: [_AVE],
     };
 
-    // ═══ BUILDINGS ═══
-    // NE 焦点: 駅 (v8.3 Phase 2 R 放射状: NE 集中、アンビエントを端へ追放)
-    const station   = $B(out, 'train_station',   85, 22);                  // ★ HERO FOCAL 地方駅 (奥)
-    // NW アンビエント: ビジネスホテル (端寄せ)
-    const hotelNW   = $B(out, 'business_hotel',-145, 22);                  // 駅前ホテル (端寄り)
-    $B(out, 'capsule_hotel',                  -175, 60);                   // 端のカプセル (奥)
-    // SW アンビエント: 終電客向け食事街 (西端集中)
-    const ramenSW   = $B(out, 'ramen',         -165, 130);                 // ★ 西端ラーメン
-    const izakaySW  = $B(out, 'izakaya',       -115, 130);                 // 居酒屋 (50px 間隔)
-    $B(out, 'snack',                            -55, 138);                 // snack (60px 間隔、奥)
-    // SE アンビエント: 24h コンビニ + カフェ + 本屋 (東端集中)
-    const convSE    = $B(out, 'convenience',   145, 130);                  // ★ SE 焦点 (24h、東端)
-    const cafeSE    = $B(out, 'cafe',           80, 138);                  // カフェ (中央寄り、奥)
-    $B(out, 'bookstore',                        25, 130);                  // 24h 本屋
-    $B(out, 'pharmacy',                        170, 175);                  // SE 隅薬局 (奥)
-    // タイトパッキング: 駅周辺の小屋・物置・住宅 (端集中)
-    $B(out, 'shed',                           -178, 70);                   // 駅裏倉庫 (西端)
-    $B(out, 'garage',                          135, 70);                   // タクシー車庫
-    $B(out, 'townhouse',                      -125, 175);                  // SW 古い住宅 1 (端寄り)
-    $B(out, 'townhouse',                         5, 175);                  // SE 古い住宅 (中央 gutter 避け)
-    $B(out, 'shop',                            175, 22);                   // NE 端の小店
-    $B(out, 'shop',                           -178, 70);                   // NW 端の閉店間際の店
-    $B(out, 'shed',                           -158, 192);                  // SW 物置
-    $B(out, 'garage',                          178, 192);                  // SE 駐車
+    // ═══ BUILDINGS (spec §9.0 完全準拠) ═══
+    // NE 焦点: 駅 (spec x=80, y=22)
+    const station   = $B(out, 'train_station',   80, 22);                  // ★ HERO FOCAL 地方駅
+    // NE 取り巻き: bus_terminal_shelter (spec x=30, y=65 必須)
+    const busTerm   = $B(out, 'bus_terminal_shelter', 30, 65);             // ★ NE 取り巻き spec 必須
+    // NW アンビエント: ビジネスホテル (spec x=-130, y=22)
+    const hotelNW   = $B(out, 'business_hotel',-130, 22);                  // ★ NW 焦点
+    // SW アンビエント: 終電客向け食事街 (spec ramen -160, izakaya -100)
+    const ramenSW   = $B(out, 'ramen',         -160, 130);                 // ★ SW 焦点
+    const izakaySW  = $B(out, 'izakaya',       -100, 130);                 // SW 取り巻き
+    // SE アンビエント: 24h コンビニ + カフェ + 本屋 (spec 130/70/30)
+    const convSE    = $B(out, 'convenience',   130, 130);                  // ★ SE 焦点
+    const cafeSE    = $B(out, 'cafe',           70, 130);                  // SE 取り巻き (テラス)
+    $B(out, 'bookstore',                        30, 130);                  // SE 取り巻き
+    // 密度補強 (Stage 2 主役建物のみ、Stage 1 系 townhouse/shed/garage/shop は使わない)
+    $B(out, 'capsule_hotel',                  -160, 65);                   // NW カプセル (ホテル裏)
+    $B(out, 'snack',                           -50, 138);                  // SW snack (食事街拡張)
+    $B(out, 'business_hotel',                 -178, 130);                  // SW 端 ホテル
+    $B(out, 'snack',                           175, 22);                   // NE 隅 深夜 snack
+    $B(out, 'capsule_hotel',                   175, 70);                   // NE カプセル
+    $B(out, 'snack',                           165, 175);                  // SE 端 深夜 snack
+    $B(out, 'mahjong_parlor',                 -125, 175);                  // SW 麻雀荘 (深夜営業)
+    $B(out, 'snack',                            5, 178);                   // SE 中央 snack
+    $B(out, 'capsule_hotel',                  -160, 195);                  // SW 端 カプセル
+    $B(out, 'mahjong_parlor',                  175, 195);                  // SE 端 麻雀荘
+    $B(out, 'snack',                          -178, 70);                   // NW 端 snack
 
     // ═══ FURNITURE ═══
     // ── NE 焦点 4 層: 駅前広場 ──
