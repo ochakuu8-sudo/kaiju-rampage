@@ -649,6 +649,9 @@ export class Game {
   private updateBall(dt: number) {
     const b = this.ball;
     if (!b.active) return;
+    // ★ デバッグ: ボールをカメラスクロールに追従させる (画面上の位置を維持)
+    //   これでスクロール速度を変えてもボールが画面下に取り残されない
+    b.y += this.camera.scrollSpeed * dt;
     const r = b.radius;
     const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
     // 1 substep あたりの移動量を ball 半径未満に抑えてトンネリングを防ぐ
