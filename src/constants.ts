@@ -277,8 +277,8 @@ export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 
 
 // ===== 自動スクロール =====
 // 現在の燃料ゲージ量に応じて線形に変化 (100% = MAX, 0% = MIN)
-export const SCROLL_SPEED_MAX = 45;   // 燃料 100% 時の px/s
-export const SCROLL_SPEED_MIN = 15;   // 燃料 0% 時の px/s
+export const SCROLL_SPEED_MAX = 450;  // 燃料 100% 時の px/s (デバッグ用 10x)
+export const SCROLL_SPEED_MIN = 150;  // 燃料 0% 時の px/s (デバッグ用 10x)
 
 // ===== 燃料ゲージ (ゲームオーバー条件) =====
 // 時間経過で線形に減少し、人間を踏むと線形に回復する。0 でゲームオーバー。
