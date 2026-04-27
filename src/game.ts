@@ -174,7 +174,7 @@ export class Game {
     return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
   }
 
-  constructor(canvas: HTMLCanvasElement, opts?: { screenshotMode?: boolean }) {
+  constructor(canvas: HTMLCanvasElement, opts?: { screenshotMode?: boolean; screenshotChunkId?: number | null }) {
     this.renderer  = new Renderer(canvas);
     this.input     = new InputManager(canvas);
     this.sound     = new SoundEngine();
@@ -196,7 +196,23 @@ export class Game {
     if (opts?.screenshotMode) {
       this.initRun();
       this.loadCity();
-      this.addScreenshotDensity();              // stage 1 の街並みに追加ビル・人・車を詰め込み
+      // ?chunk=N が指定されたら: addScreenshotDensity を抑止し、chunk N の真の中身を表示
+      // (Stage 1 ↔ Stage 2-5 の比較用)
+      const debugChunkId = opts.screenshotChunkId;
+      if (typeof debugChunkId === 'number') {
+        // chunkId N を強制 spawn (chunk 世界 Y = WORLD_MAX_Y + (N+1)*CHUNK_HEIGHT で上端)
+        // チャンク中央を画面中央 (camera.y) に持ってくる
+        const chunkBottom = C.WORLD_MAX_Y + debugChunkId * C.CHUNK_HEIGHT;
+        const chunkCenter = chunkBottom + C.CHUNK_HEIGHT / 2;
+        this.nextChunkId = Math.max(0, debugChunkId - 1);
+        this._spawnChunk(debugChunkId);
+        if (debugChunkId > 0) this._spawnChunk(debugChunkId - 1);
+        this._spawnChunk(debugChunkId + 1);
+        this.camera.y = chunkCenter;
+        this.camera.lockY = chunkCenter;
+      } else {
+        this.addScreenshotDensity();            // stage 1 の街並みに追加ビル・人・車を詰め込み
+      }
       this.ball.active = false;                 // ボール非表示
       this.sound.setMuted(true);                // 念のため無音
       // titleActive は既定で true。update() は冒頭で early return するので物理停止
