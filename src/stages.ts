@@ -3164,13 +3164,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'pharmacy',                         28, 138);                  // 24h 薬局
     $B(out, 'cafe',                            168, 132);                  // 隅 cafe
     // タイトパッキング
-    $B(out, 'snack',                          -178, 70);                   // NW 端 スナック
-    $B(out, 'shop',                            178, 70);                   // NE 端 小店
-    $B(out, 'shed',                           -158, 192);                  // SW 端 物置 (v8.2 ジッタ)
-    $B(out, 'shed',                            162, 198);                  // SE 端 物置
-    $B(out, 'garage',                         -102, 192);                  // SW 駐車
-    $B(out, 'garage',                          102, 198);                  // SE 駐車
-    $B(out, 'snack',                            32, 70);                   // 中央上段 スナック (apartment 前)
+    $B(out, 'mahjong_parlor', -178, 70);                  // v8.4 snack→mahjong_parlor (高層雑居の上段端を麻雀荘に)
+    $B(out, 'karaoke', 178, 70);                  // v8.4 shop→karaoke (高層雑居の東端を karaoke に)
+    $B(out, 'club', -158, 192);                  // v8.4 shed→club (SW 端を club に)
+    $B(out, 'mahjong_parlor', 162, 198);                  // v8.4 shed→mahjong_parlor (SE 端を麻雀荘に)
+    $B(out, 'capsule_hotel', -102, 192);                  // v8.4 garage→capsule_hotel (SW を capsule に)
+    $B(out, 'club', 102, 198);                  // v8.4 garage→club (SE を club に)
+    $B(out, 'karaoke', 32, 70);                  // v8.4 snack→karaoke (中央上段に karaoke 追加)
 
     // ═══ FURNITURE ═══
     // ── NE 焦点 4 層 ──
@@ -3362,12 +3362,12 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'townhouse',                      115, 128);                   // 町家
     $B(out, 'apartment',                      168, 138);                   // アパート (端、奥)
     // タイトパッキング (端集中、中央 gutter 空ける)
-    $B(out, 'shed',                          -178, 175);                   // SW 端 物置
-    $B(out, 'garage',                         178, 178);                   // SE 端 駐車
-    $B(out, 'snack',                         -112, 175);                   // SW スナック
-    $B(out, 'snack',                          112, 178);                   // SE スナック
-    $B(out, 'shop',                           -52, 195);                   // SW 小店
-    $B(out, 'shop',                            52, 192);                   // SE 小店
+    $B(out, 'capsule_hotel', -178, 175);                  // v8.4 shed→capsule_hotel (SW 端を capsule に)
+    $B(out, 'mahjong_parlor', 178, 178);                  // v8.4 garage→mahjong_parlor (SE 端を麻雀荘に)
+    $B(out, 'karaoke', -112, 175);                  // v8.4 snack→karaoke (SW 中段に karaoke)
+    $B(out, 'club', 112, 178);                  // v8.4 snack→club (SE 中段に club)
+    $B(out, 'love_hotel', -52, 195);                  // v8.4 shop→love_hotel (SW 下段にラブホ)
+    $B(out, 'love_hotel', 52, 192);                  // v8.4 shop→love_hotel (SE 下段にラブホ)
 
     // ═══ FURNITURE ═══
     // ── merged 焦点 4 層 ──
@@ -3463,6 +3463,18 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
+
+    // ── v8.4 オーバーヘッド chouchin キャノピー (★ クライマックスの祭り感) ──
+    $F(out, 'chouchin', -150, 8);  $F(out, 'chouchin', -120, 12);  $F(out, 'chouchin',  -90, 8);
+    $F(out, 'chouchin',  -60, 12); $F(out, 'chouchin',  -30, 8);   $F(out, 'chouchin',    0, 12);
+    $F(out, 'chouchin',   30, 8);  $F(out, 'chouchin',   60, 12);  $F(out, 'chouchin',   90, 8);
+    $F(out, 'chouchin',  120, 12); $F(out, 'chouchin',  150, 8);
+    // 屋上 sign_board × 4 (4 大ランドマークの上空)
+    $F(out, 'sign_board', -105, 4); $F(out, 'sign_board', 105, 4);
+    $F(out, 'sign_board',  -55, 4); $F(out, 'sign_board',  55, 4);
+    // 追加 puddle (中央の濡路面ピーク)
+    $F(out, 'puddle_reflection', -70, 168); $F(out, 'puddle_reflection', 70, 168);
+    $F(out, 'puddle_reflection', -40, 110); $F(out, 'puddle_reflection', 40, 110);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: merged 交差点
@@ -3766,12 +3778,12 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'mansion',                     168, 138);                      // mansion
     // タイトパッキング
     $B(out, 'capsule_hotel',                70, 130);                      // SE カプセル
-    $B(out, 'shed',                       -178, 195);                      // SW 端 物置
-    $B(out, 'shed',                        178, 195);                      // SE 端 物置
-    $B(out, 'garage',                     -100, 195);                      // SW 駐車
-    $B(out, 'garage',                      100, 195);                      // SE 駐車
-    $B(out, 'shop',                       -178, 22);                       // NW 端 小店
-    $B(out, 'shop',                        178, 22);                       // NE 端 小店
+    $B(out, 'mahjong_parlor', -178, 195);                  // v8.4 shed→mahjong_parlor (SW 端を麻雀荘に)
+    $B(out, 'capsule_hotel', 178, 195);                  // v8.4 shed→capsule_hotel (SE 端を capsule に)
+    $B(out, 'club', -100, 195);                  // v8.4 garage→club (SW 駐車を club に)
+    $B(out, 'mahjong_parlor', 100, 195);                  // v8.4 garage→mahjong_parlor (SE 駐車を麻雀荘に)
+    $B(out, 'love_hotel', -178, 22);                  // v8.4 shop→love_hotel (NW 端にラブホ追加)
+    $B(out, 'club', 178, 22);                  // v8.4 shop→club (NE 端を club に)
 
     // ═══ FURNITURE ═══
     // ── NW 焦点 4 層 ──
@@ -3946,8 +3958,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // merged 上段ロット (千鳥)
     $B(out, 'townhouse',  -152, 18);
     $B(out, 'apartment',   148, 32);
-    $B(out, 'shop',        -78, 28);
-    $B(out, 'shop',         72, 18);
+    $B(out, 'mahjong_parlor', -78, 28);                                    // v8.4 shop→mahjong (上段中央西)
+    $B(out, 'capsule_hotel',   72, 18);                                    // v8.4 shop→capsule (上段中央東)
     // SW アンビエント (dy 千鳥)
     const chayaSW = $B(out, 'chaya',   -102, 128);                         // ★ SW 茶屋
     $B(out, 'izakaya',                 -158, 142);                         // 居酒屋 (奥)
@@ -3955,8 +3967,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const ramenSE = $B(out, 'ramen',    102, 132);                         // ★ SE ラーメン
     $B(out, 'sushi_ya',                 162, 138);                         // 寿司
     // タイトパッキング
-    $B(out, 'shed',       -160, 195);                                      // SW 端 物置
-    $B(out, 'shed',        160, 195);                                      // SE 端 物置
+    $B(out, 'mahjong_parlor', -160, 195);                  // v8.4 shed→mahjong_parlor (SW 端を麻雀荘)
+    $B(out, 'capsule_hotel', 160, 195);                  // v8.4 shed→capsule_hotel (SE 端を capsule)
     $B(out, 'garage',     -100, 195);                                      // SW 駐車
     $B(out, 'garage',      100, 195);                                      // SE 駐車
     $B(out, 'snack',      -178, 22);                                       // NW 端 スナック
@@ -4068,6 +4080,18 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'cat',                 165, 60);
     $F(out, 'cat',                 -50, 188);
 
+    // ── v8.4 オーバーヘッド chouchin キャノピー (祭り感) + balloon × 6 ──
+    $F(out, 'chouchin', -160, 6);  $F(out, 'chouchin', -125, 12); $F(out, 'chouchin',  -90, 6);
+    $F(out, 'chouchin',  -55, 12); $F(out, 'chouchin',  -20, 6);  $F(out, 'chouchin',   15, 12);
+    $F(out, 'chouchin',   50, 6);  $F(out, 'chouchin',   85, 12); $F(out, 'chouchin',  120, 6);
+    $F(out, 'chouchin',  155, 12);
+    // banner_pole 旗ガーランド
+    $F(out, 'banner_pole', -100, 16); $F(out, 'banner_pole',  100, 16);
+    $F(out, 'banner_pole',  -50, 20); $F(out, 'banner_pole',   50, 20);
+    // balloon_cluster (祭り感)
+    $F(out, 'balloon_cluster', -130, 28); $F(out, 'balloon_cluster',   0, 32);
+    $F(out, 'balloon_cluster',  130, 28);
+
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
       id: 'ch7.merged.yatai5',
@@ -4157,12 +4181,12 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'mahjong_parlor',             -128, 175);                      // 麻雀
     // タイトパッキング
     $B(out, 'capsule_hotel',                30, 75);                       // 中央 上段
-    $B(out, 'shop',                       -178, 75);                       // NW 端
-    $B(out, 'shed',                       -160, 195);                      // SW 端
-    $B(out, 'garage',                      178, 195);                      // SE 端
-    $B(out, 'shop',                        178, 75);                       // NE 端
-    $B(out, 'shed',                       -178, 195);                      // SW 端 物置
-    $B(out, 'garage',                      130, 195);                      // SE 駐車
+    $B(out, 'apartment_tall', -178, 75);                  // v8.4 shop→apartment_tall (NW 端を高層集合住宅に)
+    $B(out, 'capsule_hotel', -160, 195);                  // v8.4 shed→capsule_hotel (SW 端を capsule)
+    $B(out, 'mahjong_parlor', 178, 195);                  // v8.4 garage→mahjong_parlor (SE 端を麻雀荘)
+    $B(out, 'karaoke', 178, 75);                  // v8.4 shop→karaoke (NE 端を karaoke に)
+    $B(out, 'club', -178, 195);                  // v8.4 shed→club (SW 端 (2nd) を club)
+    $B(out, 'club', 130, 195);                  // v8.4 garage→club (SE 駐車を club)
 
     // ═══ FURNITURE ═══
     // ── SE 焦点 4 層 ──
