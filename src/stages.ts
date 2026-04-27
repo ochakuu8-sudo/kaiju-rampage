@@ -927,10 +927,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 100),
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch0 日本庭園 (residential_tile + grass + wood_deck) ──
-      _G('residential_tile', 0, 100, 360, 200),                  // ベース 全面 warm
-      _G('grass', -90, 60, 180, 100),                            // NW 庭の芝
-      _G('grass', 90, 150, 180, 100),                            // SE 庭の芝
+      // ── v6.9 Act I 暖トーン: Ch0 日本庭園 (residential_tile + 庭の grass + wood_deck) ──
+      _G('residential_tile', 0, 100, 360, 200),                  // Act I 共通ベース
+      _G('grass', -90, 60, 180, 100),                            // 庭の芝
+      _G('grass', 90, 150, 180, 100),                            // 庭の芝
       _G('wood_deck', -90, 65, 80, 25),                          // 縁側
       _G('dirt', -120, 130, 50, 25),                             // 庭石
       _G('stone_pavement', -65, 100, 24, 200),
@@ -1123,11 +1123,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     // GROUNDS (ベース → 焦点 → ロット → 動線 の 4 層)
     // ═══════════════════════════════════════════════════════════
     out.grounds = [
-      // ── v6.8 グラデ: Ch1 児童公園 (residential_tile + grass + tile) ──
-      _G('residential_tile', 0, 100, 360, 200),                  // ベース
-      _G('grass', 90, 150, 180, 100),                            // SE 公園 全面
-      _G('tile', 90, 145, 130, 80),                              // SE 公園敷石
+      // ── v6.9 Act I 暖トーン: Ch1 児童公園 (residential_tile + 公園 grass + 砂場 dirt) ──
+      _G('residential_tile', 0, 100, 360, 200),                  // Act I 共通ベース
+      _G('grass', 90, 150, 180, 100),                            // 公園 全面
+      _G('tile', 90, 145, 130, 80),                              // 公園敷石
       _G('dirt', 90, 175, 30, 18),                               // 砂場
+      _G('wood_deck', -100, 65, 60, 25),                         // NW 商店縁側
       _G('stone_pavement', -65, 100, 24, 200),
     ];
 
@@ -1256,12 +1257,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-170, 138), 
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch2 公共 3 連 (residential_tile → concrete 移行点) ──
-      _G('residential_tile', 0, 150, 360, 100),                  // 下段 住宅 (前 Ch1 から継続)
-      _G('concrete', 0, 60, 360, 100),                           // 上段 公共広場 (Ch3 へ予告)
-      _G('tile', -130, 70, 80, 50),                              // 保育園庭
-      _G('tile', 0, 70, 60, 50),                                 // 診療所
-      _G('tile', 130, 70, 80, 50),                               // 郵便局
+      // ── v6.9 Act I 暖トーン: Ch2 公共 3 連 (residential_tile + 公共 tile + 微 concrete) ──
+      _G('residential_tile', 0, 100, 360, 200),                  // Act I 共通ベース
+      _G('tile', -130, 70, 80, 60),                              // 保育園庭
+      _G('tile', 0, 70, 60, 60),                                 // 診療所
+      _G('tile', 130, 70, 80, 60),                               // 郵便局
+      _G('grass', -100, 60, 60, 50),                             // 保育園芝
+      _G('concrete', 0, 50, 80, 30),                             // 公共広場小 (Act II 予告)
       _G('stone_pavement', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue + 公共施設前アクセス道 (T字交差点) + Ch3 への上端接続
@@ -1402,11 +1404,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(125, 56), _H(-45, 56), _H(-75, 72),
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch3 朝のカフェテラス (residential_tile + concrete + wood_deck) ──
-      _G('residential_tile', 0, 60, 360, 100),                   // 上段 住宅 (前 Ch2 から)
-      _G('concrete', 0, 150, 360, 100),                          // 下段 商店帯 concrete
+      // ── v6.9 Act II 移行トーン: Ch3 朝のカフェテラス (residential_tile + wood_deck + tile) ──
+      _G('residential_tile', 0, 100, 360, 200),                  // ベースまだ Act I 寄り
       _G('wood_deck', 90, 145, 180, 80),                         // SE 3 連テラス
-      _G('tile', 90, 130, 130, 25),                              // SE テラス手前
+      _G('tile', 90, 130, 130, 25),                              // テラス手前
+      _G('concrete', 0, 50, 60, 40),                             // 中央コンクリ小
       _G('stone_pavement', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue + 北西側の商店搬入路 (商店街裏)
@@ -1526,12 +1528,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-160, 138), 
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch4 銭湯+スーパー (concrete 全面 + tile アクセント) ──
-      _G('concrete', 0, 100, 360, 200),                          // 全面 concrete (商店ピーク)
-      _G('residential_tile', -90, 60, 180, 100),                 // NW 残り住宅 (薄く)
-      _G('tile', -100, 145, 80, 30),                             // SW 銭湯入口
-      _G('tile', 100, 145, 80, 30),                              // SE スーパー入口
-      _G('asphalt', 100, 175, 100, 25),                          // SE 駐車場 (Ch5 への予告)
+      // ── v6.9 Act II 移行トーン: Ch4 銭湯+スーパー (residential_tile + concrete 半々 + tile) ──
+      _G('residential_tile', -90, 60, 180, 100),                 // NW 残り住宅
+      _G('residential_tile', 90, 60, 180, 100),                  // NE 住宅
+      _G('concrete', 0, 150, 360, 100),                          // 下段 商店帯 concrete
+      _G('tile', -100, 145, 80, 30),                             // 銭湯入口
+      _G('tile', 100, 145, 80, 30),                              // スーパー入口
+      _G('asphalt', 100, 175, 100, 25),                          // SE 駐車場
       _G('stone_pavement', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue + 銭湯と商店の境の短い縦路地 (十字交差点感)
@@ -1659,11 +1662,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-160, 138), 
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch5 civic plaza (★ stone_pavement クライマックス) ──
-      _G('concrete', 0, 60, 360, 100),                           // 上段 (前 Ch4 から)
+      // ── v6.9 Act II 移行トーン: Ch5 civic plaza (concrete + ★ stone_pavement クライマックス) ──
+      _G('concrete', 0, 60, 360, 100),                           // 上段
       _G('stone_pavement', 0, 150, 360, 100),                    // ★ 下段全幅 civic plaza
       _G('tile', 0, 130, 200, 40),                               // 中央広場
-      _G('residential_tile', -90, 50, 180, 80),                  // NW 残り住宅 (最後)
+      _G('residential_tile', -90, 50, 180, 80),                  // NW 最後の住宅 (Act I の名残)
       _G('stone_pavement', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue のみ (広場の面感、側道なしで開けたシビックスペース)
@@ -1796,8 +1799,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-45, 138), _H(170, 60), 
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch6 小学校全マージ (concrete + dirt 校庭ピーク) ──
-      _G('concrete', 0, 60, 360, 100),                           // 上段 校舎前
+      // ── v6.9 Act III 都市トーン: Ch6 小学校全マージ (concrete + dirt 校庭ピーク) ──
+      _G('concrete', 0, 100, 360, 200),                          // Act III 共通ベース
       _G('dirt', 0, 150, 360, 100),                              // ★ 下段 校庭 全幅
       _G('tile', 0, 60, 200, 60),                                // 校門前石畳
       _G('grass', -130, 175, 70, 35),                            // 校庭芝生角
@@ -1949,10 +1952,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(40, 145), _H(75, 168),
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch7 提灯アーケード (concrete + tile 商店床) ──
-      _G('concrete', 0, 100, 360, 200),                          // 全面 concrete
+      // ── v6.9 Act III 都市トーン: Ch7 提灯アーケード (concrete + tile アーケード床) ──
+      _G('concrete', 0, 100, 360, 200),                          // Act III 共通ベース
       _G('tile', 0, 80, 360, 60),                                // ★ アーケード床 全幅
-      _G('residential_tile', -90, 150, 180, 100),                // SW 住宅
+      _G('residential_tile', -90, 150, 180, 100),                // SW 住宅 (Act I 回想)
       _G('residential_tile', 90, 150, 180, 100),                 // SE 住宅
       _G('asphalt', -65, 100, 24, 200),
     ],
@@ -2088,11 +2091,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(130, 138), _H(165, 138), _H(-110, 178),
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch8 地方の小駅 (concrete + asphalt 駅前) ──
-      _G('concrete', 0, 100, 360, 200),                          // ベース
-      _G('tile', 90, 70, 160, 60),                               // ★ NE 駅+ホーム
-      _G('asphalt', 90, 150, 180, 100),                          // SE 駅裏
-      _G('residential_tile', -90, 60, 180, 100),                 // NW 住宅 (薄く)
+      // ── v6.9 Act III 都市トーン: Ch8 地方の小駅 (concrete + tile ホーム + asphalt 増) ──
+      _G('concrete', 0, 100, 360, 200),                          // Act III 共通ベース
+      _G('tile', 90, 70, 160, 60),                               // NE 駅+ホーム
+      _G('asphalt', 90, 150, 180, 100),                          // SE 駅裏 (Act IV 予告)
+      _G('residential_tile', -90, 60, 180, 100),                 // NW 住宅
       _G('asphalt', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue + 駅前ロータリー周回道 (右側のみ、駅とロータリーをつなぐ)
@@ -2220,12 +2223,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(60, 178),
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch9 田園農家 (grass + dirt + asphalt) ──
-      _G('grass', 0, 100, 360, 200),                             // ★ ベース 田園 全面
+      // ── v6.9 Act IV 郊外トーン: Ch9 田園農家 (grass + dirt + asphalt 道路) ──
+      _G('grass', 0, 100, 360, 200),                             // ★ Act IV 共通ベース 田園
       _G('dirt', -100, 150, 130, 80),                            // SW 畑
       _G('dirt', 100, 150, 130, 80),                             // SE 畑
       _G('dirt', 110, 175, 70, 30),                              // SE 田の字
-      _G('concrete', 110, 60, 100, 80),                          // NE サイロ前 (硬さ残る)
+      _G('concrete', 110, 60, 100, 80),                          // NE サイロ前 (Act III 名残)
       _G('asphalt', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue のみ (田園の生活道路、側道なしで街の終端感)
@@ -2349,11 +2352,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-170, 178), _H(60, 178), 
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch10 郊外倉庫 (asphalt + concrete + grass 残り) ──
-      _G('asphalt', 0, 100, 360, 200),                           // ★ ベース asphalt 主役
+      // ── v6.9 Act IV 郊外トーン: Ch10 郊外倉庫+消防 (asphalt + concrete + grass 残) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act IV 後半 asphalt 主役
       _G('concrete', -90, 50, 180, 80),                          // NW 倉庫前
       _G('concrete', 90, 50, 180, 80),                           // NE 消防前
-      _G('grass', -90, 150, 180, 100),                           // SW 空き地芝 (前 Ch9 から)
+      _G('grass', -90, 150, 180, 100),                           // SW 空き地芝 (Ch9 から継続)
       _G('residential_tile', 90, 150, 180, 100),                 // SE 古い住宅 (回想)
       _G('asphalt', -65, 100, 24, 200),
     ],
@@ -2492,12 +2495,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-160, 178), _H(0, 178),
     ],
     grounds: [
-      // ── v6.8 グラデ: Ch11 踏切 (asphalt 全面 + dirt 線路 + Stage 2 予告) ──
-      _G('asphalt', 0, 100, 360, 200),                           // ★ ベース asphalt 全面
+      // ── v6.9 Act IV 郊外トーン: Ch11 踏切 (asphalt + dirt 線路 + Stage 2 oil 予告) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act IV 終末 asphalt 全面
       _G('dirt', 0, 175, 220, 30),                               // 線路の土
-      _G('residential_tile', -90, 60, 180, 100),                 // NW 古民家 (最後の温かみ)
+      _G('residential_tile', -90, 60, 180, 100),                 // NW 古民家 (Act I の最後の温かみ)
       _G('residential_tile', 90, 60, 180, 100),                  // NE 古民家
-      _G('oil_stained_concrete', 0, 145, 100, 20),               // ★ Stage 2 予告 (夜街シグネチャ)
+      _G('oil_stained_concrete', 0, 145, 100, 20),               // ★ Stage 2 予告 (夜街)
       _G('asphalt', -65, 100, 24, 200),
     ],
     // 道路: 中央 avenue + Stage 2 への上端接続 (線路並行 HR は撤廃して衝突回避)
@@ -2729,14 +2732,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS (4 層: ベース → 焦点 → ロット → 動線) ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch0 駅前 (asphalt + concrete + tile) ──
-      _G('asphalt', 0, 100, 360, 200),                           // ★ ベース 夜街
+      // ── v6.9 S2 Act I 夜街トーン: Ch0 駅前 (asphalt + tile 駅+店 + 微 oil) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act I 共通ベース
       _G('concrete', 80, 80, 200, 120),                          // NE 駅前広場
       _G('tile', 80, 70, 100, 20),                               // NE ホーム
       _G('tile', -130, 60, 100, 80),                             // NW ホテル前
-      _G('concrete', -130, 145, 130, 100),                       // SW 食事街前
+      _G('tile', 130, 152, 100, 60),                             // SE コンビニ前
       _G('wood_deck', 70, 152, 60, 30),                          // SE カフェテラス
-      _G('oil_stained_concrete', 0, 100, 60, 14),                // 中央 (Ch11 から継続)
+      _G('oil_stained_concrete', 0, 100, 50, 14),                // 中央 (Stage 1 から継続)
       _G('stone_pavement', -65, 100, 24, 200),
     ];
 
@@ -2946,10 +2949,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch1 食事街 (asphalt + concrete + oil) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act I 夜街トーン: Ch1 食事街 (asphalt + tile 店 + oil 路地) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act I 共通ベース
       _G('concrete', -90, 145, 200, 60),                         // SW 3 連店前
-      _G('oil_stained_concrete', -90, 175, 200, 40),             // SW 路地裏 (湿り気増)
+      _G('oil_stained_concrete', -90, 175, 200, 40),             // SW 路地裏
       _G('tile', -130, 38, 80, 50),                              // NW ホテル
       _G('tile', 110, 38, 100, 50),                              // NE コンビニ
       _G('concrete', 110, 152, 100, 60),                         // SE 駐車
@@ -3154,11 +3157,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch2 アーケード (asphalt + tile アーケード床) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act I 夜街トーン: Ch2 アーケード (asphalt + tile 床 + red_carpet 予告) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act I 共通ベース
       _G('tile', 0, 100, 360, 60),                               // ★ アーケード床 全幅
       _G('concrete', -130, 152, 100, 60),                        // SW pachinko
-      _G('red_carpet', 130, 152, 100, 60),                       // SE club (Ch3 予告)
+      _G('red_carpet', 130, 152, 100, 60),                       // SE club (Act II 予告)
       _G('stone_pavement', -65, 100, 24, 200),
     ];
 
@@ -3352,16 +3355,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch3 高層雑居 (asphalt + red_carpet + tile + oil) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act II 熱トーン: Ch3 高層雑居 (asphalt + red_carpet + tile + oil) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act II 共通ベース
       _G('concrete', 130, 60, 100, 80),                          // NE karaoke
       _G('tile', 80, 60, 80, 80),                                // NE apartment
       _G('red_carpet', 30, 60, 80, 60),                          // NE club
       _G('red_carpet', -130, 60, 80, 50),                        // NW club
+      _G('concrete', -75, 60, 80, 80),                           // NW capsule 前
       _G('concrete', -100, 152, 100, 60),                        // SW
       _G('tile', 110, 152, 130, 60),                             // SE
       _G('wood_deck', 165, 152, 50, 30),                         // SE cafe
-      _G('oil_stained_concrete', 0, 100, 50, 14),                // avenue 中央
+      _G('oil_stained_concrete', 0, 100, 50, 14),                // 中央
       _G('stone_pavement', -65, 100, 24, 200),
     ];
 
@@ -3566,14 +3570,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch4 ★ 交差点 (red_carpet + tile + oil ピーク) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act II 熱トーン: Ch4 ★ 交差点 (asphalt + tile + red_carpet + oil ピーク) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act II 共通ベース
       _G('tile', -100, 38, 130, 80),                             // パチンコ前
       _G('concrete', 0, 145, 130, 80),                           // 交番前
       _G('tile', 100, 38, 130, 80),                              // ゲーセン前
       _G('red_carpet', -55, 38, 60, 50),                         // love_hotel
       _G('red_carpet', 60, 38, 60, 50),                          // club
-      _G('oil_stained_concrete', 0, 100, 80, 18),                // ★ avenue 中央 (湿り気ピーク)
+      _G('oil_stained_concrete', 0, 100, 80, 18),                // ★ 湿り気ピーク
       _G('oil_stained_concrete', -100, 50, 60, 14),              // パチンコ前路地
       _G('oil_stained_concrete', 100, 50, 60, 14),               // ゲーセン前路地
       _G('stone_pavement', -65, 100, 24, 200),
@@ -3770,12 +3774,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch5 横丁 (asphalt + concrete + oil 路地裏) ──
-      _G('asphalt', 0, 100, 360, 200),
-      _G('concrete', 0, 145, 360, 60),                           // 横丁通り 全幅
+      // ── v6.9 S2 Act II 熱トーン: Ch5 横丁 (asphalt + concrete + oil 路地裏) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act II 共通ベース
+      _G('concrete', 0, 145, 360, 60),                           // 横丁通り
       _G('oil_stained_concrete', 0, 175, 320, 40),               // ★ 路地裏 全幅
       _G('tile', -130, 38, 100, 60),                             // NW bank
       _G('tile', 130, 38, 100, 60),                              // NE capsule
+      _G('red_carpet', -50, 38, 60, 30),                         // 中央 club 残光
       _G('stone_pavement', -65, 100, 24, 200),
     ];
 
@@ -3964,8 +3969,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch6 ラブホ街 (red_carpet 主役 + concrete + oil) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act III 暖灯トーン: Ch6 ラブホ街 (asphalt + red_carpet 主役 + wood) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act III 共通ベース
       _G('red_carpet', -80, 60, 130, 80),                        // ★ NW ラブホ前
       _G('red_carpet', -160, 88, 50, 60),                        // ラブホ小
       _G('red_carpet', 130, 38, 60, 50),                         // NE club
@@ -4174,15 +4179,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch7 屋台 (red_carpet 屋台床 + concrete + oil) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act III 暖灯トーン: Ch7 屋台 (asphalt + red_carpet 屋台床 + wood) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act III 共通ベース
       _G('red_carpet', 0, 78, 280, 50),                          // ★ 屋台床 全幅
       _G('concrete', 0, 100, 360, 50),                           // 屋台前
       _G('concrete', -100, 145, 180, 80),                        // SW chaya
       _G('oil_stained_concrete', -100, 175, 130, 40),            // SW 路地
       _G('concrete', 100, 145, 180, 80),                         // SE ramen
-      _G('tile', -150, 38, 50, 50),                              // 上段店
-      _G('tile', 150, 38, 50, 50),
+      _G('wood_deck', -150, 38, 50, 50),                         // 上段店
+      _G('wood_deck', 150, 38, 50, 50),
       _G('stone_pavement', -65, 100, 24, 200),
     ];
 
@@ -4375,14 +4380,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch8 映画館 (asphalt + tile + wood_deck + oil 減退) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act III 暖灯トーン: Ch8 映画館 (asphalt + tile + wood + red_carpet 残) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act III 共通ベース
       _G('tile', 130, 152, 130, 80),                             // ★ SE 映画館前
       _G('wood_deck', 60, 152, 80, 50),                          // SE cafe
-      _G('concrete', -130, 38, 50, 50),
-      _G('concrete', -75, 38, 50, 50),
-      _G('tile', 130, 38, 50, 50),
-      _G('tile', 70, 38, 50, 50),
+      _G('red_carpet', -55, 38, 60, 30),                         // NW club 残
+      _G('red_carpet', 60, 38, 60, 30),                          // NE club 残
+      _G('tile', -130, 38, 50, 50),                              // NW karaoke
+      _G('tile', 130, 38, 50, 50),                               // NE pachinko
       _G('concrete', -100, 152, 130, 60),                        // SW mansion
       _G('oil_stained_concrete', 0, 100, 30, 14),                // 中央 (薄く)
       _G('stone_pavement', -65, 100, 24, 200),
@@ -4562,15 +4567,16 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch9 駐車場 (oil + asphalt + 神社予兆 stone) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act IV 石+土トーン: Ch9 駐車場 (asphalt + oil + 神社予兆 stone) ──
+      _G('asphalt', 0, 100, 360, 200),                           // Act IV 前半まだ asphalt
       _G('oil_stained_concrete', 130, 80, 180, 100),             // ★ NE 駐車場 全面
+      _G('stone_pavement', -100, 145, 130, 80),                  // ★ SW 神社予兆
+      _G('fallen_leaves', -130, 180, 50, 25),                    // 落ち葉
+      _G('grass', -90, 60, 130, 80),                             // NW 古い住宅庭
       _G('concrete', -130, 38, 50, 50),
       _G('concrete', -90, 38, 50, 50),
-      _G('stone_pavement', -100, 145, 130, 80),                  // ★ SW 神社予兆
-      _G('fallen_leaves', -130, 180, 50, 25),                    // 落ち葉 (Ch10 予告)
       _G('concrete', 110, 152, 130, 60),                         // SE 町家
-      _G('asphalt', -65, 100, 24, 200),
+      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -4749,13 +4755,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch10 神社の裏 (stone_pavement + gravel + moss + grass 拡大) ──
-      _G('asphalt', 0, 100, 360, 200),
+      // ── v6.9 S2 Act IV 石+土トーン: Ch10 神社の裏 (stone_pavement + gravel + moss + grass) ──
+      _G('residential_tile', 0, 100, 360, 200),                  // Act IV ベース 古都の温かみ
       _G('stone_pavement', -100, 145, 130, 100),                 // ★ SW 神社境内
       _G('moss', -75, 168, 50, 30),                              // 苔
       _G('fallen_leaves', -130, 180, 50, 25),
       _G('fallen_leaves', -50, 180, 50, 25),
-      _G('gravel', -100, 195, 80, 25),                           // 玉砂利 (Stage 3 予告)
+      _G('gravel', -100, 195, 80, 25),                           // 玉砂利
       _G('grass', -75, 60, 130, 80),                             // ★ NW 古民家庭
       _G('dirt', -100, 88, 50, 25),                              // 庭石
       _G('grass', 80, 60, 130, 80),                              // NE 庭
@@ -4955,10 +4961,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v6.8 グラデ: S2-Ch11 ★ 表参道 (stone_pavement 主役 + gravel + moss + grass、Stage 3 へ) ──
-      _G('residential_tile', 0, 100, 360, 200),                  // ベース 縮小 + warm 復帰
+      // ── v6.9 S2 Act IV 石+土トーン: Ch11 表参道 (stone_pavement 全幅 + gravel + moss + grass) ──
+      _G('residential_tile', 0, 100, 360, 200),                  // Act IV ベース
       _G('stone_pavement', 80, 100, 130, 200),                   // ★★ NE 表参道 全幅
-      _G('gravel', 80, 88, 130, 50),                             // 玉砂利帯
+      _G('gravel', 80, 88, 130, 50),                             // 玉砂利
       _G('fallen_leaves', 40, 88, 50, 25),
       _G('fallen_leaves', 120, 88, 50, 25),
       _G('moss', 80, 178, 50, 30),                               // 苔
