@@ -957,6 +957,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(0, 100),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、日本庭園テーマ)
+      _G('grass', -100, 50, 130, 80),                            // NW: 庭の芝生
+      _G('residential_tile', 100, 50, 130, 80),                  // NE: 住宅前タイル
+      _G('residential_tile', -100, 150, 130, 80),                // SW: 住宅前タイル
+      _G('grass', 100, 150, 130, 80),                            // SE: 庭の芝生
+      _G('wood_deck', -100, 60, 60, 30),                         // NW: 縁側のウッドデッキ
       // ═══ ベース層: 住宅街タイル (全面) ═══
       _G('residential_tile', 0, 100, 360, 200),
 
@@ -1004,7 +1010,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 0, 195, 360, 12),
 
       // ═══ 中央生活路地 (stone_pavement) ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ avenue 沿いの asphalt 帯 ═══
       _G('asphalt', 0, 88, 360, 24),
@@ -1086,7 +1092,6 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'shop_awning', 35, 30);
     const convSign   = $F(out, 'a_frame_sign', -62, 24);
     const convVend   = $F(out, 'vending', -32, 24);
-    $F(out, 'vending', -10, 56);
     const convBike   = $F(out, 'bicycle_rack', -45, 60); // ★ shop livingTrace
     $F(out, 'newspaper_stand', -28, 56);
     $F(out, 'a_frame_sign', 18, 28); $F(out, 'potted_plant', 55, 28);
@@ -1214,6 +1219,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     // GROUNDS (ベース → 焦点 → ロット → 動線 の 4 層)
     // ═══════════════════════════════════════════════════════════
     out.grounds = [
+      // セル単位地面 (v6.5: ジオラマ強化、児童公園テーマ)
+      _G('residential_tile', -100, 50, 130, 80),                 // NW: 商店フロント前
+      _G('residential_tile', 100, 50, 130, 80),                  // NE: 住宅前
+      _G('residential_tile', -100, 150, 130, 80),                // SW: 住宅前
+      _G('grass', 100, 150, 130, 80),                            // SE: 公園の芝生
       // ═══ ベース層 ═══
       _G('residential_tile', 0, 100, 360, 200),
 
@@ -1242,7 +1252,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('stone_pavement', 30, 130, 70, 8),
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ 裏路地統一帯 ═══
       _G('concrete', -100, 195, 200, 14),
@@ -1290,9 +1300,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('hedge', -150, 60), _F('hedge', -70, 60),
       // ── 焦点: 診療所前 (待合) ──
       _F('bench', 15, 38), _F('bench', -15, 38),
-      _F('potted_plant', -10, 38), _F('potted_plant', 12, 38),
-      _F('flower_planter_row', 0, 56), _F('a_frame_sign', -22, 28),
-      _F('hedge', 20, 50), _F('shop_awning', 0, 30),
+      _F('potted_plant', 12, 38),
+      _F('a_frame_sign', -22, 28),
+      _F('hedge', 20, 50),
       _F('bicycle_rack', 30, 60),
       // ── 焦点: 郵便局前 (ポスト・旗) ──
       _F('post_box', 110, 35), _F('post_letter_box', 92, 35),
@@ -1301,7 +1311,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('flower_planter_row', 110, 40), _F('shop_awning', 110, 30),
       _F('a_frame_sign', 88, 28),
       // ── 道路境界・歩道橋 ──
-      _F('pedestrian_bridge', 0, 60),
+      
       _F('traffic_light', -90, 92), _F('traffic_light', 90, 92),
       _F('guardrail_short', -30, 100), _F('guardrail_short', 30, 100),
       _F('bollard', -60, 92), _F('bollard', 60, 92),
@@ -1326,7 +1336,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_mirror', -150, 92), _F('street_mirror', 150, 92),
       // ── _TOP_HR (Ch3 への接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
-      _F('street_lamp', 0, 195),
+      
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
       // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
@@ -1393,6 +1403,12 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(145, 138), _H(-170, 138), _H(100, 178),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、公共 3 連テーマ)
+      _G('concrete', 0, 50, 360, 80),                            // 上段 merged: 公共コンクリート広場
+      _G('residential_tile', -100, 150, 130, 80),                // SW: 住宅
+      _G('residential_tile', 100, 150, 130, 80),                 // SE: 住宅
+      _G('tile', -130, 60, 60, 50),                              // NW: 保育園前タイル
+      _G('tile', 130, 60, 60, 50),                               // NE: 郵便局前タイル
       // ═══ ベース層 ═══
       _G('residential_tile', 0, 100, 360, 200),
 
@@ -1424,7 +1440,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 145, 152, 60, 35),   // ロット house(145, 138) 駐車
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ 裏路地統一帯 ═══
       _G('concrete', 0, 195, 360, 14),
@@ -1477,13 +1493,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bicycle', -132, 176), _F('bicycle', -100, 176), _F('bicycle_rack', -120, 176),
       _F('newspaper_stand', -90, 145),
       // bookstore (中央)
-      _F('shop_awning', 0, 132), _F('a_frame_sign', 0, 144),
-      _F('parasol', -22, 154), _F('parasol', 22, 154), _F('parasol', 0, 168),
-      _F('bench', 0, 160), _F('bench', -22, 162), _F('bench', 22, 162),
+      
+      _F('parasol', -22, 154), _F('parasol', 22, 154),
+      _F('bench', -22, 162), _F('bench', 22, 162),
       _F('newspaper_stand', -22, 144), _F('newspaper_stand', 22, 144),
-      _F('flower_planter_row', 0, 168), _F('potted_plant', 18, 152), _F('potted_plant', -18, 152),
-      _F('bicycle_rack', 22, 176), _F('bicycle', 0, 176), _F('bicycle', -22, 176),
-      _F('chouchin', 0, 122), _F('chouchin', 18, 122), _F('chouchin', -18, 122),
+      _F('potted_plant', 18, 152), _F('potted_plant', -18, 152),
+      _F('bicycle_rack', 22, 176), _F('bicycle', -22, 176),
+      _F('chouchin', 18, 122), _F('chouchin', -18, 122),
       // cafe
       _F('shop_awning', 112, 132), _F('a_frame_sign', 112, 144),
       _F('parasol', 92, 154), _F('parasol', 132, 154), _F('parasol', 112, 168),
@@ -1518,7 +1534,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('hedge', -130, 60), _F('hedge', -90, 60), _F('hedge', -25, 75), _F('hedge', 30, 75),
       _F('hedge', 60, 92), _F('hedge', -110, 92), _F('hedge', 145, 92),
       _F('bush', -130, 30), _F('bush', 90, 30), _F('bush', 165, 30),
-      _F('bush', -75, 92), _F('bush', 0, 80), _F('bush', 100, 92),
+      _F('bush', -75, 92), _F('bush', 100, 92),
       // ── 上段 裏路地 (生活痕跡) ──
       _F('garbage', -150, 88), _F('garbage', 150, 88), _F('garbage', -75, 92),
       _F('recycling_bin', -125, 88), _F('recycling_bin', 75, 88),
@@ -1554,11 +1570,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── avenue 地点小物 + 街灯 + ガードレール ──
       _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
       _F('bollard', -65, 92), _F('bollard', 65, 92), _F('bollard', -30, 108), _F('bollard', 30, 108),
-      _F('guardrail_short', 0, 92), _F('guardrail_short', 0, 108),
+      
       _F('street_mirror', -75, 92),
       // ── 境界・植栽 ──
-      _F('hedge', -150, 195), _F('hedge', 150, 195), _F('hedge', 0, 195),
-      _F('flower_bed', 0, 195), _F('flower_bed', -100, 192), _F('flower_bed', 100, 192),
+      _F('hedge', -150, 195), _F('hedge', 150, 195),
+      _F('flower_bed', -100, 192), _F('flower_bed', 100, 192),
       _F('flower_bed', -160, 192), _F('flower_bed', 165, 192),
     ],
     // ▼ v6.3 cluster: SW+SE = HERO 3連テラス (merged)
@@ -1604,6 +1620,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(42, 56), _H(125, 56), _H(-110, 50), _H(-45, 56), _H(60, 56), _H(-75, 72),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、朝のカフェテラステーマ)
+      _G('residential_tile', -100, 50, 130, 80),                 // NW: 住宅
+      _G('residential_tile', 100, 50, 130, 80),                  // NE: 住宅
+      _G('residential_tile', -100, 150, 130, 80),                // SW: 住宅
+      _G('wood_deck', 100, 150, 150, 80),                        // SE: 3 連テラス全面
       // ═══ ベース層: 上半分=住宅街、下半分=商店街 (転換) ═══
       _G('residential_tile', 0, 48, 360, 96),
       _G('concrete', 0, 152, 360, 96),
@@ -1632,7 +1653,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('concrete', 165, 178, 30, 24),
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ avenue 沿い asphalt ═══
       _G('asphalt', 0, 88, 360, 24),
@@ -1708,9 +1729,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('guardrail_short', 35, 108), _F('guardrail_short', -35, 108),
       _F('street_mirror', -75, 92), _F('street_mirror', 75, 92),
       // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
-      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 0, 50),
+      _F('hedge', -150, 50), _F('hedge', -75, 50),
       _F('flower_bed', -100, 60), _F('flower_bed', 100, 60),
-      _F('potted_plant', -75, 22), _F('potted_plant', 0, 22),
+      _F('potted_plant', -75, 22),
       _F('flower_planter_row', -45, 175),
       _F('garbage', -150, 88), _F('garbage', 150, 88),
       _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
@@ -1768,6 +1789,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-160, 138), _H(50, 178),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、銭湯+スーパーテーマ)
+      _G('residential_tile', -100, 50, 130, 80),                 // NW: 住宅
+      _G('residential_tile', 100, 50, 130, 80),                  // NE: 住宅
+      _G('concrete', -100, 150, 130, 80),                        // SW: 銭湯前
+      _G('concrete', 100, 150, 130, 80),                         // SE: スーパー駐車
       // ═══ ベース層: 上=商業 concrete, 下=住宅 residential_tile ═══
       _G('concrete', 0, 60, 360, 120),
       _G('residential_tile', 0, 165, 360, 70),
@@ -1793,7 +1819,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 165, 152, 40, 35),     // ロット house(165, 138)
 
       // ═══ 商店街の生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
       _G('stone_pavement', -45, 60, 8, 80),
 
       // ═══ 裏路地統一帯 ═══
@@ -1835,14 +1861,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     furniture: [
       // ── 焦点: 中央広場 ──
-      _F('plaza_tile_circle', 0, 145), _F('statue', -8, 148), _F('fountain_large', 32, 150),
+      _F('fountain_large', 32, 150),
       _F('flower_bed', -40, 145), _F('flower_bed', 60, 145),
-      _F('flower_planter_row', 0, 170),
+      
       // 広場外周のベンチ (滞留)
       _F('bench', -70, 130), _F('bench', 78, 132),
-      _F('bench', 0, 178), _F('bench', -110, 178), _F('bench', 110, 178),
+      _F('bench', -110, 178), _F('bench', 110, 178),
       _F('bench', -50, 168), _F('bench', 50, 168),
-      _F('flower_bed', -110, 140), _F('flower_bed', 110, 140), _F('flower_bed', 0, 195),
+      _F('flower_bed', -110, 140), _F('flower_bed', 110, 140),
       _F('cat', -110, 168), _F('cat', 60, 178),
       _F('newspaper_stand', -130, 152), _F('garbage', 130, 168),
       // ── 公共施設の用途差 ──
@@ -1871,8 +1897,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('ac_unit', -160, 148), _F('ac_unit', -100, 148), _F('ac_unit', 80, 188),
       _F('laundry_pole', -130, 158),
       // ── 連続軸: 桜並木 (Ch0-Ch5) ──
-      _F('sakura_tree', -150, 95), _F('sakura_tree', 0, 95),
-      _F('sakura_tree', 150, 95), _F('sakura_tree', 0, 75),
+      _F('sakura_tree', -150, 95),
+      _F('sakura_tree', 150, 95),
       _F('sakura_tree', -75, 95),
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
@@ -1941,6 +1967,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-160, 138), _H(80, 175),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、civic plaza テーマ)
+      _G('residential_tile', -100, 50, 130, 80),                 // NW: 住宅
+      _G('residential_tile', 100, 50, 130, 80),                  // NE: 住宅
+      _G('stone_pavement', 0, 150, 360, 80),                     // 下段 merged: civic plaza 石畳
       // ═══ ベース層: 公共空間のコンクリート (整然とした面) ═══
       _G('concrete', 0, 100, 360, 200),
 
@@ -1963,7 +1993,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 0, 188, 60, 14),
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ avenue 沿い asphalt ═══
       _G('asphalt', 0, 88, 360, 24),
@@ -2016,7 +2046,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('flower_planter_row', -70, 110), _F('flower_bed', -150, 192), _F('flower_bed', -20, 192),
       _F('cat', -135, 168),
       // ── 通学路 (信号・横断地点) ──
-      _F('traffic_light', 0, 92), _F('traffic_light', -90, 92),
+      _F('traffic_light', -90, 92),
       _F('guardrail_short', -35, 100), _F('guardrail_short', 35, 100),
       _F('bollard', -55, 92), _F('bollard', 55, 92),
       _F('street_mirror', -110, 92),
@@ -2034,13 +2064,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('newspaper_stand', 100, 152), _F('cat', 160, 170),
       // ── 下段 住宅 facade ──
       _F('mailbox', -150, 122), _F('mailbox', -110, 122), _F('mailbox', -45, 122),
-      _F('mailbox', -10, 165),
+      
       _F('ac_unit', -150, 148), _F('ac_unit', -45, 158), _F('ac_unit', -110, 158),
       _F('laundry_pole', -130, 158), _F('laundry_balcony', -45, 130),
       _F('potted_plant', -150, 125),
       // ── 連続軸: tree (Ch6-Ch8) ──
       _F('tree', -170, 110), _F('tree', 25, 110), _F('tree', 170, 110),
-      _F('tree', 0, 75), _F('tree', -110, 188), _F('tree', 65, 188),
+      _F('tree', -110, 188), _F('tree', 65, 188),
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
@@ -2051,7 +2081,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_mirror', -110, 92), _F('street_mirror', 110, 92),
       // ── _TOP_HR (Ch7 への通学路接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
-      _F('street_lamp', 0, 195), _F('street_lamp', -150, 195),
+      _F('street_lamp', -150, 195),
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('guardrail_short', -135, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
@@ -2107,6 +2137,9 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-45, 138), _H(-10, 178), _H(170, 60), _H(165, 138),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、小学校全マージテーマ)
+      _G('concrete', 0, 50, 360, 80),                            // 上段 merged: 校舎前
+      _G('dirt', 0, 150, 320, 80),                               // 下段 merged: 校庭の土
       // ═══ ベース層: 上=公共 concrete, 右下=住宅街 ═══
       _G('concrete', 0, 48, 360, 96),
       _G('residential_tile', 100, 145, 160, 70),
@@ -2133,7 +2166,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 165, 152, 30, 30),  // 住宅小庭
 
       // ═══ 通学路の生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
       _G('asphalt', 0, 95, 360, 18),
 
       // ═══ 裏路地統一帯 ═══
@@ -2172,14 +2205,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 焦点: アーケードの提灯アーチ ──
       _F('chouchin', -160, 34), _F('chouchin', -132, 34), _F('chouchin', -110, 34),
       _F('chouchin', -88, 34), _F('chouchin', -65, 34), _F('chouchin', -45, 34),
-      _F('chouchin', -28, 34), _F('chouchin', -10, 34), _F('chouchin', 10, 34),
+      _F('chouchin', -28, 34),
       _F('chouchin', 28, 34), _F('chouchin', 65, 34), _F('chouchin', 88, 34),
       _F('chouchin', 110, 34), _F('chouchin', 132, 34), _F('chouchin', 142, 34),
       _F('chouchin', 165, 34),
-      _F('chouchin', -110, 90), _F('chouchin', -40, 90), _F('chouchin', 0, 90),
+      _F('chouchin', -110, 90), _F('chouchin', -40, 90),
       _F('chouchin', 40, 90), _F('chouchin', 110, 90), _F('chouchin', 150, 90),
       _F('chouchin', -150, 90), _F('chouchin', -75, 90), _F('chouchin', 75, 90),
-      _F('banner_pole', -55, 95), _F('banner_pole', 55, 95), _F('banner_pole', 0, 60),
+      _F('banner_pole', -55, 95), _F('banner_pole', 55, 95),
       _F('banner_pole', -150, 60), _F('banner_pole', 150, 60),
       // ── 各店の帰属 (オーニング・暖簾・看板) ──
       // ramen
@@ -2237,7 +2270,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('laundry_pole', 110, 158), _F('laundry_balcony', -45, 130),
       _F('potted_plant', -45, 125), _F('potted_plant', 110, 125),
       _F('potted_plant', -100, 125), _F('potted_plant', 40, 125),
-      _F('hedge', -120, 130), _F('hedge', 0, 130), _F('hedge', 60, 130),
+      _F('hedge', -120, 130), _F('hedge', 60, 130),
       _F('hedge', 130, 130), _F('hedge', -75, 130),
       _F('bush', -45, 168), _F('bush', 40, 168), _F('bush', 110, 168),
       _F('bush', -100, 168), _F('bush', 165, 168),
@@ -2253,7 +2286,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bicycle_rack', -22, 168), _F('bicycle_rack', 22, 168),
       _F('cat', -80, 170), _F('cat', 80, 170),
       // ── 連続軸: tree (Ch6-Ch8) ──
-      _F('tree', -170, 110), _F('tree', 170, 110), _F('tree', 0, 110),
+      _F('tree', -170, 110), _F('tree', 170, 110),
       _F('tree', -75, 188), _F('tree', 75, 188), _F('tree', 130, 188),
       _F('tree', -130, 188), _F('tree', 25, 188),
       // ── 連続軸: 電柱+電線 ──
@@ -2270,7 +2303,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('guardrail_short', -45, 108), _F('guardrail_short', 45, 108),
       _F('street_mirror', -75, 92),
       // ── 境界 ──
-      _F('flower_planter_row', 0, 195), _F('hedge', -160, 195), _F('hedge', 165, 195),
+      _F('hedge', -160, 195), _F('hedge', 165, 195),
       _F('flower_bed', -130, 195), _F('flower_bed', 130, 195),
       _F('flower_bed', -45, 195), _F('flower_bed', 45, 195),
     ],
@@ -2315,6 +2348,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-100, 145), _H(40, 145), _H(-75, 168), _H(75, 168),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、提灯アーケードテーマ)
+      _G('concrete', 0, 50, 360, 80),                            // 上段 merged: アーケード床
+      _G('residential_tile', -100, 150, 130, 80),                // SW: 住宅
+      _G('residential_tile', 100, 150, 130, 80),                 // SE: 住宅
       // ═══ ベース層: 上=商店街 concrete, 下=住宅街 ═══
       _G('concrete', 0, 60, 360, 120),
       _G('residential_tile', 0, 165, 360, 70),
@@ -2342,7 +2379,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 165, 152, 30, 32),     // ロット mansion(165, 138)
 
       // ═══ 商店街の生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ 商店裏の搬入アスファルト ═══
       _G('asphalt', 0, 88, 360, 24),
@@ -2405,7 +2442,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('a_frame_sign', -120, 56), _F('a_frame_sign', -45, 56), _F('a_frame_sign', -160, 56),
       _F('vending', -85, 56), _F('vending', -22, 56),
       _F('newspaper_stand', -160, 70), _F('parasol', -45, 56),
-      _F('bicycle_rack', 0, 56), _F('bicycle_rack', -100, 56),
+      _F('bicycle_rack', -100, 56),
       _F('chouchin', -45, 22),
       _F('cat', -150, 170),
       // ── ramen 帰属 (下段) ──
@@ -2422,7 +2459,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('ac_unit', -160, 148), _F('ac_unit', 130, 148), _F('ac_unit', 165, 158),
       _F('laundry_pole', 130, 158), _F('potted_plant', -40, 125),
       // ── 連続軸: tree (Ch6-Ch8) → pine_tree へ handoff ──
-      _F('tree', -170, 110), _F('tree', 0, 110), _F('tree', -45, 188),
+      _F('tree', -170, 110), _F('tree', -45, 188),
       _F('tree', 65, 188),
       _F('pine_tree', -170, 190), _F('pine_tree', 170, 188),
       // ── 連続軸: 電柱+電線 ──
@@ -2492,6 +2529,11 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(130, 138), _H(-160, 138), _H(165, 138), _H(60, 178), _H(-110, 178),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、地方の小駅テーマ)
+      _G('residential_tile', -100, 50, 130, 80),                 // NW: 住宅
+      _G('concrete', 100, 50, 130, 80),                          // NE: 駅前
+      _G('residential_tile', -100, 150, 130, 80),                // SW: 住宅
+      _G('asphalt', 100, 150, 130, 80),                          // SE: 駅裏
       // ═══ ベース層: 上=駅前 concrete, 下=住宅街 ═══
       _G('concrete', 0, 60, 360, 120),
       _G('residential_tile', 0, 165, 360, 70),
@@ -2523,7 +2565,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 165, 188, 30, 24),
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ 裏路地統一帯 ═══
       _G('concrete', 0, 195, 360, 14),
@@ -2596,7 +2638,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('pallet_stack', -130, 168), _F('garbage', -60, 178),
       _F('flower_planter_row', -45, 155), _F('rock', -120, 188),
       // ── 連続軸: pine_tree (Ch9-Ch11) ──
-      _F('pine_tree', -170, 90), _F('pine_tree', 0, 92),
+      _F('pine_tree', -170, 90),
       _F('pine_tree', -130, 188), _F('pine_tree', -45, 188),
       _F('pine_tree', 25, 188), _F('pine_tree', -170, 188),
       _F('pine_tree', -65, 92),
@@ -2622,7 +2664,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
       _F('cable_junction_box', -45, 88), _F('cable_junction_box', 45, 88),
       _F('pallet_stack', 60, 88), _F('pallet_stack', -150, 168),
-      _F('drum_can', 0, 88), _F('drum_can', -130, 88),
+      _F('drum_can', -130, 88),
       _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', -150, 168),
       // ── 境界 ──
       _F('hedge', 180, 165), _F('hedge', -100, 195),
@@ -2672,6 +2714,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-45, 138), _H(60, 178),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、田園農家テーマ)
+      _G('grass', -100, 50, 130, 80),                            // NW: 田畑
+      _G('grass', 100, 50, 130, 80),                             // NE: 田畑
+      _G('dirt', -100, 150, 130, 80),                            // SW: 畑の土
+      _G('dirt', 100, 150, 130, 80),                             // SE: 畑の土
+      _G('grass', -160, 30, 60, 80),                             // NW 端: 大芝生
+      _G('grass', 160, 30, 60, 80),                              // NE 端: 大芝生
       // ベース: 田園の草地 (rural feel)
       _G('grass', 0, 100, 360, 200),
       // ★ 焦点: 畑の土パッチ (複数の畑を区画分け)
@@ -2689,7 +2738,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('asphalt', -60, 58, 150, 42),
       _G('asphalt', 0, 88, 360, 24),
       // 生活路地
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
       // 落ち葉
       _G('fallen_leaves', -160, 70, 24, 14),
       _G('fallen_leaves', 65, 175, 18, 12),
@@ -2725,7 +2774,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('traffic_cone', -155, 62), _F('traffic_cone', -135, 78),
       _F('barrier', -100, 64), _F('barrier', -160, 80),
       _F('pallet_stack', -70, 68), _F('pallet_stack', -120, 76),
-      _F('cargo_container', -35, 70), _F('cargo_container', -10, 70),
+      _F('cargo_container', -35, 70),
       _F('drum_can', -150, 70), _F('drum_can', -75, 78),
       _F('forklift', -65, 88), _F('forklift', -25, 80),
       _F('cable_junction_box', -35, 84), _F('cable_junction_box', -100, 84),
@@ -2739,20 +2788,20 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('cable_junction_box', 165, 76), _F('cable_junction_box', 100, 84),
       _F('drum_can', 25, 60), _F('bollard', 50, 60),
       // ── 道路境界 ──
-      _F('traffic_light', 0, 92),
+      
       _F('guardrail_short', -160, 100), _F('guardrail_short', 160, 100),
       _F('guardrail_short', -30, 100),
       // ── 下段 facade ──
       _F('mailbox', -135, 122), _F('mailbox', 95, 122), _F('mailbox', 145, 122),
       _F('ac_unit', -135, 148), _F('ac_unit', 95, 148), _F('ac_unit', 145, 158),
       _F('garbage', -100, 178), _F('garbage', -75, 168),
-      _F('dumpster', 50, 158), _F('milk_crate_stack', 0, 158),
+      _F('dumpster', 50, 158),
       _F('pallet_stack', -140, 178), _F('barrier', 50, 178),
       _F('drum_can', 70, 158), _F('cable_junction_box', 110, 168),
       _F('laundry_pole', 95, 158), _F('potted_plant', 145, 125),
       // ── 連続軸: pine_tree (Ch9-Ch11) ──
       _F('pine_tree', -170, 110), _F('pine_tree', 170, 110),
-      _F('pine_tree', 0, 175),
+      
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
@@ -2761,7 +2810,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_mirror', -100, 92), _F('street_mirror', 100, 92),
       // ── _TOP_HR (Ch11 への接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
-      _F('street_lamp', 0, 195), _F('street_lamp', 150, 195),
+      _F('street_lamp', 150, 195),
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('guardrail_short', 135, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
@@ -2774,8 +2823,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 198), _F('power_line', 175, 196),
       // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -160, 18), _F('hedge', 165, 18),
-      _F('flower_bed', -100, 60), _F('flower_bed', 0, 60), _F('flower_bed', 130, 60),
-      _F('drum_can', -30, 62), _F('drum_can', 0, 70),
+      _F('flower_bed', -100, 60), _F('flower_bed', 130, 60),
+      _F('drum_can', -30, 62),
       _F('pallet_stack', 60, 70), _F('pallet_stack', -110, 70),
       _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
       _F('flower_planter_row', -150, 175),
@@ -2783,7 +2832,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
       _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
-      _F('drum_can', 0, 178), _F('drum_can', -75, 188),
+      _F('drum_can', -75, 188),
       _F('pallet_stack', 75, 188), _F('pallet_stack', 165, 168),
       _F('cat', -130, 60), _F('cat', 130, 60),
       // ── 境界・植栽 ──
@@ -2824,6 +2873,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-170, 178), _H(165, 178), _H(60, 178), _H(-45, 178),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、郊外倉庫+消防テーマ)
+      _G('asphalt', 0, 50, 360, 80),                             // 上段 merged: 倉庫+消防の舗装
+      _G('grass', -100, 150, 130, 80),                           // SW: 空き地
+      _G('residential_tile', 100, 150, 130, 80),                 // SE: 古い住宅
       // ═══ ベース層: 工業地帯のアスファルト ═══
       _G('asphalt', 0, 70, 360, 120),
       _G('residential_tile', 0, 165, 360, 70),  // 下段は住宅街
@@ -2848,7 +2901,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', 0, 178, 360, 14),
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ _TOP_HR の地面連続 (Ch11 への handoff) ═══
       _G('asphalt', 0, 198, 360, 12),
@@ -2883,7 +2936,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     ],
     furniture: [
       // ── 焦点: 踏切 ──
-      _F('railway_track', 0, 145), _F('railway_track', 0, 160),
+      
       _F('railway_track', -45, 145), _F('railway_track', 45, 160),
       _F('railroad_crossing', -55, 145), _F('railroad_crossing', 55, 145),
       _F('signal_tower', -90, 150), _F('signal_tower', 90, 150),
@@ -2939,7 +2992,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_mirror', -100, 130), _F('street_mirror', 100, 130),
       // ── _TOP_HR (Stage 2 接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
-      _F('street_lamp', -150, 195), _F('street_lamp', 0, 195), _F('street_lamp', 150, 195),
+      _F('street_lamp', -150, 195), _F('street_lamp', 150, 195),
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('guardrail_short', -135, 198), _F('guardrail_short', 135, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
@@ -2993,6 +3046,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _H(-160, 178), _H(165, 178), _H(0, 178),
     ],
     grounds: [
+      // セル単位地面 (v6.5: ジオラマ強化、踏切+夜ネオンテーマ)
+      _G('residential_tile', -100, 50, 130, 80),                 // NW: 古民家
+      _G('residential_tile', 100, 50, 130, 80),                  // NE: 古民家
+      _G('asphalt', 0, 150, 360, 80),                            // 下段 merged: 踏切+店前舗装
       // ═══ ベース層: 街はずれの asphalt (車道と踏切のメインサーフェス) ═══
       _G('asphalt', 0, 100, 360, 200),
 
@@ -3018,7 +3075,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _G('grass', -160, 70, 30, 18),
 
       // ═══ 中央生活路地 ═══
-      _G('stone_pavement', -65, 100, 12, 200),
+      _G('stone_pavement', -65, 100, 20, 200),
 
       // ═══ _TOP_HR の地面連続 (Stage 2 への handoff) ═══
       _G('asphalt', 0, 198, 360, 12),
