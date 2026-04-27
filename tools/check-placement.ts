@@ -29,8 +29,14 @@ const push = (level: Level, rule: string, chunk: number, msg: string) =>
 
 // ─── 補助 ────────────────────────────────────────
 const SPINE_TYPES = new Set([
+  // 連続軸 (Stage 1 街路樹)
   'sakura_tree', 'pine_tree', 'cherry_blossom',
-  'power_pole', 'power_line', 'street_lamp',
+  // 連続軸 (全 Stage 共通: 電力 / 照明 / avenue 横断)
+  'power_pole', 'power_line', 'street_lamp', 'manhole_cover', 'bollard',
+  // Stage 2 シグネチャ (chouchin 帯 / 暖簾 / 屋台)
+  'chouchin', 'noren', 'banner_pole',
+  // Stage 5 祭り
+  'matsuri_drum', 'balloon_cluster',
 ]);
 const FACADE_TYPES = new Set([
   'mailbox', 'sign_board', 'a_frame_sign', 'noren', 'chouchin',
@@ -233,18 +239,24 @@ function checkHeroAdjacency(raw: RawChunkBody, chunk: number): void {
   }
 }
 
-/** L9: 看板系家具が facade 線 (y=22±4 もしくは y=118±4) から逸脱 */
+/** L9: 看板系家具が facade 線から逸脱
+ * facade 線は複数本許容: 上段 y=22, hero 焦点前面 y=56, 下段 y=118, 焦点周辺 y=148
+ * いずれかの線の ±4px 以内なら許容 (chaya / 銭湯 / civic plaza の店構えに対応)
+ */
 function checkFacadeLine(raw: RawChunkBody, chunk: number): void {
+  // 許容される facade 帯 (店舗の高さによって複数の y がありうる)
+  const FACADE_LINES = [22, 56, 118, 148];
   for (const f of raw.furniture) {
     if (!FACADE_TYPES.has(f.type)) continue;
-    // facade 線は y=22 (上段) と y=118 (下段) の 2 本
-    const distUpper = Math.abs(f.dy - 22);
-    const distLower = Math.abs(f.dy - 118);
-    const minDist = Math.min(distUpper, distLower);
-    if (minDist > 4 && f.dy < 100) {
-      push('info', 'L9', chunk, `'${f.type}' at (${f.dx},${f.dy}) deviates from upper facade y=22 by ${minDist.toFixed(0)}`);
-    } else if (minDist > 4 && f.dy >= 100 && f.dy < 130) {
-      push('info', 'L9', chunk, `'${f.type}' at (${f.dx},${f.dy}) deviates from lower facade y=118 by ${minDist.toFixed(0)}`);
+    let minDist = Infinity;
+    let nearestLine = 22;
+    for (const line of FACADE_LINES) {
+      const d = Math.abs(f.dy - line);
+      if (d < minDist) { minDist = d; nearestLine = line; }
+    }
+    if (minDist > 4) {
+      push('info', 'L9', chunk,
+        `'${f.type}' at (${f.dx},${f.dy}) deviates from nearest facade y=${nearestLine} by ${minDist.toFixed(0)}`);
     }
   }
 }
@@ -262,18 +274,29 @@ const RULES: Array<(raw: RawChunkBody, chunk: number) => void> = [
   checkFacadeLine,
 ];
 
-const stage1 = STAGES[0];
-const templates = stage1.templates;
+// CLI 引数: --stage=N で対象ステージ指定 (デフォルト: 全ステージ)
+const argStage = process.argv.find(a => a.startsWith('--stage='));
+const targetStage = argStage ? parseInt(argStage.split('=')[1], 10) : null;
+const stagesToCheck = targetStage !== null ? [targetStage] : [0, 1];  // Stage 1 と 2 を対象
+
 let totalClusters = 0;
+let totalChunks = 0;
 
-console.log('═══ Stage 1 配置リンタ (v6.3) ═══\n');
+for (const stageIdx of stagesToCheck) {
+  const stage = STAGES[stageIdx];
+  if (!stage) continue;
+  const templates = stage.templates;
+  totalChunks += templates.length;
+  console.log(`\n═══ Stage ${stageIdx + 1} (${stage.name}) 配置リンタ ═══`);
 
-for (let chunkId = 0; chunkId < templates.length; chunkId++) {
-  const tmpl = templates[chunkId];
-  if (!tmpl.raw) continue;
-  if (tmpl.raw.clusters) totalClusters += tmpl.raw.clusters.length;
-  for (const rule of RULES) {
-    rule(tmpl.raw, chunkId);
+  for (let chunkId = 0; chunkId < templates.length; chunkId++) {
+    const tmpl = templates[chunkId];
+    if (!tmpl.raw) continue;
+    if (tmpl.raw.clusters) totalClusters += tmpl.raw.clusters.length;
+    for (const rule of RULES) {
+      // chunk ID をステージ別に表示するため、prefix を変える
+      rule(tmpl.raw, chunkId);
+    }
   }
 }
 
@@ -302,7 +325,7 @@ if (infos.length) {
 }
 
 console.log('───────────────────────────────────');
-console.log(`Stage 1: ${templates.length} chunks, ${totalClusters} clusters defined`);
+console.log(`Total: ${totalChunks} chunks, ${totalClusters} clusters defined`);
 console.log(`Errors: ${errors.length}  Warnings: ${warns.length}  Info: ${infos.length}`);
 
 // CI で error は失敗扱い、warn は通過

@@ -854,7 +854,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       // ═══ avenue 沿いの地点小物 ═══
-      _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('manhole_cover', -30, 100), _F('manhole_cover', 27, 100),
       // ═══ 縁側猫の延長 (residential 上のリアル感) ═══
     ],
     // ▼ v6.3 cluster: NW = HERO 古民家邸 / NE+SW+SE = AMBIENT 住宅
@@ -1170,7 +1170,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('post_box', 110, 35), _F('post_letter_box', 92, 35),
       _F('flag_pole', 160, 38), _F('mailbox', 132, 35),
       _F('bicycle_rack', 140, 50), _F('bicycle', 132, 50),
-      _F('flower_planter_row', 110, 40), _F('shop_awning', 110, 30),
+      _F('flower_planter_row', 107, 40), _F('shop_awning', 107, 30),
       _F('a_frame_sign', 88, 28),
       // ── 道路境界・歩道橋 ──
       
@@ -1191,7 +1191,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       // ── avenue 地点小物 + 公共施設前の街路ミラー ──
       _F('manhole_cover', 0, 100),
-      _F('street_mirror', -150, 92), _F('street_mirror', 150, 92),
+      _F('street_mirror', -150, 92), _F('street_mirror', 147, 92),
       // ── _TOP_HR (Ch3 への接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
       
@@ -1228,6 +1228,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 10 },               // townhouse (-45,138)
           { kind: 'b', i: 14 },               // shed (-130,178) 裏物置
         ],
+              livingTrace: { kind: 'f', i: 34 },     // mailbox (-170,120)
       },
       // AMBIENT: SE 住宅 (duplex が焦点)
       { id: 'ch2.SE.duplex', role: 'ambient', cell: 'SE',
@@ -1237,6 +1238,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 12 },               // house (60,138)
           { kind: 'b', i: 16 },               // kura (145,170) 裏蔵
         ],
+              livingTrace: { kind: 'f', i: 36 },     // mailbox (60,122)
       },
     ],
     humans: [
@@ -1375,6 +1377,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 9 },                // townhouse (-110,38)
           { kind: 'b', i: 10 },               // mansion (-100,64)
         ],
+              livingTrace: { kind: 'f', i: 81 },     // flower_planter_row (-45,56)
       },
       // AMBIENT: NE 住宅+商店 (laundromat+pharmacy)
       { id: 'ch3.NE.shops', role: 'ambient', cell: 'NE',
@@ -1384,6 +1387,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 7 },                // shop (75,60)
           { kind: 'b', i: 12 },               // greenhouse (155,72)
         ],
+              livingTrace: { kind: 'f', i: 82 },     // flower_planter_row (42,56)
       },
     ],
     humans: [
@@ -1440,8 +1444,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('cat', -75, 56), _F('cat', -135, 88),
       _F('bicycle', -82, 56),
       // ── 商店フロント (上段) ──
-      _F('shop_awning', 45, 30), _F('shop_awning', 120, 30), _F('shop_awning', -75, 30),
-      _F('a_frame_sign', 45, 56), _F('a_frame_sign', 120, 56), _F('a_frame_sign', -75, 56),
+      _F('shop_awning', 45, 30), _F('shop_awning', 122, 30), _F('shop_awning', -75, 30),
+      _F('a_frame_sign', 45, 56), _F('a_frame_sign', 122, 56), _F('a_frame_sign', -75, 56),
       _F('vending', 75, 56), _F('newspaper_stand', 100, 56),
       _F('bicycle_rack', 68, 58), _F('bicycle_rack', 145, 56),
       _F('flower_planter_row', 45, 56),
@@ -1487,6 +1491,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'f', i: 2 },                // chouchin
           { kind: 'f', i: 3 },                // shop_awning
         ],
+              livingTrace: { kind: 'f', i: 11 },     // potted_plant (-100,28)
       },
       // AMBIENT: NE スーパー+薬局
       { id: 'ch4.NE.commerce', role: 'ambient', cell: 'NE',
@@ -1496,6 +1501,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 7 },                // greenhouse (78,72)
           { kind: 'b', i: 8 },                // mansion (165,60)
         ],
+              livingTrace: { kind: 'f', i: 26 },     // flower_planter_row (45,56)
       },
       // AMBIENT: SW ラーメン+住宅
       { id: 'ch4.SW.ramen', role: 'ambient', cell: 'SW',
@@ -1504,6 +1510,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 10 },               // house (-160,132)
           { kind: 'b', i: 11 },               // townhouse (-110,138)
         ],
+              livingTrace: { kind: 'f', i: 35 },     // bicycle (-22,158)
       },
     ],
     humans: [
@@ -1550,7 +1557,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('shed', -45, 178), _B('townhouse', 80, 175),
       // タイトパッキング補強 (公共施設前のサテライト商店・道場)
       _B('kimono_shop', -75, 60), _B('wagashi', 30, 60),
-      _B('sushi_ya', -160, 22), _B('shed', 30, 178), _B('kimono_shop', 175, 38),
+      _B('sushi_ya', -160, 22), _B('shed', 18, 178), _B('kimono_shop', 175, 38),
     ],
     furniture: [
       // ── 焦点: 中央広場 ──
@@ -1615,7 +1622,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
         companions: [
           { kind: 'f', i: 0 },                // plaza_tile_circle (0,145)
           { kind: 'f', i: 2 },                // fountain_large (32,150)
+          { kind: 'f', i: 3 },                // flower_bed (-40,145) 広場左
+          { kind: 'f', i: 4 },                // flower_bed (60,145) 広場右
         ],
+        livingTrace: { kind: 'f', i: 22 },    // garbage (130,168) 広場ゴミ
       },
       // AMBIENT: NW 公共施設 (post_office + bank)
       { id: 'ch5.NW.public', role: 'ambient', cell: 'NW',
@@ -1625,6 +1635,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 6 },                // shop (-100,60)
           { kind: 'b', i: 7 },                // shed (-160,78)
         ],
+              livingTrace: { kind: 'f', i: 24 },     // flower_planter_row (-130,56)
       },
       // AMBIENT: NE 公共施設 (city_hall + library)
       { id: 'ch5.NE.civic', role: 'ambient', cell: 'NE',
@@ -1633,6 +1644,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 3 },                // library (140,42)
           { kind: 'b', i: 8 },                // greenhouse (100,72)
         ],
+              livingTrace: { kind: 'f', i: 35 },     // flower_planter_row (65,56)
       },
     ],
     humans: [
@@ -1732,7 +1744,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       // ── avenue 地点小物 + 通学路の街路ミラー ──
       _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
-      _F('street_mirror', -110, 92), _F('street_mirror', 110, 92),
+      _F('street_mirror', -110, 92), _F('street_mirror', 107, 92),
       // ── _TOP_HR (Ch7 への通学路接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
       _F('street_lamp', -150, 195),
@@ -1758,6 +1770,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'f', i: 1 },                // swing_set
           { kind: 'f', i: 2 },                // slide
         ],
+              livingTrace: { kind: 'f', i: 5 },     // flower_planter_row (-100,56)
       },
       // AMBIENT: SE 商店列 (3店)
       { id: 'ch6.SE.shops', role: 'ambient', cell: 'SE',
@@ -1766,6 +1779,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 3 },                // shop (145,122)
           { kind: 'b', i: 4 },                // cafe (35,122)
         ],
+              livingTrace: { kind: 'f', i: 48 },     // bicycle_row (110,150)
       },
     ],
     humans: [
@@ -1805,8 +1819,8 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('ramen', -145, 38), _B('izakaya', -95, 38), _B('bookstore', -35, 38),
       _B('cafe', 35, 38), _B('shop', 95, 38), _B('game_center', 150, 38),
       // 上段 補助 (店舗の奥)
-      _B('shed', -125, 78), _B('shed', -25, 78), _B('shed', 55, 78), _B('shed', 165, 78),
-      _B('greenhouse', 110, 72), _B('shed', -75, 78), _B('shed', 25, 78),
+      _B('shed', -160, 78), _B('shed', -50, 78), _B('shed', 55, 78), _B('shed', 165, 78),
+      _B('greenhouse', 110, 72), _B('shed', -100, 78), _B('shed', 10, 78),
       // 下段 住宅街 (アーケード裏)
       _B('house', -140, 132),
       _B('townhouse', -100, 138), _B('house', -45, 138), _B('townhouse', 40, 138),
@@ -1845,7 +1859,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bicycle_rack', -22, 60), _F('bicycle', -22, 70), _F('bicycle', -45, 70),
       _F('flower_planter_row', -35, 60),
       // cafe
-      _F('shop_awning', 35, 30), _F('a_frame_sign', 35, 56),
+      _F('shop_awning', 32, 30), _F('a_frame_sign', 32, 56),
       _F('parasol', 22, 56), _F('parasol', 50, 56), _F('parasol', 35, 70),
       _F('bench', 35, 62), _F('flower_planter_row', 35, 60),
       _F('bench', 22, 70), _F('bench', 50, 70),
@@ -1885,10 +1899,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', -178, 50), _F('power_line', -175, 48),
       _F('power_pole', 178, 50), _F('power_line', 175, 48),
       // ── avenue 地点小物 + 街灯 + ガードレール ──
-      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
-      _F('bollard', -65, 92), _F('bollard', 65, 92), _F('bollard', -30, 108), _F('bollard', 30, 108),
-      _F('guardrail_short', -45, 92), _F('guardrail_short', 45, 92),
-      _F('guardrail_short', -45, 108), _F('guardrail_short', 45, 108),
+      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100), _F('manhole_cover', 27, 100),
+      _F('bollard', -65, 92), _F('bollard', 62, 92), _F('bollard', -30, 108), _F('bollard', 27, 108),
+      _F('guardrail_short', -45, 92), _F('guardrail_short', 42, 92),
+      _F('guardrail_short', -45, 108), _F('guardrail_short', 42, 108),
       _F('street_mirror', -75, 92),
       // ── 境界 ──
       _F('flower_bed', -130, 195),
@@ -1904,6 +1918,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 3 },                // cafe (35,38)
           { kind: 'b', i: 5 },                // game_center (150,38)
         ],
+              livingTrace: { kind: 'f', i: 37 },     // bicycle (-130,70)
       },
       // AMBIENT: SW 住宅+裏路地
       { id: 'ch7.SW.residential', role: 'ambient', cell: 'SW',
@@ -1912,6 +1927,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 14 },               // townhouse (-100,138)
           { kind: 'b', i: 15 },               // house (-45,138)
         ],
+              livingTrace: { kind: 'f', i: 108 },     // mailbox (-140,120)
       },
       // AMBIENT: SE 住宅+裏路地
       { id: 'ch7.SE.residential', role: 'ambient', cell: 'SE',
@@ -1920,6 +1936,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 16 },               // townhouse (40,138)
           { kind: 'b', i: 17 },               // house (110,138)
         ],
+              livingTrace: { kind: 'f', i: 111 },     // mailbox (40,122)
       },
     ],
     humans: [
@@ -1965,7 +1982,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _B('kura', 165, 178),
       // タイトパッキング補強 (駅前のバス停と小商店)
       _B('bus_terminal_shelter', -75, 60), _B('wagashi', 25, 178),
-      _B('shed', -25, 78), _B('shed', 65, 78), _B('shed', 130, 78),
+      _B('shed', -25, 78), _B('shed', 65, 78), _B('shed', 110, 78),
       _B('kura', 60, 170),
     ],
     furniture: [
@@ -2014,7 +2031,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', -178, 195), _F('power_line', -175, 192),
       _F('power_pole', 178, 195), _F('power_line', 175, 192),
       // ── avenue 地点小物 + 駅前ロータリー脇 (x=+90) の街路ミラー ──
-      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100), _F('manhole_cover', 30, 100),
+      _F('manhole_cover', 0, 100), _F('manhole_cover', -30, 100), _F('manhole_cover', 27, 100),
       _F('street_mirror', 95, 92), _F('street_mirror', 130, 100),
       _F('street_mirror', -100, 92),
       _F('bollard', -65, 92), _F('bollard', 65, 92),
@@ -2039,6 +2056,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'f', i: 3 },                // signal_tower
           { kind: 'b', i: 18 },               // bus_terminal_shelter (-75,60)
         ],
+              livingTrace: { kind: 'f', i: 5 },     // flower_planter_row (95,60)
       },
       // AMBIENT: NW 駅前商店
       { id: 'ch8.NW.station_shops', role: 'ambient', cell: 'NW',
@@ -2047,6 +2065,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 2 },                // cafe (-45,42)
           { kind: 'b', i: 3 },                // shop (-160,42)
         ],
+              livingTrace: { kind: 'f', i: 87 },     // potted_plant (-45,22)
       },
       // AMBIENT: SW 住宅+商店
       { id: 'ch8.SW.residential', role: 'ambient', cell: 'SW',
@@ -2055,6 +2074,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 9 },                // house (-160,138)
           { kind: 'b', i: 10 },               // shop (-40,138)
         ],
+              livingTrace: { kind: 'f', i: 38 },     // cat (-150,170)
       },
     ],
     humans: [
@@ -2179,6 +2199,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 5 },                // garage (-90,60)
           { kind: 'b', i: 7 },                // house (-160,70)
         ],
+              livingTrace: { kind: 'f', i: 33 },     // mailbox (-160,22)
       },
       // AMBIENT: SW 町家+蔵集落
       { id: 'ch9.SW.machiya', role: 'ambient', cell: 'SW',
@@ -2187,6 +2208,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 11 },               // kura (-160,138)
           { kind: 'b', i: 13 },               // kura (-45,138)
         ],
+              livingTrace: { kind: 'f', i: 40 },     // mailbox (-160,122)
       },
     ],
     humans: [
@@ -2269,14 +2291,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
       // ── avenue 地点小物 + 倉庫前の街路ミラー ──
       _F('manhole_cover', 0, 100), _F('manhole_cover', 60, 100),
-      _F('street_mirror', -100, 92), _F('street_mirror', 100, 92),
+      _F('street_mirror', -100, 92), _F('street_mirror', 97, 92),
       // ── _TOP_HR (Ch11 への接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
       _F('street_lamp', 150, 195),
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('guardrail_short', 135, 198),
-      _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
-      _F('bollard', -65, 195), _F('bollard', 65, 195),
+      _F('manhole_cover', -30, 198), _F('manhole_cover', 27, 198),
+      _F('bollard', -65, 195), _F('bollard', 62, 195),
       // ── x=+90 側の濡れ路面 (Ch11 踏切への前兆) ──
       _F('puddle_reflection', 130, 180), _F('puddle_reflection', 100, 198),
       _F('puddle_reflection', 165, 165),
@@ -2306,6 +2328,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 3 },                // police_station (135,42)
           { kind: 'b', i: 4 },                // warehouse (50,132)
         ],
+              livingTrace: { kind: 'f', i: 15 },     // cat (-150,170)
       },
       // AMBIENT: SW 街はずれの住宅
       { id: 'ch10.SW.outskirt', role: 'ambient', cell: 'SW',
@@ -2315,6 +2338,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 12 },               // kura (-75,170)
           { kind: 'b', i: 16 },               // kura (-120,170)
         ],
+              livingTrace: { kind: 'f', i: 15 },     // cat (-150,170)
       },
     ],
     humans: [
@@ -2355,7 +2379,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // 上段 補助
       _B('shed', -160, 78), _B('shed', -90, 78), _B('greenhouse', -25, 70),
       _B('shed', 110, 78), _B('mansion', 165, 60),
-      _B('shed', 35, 78),
+      _B('shed', 18, 78),
       // 下段 補助 (踏切前の古い蔵と町並み)
       _B('kura', -160, 170), _B('kura', -45, 170), _B('kura', 90, 170),
       _B('kura', 165, 170),
@@ -2367,13 +2391,13 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 焦点: 踏切 ──
       
       _F('railway_track', -45, 145), _F('railway_track', 45, 160),
-      _F('railroad_crossing', -55, 145), _F('railroad_crossing', 55, 145),
-      _F('signal_tower', -90, 150), _F('signal_tower', 90, 150),
-      _F('barrier', -35, 132), _F('barrier', 35, 132),
-      _F('barrier', -35, 168), _F('barrier', 35, 168),
-      _F('traffic_cone', -75, 138), _F('traffic_cone', 75, 138),
-      _F('traffic_cone', -75, 168), _F('traffic_cone', 75, 168),
-      _F('guardrail_short', -135, 165), _F('guardrail_short', 135, 165),
+      _F('railroad_crossing', -55, 145), _F('railroad_crossing', 52, 145),
+      _F('signal_tower', -90, 150), _F('signal_tower', 87, 150),
+      _F('barrier', -35, 132), _F('barrier', 32, 132),
+      _F('barrier', -35, 168), _F('barrier', 32, 168),
+      _F('traffic_cone', -75, 138), _F('traffic_cone', 72, 138),
+      _F('traffic_cone', -75, 168), _F('traffic_cone', 72, 168),
+      _F('guardrail_short', -135, 165), _F('guardrail_short', 132, 165),
       _F('puddle_reflection', -70, 178), _F('puddle_reflection', 80, 182),
       _F('puddle_reflection', 0, 178), _F('cable_junction_box', -120, 158),
       // ── ガソリンスタンド帰属 ──
@@ -2411,10 +2435,10 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('drum_can', 165, 60), _F('drum_can', -100, 70),
       _F('cable_junction_box', -45, 88),
       _F('drum_can', -75, 188), _F('pallet_stack', 130, 188),
-      _F('cat', -130, 60), _F('cat', 130, 60),
+      _F('cat', -130, 60), _F('cat', 127, 60),
       // ── avenue 地点小物 + 踏切前の街路ミラー ──
       _F('manhole_cover', 0, 100),
-      _F('street_mirror', -100, 130), _F('street_mirror', 100, 130),
+      _F('street_mirror', -100, 130), _F('street_mirror', 97, 130),
       // ── _TOP_HR (Stage 2 接続): 信号・街灯・ガードレール・地面素材の連続 ──
       _F('traffic_light', -90, 192), _F('traffic_light', 90, 192),
       _F('street_lamp', -150, 195), _F('street_lamp', 150, 195),
@@ -2440,6 +2464,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'f', i: 6 },                // signal_tower (-90,150)
           { kind: 'f', i: 7 },                // signal_tower (90,150)
         ],
+              livingTrace: { kind: 'f', i: 35 },     // garbage (-22,60)
       },
       // AMBIENT: NW ガソリンスタンド (gas_station 焦点)
       { id: 'ch11.NW.gas_station', role: 'ambient', cell: 'NW',
@@ -2448,6 +2473,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 1 },                // convenience (-45,42)
           { kind: 'b', i: 7 },                // shed (-160,78)
         ],
+              livingTrace: { kind: 'f', i: 35 },     // garbage (-22,60)
       },
       // AMBIENT: NE ramen + 周辺
       { id: 'ch11.NE.ramen', role: 'ambient', cell: 'NE',
@@ -2456,6 +2482,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 11 },               // mansion (165,60)
           { kind: 'b', i: 17 },               // bus_terminal_shelter (-75,60)
         ],
+              livingTrace: { kind: 'f', i: 45 },     // bicycle (50,60)
       },
     ],
     humans: [
