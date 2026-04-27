@@ -1135,39 +1135,20 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'street_mirror', 150, 92);
     $F(out, 'bollard', -65, 92); $F(out, 'bollard', 62, 92);  // §6 2-5px shift
 
-    // ── タイトパッキング: 中間 dy 帯 ──
-    // dy=50 帯
-    $F(out, 'hedge', -150, 50); $F(out, 'hedge', -110, 50); $F(out, 'hedge', 50, 50);
-    $F(out, 'hedge', 130, 50); $F(out, 'hedge', 165, 50);
-    $F(out, 'bush', -75, 50); $F(out, 'bush', 0, 50); $F(out, 'bush', 100, 50);
-    $F(out, 'flower_bed', -130, 60); $F(out, 'flower_bed', 30, 60); $F(out, 'flower_bed', 133, 60);
-    $F(out, 'potted_plant', -100, 8); $F(out, 'potted_plant', 80, 8); $F(out, 'potted_plant', -30, 25);
-    // dy=110-120 中間帯
-    $F(out, 'hedge', -150, 115); $F(out, 'hedge', -45, 115); $F(out, 'hedge', 30, 115);
-    $F(out, 'hedge', 165, 115);
-    $F(out, 'bush', -100, 118); $F(out, 'bush', 60, 118); $F(out, 'bush', 130, 118);
-    // dy=160-175 中間帯
-    $F(out, 'hedge', -75, 175); $F(out, 'bush', -130, 168);
-    $F(out, 'flower_bed', 25, 175); $F(out, 'flower_bed', 165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-    // 裏路地・店裏
-    $F(out, 'garbage', -160, 88); $F(out, 'garbage', 156, 88);
-    $F(out, 'garbage', -45, 188); $F(out, 'garbage', 48, 188);
-    $F(out, 'recycling_bin', -100, 88); $F(out, 'recycling_bin', 103, 88);
-    $F(out, 'dumpster', 0, 88); $F(out, 'dumpster', -130, 188);
-    $F(out, 'ac_outdoor_cluster', -75, 92); $F(out, 'ac_outdoor_cluster', 78, 92);
-    $F(out, 'cable_junction_box', -130, 88); $F(out, 'cable_junction_box', 133, 88);
-    $F(out, 'milk_crate_stack', 0, 188); $F(out, 'milk_crate_stack', -160, 188);
-    $F(out, 'cat', 60, 60); $F(out, 'cat', -130, 130); $F(out, 'cat', 165, 60);
-    $F(out, 'cat', 100, 165); $F(out, 'cat', -50, 188);
-    // 境界・他の生活痕跡
-    $F(out, 'hedge', -140, 95); $F(out, 'cat', -100, 132); $F(out, 'cat', -160, 168);
-    $F(out, 'flower_bed', -130, 195);
-    // ロット境界フェンス
-    $F(out, 'hedge', -75, 30); $F(out, 'hedge', -75, 55); $F(out, 'hedge', -75, 80);
-    $F(out, 'wood_fence', 110, 30); $F(out, 'wood_fence', 110, 55); $F(out, 'wood_fence', 110, 80);
-    $F(out, 'wood_fence', -120, 130); $F(out, 'wood_fence', -120, 152); $F(out, 'wood_fence', -120, 175);
-    $F(out, 'hedge', -75, 130); $F(out, 'hedge', -75, 152); $F(out, 'hedge', -75, 175);
+    // ── 焦点コントラスト維持版 (v6.4): タイトパッキングを撤去し、
+    //   各セルに「呼吸」の余地を作る。境界の意味的フェンスのみ残す。
+    // ロット境界フェンス (アンビエント NW/NE 間 + SW/SE 間の柔らかい境界)
+    $F(out, 'hedge', -75, 55); $F(out, 'hedge', -75, 80);    // NW/NE 間
+    $F(out, 'wood_fence', -120, 152); $F(out, 'wood_fence', -120, 175); // SW ロット
+    // 路地猫 1-2 匹のみ (5 匹は多すぎ)
+    $F(out, 'cat', 165, 60); $F(out, 'cat', -50, 188);
+    // 各アンビエントセルに最低 1 個の生活痕跡 (cluster.livingTrace と別に)
+    $F(out, 'garbage', -160, 88);                            // NW 店裏
+    $F(out, 'recycling_bin', 103, 88);                       // NE 住宅裏
+    $F(out, 'ac_outdoor_cluster', -75, 92);                  // 中央仕切り上
+    // 焦点 (SE 公園) 周辺の柔らかい境界 (visible park boundary)
+    $F(out, 'flower_bed', 165, 175);
+    $F(out, 'flower_planter_row', -100, 175);                // SW 住宅前花壇
 
     // ═══════════════════════════════════════════════════════════
     // CLUSTERS (§3.6 ヒーロー/アンビエント / §4 公園モデル 4 層)
@@ -1348,30 +1329,17 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_lamp', 0, 195),
       _F('guardrail_short', -55, 198), _F('guardrail_short', 55, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=50 帯 (公共施設前のタイル境界)
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -150, 50), _F('hedge', 165, 50),
-      _F('bush', -130, 60), _F('bush', 75, 60), _F('bush', 130, 60),
       _F('flower_bed', -75, 60), _F('flower_bed', 75, 60),
       _F('potted_plant', -150, 30), _F('potted_plant', 165, 30),
-      // dy=110-120 中間帯
-      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
       _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
       _F('bollard', -65, 92), _F('bollard', 65, 92),
-      // dy=160-175 中間帯
-      _F('hedge', -130, 165), _F('hedge', 130, 165), _F('hedge', -75, 165),
-      _F('bush', 0, 168), _F('bush', 100, 168),
-      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
       _F('flower_planter_row', -45, 175), _F('flower_planter_row', 45, 175),
-      // 裏路地家具
       _F('garbage', -150, 88), _F('garbage', 150, 88),
-      _F('garbage', -75, 188), _F('garbage', 75, 188),
       _F('recycling_bin', -130, 88), _F('recycling_bin', 130, 88),
-      _F('dumpster', 0, 88), _F('dumpster', -45, 188),
       _F('ac_outdoor_cluster', -100, 92), _F('ac_outdoor_cluster', 100, 92),
       _F('cable_junction_box', -130, 188), _F('cable_junction_box', 130, 188),
-      _F('milk_crate_stack', 0, 188), _F('milk_crate_stack', 25, 88),
       _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', 100, 165),
       // ── 境界・その他 ──
       _F('bench', 130, 150), _F('cat', 155, 145), _F('cat', -160, 168),
@@ -1739,30 +1707,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bollard', -65, 92), _F('bollard', 65, 92),
       _F('guardrail_short', 35, 108), _F('guardrail_short', -35, 108),
       _F('street_mirror', -75, 92), _F('street_mirror', 75, 92),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=50 帯
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 0, 50),
-      _F('hedge', 75, 50), _F('hedge', 165, 50),
-      _F('bush', -130, 60), _F('bush', -45, 60), _F('bush', 30, 60), _F('bush', 130, 60),
       _F('flower_bed', -100, 60), _F('flower_bed', 100, 60),
       _F('potted_plant', -75, 22), _F('potted_plant', 0, 22),
-      // dy=110-118 中間帯
-      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -110, 118), _F('bush', 0, 118), _F('bush', 110, 118),
-      // dy=160-175 中間帯
-      _F('hedge', -130, 165), _F('hedge', -75, 165), _F('hedge', 75, 165),
-      _F('hedge', 130, 165), _F('hedge', 0, 165),
-      _F('bush', -100, 168), _F('bush', 100, 168),
-      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
       _F('flower_planter_row', -45, 175),
-      // 裏路地家具
       _F('garbage', -150, 88), _F('garbage', 150, 88),
-      _F('garbage', -45, 188), _F('garbage', 45, 188),
       _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
-      _F('dumpster', 0, 88), _F('dumpster', -130, 188), _F('dumpster', 130, 188),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
       _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
-      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
       _F('cat', -130, 60), _F('cat', 60, 60), _F('cat', 100, 165),
       // ── 境界・植栽 ──
       _F('hedge', 60, 195), _F('hedge', -160, 192), _F('hedge', 145, 195),
@@ -1931,40 +1884,17 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('bollard', -65, 92), _F('bollard', 65, 92),
       _F('guardrail_short', -45, 108), _F('guardrail_short', 45, 108),
       _F('street_mirror', -75, 92), _F('street_mirror', 75, 92),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=18-30 帯 facade
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -150, 18), _F('hedge', -100, 18), _F('hedge', 30, 18),
-      _F('hedge', 110, 18), _F('hedge', 165, 18),
-      _F('bush', -130, 22), _F('bush', 0, 22), _F('bush', 130, 22),
       _F('potted_plant', -100, 30), _F('potted_plant', 30, 30),
-      // dy=60-72 帯 (公共施設前のタイル境界)
-      _F('hedge', -130, 70), _F('hedge', -75, 70), _F('hedge', 0, 70),
-      _F('hedge', 75, 70), _F('hedge', 130, 70),
-      _F('bush', -160, 70), _F('bush', 165, 70), _F('bush', -45, 70), _F('bush', 45, 70),
       _F('flower_bed', -100, 70), _F('flower_bed', 100, 70),
       _F('flower_planter_row', -150, 65), _F('flower_planter_row', 150, 65),
-      // dy=110-118 中間帯
-      _F('hedge', -150, 115), _F('hedge', 150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -100, 118), _F('bush', 100, 118), _F('bush', 0, 118),
-      // dy=160-168 中間帯 (広場外周)
-      _F('hedge', -130, 165), _F('hedge', 130, 165),
-      _F('hedge', -75, 175), _F('hedge', 75, 175),
-      _F('bush', -150, 168), _F('bush', 150, 168),
-      _F('flower_bed', -45, 175), _F('flower_bed', 45, 175),
-      _F('flower_planter_row', -100, 175), _F('flower_planter_row', 100, 175),
-      // 裏路地家具
       _F('garbage', -150, 88), _F('garbage', 150, 88),
-      _F('garbage', -75, 188), _F('garbage', 75, 188),
       _F('recycling_bin', -130, 88), _F('recycling_bin', 130, 88),
-      _F('dumpster', 0, 88), _F('dumpster', -45, 188), _F('dumpster', 45, 188),
       _F('ac_outdoor_cluster', -100, 92), _F('ac_outdoor_cluster', 100, 92),
       _F('cable_junction_box', -130, 188), _F('cable_junction_box', 130, 188),
-      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
       _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', 100, 178), _F('cat', -110, 168),
-      // 広場外周 enrichment
       _F('bench', -150, 168), _F('bench', 150, 168),
-      _F('flower_bed', -50, 130), _F('flower_bed', 50, 130),
-      _F('potted_plant', -50, 145), _F('potted_plant', 50, 145),
       // ── 境界 ──
       _F('hedge', -160, 195), _F('hedge', 165, 195),
       _F('hedge', -130, 110), _F('hedge', 130, 110),
@@ -2126,36 +2056,17 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('guardrail_short', -135, 198),
       _F('manhole_cover', -30, 198), _F('manhole_cover', 30, 198),
       _F('bollard', -65, 195), _F('bollard', 65, 195),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=18-30 (校門facade)
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -150, 18), _F('hedge', 165, 18),
-      _F('bush', -130, 22), _F('bush', 95, 22),
       _F('potted_plant', -70, 22), _F('potted_plant', 95, 22),
-      // dy=50 帯 (校庭手前)
-      _F('hedge', -150, 50), _F('hedge', -45, 50), _F('hedge', 50, 50),
-      _F('hedge', 130, 50), _F('hedge', 165, 50),
-      _F('bush', -110, 60), _F('bush', 0, 60), _F('bush', 130, 60),
       _F('flower_bed', -75, 60), _F('flower_bed', 60, 60), _F('flower_bed', 145, 60),
-      // dy=110-118 中間帯 (通学路境界)
-      _F('hedge', -45, 115), _F('hedge', 45, 115), _F('hedge', 145, 115),
-      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
       _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
-      // dy=160-175 中間帯
-      _F('hedge', -130, 165), _F('hedge', 0, 165), _F('hedge', 130, 165),
-      _F('bush', -75, 168), _F('bush', 60, 168), _F('bush', 165, 168),
-      _F('flower_bed', -150, 175), _F('flower_bed', 150, 175),
       _F('flower_planter_row', -45, 175), _F('flower_planter_row', 45, 175),
-      // 裏路地家具
       _F('garbage', -150, 88), _F('garbage', 150, 88),
-      _F('garbage', -45, 188), _F('garbage', 45, 188),
       _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
-      _F('dumpster', 0, 88),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
-      _F('ac_outdoor_cluster', 110, 92),
       _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
-      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
       _F('cat', -75, 60), _F('cat', 60, 60), _F('cat', -150, 168),
-      _F('cat', 150, 168),
       // ── 境界 ──
       _F('hedge', -150, 110), _F('hedge', 30, 110),
     ],
@@ -2524,36 +2435,16 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       _F('street_mirror', 95, 92), _F('street_mirror', 130, 100),
       _F('street_mirror', -100, 92),
       _F('bollard', -65, 92), _F('bollard', 65, 92),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=18-30 帯
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -150, 18), _F('hedge', -100, 18), _F('hedge', 165, 18),
-      _F('bush', -130, 22), _F('bush', 0, 22),
       _F('potted_plant', -45, 22), _F('potted_plant', 95, 22),
-      // dy=50-72 帯 (駅前ロータリー周辺)
-      _F('hedge', -150, 60), _F('hedge', -75, 60), _F('hedge', 0, 60),
-      _F('hedge', 35, 60),
-      _F('bush', -130, 70), _F('bush', -45, 70), _F('bush', 165, 70),
       _F('flower_bed', -100, 70), _F('flower_bed', 25, 70),
       _F('flower_planter_row', -130, 65), _F('flower_planter_row', 145, 70),
-      // dy=110-118 中間帯
-      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
-      // dy=160-175 中間帯
-      _F('hedge', -130, 165), _F('hedge', 0, 165), _F('hedge', 65, 175),
-      _F('hedge', 130, 165), _F('hedge', 165, 165),
-      _F('bush', -100, 168), _F('bush', 100, 168),
-      _F('flower_bed', -150, 175), _F('flower_bed', 25, 175),
-      _F('flower_planter_row', -45, 175),
-      // 裏路地家具
       _F('garbage', -150, 88), _F('garbage', 165, 88),
-      _F('garbage', -45, 188), _F('garbage', 45, 188),
       _F('recycling_bin', -110, 88), _F('recycling_bin', 110, 88),
-      _F('dumpster', 0, 88), _F('dumpster', -130, 188),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 65, 92),
       _F('cable_junction_box', -90, 88), _F('cable_junction_box', 130, 88),
-      _F('milk_crate_stack', 25, 88), _F('milk_crate_stack', 0, 188),
       _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', 60, 168),
-      _F('cat', -55, 188),
       // ── 境界 ──
       _F('flower_bed', 165, 188), _F('hedge', -170, 110), _F('hedge', 170, 110),
       _F('guardrail_short', 35, 92), _F('guardrail_short', 155, 92),
@@ -2721,34 +2612,15 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── x=+90 側の濡れ路面 (Ch11 踏切までの漸進) ──
       _F('puddle_reflection', 165, 100), _F('puddle_reflection', 130, 90),
       _F('puddle_reflection', 145, 195),
-      // ── タイトパッキング: 中間 dy 帯と農地 ──
-      // dy=18-30 帯 (街の終端 facade)
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -150, 18), _F('hedge', -100, 18), _F('hedge', 60, 18),
-      _F('hedge', 165, 18),
-      _F('bush', -75, 22), _F('bush', 95, 22),
-      // dy=50-70 (農道境界)
-      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 30, 50),
-      _F('hedge', 65, 50), _F('hedge', 130, 50),
-      _F('bush', -130, 60), _F('bush', 0, 60), _F('bush', 60, 60), _F('bush', 100, 60),
       _F('flower_bed', -45, 60), _F('flower_bed', 30, 70),
       _F('rock', 75, 70), _F('rock', 130, 75),
       _F('wood_fence', -25, 70), _F('wood_fence', 25, 70),
-      // dy=110-118 中間帯
-      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
-      // dy=160-175 (畑の縁)
-      _F('hedge', -100, 165), _F('hedge', 0, 165), _F('hedge', 130, 165),
-      _F('bush', -150, 168), _F('bush', 60, 168), _F('bush', 150, 168),
-      _F('flower_bed', 0, 175), _F('flower_bed', 95, 175),
-      _F('wood_fence', -75, 175), _F('wood_fence', 0, 195),
-      // 裏路地 / 農地ヤード
       _F('garbage', -150, 88), _F('garbage', 150, 88),
-      _F('garbage', -75, 188), _F('garbage', 0, 188),
       _F('recycling_bin', -100, 88),
-      _F('dumpster', 130, 88),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
       _F('cable_junction_box', -45, 88), _F('cable_junction_box', 45, 88),
-      _F('milk_crate_stack', 25, 88), _F('milk_crate_stack', -25, 88),
       _F('pallet_stack', 60, 88), _F('pallet_stack', -150, 168),
       _F('drum_can', 0, 88), _F('drum_can', -130, 88),
       _F('cat', -130, 60), _F('cat', 130, 60), _F('cat', -150, 168),
@@ -2900,33 +2772,17 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 電柱+電線 (下端、_TOP_HR の奥) ──
       _F('power_pole', -178, 198), _F('power_line', -175, 196),
       _F('power_pole', 178, 198), _F('power_line', 175, 196),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=18-30 帯
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -160, 18), _F('hedge', 165, 18),
-      _F('bush', -120, 22), _F('bush', -45, 22), _F('bush', 65, 22), _F('bush', 135, 22),
-      // dy=50-72 帯 (倉庫ヤード周辺)
-      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 30, 50), _F('hedge', 165, 50),
-      _F('bush', -120, 60), _F('bush', -45, 60), _F('bush', 65, 60), _F('bush', 110, 60),
       _F('flower_bed', -100, 60), _F('flower_bed', 0, 60), _F('flower_bed', 130, 60),
       _F('drum_can', -30, 62), _F('drum_can', 0, 70),
       _F('pallet_stack', 60, 70), _F('pallet_stack', -110, 70),
-      // dy=110-118 中間帯 (作業場・道路境界)
-      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
       _F('manhole_cover', -100, 108), _F('manhole_cover', 100, 108),
-      // dy=160-175 中間帯
-      _F('hedge', -130, 165), _F('hedge', 0, 165), _F('hedge', 130, 165),
-      _F('bush', -100, 168), _F('bush', 100, 168),
-      _F('flower_bed', -45, 175), _F('flower_bed', 45, 175),
       _F('flower_planter_row', -150, 175),
-      // 裏路地 / ヤード
       _F('garbage', -150, 88), _F('garbage', 165, 88),
-      _F('garbage', -45, 188), _F('garbage', 45, 188),
       _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
-      _F('dumpster', -130, 188), _F('dumpster', 130, 188),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
       _F('cable_junction_box', -130, 88), _F('cable_junction_box', 130, 88),
-      _F('milk_crate_stack', -25, 88), _F('milk_crate_stack', 25, 88),
       _F('drum_can', 0, 178), _F('drum_can', -75, 188),
       _F('pallet_stack', 75, 188), _F('pallet_stack', 165, 168),
       _F('cat', -130, 60), _F('cat', 130, 60),
@@ -3068,30 +2924,14 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
       // ── 連続軸: 電柱+電線 ──
       _F('power_pole', -178, 90), _F('power_line', -175, 88),
       _F('power_pole', 178, 90), _F('power_line', 175, 88),
-      // ── タイトパッキング: 中間 dy 帯と裏路地 ──
-      // dy=18-30 帯
+      // ── タイトパッキング (slim v6.4: 焦点コントラスト確保) ──
       _F('hedge', -160, 18), _F('hedge', -75, 18), _F('hedge', 100, 18),
-      _F('bush', -135, 22), _F('bush', -45, 22), _F('bush', 70, 22), _F('bush', 165, 22),
-      // dy=50-72 帯 (店前と倉庫脇)
-      _F('hedge', -150, 50), _F('hedge', -75, 50), _F('hedge', 30, 50), _F('hedge', 130, 50),
-      _F('bush', -130, 60), _F('bush', 0, 60), _F('bush', 100, 60), _F('bush', 165, 60),
       _F('flower_bed', -45, 60), _F('flower_bed', 70, 60),
       _F('drum_can', 165, 60), _F('drum_can', -100, 70),
-      // dy=110-118 中間帯
-      _F('hedge', -150, 115), _F('hedge', -45, 115), _F('hedge', 45, 115),
-      _F('bush', -100, 118), _F('bush', 0, 118), _F('bush', 100, 118),
-      // dy=160-175 中間帯 (踏切手前)
-      _F('hedge', -130, 165), _F('hedge', -75, 165), _F('hedge', 75, 165), _F('hedge', 130, 165),
-      _F('bush', -100, 168), _F('bush', 0, 168), _F('bush', 100, 168),
-      _F('flower_bed', -160, 175),
-      // 裏路地家具
       _F('garbage', -130, 88), _F('garbage', 130, 88),
-      _F('garbage', -45, 188), _F('garbage', 90, 188),
       _F('recycling_bin', -100, 88), _F('recycling_bin', 100, 88),
-      _F('dumpster', 0, 88), _F('dumpster', -160, 188),
       _F('ac_outdoor_cluster', -75, 92), _F('ac_outdoor_cluster', 75, 92),
       _F('cable_junction_box', -45, 88), _F('cable_junction_box', 45, 88),
-      _F('milk_crate_stack', 25, 88), _F('milk_crate_stack', -25, 88),
       _F('drum_can', -75, 188), _F('pallet_stack', 130, 188),
       _F('cat', -130, 60), _F('cat', 130, 60),
       // ── avenue 地点小物 + 踏切前の街路ミラー ──
@@ -3339,88 +3179,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'cat', 170, 175);                                              // 駅裏 cat
     $F(out, 'cat', -170, 175);                                             // SW 端 cat (酔客の足元)
 
-    // ── 追加密度: 中間 dy 帯 (Ch0 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: NE 駅前広場 (基本形 A オープンスペース)
@@ -3640,88 +3420,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'cat',                 -45, 195);   // 路地猫
     $F(out, 'flower_bed',         -150, 188);   // ロット端花壇
 
-    // ── 追加密度: 中間 dy 帯 (Ch1 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: SW 3 連飲食 (izakaya 中央を focal に)
@@ -3932,88 +3652,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'potted_plant',        100, 38);    // 上段鉢
     $F(out, 'potted_plant',          0, 38);    // 中央鉢
 
-    // ── 追加密度: 中間 dy 帯 (Ch2 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: merged アーケードゲート
@@ -4226,88 +3886,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',         -178, 130);   // 端花壇
     $F(out, 'flower_bed',          178, 130);   // 端花壇
 
-    // ── 追加密度: 中間 dy 帯 (Ch3 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -4515,88 +4115,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',          -65, 195);   // SW 路地端
     $F(out, 'flower_bed',           65, 195);   // SE 路地端
 
-    // ── 追加密度: 中間 dy 帯 (Ch4 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: merged 交差点
@@ -4814,88 +4354,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'hedge',              -178, 60);    // NW 端 hedge
     $F(out, 'hedge',               178, 60);    // NE 端 hedge
 
-    // ── 追加密度: 中間 dy 帯 (Ch5 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5097,88 +4577,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',          -75, 195);   // 中央花壇
     $F(out, 'flower_bed',           75, 195);   // 中央花壇
 
-    // ── 追加密度: 中間 dy 帯 (Ch6 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5387,88 +4807,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',         -150, 88);    // 西端花壇
     $F(out, 'flower_bed',          150, 88);    // 東端花壇
 
-    // ── 追加密度: 中間 dy 帯 (Ch7 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5667,88 +5027,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',         -100, 195);   // SW 中央
     $F(out, 'flower_bed',          165, 195);   // SE 端
 
-    // ── 追加密度: 中間 dy 帯 (Ch8 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5950,88 +5250,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',           50, 195);   // SE 路地端
     $F(out, 'fallen_leaves' as any, -100, 195); // 落ち葉 (神社予兆)
 
-    // ── 追加密度: 中間 dy 帯 (Ch9 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -6224,88 +5464,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'gravel' as any,       60, 178);    // 蔵集落玉砂利
     $F(out, 'flower_bed',           0, 88);     // 中央花壇
 
-    // ── 追加密度: 中間 dy 帯 (Ch10 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -6514,88 +5694,28 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'fallen_leaves' as any, -50, 195);  // 落ち葉 SW
     $F(out, 'fallen_leaves' as any,  50, 195);  // 落ち葉 SE
 
-    // ── 追加密度: 中間 dy 帯 (Ch11 雰囲気強化) ──
-    // dy=50 帯: 上段建物裏のエアコン・ロット境界
-    $F(out, 'ac_outdoor_cluster', -160, 50);
-    $F(out, 'ac_outdoor_cluster', -120, 50);
-    $F(out, 'ac_outdoor_cluster',  -75, 50);
-    $F(out, 'ac_outdoor_cluster',   30, 50);
-    $F(out, 'ac_outdoor_cluster',   75, 50);
-    $F(out, 'ac_outdoor_cluster',  130, 50);
-    $F(out, 'ac_outdoor_cluster',  165, 50);
-    $F(out, 'hedge',              -150, 50);
-    $F(out, 'hedge',              -110, 50);
-    $F(out, 'hedge',                50, 50);
-    $F(out, 'hedge',               130, 50);
-    $F(out, 'hedge',               165, 50);
-    $F(out, 'bush',                -75, 50);
-    $F(out, 'bush',                  0, 50);
-    $F(out, 'bush',                100, 50);
-    $F(out, 'flower_bed',         -130, 60);
-    $F(out, 'flower_bed',           30, 60);
-    $F(out, 'flower_bed',          133, 60);
-    $F(out, 'potted_plant',       -100, 8);
-    $F(out, 'potted_plant',         80, 8);
-    $F(out, 'potted_plant',        -30, 25);
-
-    // dy=110-120 中間帯: 下段ロット境界
-    $F(out, 'hedge',              -150, 115);
-    $F(out, 'hedge',               -45, 115);
-    $F(out, 'hedge',                30, 115);
-    $F(out, 'hedge',               165, 115);
-    $F(out, 'bush',               -100, 118);
-    $F(out, 'bush',                 60, 118);
-    $F(out, 'bush',                130, 118);
-
-    // dy=160-175 中間帯: 路地中段
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'bush',               -130, 168);
-    $F(out, 'flower_bed',           25, 175);
-    $F(out, 'flower_bed',          165, 175);
-    $F(out, 'flower_planter_row', -100, 175);
-
-    // 裏路地・店裏 (夜街シグネチャ高密度)
-    $F(out, 'garbage',            -160, 88);
-    $F(out, 'garbage',             156, 88);
-    $F(out, 'garbage',             -45, 188);
-    $F(out, 'garbage',              48, 188);
-    $F(out, 'recycling_bin',      -100, 88);
-    $F(out, 'recycling_bin',       103, 88);
-    $F(out, 'dumpster',              0, 88);
-    $F(out, 'dumpster',           -130, 188);
-    $F(out, 'dumpster',            130, 188);
-    $F(out, 'ac_outdoor_cluster',  -75, 92);
-    $F(out, 'ac_outdoor_cluster',   78, 92);
-    $F(out, 'cable_junction_box', -130, 88);
-    $F(out, 'cable_junction_box',  133, 88);
-    $F(out, 'milk_crate_stack',      0, 188);
-    $F(out, 'milk_crate_stack',   -160, 188);
-    $F(out, 'milk_crate_stack',    160, 188);
-
-    // 路地猫 (Stage 1 と同じく 5 匹散らす)
-    $F(out, 'cat',                  60, 60);
-    $F(out, 'cat',                -130, 130);
+    // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
+    // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
+    $F(out, 'chouchin',           -130, 12);    // 上空 chouchin NW
+    $F(out, 'chouchin',            -45, 12);    // 上空 chouchin 中央西
+    $F(out, 'chouchin',             45, 12);    // 上空 chouchin 中央東
+    $F(out, 'chouchin',            130, 12);    // 上空 chouchin NE
+    // facade ネオン (各セル代表)
+    $F(out, 'sign_board',         -150, 38);    // NW ネオン
+    $F(out, 'sign_board',          150, 38);    // NE ネオン
+    // 街灯 (歩道帯)
+    $F(out, 'street_lamp',        -160, 75);    // NW 街灯
+    $F(out, 'street_lamp',         160, 75);    // NE 街灯
+    // puddle_reflection (路面湿り気、夜街シグネチャ)
+    $F(out, 'puddle_reflection', -130, 165);
+    $F(out, 'puddle_reflection',  130, 165);
+    // 路地裏のゴミ (各セルに 1 個ずつ)
+    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
+    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
+    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
+    // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 100, 165);
     $F(out, 'cat',                 -50, 188);
-
-    // 境界・他の生活痕跡 + ロット境界フェンス
-    $F(out, 'hedge',              -140, 95);
-    $F(out, 'cat',                -100, 132);
-    $F(out, 'cat',                -160, 168);
-    $F(out, 'flower_bed',         -130, 195);
-    $F(out, 'wood_fence',          110, 30);
-    $F(out, 'wood_fence',          110, 55);
-    $F(out, 'wood_fence',          110, 80);
-    $F(out, 'wood_fence',         -120, 130);
-    $F(out, 'wood_fence',         -120, 152);
-    $F(out, 'wood_fence',         -120, 175);
-    $F(out, 'hedge',               -75, 130);
-    $F(out, 'hedge',               -75, 152);
-    $F(out, 'hedge',               -75, 175);
-    $F(out, 'hedge',               -75, 30);
-    $F(out, 'hedge',               -75, 55);
-    $F(out, 'hedge',               -75, 80);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
