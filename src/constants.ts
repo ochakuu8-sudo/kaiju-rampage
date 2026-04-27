@@ -259,11 +259,11 @@ export const STREET_Y_MAX = 250;
 export const HUMAN_Y_MIN = RIVERSIDE_STREET_Y - 8;  // -88
 export const HUMAN_Y_MAX = HILLTOP_STREET_Y   + 8;  // 248
 
-// 道路・歩道の色
-export const ROAD_COLOR:      readonly [number,number,number,number] = [0.40, 0.40, 0.42, 1];
-export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.60, 0.58, 0.52, 1];
-export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.85, 0.85, 0.45, 1];
-export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.38, 0.38, 0.35, 1];
+// 道路・歩道の色 (v8 ジオラマ調整: 黄色破線を薄く、ロードを暗く)
+export const ROAD_COLOR:      readonly [number,number,number,number] = [0.32, 0.30, 0.30, 1];   // 暗くしてジオラマっぽい砕石路に
+export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.50, 0.48, 0.42, 1];   // 少し暗く落ち着かせる
+export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.78, 0.74, 0.42, 0.55]; // 半透明で控えめ (元 alpha=1)
+export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.30, 0.28, 0.26, 1];
 
 // 道路ディテール
 export const CURB_COLOR:       readonly [number,number,number,number] = [0.22, 0.22, 0.24, 1];

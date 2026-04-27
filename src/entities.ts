@@ -840,8 +840,8 @@ export class BuildingManager {
         cb = b.baseColor[2] * dk;
       }
 
-      // 影（右下オフセット）
-      writeInst(buf, n++, cx + 3, cy - 3, bW, bH, 0, 0, 0, 0.18);
+      // 影（右下オフセット、v8 ジオラマ強化: 影を濃く + 大きく）
+      writeInst(buf, n++, cx + 5, cy - 5, bW + 1, bH + 1, 0, 0, 0, 0.32);
       // ファサード本体（GLSLが窓グリッドを担当）
       writeInst(buf, n++, cx, cy, bW, bH, cr, cg, cb, 1);
 
