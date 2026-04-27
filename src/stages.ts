@@ -3324,7 +3324,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('asphalt', 0, 100, 360, 200),                           // BASE
       _G('red_carpet', 0, 60, 360, 100),                         // ★★ 上段全幅 歓楽街
       _G('oil_stained_concrete', 0, 100, 60, 20),
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -3533,7 +3532,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('red_carpet', 0, 50, 360, 100),                         // ★★★ 上段全幅 red ピーク
       _G('oil_stained_concrete', 0, 100, 100, 24),               // ★ avenue ピーク
       _G('oil_stained_concrete', 0, 175, 360, 50),               // 下段路地全幅
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -3731,7 +3729,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('asphalt', 0, 100, 360, 200),                           // BASE
       _G('red_carpet', 0, 145, 360, 80),                         // ★★ 下段全幅 横丁
       _G('oil_stained_concrete', 0, 188, 320, 30),               // 路地裏
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -3923,7 +3920,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('asphalt', 0, 100, 360, 200),                           // BASE
       _G('red_carpet', 0, 60, 360, 100),                         // ★★★ 上段全幅 red (ラブホ + club)
       _G('oil_stained_concrete', -75, 175, 200, 50),             // SW 路地
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -4127,7 +4123,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('asphalt', 0, 100, 360, 200),                           // BASE
       _G('red_carpet', 0, 78, 360, 60),                          // ★★★ 屋台床 全幅 (祭り)
       _G('concrete', 0, 145, 360, 80),                           // ★ 下段全幅 屋台前 (concrete)
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -4324,7 +4319,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('tile', 90, 150, 180, 100),                             // ★★ SE 映画館前全面
       _G('concrete', -90, 150, 180, 100),                        // ★ SW 駐車 (cafe → concrete に変更、wood_deck 撤去)
       _G('red_carpet', 0, 60, 360, 50),                          // ★ 上段 red_carpet 残照 (Act III 後半)
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
@@ -4506,7 +4500,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       _G('oil_stained_concrete', 90, 80, 180, 130),              // ★★ NE 駐車場全面
       _G('stone_pavement', -90, 150, 180, 100),                  // ★★ SW 神社予兆全面
       _G('fallen_leaves', -130, 180, 100, 30),
-      _G('stone_pavement', -65, 100, 24, 200),
     ];
 
     return out;
