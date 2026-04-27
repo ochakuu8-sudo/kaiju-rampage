@@ -4319,10 +4319,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ GROUNDS ═══
     out.grounds = [
-      // ── v7.1 S2-Ch8 映画館: asphalt + tile SE 全面 + wood_deck cafe ──
+      // ── v7.2 S2-Ch8 映画館: asphalt + tile SE 全面 + concrete SW + red_carpet 残照 ──
       _G('asphalt', 0, 100, 360, 200),                           // BASE
       _G('tile', 90, 150, 180, 100),                             // ★★ SE 映画館前全面
-      _G('wood_deck', -90, 150, 180, 100),                       // ★ SW cafe 全面
+      _G('concrete', -90, 150, 180, 100),                        // ★ SW 駐車 (cafe → concrete に変更、wood_deck 撤去)
       _G('red_carpet', 0, 60, 360, 50),                          // ★ 上段 red_carpet 残照 (Act III 後半)
       _G('stone_pavement', -65, 100, 24, 200),
     ];
