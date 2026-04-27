@@ -2995,8 +2995,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const atmA      = $F(out, 'atm',         -150, 38);                    // ATM 西
     const atmB      = $F(out, 'atm',         -110, 38);                    // ATM 東 (ホテル 1F)
     const hotelMail = $F(out, 'mailbox',     -100, 22);                    // ★ NW livingTrace
-    $F(out, 'potted_plant',      -130, 38);                                // ホテル前の鉢
-    $F(out, 'potted_plant',      -160, 38);                                // 鉢 (ATM 横)
     $F(out, 'a_frame_sign',      -110, 60);                                // 立て看板 (チェックイン案内)
     $F(out, 'cable_junction_box',-178, 60);                                // NW 端の配電箱
 
@@ -3008,7 +3006,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const ramenSign  = $F(out, 'a_frame_sign', -130, 148);                 // 立て看板 (店間)
     const swBike     = $F(out, 'bicycle',    -75, 152);                    // ★ SW livingTrace (店壁傾き)
     $F(out, 'bicycle',           -120, 152);                               // 自転車 2 (店前)
-    $F(out, 'milk_crate_stack',  -160, 158);                               // ビールケース積み (居酒屋裏)
     $F(out, 'garbage',           -100, 178);                               // 飲食店裏のゴミ
 
     // ── SE アンビエント: コンビニ + カフェ + 本屋 ──
@@ -3043,7 +3040,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'power_line',            -90, 92);                             // 電線 NW-NE 上半
     $F(out, 'power_line',             90, 92);                             // 電線 NW-NE
     $F(out, 'cable_junction_box',  -170, 100);                             // 配電箱 西
-    $F(out, 'cable_junction_box',   170, 100);                             // 配電箱 東 (Stage 2 シグネチャ)
     // SE 裏の cat
     $F(out, 'cat', 170, 175);                                              // 駅裏 cat
     $F(out, 'cat', -170, 175);                                             // SW 端 cat (酔客の足元)
@@ -3065,11 +3061,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
     $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
     $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: NE 駅前広場 (基本形 A オープンスペース)
@@ -3114,16 +3107,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // 駅員 + 終電客
-      _H(80, 80),                                                          // 駅員 (改札)
-      _H(20, 85), _H(65, 85), _H(120, 85), _H(165, 85),                    // 終電客 (各 bench)
-      _H(80, 100),                                                         // 駅前 avenue 通行人
+      _H(80, 80),                                                          
+      _H(65, 85), _H(165, 85),                    
       // ホテル
-      _H(-130, 38), _H(-110, 38),                                          // ホテル前 + ATM 利用者
+      _H(-130, 38), 
       // 食事街 SW
-      _H(-160, 145), _H(-100, 145), _H(-100, 152),                         // 酔客 ramen/izakaya 客
+      _H(-160, 145), _H(-100, 152),                         
       // SE カフェ + コンビニ
-      _H(70, 145),                                                         // カフェ客
-      _H(130, 145), _H(150, 145),                                          // コンビニ客 × 2
+      _H(130, 145), 
       // avenue 通行人
       _H(0, 100),
     ];
@@ -3226,7 +3217,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const hotelSign = $F(out, 'sign_board',  -130, 22);                    // ★ NW 青ネオン
     $F(out, 'atm',                           -110, 38);                    // ATM
     const hotelMail = $F(out, 'mailbox',     -160, 22);                    // ★ NW livingTrace
-    $F(out, 'potted_plant',                  -130, 38);                    // ホテル前鉢
     $F(out, 'a_frame_sign',                  -160, 60);                    // カプセル看板
     $F(out, 'recycling_bin',                 -178, 60);                    // ホテル裏リサイクル
 
@@ -3243,8 +3233,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ── SE アンビエント: 町家 + 本屋 ──
     const seCat     = $F(out, 'cat',          170, 175);                   // ★ SE livingTrace 路地猫
     const seMail    = $F(out, 'mailbox',       30, 130);                   // SE 郵便受
-    $F(out, 'potted_plant',                    80, 138);                   // townhouse 前鉢
-    $F(out, 'potted_plant',                   140, 138);                   // townhouse 前鉢 2
     $F(out, 'a_frame_sign',                   140, 148);                   // 駐車場看板
     $F(out, 'laundry_balcony',                 80, 158);                   // 町家ベランダ物干し
 
@@ -3276,16 +3264,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'garbage',                       -130, 175);                   // SW 路地裏 garbage
 
     // ── タイトパッキング: 居酒屋裏の生活感 ──
-    $F(out, 'ac_outdoor_cluster', -160, 158);   // ramen 裏のエアコン群
-    $F(out, 'ac_outdoor_cluster', -100, 158);   // izakaya 裏
-    $F(out, 'dumpster',           -160, 168);   // 居酒屋裏のダンプスター
-    $F(out, 'dumpster',           -100, 168);   // izakaya 裏のダンプスター
     $F(out, 'recycling_bin',      -130, 168);   // 店間リサイクル
-    $F(out, 'milk_crate_stack',   -150, 158);   // ビールケース積み 1
-    $F(out, 'milk_crate_stack',    -85, 158);   // ビールケース積み 2 (店間)
     $F(out, 'garbage',             -55, 178);   // SW 端 garbage
-    $F(out, 'potted_plant',       -135, 138);   // ramen 前鉢
-    $F(out, 'potted_plant',        -25, 138);   // karaoke 前鉢
     $F(out, 'cat',                 -45, 195);   // 路地猫
     $F(out, 'flower_bed',         -150, 188);   // ロット端花壇
 
@@ -3305,12 +3285,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: SW 3 連飲食 (izakaya 中央を focal に)
@@ -3355,18 +3331,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // 飲み客 (各店 2 人)
-      _H(-145, 138), _H(-95, 138), _H(-35, 138),
-      _H(-145, 145), _H(-95, 145), _H(-35, 145),
+      _H(-145, 138), _H(-35, 138),
+      _H(-95, 145), 
       // 客引き SW 端
       _H(-178, 132),
       // サラリーマン avenue
-      _H(0, 100), _H(50, 100), _H(-30, 100),
+      _H(50, 100), 
       // 通行人
       _H(80, 100),
       // NE コンビニ + 麻雀
-      _H(110, 38), _H(175, 60),
+      _H(175, 60),
       // SE 路地
-      _H(140, 152),
     ];
 
     // ═══ GROUNDS ═══
@@ -3509,17 +3484,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'hedge',              -170, 88);    // 西端 hedge
     $F(out, 'hedge',               170, 88);    // 東端 hedge
     $F(out, 'hedge',              -150, 60);    // ロット境界 hedge 1
-    $F(out, 'hedge',               150, 60);    // ロット境界 hedge 2
     $F(out, 'garbage',            -178, 178);   // SW 端ゴミ
     $F(out, 'garbage',             178, 178);   // SE 端ゴミ
-    $F(out, 'garbage',              30, 178);   // 中央ゴミ
     $F(out, 'recycling_bin',      -100, 38);    // 上段リサイクル 1
-    $F(out, 'recycling_bin',       100, 38);    // 上段リサイクル 2
-    $F(out, 'ac_outdoor_cluster', -118, 50);    // 西柱裏
-    $F(out, 'ac_outdoor_cluster',  118, 50);    // 東柱裏
-    $F(out, 'potted_plant',       -100, 38);    // 上段鉢
-    $F(out, 'potted_plant',        100, 38);    // 上段鉢
-    $F(out, 'potted_plant',          0, 38);    // 中央鉢
 
     // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
     // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
@@ -3537,12 +3504,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: merged アーケードゲート
@@ -3587,17 +3549,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // 商店街客 × 多
-      _H(-120, 88), _H(-60, 95), _H(0, 95), _H(60, 95), _H(120, 88),
-      _H(-90, 88), _H(90, 88), _H(30, 88),
+      _H(-120, 88), _H(0, 95), _H(120, 88),
+      _H(90, 88), 
       _H(-30, 88),
       // 客引き
-      _H(-178, 132), _H(178, 132),
+      _H(178, 132),
       // SW pachinko 予告客
-      _H(-130, 138),
       // SE club 予告客
       _H(130, 138),
       // 通行人
-      _H(0, 100),
     ];
 
     // ═══ GROUNDS ═══
@@ -3717,7 +3677,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // 雑居ビル間裏路地 (x=-90 _VR 沿い)
     $F(out, 'cable_junction_box',         -90, 60);                        // 裏路地 配電箱
     $F(out, 'garbage',                    -90, 75);                        // 裏路地 garbage
-    $F(out, 'dumpster',                   -90, 88);                        // 裏路地 ダンプスター
 
     // ── 連続軸 ──
     $F(out, 'power_pole',                -178, 92);
@@ -3727,29 +3686,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'power_line',                 -90, 195);
     $F(out, 'power_line',                  90, 195);
     $F(out, 'cable_junction_box',        -170, 195);
-    $F(out, 'cable_junction_box',         170, 195);
     $F(out, 'cat',                       -170, 175);                       // SW 路地猫
     $F(out, 'cat',                        170, 175);                       // SE 路地猫
     $F(out, 'newspaper_stand',              0, 88);                        // 中央スタンド
 
     // ── タイトパッキング: 雑居ビル裏の生活感 ──
-    $F(out, 'ac_outdoor_cluster',  130, 50);    // karaoke 屋上下エアコン
-    $F(out, 'ac_outdoor_cluster',   80, 50);    // apartment_tall 裏
-    $F(out, 'ac_outdoor_cluster',  -130, 50);   // NW club 裏
-    $F(out, 'ac_outdoor_cluster',  -75, 50);    // capsule 裏
-    $F(out, 'dumpster',           -150, 178);   // SW 路地 ダンプ
-    $F(out, 'dumpster',            150, 178);   // SE 路地 ダンプ
-    $F(out, 'dumpster',            -90, 178);   // 雑居裏 ダンプ
     $F(out, 'garbage',            -178, 60);    // NW 端ゴミ
-    $F(out, 'garbage',             178, 60);    // NE 端ゴミ
-    $F(out, 'garbage',              30, 178);   // 中央ゴミ
     $F(out, 'recycling_bin',       -75, 60);    // capsule 前リサイクル
     $F(out, 'recycling_bin',        75, 60);    // ロット端
-    $F(out, 'milk_crate_stack',   -178, 168);   // SW 端
-    $F(out, 'milk_crate_stack',    178, 168);   // SE 端
-    $F(out, 'potted_plant',       -100, 158);   // SW ホテル前鉢
-    $F(out, 'potted_plant',         80, 158);   // SE mansion 前鉢
-    $F(out, 'potted_plant',        140, 158);   // SE mansion 2 前
     $F(out, 'hedge',                30, 60);    // ロット境界 hedge
     $F(out, 'hedge',               -45, 60);    // ロット境界 hedge
     $F(out, 'flower_bed',         -178, 130);   // 端花壇
@@ -3771,12 +3715,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -3817,14 +3756,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // 飲み客 NE × 5
-      _H(130, 38), _H(80, 38), _H(30, 38),
-      _H(110, 60), _H(50, 60),
+      _H(130, 38), _H(30, 38),
+      _H(50, 60),
       // ホスト/ホステス NW × 4
-      _H(-130, 38), _H(-130, 60), _H(-75, 38), _H(-75, 60),
+      _H(-130, 60), _H(-75, 60),
       // サラリーマン avenue × 3
-      _H(0, 100), _H(50, 100), _H(-30, 100),
+      _H(50, 100), 
       // SE mansion + cafe
-      _H(165, 145), _H(140, 145),
+      _H(165, 145), 
       // 通行人
       _H(-90, 75),
     ];
@@ -3963,24 +3902,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'cat',                          170, 178);                     // SE 路地猫
 
     // ── タイトパッキング: クライマックス交差点の混雑感 ──
-    $F(out, 'ac_outdoor_cluster', -100, 50);    // パチンコ屋上下
-    $F(out, 'ac_outdoor_cluster',  100, 50);    // ゲーセン屋上下
-    $F(out, 'ac_outdoor_cluster', -130, 158);   // SW ホテル裏
-    $F(out, 'ac_outdoor_cluster',  130, 158);   // SE 町家裏
-    $F(out, 'dumpster',           -150, 178);   // SW 路地 ダンプ
-    $F(out, 'dumpster',            150, 178);   // SE 路地 ダンプ
-    $F(out, 'dumpster',           -110, 178);   // 麻雀裏
     $F(out, 'garbage',             -45, 178);   // SW 居酒屋裏
     $F(out, 'garbage',              50, 178);   // SE ramen 裏
-    $F(out, 'garbage',            -160, 60);    // NW snack 裏
-    $F(out, 'recycling_bin',      -100, 195);   // SW ロット端
-    $F(out, 'recycling_bin',       100, 195);   // SE ロット端
-    $F(out, 'milk_crate_stack',   -178, 168);   // SW 端
-    $F(out, 'milk_crate_stack',    178, 168);   // SE 端
     $F(out, 'traffic_cone',       -150, 120);   // 交差点工事 1
     $F(out, 'traffic_cone',        150, 120);   // 交差点工事 2
-    $F(out, 'potted_plant',       -100, 60);    // ロット鉢
-    $F(out, 'potted_plant',        100, 60);    // ロット鉢
     $F(out, 'flower_bed',          -65, 195);   // SW 路地端
     $F(out, 'flower_bed',           65, 195);   // SE 路地端
 
@@ -4000,12 +3925,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     // ★ HERO: merged 交差点
@@ -4055,17 +3975,17 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS (★ ピーク密度 18 人) ═══
     out.humans = [
       // パチンコ客 × 4
-      _H(-100, 38), _H(-100, 50), _H(-90, 38), _H(-110, 50),
+      _H(-100, 38), _H(-90, 38), 
       // ゲーセン客 × 4
-      _H(100, 38), _H(100, 50), _H(90, 38), _H(110, 50),
+      _H(100, 38), _H(90, 38), 
       // 警察官
       _H(0, 145),
       // 客引き × 3
-      _H(-178, 88), _H(178, 88), _H(-160, 88),
+      _H(178, 88), 
       // 酔客 × 4
-      _H(-55, 38), _H(60, 38), _H(-45, 145), _H(60, 145),
+      _H(-55, 38), _H(-45, 145), 
       // サラリーマン × 2
-      _H(0, 100), _H(50, 100),
+      _H(0, 100), 
     ];
 
     // ═══ GROUNDS ═══
@@ -4204,22 +4124,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'newspaper_stand',              0, 88);
 
     // ── タイトパッキング: 横丁裏の埋め草 ──
-    $F(out, 'dumpster',           -160, 175);   // snack 裏
-    $F(out, 'dumpster',            -30, 175);   // izakaya 裏
-    $F(out, 'dumpster',            130, 175);   // sushi 裏
-    $F(out, 'milk_crate_stack',   -160, 168);   // ビールケース 1
-    $F(out, 'milk_crate_stack',   -100, 168);   // ビールケース 2
-    $F(out, 'milk_crate_stack',     60, 168);   // ビールケース 3
-    $F(out, 'garbage',             130, 168);   // sushi 裏
-    $F(out, 'garbage',             -30, 175);   // izakaya 路地
-    $F(out, 'garbage',             -75, 175);   // 中央路地
-    $F(out, 'ac_outdoor_cluster', -160, 158);   // snack 屋上下
-    $F(out, 'ac_outdoor_cluster',  130, 158);   // sushi 屋上下
     $F(out, 'recycling_bin',      -178, 38);    // NW 端 (bank 裏)
     $F(out, 'recycling_bin',       178, 38);    // NE 端 (capsule 裏)
-    $F(out, 'potted_plant',       -130, 38);    // bank 前鉢
-    $F(out, 'potted_plant',        130, 38);    // capsule 前鉢
-    $F(out, 'potted_plant',         70, 138);   // 横丁鉢
     $F(out, 'hedge',              -178, 60);    // NW 端 hedge
     $F(out, 'hedge',               178, 60);    // NE 端 hedge
 
@@ -4239,9 +4145,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
     $F(out, 'cat',                 -50, 188);
@@ -4285,17 +4188,16 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS (横丁狭い空間 = 密) ═══
     out.humans = [
       // 飲み客 × 8 (5 店分散)
-      _H(-160, 138), _H(-100, 138), _H(-30, 138),
-      _H(60, 138), _H(130, 138),
-      _H(-100, 145), _H(-30, 145), _H(60, 145),
+      _H(-160, 138), _H(-30, 138),
+      _H(130, 138),
+      _H(-30, 145), 
       // ママさん snack 前
       _H(-160, 132),
       // サラリーマン avenue
-      _H(0, 100), _H(50, 100),
+      _H(50, 100),
       // 横丁路地通行人
-      _H(-90, 168), _H(90, 168),
+      _H(90, 168),
       // 銀行 ATM 客
-      _H(-150, 38),
     ];
 
     // ═══ GROUNDS ═══
@@ -4423,28 +4325,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ── タイトパッキング: ラブホ街の匿名性 + 隠蔽 ──
     $F(out, 'hedge',              -178, 130);   // SW 隠蔽 hedge 1
-    $F(out, 'hedge',               -10, 90);    // 中央 hedge
-    $F(out, 'hedge',                10, 130);   // SW 中央 hedge
-    $F(out, 'hedge',                10, 168);   // SW 中央 hedge 2
-    $F(out, 'hedge',              -178, 168);   // SW 端 hedge
     $F(out, 'recycling_bin',      -110, 60);    // ラブホ裏 1 (匿名)
     $F(out, 'recycling_bin',       -50, 60);    // ラブホ裏 2
-    $F(out, 'recycling_bin',      -160, 88);    // ラブホ小裏
-    $F(out, 'ac_outdoor_cluster', -110, 50);    // ラブホ屋上下 1
-    $F(out, 'ac_outdoor_cluster',  -50, 50);    // ラブホ屋上下 2
-    $F(out, 'ac_outdoor_cluster',  130, 50);    // NE club 屋上下
-    $F(out, 'potted_plant',       -130, 38);    // ラブホ前鉢
-    $F(out, 'potted_plant',        -75, 88);    // 入口鉢
-    $F(out, 'potted_plant',        130, 38);    // NE club 前鉢
-    $F(out, 'potted_plant',         30, 168);   // SE cafe 鉢
     $F(out, 'garbage',            -130, 195);   // SW snack 裏
     $F(out, 'garbage',             100, 195);   // SE ロット裏
-    $F(out, 'dumpster',           -160, 195);   // SW 端
-    $F(out, 'dumpster',            160, 195);   // SE 端
-    $F(out, 'cat',                  60, 175);   // 路地猫
-    $F(out, 'cat',                 -90, 175);   // 路地猫
     $F(out, 'flower_bed',          -75, 195);   // 中央花壇
-    $F(out, 'flower_bed',           75, 195);   // 中央花壇
 
     // ── 夜街シグネチャ補強 (slim v6.4: 焦点コントラスト確保) ──
     // 上空 chouchin 帯 (avenue 全幅、夜街の主光源)
@@ -4462,12 +4347,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -4508,17 +4388,16 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // カップル NW × 2 (ラブホ前)
-      _H(-110, 38), _H(-50, 38),
+      _H(-110, 38), 
       // ホステス NE × 2
-      _H(130, 38), _H(70, 38),
+      _H(130, 38), 
       // 酔客 SW snack × 3
-      _H(-130, 138), _H(-130, 145), _H(-75, 138),
+      _H(-130, 138), _H(-75, 138),
       // SE cafe + mansion
-      _H(30, 145), _H(165, 145),
+      _H(165, 145),
       // 通行人
-      _H(0, 100), _H(50, 100),
+      _H(50, 100),
       // 路地通行人
-      _H(-30, 175),
     ];
 
     // ═══ GROUNDS ═══
@@ -4660,19 +4539,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ── タイトパッキング: 屋台周辺の祭り感 ──
     $F(out, 'garbage',            -110, 90);    // 屋台 1 ゴミ
     $F(out, 'garbage',             -55, 90);    // 屋台 2 ゴミ
-    $F(out, 'garbage',              55, 90);    // 屋台 4 ゴミ
-    $F(out, 'garbage',             108, 90);    // 屋台 5 ゴミ
-    $F(out, 'dumpster',           -100, 178);   // SW chaya 裏
-    $F(out, 'dumpster',            100, 178);   // SE ramen 裏
     $F(out, 'recycling_bin',      -160, 168);   // izakaya 裏
     $F(out, 'recycling_bin',       160, 168);   // sushi 裏
-    $F(out, 'ac_outdoor_cluster', -100, 158);   // chaya 裏
-    $F(out, 'ac_outdoor_cluster',  100, 158);   // ramen 裏
-    $F(out, 'milk_crate_stack',   -160, 158);   // izakaya ケース
-    $F(out, 'milk_crate_stack',    160, 158);   // sushi ケース
-    $F(out, 'potted_plant',       -100, 138);   // chaya 前鉢
-    $F(out, 'potted_plant',        100, 138);   // ramen 前鉢
-    $F(out, 'potted_plant',          0, 90);    // 屋台中央鉢
     $F(out, 'flower_bed',         -150, 88);    // 西端花壇
     $F(out, 'flower_bed',          150, 88);    // 東端花壇
 
@@ -4692,9 +4560,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
     $F(out, 'cat',                 -50, 188);
@@ -4738,15 +4603,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // 屋台客 各 1
-      _H(-110, 88), _H(-55, 88), _H(0, 88), _H(55, 88), _H(108, 88),
+      _H(-110, 88), _H(0, 88), _H(108, 88),
       // 屋台店主
-      _H(-110, 75), _H(-55, 75), _H(0, 75), _H(55, 75), _H(108, 75),
+      _H(-55, 75), _H(55, 75), 
       // 酔客 SW/SE
-      _H(-100, 145), _H(100, 145),
+      _H(-100, 145), 
       // 通行人
       _H(0, 100),
       // SE ramen
-      _H(130, 145),
     ];
 
     // ═══ GROUNDS ═══
@@ -4851,7 +4715,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const swMail = $F(out, 'mailbox',     -100, 130);                      // ★ SW livingTrace
     $F(out, 'chouchin',                   -130, 168);                      // 麻雀提灯
     $F(out, 'mailbox',                     -45, 130);                      // mansion 2 郵便受
-    $F(out, 'potted_plant',                -75, 138);                      // mansion 鉢
 
     // ── 取り巻き 3 パターン ──
     $F(out, 'puddle_reflection',           -50, 105);
@@ -4879,20 +4742,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'hedge',               110, 195);   // SE 映画館裏 hedge 1
     $F(out, 'hedge',               170, 195);   // SE 映画館裏 hedge 2
     $F(out, 'hedge',                30, 195);   // SE 中央 hedge
-    $F(out, 'ac_outdoor_cluster',  130, 168);   // 映画館屋上下
-    $F(out, 'ac_outdoor_cluster',  -130, 50);   // NW karaoke 裏
-    $F(out, 'ac_outdoor_cluster',   75, 50);    // NE 雑居裏
-    $F(out, 'ac_outdoor_cluster',  130, 50);    // NE pachinko 裏
     $F(out, 'recycling_bin',       -75, 60);    // NW club 裏
     $F(out, 'recycling_bin',       -25, 60);    // NW snack 裏
     $F(out, 'garbage',            -160, 175);   // SW 端
     $F(out, 'garbage',             -45, 175);   // SW mansion 裏
-    $F(out, 'garbage',             100, 195);   // 中央ゴミ
-    $F(out, 'dumpster',           -130, 195);   // SW 端
-    $F(out, 'dumpster',            165, 175);   // SE 端
-    $F(out, 'potted_plant',       -130, 38);    // NW karaoke 前
-    $F(out, 'potted_plant',        130, 38);    // NE pachinko 前
-    $F(out, 'potted_plant',         60, 158);   // SE cafe 前
     $F(out, 'flower_bed',         -100, 195);   // SW 中央
     $F(out, 'flower_bed',          165, 195);   // SE 端
 
@@ -4912,12 +4765,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
-    $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
     $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -4958,15 +4807,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // ═══ HUMANS ═══
     out.humans = [
       // 映画客 SE × 5
-      _H(130, 145), _H(130, 152), _H(90, 152), _H(165, 152), _H(60, 145),
+      _H(130, 145), _H(90, 152), _H(60, 145),
       // ホスト NW × 3
-      _H(-130, 38), _H(-75, 38), _H(-25, 38),
+      _H(-75, 38), 
       // パチンコ客 NE × 3
-      _H(130, 38), _H(70, 38), _H(165, 38),
+      _H(130, 38), _H(165, 38),
       // SW mansion
-      _H(-100, 138), _H(-45, 138),
+      _H(-45, 138),
       // 通行人
-      _H(0, 100), _H(50, 100),
+      _H(50, 100),
     ];
 
     // ═══ GROUNDS ═══
@@ -5058,21 +4907,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'mailbox',                  -45, 22);
     const nwMail = $F(out, 'mailbox',     0, 22);                          // ★ NW livingTrace (4 個不揃い)
     $F(out, 'sign_board',                 -45, 8);                         // snack 閉店間際
-    $F(out, 'potted_plant',             -130, 38);                         // 住宅前鉢
-    $F(out, 'potted_plant',              -90, 38);
 
     // ── SW アンビエント ──
     $F(out, 'wood_fence',              -150, 168);
     $F(out, 'wood_fence',              -120, 168);
-    $F(out, 'wood_fence',               -50, 168);
     const swGarb = $F(out, 'garbage',  -100, 175);                         // ★ SW livingTrace
     $F(out, 'cat',                     -170, 145);                         // SW 蔵裏猫
-    $F(out, 'mailbox',                 -100, 130);                         // 蔵郵便受
 
     // ── SE アンビエント (cat × 4 静寂の主役) ──
     $F(out, 'cat',                      170, 165);                         // SE cat 1
-    $F(out, 'cat',                      130, 195);                         // SE cat 2
-    $F(out, 'cat',                       90, 165);                         // SE cat 3
     const seCat = $F(out, 'cat',         50, 175);                         // ★ SE livingTrace cat 4
 
     // ── 取り巻き 3 パターン ──
@@ -5094,27 +4937,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'power_line',                90, 195);
     $F(out, 'cable_junction_box',      -170, 195);
     $F(out, 'cable_junction_box',       170, 195);
-    $F(out, 'cat',                     -170, 175);                         // SW 端 cat (5 匹目!)
     $F(out, 'newspaper_stand',          165, 75);
 
     // ── タイトパッキング: 静寂への移行・古い住宅街 ──
-    $F(out, 'ac_outdoor_cluster', -130, 50);    // 古い住宅エアコン 1
-    $F(out, 'ac_outdoor_cluster',  -90, 50);    // 古い住宅エアコン 2
-    $F(out, 'potted_plant',       -160, 38);    // 住宅前鉢 1
-    $F(out, 'potted_plant',       -120, 60);    // 住宅前鉢 2
-    $F(out, 'potted_plant',        -75, 38);    // 住宅前鉢 3
-    $F(out, 'potted_plant',         -5, 38);    // 住宅前鉢 4
-    $F(out, 'wood_fence',          -75, 38);    // ロット境界
-    $F(out, 'wood_fence',          -75, 60);    // ロット境界
-    $F(out, 'wood_fence',          -75, 88);    // ロット境界
-    $F(out, 'wood_fence',         -120, 195);   // SW 蔵区画
     $F(out, 'hedge',                -5, 130);   // 中央 hedge
-    $F(out, 'hedge',                -5, 168);   // 中央 hedge 2
-    $F(out, 'hedge',               178, 168);   // 神社予兆 hedge
     $F(out, 'garbage',             -75, 178);   // SW machiya 裏
     $F(out, 'garbage',             170, 195);   // SE 端
     $F(out, 'recycling_bin',      -130, 60);    // 古い住宅裏
-    $F(out, 'dumpster',           -178, 88);    // NW 端
     $F(out, 'flower_bed',          -50, 195);   // SW 路地端
     $F(out, 'flower_bed',           50, 195);   // SE 路地端
     $F(out, 'fallen_leaves' as any, -100, 195); // 落ち葉 (神社予兆)
@@ -5135,12 +4964,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'puddle_reflection', -130, 165);
     $F(out, 'puddle_reflection',  130, 165);
     // 路地裏のゴミ (各セルに 1 個ずつ)
-    $F(out, 'garbage',           -160, 88);     // SW 端ゴミ
-    $F(out, 'garbage',            156, 88);     // SE 端ゴミ
     $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5180,14 +5005,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ HUMANS (静寂、控えめ) ═══
     out.humans = [
-      _H(0, 100),                                                          // 深夜散歩客
-      _H(-130, 38),                                                        // 古い住宅前
-      _H(-90, 38),                                                         // 古い住宅前 2
-      _H(30, 38),                                                          // gas station
-      _H(90, 60),                                                          // パーキング訪問
-      _H(50, 100),
+      _H(0, 100),                                                          
+      _H(-90, 38),                                                         
+      _H(90, 60),                                                          
       _H(-45, 38),
-      _H(-75, 145),
     ];
 
     // ═══ GROUNDS ═══
@@ -5265,13 +5086,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'noren',                   -25, 28);                           // 和菓子暖簾
     const nwMail = $F(out, 'mailbox', -100, 22);                           // ★ NW livingTrace
     $F(out, 'mailbox',                -130, 22);                           // 古民家郵便受
-    $F(out, 'potted_plant',           -100, 38);                           // 茶屋鉢
 
     // ── NE アンビエント ──
     $F(out, 'bonsai',                   80, 38);                           // ★ 町家 bonsai
     const neCat = $F(out, 'cat',       170, 38);                           // ★ NE livingTrace
     $F(out, 'mailbox',                 -25, 22);                           // 町家郵便受
-    $F(out, 'potted_plant',             80, 60);                           // 町家鉢
 
     // ── SE アンビエント ──
     const seGarb = $F(out, 'garbage',  100, 175);                          // ★ SE livingTrace
@@ -5300,7 +5119,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'cat',                    -170, 175);                          // SW 端 cat
     $F(out, 'cat',                    -150, 195);                          // SW 路地 cat
     $F(out, 'newspaper_stand',           0, 88);
-    $F(out, 'potted_plant',            -75, 60);                           // 古民家庭
 
     // ── タイトパッキング: 神社の裏・蔵集落 ──
     $F(out, 'stone_lantern',     -130, 175);    // 蔵集落石灯籠 1
@@ -5312,22 +5130,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'bamboo_cluster',     -50, 145);    // 神社竹林 2
     $F(out, 'bamboo_cluster',       0, 195);    // 神社竹林 3
     $F(out, 'hedge',             -130, 88);     // 蔵集落境界 1
-    $F(out, 'hedge',              -70, 88);     // 蔵集落境界 2
-    $F(out, 'hedge',             -100, 195);    // 蔵集落南境界
-    $F(out, 'hedge',              130, 88);     // NE 町家境界
     $F(out, 'wood_fence',          60, 195);    // SE 蔵区画 1
     $F(out, 'wood_fence',         130, 195);    // SE 蔵区画 2
-    $F(out, 'wood_fence',         -30, 178);    // 中央仕切り
-    $F(out, 'potted_plant',     -130, 38);      // 古民家鉢
-    $F(out, 'potted_plant',      -75, 60);      // 茶屋鉢
-    $F(out, 'potted_plant',        80, 88);     // NE 庭鉢
-    $F(out, 'potted_plant',       130, 60);     // NE 町家鉢
-    $F(out, 'potted_plant',        60, 158);    // SE 蔵鉢
-    $F(out, 'mailbox',           -178, 130);    // SW 端郵便受
-    $F(out, 'mailbox',            178, 138);    // SE 端郵便受
-    $F(out, 'mailbox',             80, 22);     // NE 町家郵便受
-    $F(out, 'cat',               -150, 145);    // 蔵裏 cat
-    $F(out, 'cat',                100, 195);    // SE 蔵集落 cat
     $F(out, 'fallen_leaves' as any, -50, 178);  // 落ち葉
     $F(out, 'fallen_leaves' as any, 100, 195);  // 落ち葉 SE
     $F(out, 'gravel' as any,       60, 178);    // 蔵集落玉砂利
@@ -5353,8 +5157,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'garbage',            156, 88);     // SE 端ゴミ
     $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5394,14 +5196,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ HUMANS ═══
     out.humans = [
-      _H(0, 100),                                                          // 早朝散歩
-      _H(-100, 145),                                                       // 神社境内
-      _H(-75, 158),                                                        // 手水
-      _H(-130, 38),                                                        // 茶屋客
-      _H(-75, 38),                                                         // 茶屋客
-      _H(30, 38),                                                          // 町家
-      _H(100, 145),                                                        // 蔵集落
-      _H(50, 100),                                                         // 通行人
+      _H(0, 100),                                                          
+      _H(-75, 158),                                                        
+      _H(-75, 38),                                                         
+      _H(100, 145),                                                        
     ];
 
     // ═══ GROUNDS ═══
@@ -5495,7 +5293,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'noren',                    -45, 28);                          // 和菓子暖簾
     const nwBike = $F(out, 'bicycle',   -75, 60);                          // ★ NW livingTrace
     $F(out, 'mailbox',                 -100, 22);
-    $F(out, 'potted_plant',             -75, 88);                          // 古民家鉢
 
     // ── SW アンビエント ──
     $F(out, 'wood_fence',              -150, 175);
@@ -5533,7 +5330,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'power_line',                90, 195);
     $F(out, 'cable_junction_box',      -170, 195);
     $F(out, 'cable_junction_box',       170, 195);
-    $F(out, 'cat',                     -170, 175);
 
     // ── タイトパッキング: 表参道周辺の和風 ──
     $F(out, 'stone_lantern',      40, 145);     // 参道石灯籠 西 (下段)
@@ -5547,19 +5343,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'hedge',            -130, 168);     // 蔵集落境界
     $F(out, 'hedge',             130, 168);     // SE 古民家境界
     $F(out, 'hedge',             -50, 195);     // 中央南境界
-    $F(out, 'hedge',              80, 145);     // 参道南端 (NE 焦点境界)
     $F(out, 'wood_fence',         -75, 178);    // 蔵区画
-    $F(out, 'wood_fence',          75, 178);    // SE 蔵区画
-    $F(out, 'wood_fence',           0, 178);    // 中央仕切り
-    $F(out, 'potted_plant',     -130, 38);      // 茶屋前鉢
-    $F(out, 'potted_plant',      -25, 38);      // 和菓子前鉢
-    $F(out, 'potted_plant',     -100, 60);      // 古民家鉢
-    $F(out, 'potted_plant',      130, 158);     // SE 古民家鉢
     $F(out, 'mailbox',          -178, 22);      // NW 端郵便受
-    $F(out, 'mailbox',          -100, 130);     // SW 蔵郵便受
-    $F(out, 'mailbox',          -130, 130);     // SW 蔵郵便受 2
-    $F(out, 'cat',               -50, 195);     // 蔵裏 cat
-    $F(out, 'cat',                30, 195);     // 中央 cat
     $F(out, 'fallen_leaves' as any, -50, 195);  // 落ち葉 SW
     $F(out, 'fallen_leaves' as any,  50, 195);  // 落ち葉 SE
 
@@ -5583,8 +5368,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'garbage',            156, 88);     // SE 端ゴミ
     $F(out, 'recycling_bin',      -75, 92);     // 中央リサイクル
     // 路地猫 (Stage 2 では cat × 2 程度に絞る、緑ノイズ削減)
-    $F(out, 'cat',                 165, 60);
-    $F(out, 'cat',                 -50, 188);
 
     // ═══ CLUSTERS ═══
     _CLUSTER(out, {
@@ -5624,14 +5407,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ HUMANS ═══
     out.humans = [
-      _H(80, 100),                                                         // 早朝参拝者 NE
-      _H(60, 95),                                                          // 早朝参拝者 NE 2
-      _H(-100, 38),                                                        // 茶屋客
-      _H(-45, 38),                                                         // 和菓子客
-      _H(60, 145),                                                         // SE 茶屋
-      _H(-75, 145),                                                        // 蔵集落散歩
-      _H(0, 100),                                                          // 通行人
-      _H(50, 100),
+      _H(80, 100),                                                         
+      _H(-100, 38),                                                        
+      _H(60, 145),                                                         
+      _H(0, 100),                                                          
     ];
 
     // ═══ GROUNDS ═══
