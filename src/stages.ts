@@ -3147,30 +3147,30 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     };
 
     // ═══ BUILDINGS ═══
-    // NE 焦点: 高層 3 棟
-    const karao   = $B(out, 'karaoke',         130, 22);                   // ★ HERO FOCAL (屋上ネオン大)
-    const aparT   = $B(out, 'apartment_tall',   80, 22);                   // 高層集合住宅 (中央)
-    const clubNE  = $B(out, 'club',             30, 22);                   // 高層 club (avenue 寄り)
-    // NW アンビエント: club + capsule
-    const clubNW  = $B(out, 'club',           -130, 22);                   // ★ NW club
-    const capNW   = $B(out, 'capsule_hotel',   -75, 22);                   // カプセル (隣)
-    // SW アンビエント: ホテル + 町家 + 麻雀
-    const hotelSW = $B(out, 'business_hotel', -100, 130);                  // ★ SW ビジネスホテル
-    $B(out, 'townhouse',                      -160, 138);                  // 町家
-    $B(out, 'mahjong_parlor',                  -50, 138);                  // 麻雀荘
-    // SE アンビエント: mansion × 2 + 薬局 + cafe
-    const mansSE  = $B(out, 'mansion',          80, 130);                  // ★ SE mansion 1
-    $B(out, 'mansion',                         140, 130);                  // mansion 2
-    $B(out, 'pharmacy',                         30, 138);                  // 24h 薬局
-    $B(out, 'cafe',                            165, 138);                  // 隅 cafe
+    // NE 焦点: 高層 3 棟 (v8.2 ジオラマ: 垂直千鳥 dy=8/22/40 で 3 段奥行き)
+    const karao   = $B(out, 'karaoke',         142, 8);                    // ★ HERO FOCAL (屋上ネオン、奥)
+    const aparT   = $B(out, 'apartment_tall',   88, 22);                   // 高層集合住宅 (中央)
+    const clubNE  = $B(out, 'club',             38, 40);                   // 高層 club (avenue 寄り、手前)
+    // NW アンビエント: club + capsule (v8.2: facade 千鳥で混雑緩和)
+    const clubNW  = $B(out, 'club',           -135, 18);                   // ★ NW club (奥)
+    const capNW   = $B(out, 'capsule_hotel',   -78, 28);                   // カプセル (手前気味)
+    // SW アンビエント: ホテル + 町家 + 麻雀 (v8.2: dy 千鳥)
+    const hotelSW = $B(out, 'business_hotel', -105, 128);                  // ★ SW ビジネスホテル
+    $B(out, 'townhouse',                      -162, 142);                  // 町家 (奥)
+    $B(out, 'mahjong_parlor',                  -52, 135);                  // 麻雀荘
+    // SE アンビエント: mansion × 2 + 薬局 + cafe (v8.2: dy 千鳥)
+    const mansSE  = $B(out, 'mansion',          82, 132);                  // ★ SE mansion 1
+    $B(out, 'mansion',                         142, 145);                  // mansion 2 (奥)
+    $B(out, 'pharmacy',                         28, 138);                  // 24h 薬局
+    $B(out, 'cafe',                            168, 132);                  // 隅 cafe
     // タイトパッキング
     $B(out, 'snack',                          -178, 70);                   // NW 端 スナック
     $B(out, 'shop',                            178, 70);                   // NE 端 小店
-    $B(out, 'shed',                           -160, 195);                  // SW 端 物置
-    $B(out, 'shed',                            160, 195);                  // SE 端 物置
-    $B(out, 'garage',                         -100, 195);                  // SW 駐車
-    $B(out, 'garage',                          100, 195);                  // SE 駐車
-    $B(out, 'snack',                            30, 70);                   // 中央上段 スナック (apartment 前)
+    $B(out, 'shed',                           -158, 192);                  // SW 端 物置 (v8.2 ジッタ)
+    $B(out, 'shed',                            162, 198);                  // SE 端 物置
+    $B(out, 'garage',                         -102, 192);                  // SW 駐車
+    $B(out, 'garage',                          102, 198);                  // SE 駐車
+    $B(out, 'snack',                            32, 70);                   // 中央上段 スナック (apartment 前)
 
     // ═══ FURNITURE ═══
     // ── NE 焦点 4 層 ──
@@ -3748,22 +3748,22 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     };
 
     // ═══ BUILDINGS ═══
-    // NW 焦点: love_hotel × 3
-    const loveA = $B(out, 'love_hotel',  -110, 22);                        // ★ HERO FOCAL ラブホ大 1
-    const loveB = $B(out, 'love_hotel',   -50, 22);                        // ラブホ大 2
-    const loveC = $B(out, 'love_hotel',  -160, 75);                        // ラブホ小 (奥)
-    // NE アンビエント
-    const clubA = $B(out, 'club',         130, 22);                        // ★ NE club 1
-    const clubB = $B(out, 'club',          70, 22);                        // club 2
-    $B(out, 'mahjong_parlor',              30, 22);                        // 麻雀
-    // SW アンビエント
-    const snackSW = $B(out, 'snack',     -130, 130);                       // ★ SW snack
-    $B(out, 'mahjong_parlor',             -75, 130);                       // 麻雀
-    $B(out, 'izakaya',                    -25, 138);                       // 居酒屋
+    // NW 焦点: love_hotel × 3 (v8.2 ジオラマ: NW 三角形配置で「箱庭」感)
+    const loveA = $B(out, 'love_hotel',  -120, 18);                        // ★ HERO FOCAL ラブホ大 1 (奥)
+    const loveB = $B(out, 'love_hotel',   -55, 32);                        // ラブホ大 2 (手前)
+    const loveC = $B(out, 'love_hotel',  -158, 75);                        // ラブホ小 (奥)
+    // NE アンビエント (v8.2: y=22 7棟混雑解消で 3 棟を別 dy へ分散)
+    const clubA = $B(out, 'club',         132, 12);                        // ★ NE club 1 (奥)
+    const clubB = $B(out, 'club',          72, 38);                        // club 2 (手前)
+    $B(out, 'mahjong_parlor',              28, 22);                        // 麻雀 (中央寄り)
+    // SW アンビエント (v8.2: dy 千鳥)
+    const snackSW = $B(out, 'snack',     -132, 128);                       // ★ SW snack
+    $B(out, 'mahjong_parlor',             -75, 138);                       // 麻雀
+    $B(out, 'izakaya',                    -22, 132);                       // 居酒屋
     // SE アンビエント
-    const mahSE = $B(out, 'mahjong_parlor', 130, 130);                     // ★ SE 麻雀
-    $B(out, 'cafe',                         30, 138);                      // cafe
-    $B(out, 'mansion',                     165, 138);                      // mansion
+    const mahSE = $B(out, 'mahjong_parlor', 128, 132);                     // ★ SE 麻雀
+    $B(out, 'cafe',                         32, 142);                      // cafe
+    $B(out, 'mansion',                     168, 138);                      // mansion
     // タイトパッキング
     $B(out, 'capsule_hotel',                70, 130);                      // SE カプセル
     $B(out, 'shed',                       -178, 195);                      // SW 端 物置
@@ -4140,21 +4140,21 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     };
 
     // ═══ BUILDINGS ═══
-    // SE 焦点
-    const movie = $B(out, 'movie_theater', 130, 130);                      // ★ HERO FOCAL 映画館
-    const cafeSE = $B(out, 'cafe',          60, 138);                      // 隣 cafe
-    // NW アンビエント
-    const karaNW = $B(out, 'karaoke',     -130, 22);                       // ★ NW karaoke
-    $B(out, 'club',                        -75, 22);                       // club
-    $B(out, 'snack',                       -25, 22);                       // snack
+    // SE 焦点 (v8.2 ジオラマ: 映画館を奥め配置で「広場前扇」感)
+    const movie = $B(out, 'movie_theater', 132, 138);                      // ★ HERO FOCAL 映画館 (奥)
+    const cafeSE = $B(out, 'cafe',          62, 132);                      // 隣 cafe (手前)
+    // NW アンビエント (v8.2: facade 千鳥で y=22 6棟混雑解消)
+    const karaNW = $B(out, 'karaoke',     -132, 18);                       // ★ NW karaoke (奥)
+    $B(out, 'club',                        -78, 32);                       // club (手前)
+    $B(out, 'snack',                       -22, 75);                       // snack (中段に降ろす)
     // NE アンビエント
-    const pachNE = $B(out, 'pachinko',     130, 22);                       // ★ NE pachinko
-    $B(out, 'game_center',                  70, 22);                       // ゲーセン
-    $B(out, 'snack',                       165, 22);                       // 隅 snack
-    // SW アンビエント
-    const mansSW = $B(out, 'mansion',     -100, 130);                      // ★ SW mansion 1
-    $B(out, 'mansion',                     -45, 130);                      // mansion 2
-    $B(out, 'mahjong_parlor',             -130, 178);                      // 麻雀
+    const pachNE = $B(out, 'pachinko',     132, 18);                       // ★ NE pachinko (奥)
+    $B(out, 'game_center',                  72, 32);                       // ゲーセン (手前)
+    $B(out, 'snack',                       162, 75);                       // 隅 snack (中段に降ろす)
+    // SW アンビエント (v8.2: dy 千鳥)
+    const mansSW = $B(out, 'mansion',     -102, 128);                      // ★ SW mansion 1
+    $B(out, 'mansion',                     -42, 142);                      // mansion 2 (奥)
+    $B(out, 'mahjong_parlor',             -128, 175);                      // 麻雀
     // タイトパッキング
     $B(out, 'capsule_hotel',                30, 75);                       // 中央 上段
     $B(out, 'shop',                       -178, 75);                       // NW 端
@@ -4705,29 +4705,29 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // ═══ BUILDINGS ═══
     // NE 焦点 = torii (furniture)、建物は周辺アンビエントのみ
-    // NW アンビエント
-    const chayaNW = $B(out, 'chaya',    -100, 22);                         // ★ NW 茶屋
-    $B(out, 'wagashi',                   -45, 22);                         // 和菓子
-    $B(out, 'kominka',                   -75, 75);                         // 古民家 (奥)
-    // SW アンビエント
-    const kuraSW1 = $B(out, 'kura',     -130, 130);                        // ★ SW 蔵 1
-    $B(out, 'kura',                      -70, 130);                        // 蔵 2
-    $B(out, 'machiya',                   -25, 138);                        // 町家
+    // NW アンビエント (v8.2 ジオラマ: facade 千鳥 18/22/32 で「街図」感解消)
+    const chayaNW = $B(out, 'chaya',    -102, 18);                         // ★ NW 茶屋 (奥)
+    $B(out, 'wagashi',                   -42, 32);                         // 和菓子 (手前)
+    $B(out, 'kominka',                   -78, 75);                         // 古民家 (奥)
+    // SW アンビエント (v8.2: 蔵集落の奥行き三段)
+    const kuraSW1 = $B(out, 'kura',     -132, 128);                        // ★ SW 蔵 1
+    $B(out, 'kura',                      -68, 138);                        // 蔵 2 (手前)
+    $B(out, 'machiya',                   -22, 145);                        // 町家 (奥)
     // SE アンビエント
-    const komiSE  = $B(out, 'kominka',   130, 130);                        // ★ SE 古民家
-    $B(out, 'chaya',                      60, 138);                        // 茶屋
-    // タイトパッキング
-    $B(out, 'shed',                      130, 195);                        // SE 物置
-    $B(out, 'shop',                      178, 22);                         // NE 端 小店
-    $B(out, 'shop',                      178, 75);                         // NE 端 小店 2
-    $B(out, 'townhouse',                -178, 138);                        // SW 端 町家
-    $B(out, 'shed',                     -178, 195);                        // SW 端 物置
-    $B(out, 'wagashi',                   170, 178);                        // SE 端 和菓子
-    $B(out, 'kominka',                   170, 22);                         // NE 端 古民家
+    const komiSE  = $B(out, 'kominka',   132, 132);                        // ★ SE 古民家
+    $B(out, 'chaya',                      62, 142);                        // 茶屋
+    // タイトパッキング (v8.2: 端の facade 千鳥)
+    $B(out, 'shed',                      128, 192);                        // SE 物置
+    $B(out, 'shop',                      172, 32);                         // NE 端 小店 (手前)
+    $B(out, 'shop',                      178, 78);                         // NE 端 小店 2
+    $B(out, 'townhouse',                -172, 138);                        // SW 端 町家
+    $B(out, 'shed',                     -178, 192);                        // SW 端 物置
+    $B(out, 'wagashi',                   168, 175);                        // SE 端 和菓子
+    $B(out, 'kominka',                   168, 18);                         // NE 端 古民家 (奥)
 
     // ═══ FURNITURE ═══
     // ── NE 焦点 4 層: 表参道 ──
-    const torii   = $F(out, 'torii',          80, 22);                     // ★ HERO FOCAL ランドマーク
+    const torii   = $F(out, 'torii',          80, 12);                     // ★ HERO FOCAL ランドマーク (v8.2: 上空シルエット強調 dy=22→12)
     const offBox  = $F(out, 'offering_box',   80, 95);                     // 賽銭箱
     const omiku   = $F(out, 'omikuji_stand',  60, 95);                     // おみくじ
     const emaR    = $F(out, 'ema_rack',      100, 95);                     // 絵馬掛け
