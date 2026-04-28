@@ -73,6 +73,15 @@ export type BuildingSize =
   'dojo' | 'wagashi' | 'kimono_shop' | 'sushi_ya' |
   // ── Stage 1 住宅バリエーション ──
   'bungalow' | 'duplex' |
+  // ── Stage 2 街並み拡張 (T1 高インパクト) ──
+  'zakkyo_building' | 'zakkyo_building_tall' | 'bar' | 'yakitori' | 'standing_bar' |
+  'multi_story_parking' | 'host_club' |
+  // ── Stage 2 街並み拡張 (T2 中インパクト) ──
+  'bowling_alley' | 'live_house' | 'nightclub' | 'cabaret_club' | 'manga_cafe' |
+  'family_restaurant' | 'mini_theater' |
+  // ── Stage 2 街並み拡張 (T3 商店街・駅前) ──
+  'sento' | 'yaoya' | 'fishmonger' | 'butcher' | 'barber' | 'dagashi' | 'soba_ya' |
+  'karaoke_snack' | 'gyudon' | 'koban' | 'taxi_dispatch' | 'kiosk' | 'info_booth' |
   // ── Stage 5 フィナーレ: 象徴のお城 (天守閣) — GOAL チャンクのラスボス ──
   'castle';
 
@@ -177,6 +186,36 @@ export const BUILDING_DEFS: Record<BuildingSize, {
   // ===== Stage 1 住宅バリエーション =====
   bungalow:       { w: 22, h: 14, hp: 1, score:    80, humanMin:  3,  humanMax:  6 },
   duplex:         { w: 20, h: 28, hp: 1, score:   150, humanMin:  6,  humanMax: 12 },
+  // ===== Stage 2 街並み拡張 (T1 高インパクト共有) =====
+  zakkyo_building:      { w: 22, h: 50, hp: 2, score:   700, humanMin: 25,  humanMax: 50 },
+  zakkyo_building_tall: { w: 24, h: 70, hp: 3, score:  1500, humanMin: 40,  humanMax: 75 },
+  bar:                  { w: 18, h: 22, hp: 1, score:   120, humanMin: 10,  humanMax: 20 },
+  yakitori:             { w: 16, h: 18, hp: 1, score:    90, humanMin:  8,  humanMax: 18 },
+  standing_bar:         { w: 14, h: 18, hp: 1, score:    80, humanMin:  6,  humanMax: 14 },
+  multi_story_parking:  { w: 36, h: 60, hp: 3, score:  1000, humanMin: 10,  humanMax: 25 },
+  host_club:            { w: 24, h: 30, hp: 2, score:   500, humanMin: 16,  humanMax: 32 },
+  // ===== Stage 2 街並み拡張 (T2 中インパクト固有) =====
+  bowling_alley:        { w: 40, h: 30, hp: 2, score:   600, humanMin: 22,  humanMax: 45 },
+  live_house:           { w: 24, h: 24, hp: 1, score:   220, humanMin: 18,  humanMax: 38 },
+  nightclub:            { w: 30, h: 35, hp: 2, score:   700, humanMin: 30,  humanMax: 55 },
+  cabaret_club:         { w: 28, h: 30, hp: 2, score:   550, humanMin: 18,  humanMax: 36 },
+  manga_cafe:           { w: 22, h: 26, hp: 1, score:   180, humanMin: 12,  humanMax: 26 },
+  family_restaurant:    { w: 28, h: 22, hp: 1, score:   200, humanMin: 18,  humanMax: 35 },
+  mini_theater:         { w: 24, h: 26, hp: 2, score:   400, humanMin: 14,  humanMax: 30 },
+  // ===== Stage 2 街並み拡張 (T3 商店街・駅前バリエーション) =====
+  sento:                { w: 24, h: 26, hp: 1, score:   150, humanMin: 14,  humanMax: 28 },
+  yaoya:                { w: 16, h: 16, hp: 1, score:    80, humanMin:  4,  humanMax:  8 },
+  fishmonger:           { w: 18, h: 16, hp: 1, score:    80, humanMin:  3,  humanMax:  7 },
+  butcher:              { w: 18, h: 18, hp: 1, score:    80, humanMin:  3,  humanMax:  7 },
+  barber:               { w: 16, h: 18, hp: 1, score:    80, humanMin:  3,  humanMax:  7 },
+  dagashi:              { w: 14, h: 16, hp: 1, score:    60, humanMin:  4,  humanMax: 10 },
+  soba_ya:              { w: 16, h: 20, hp: 1, score:    90, humanMin:  8,  humanMax: 16 },
+  karaoke_snack:        { w: 16, h: 24, hp: 1, score:   120, humanMin:  8,  humanMax: 16 },
+  gyudon:               { w: 16, h: 18, hp: 1, score:    80, humanMin:  6,  humanMax: 14 },
+  koban:                { w: 12, h: 14, hp: 1, score:   100, humanMin:  2,  humanMax:  4 },
+  taxi_dispatch:        { w: 16, h: 14, hp: 1, score:    80, humanMin:  3,  humanMax:  7 },
+  kiosk:                { w: 14, h: 10, hp: 1, score:    50, humanMin:  2,  humanMax:  5 },
+  info_booth:           { w: 12, h: 16, hp: 1, score:    80, humanMin:  2,  humanMax:  5 },
   // ===== Stage 5 フィナーレ: ラスボス 象徴のお城 (天守閣) =====
   // hp 高く、巨大、最終破壊でゲームクリアをトリガー — 圧倒的な最終報酬
   castle:         { w: 70, h: 110, hp: 6, score: 50000, humanMin: 1800, humanMax: 2200 },
