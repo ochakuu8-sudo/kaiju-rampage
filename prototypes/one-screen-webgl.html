@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1" />
+  <title>Kaiju Pinball — One Screen WebGL Prototype</title>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:#08070a;display:flex;justify-content:center;align-items:center;overflow:hidden;touch-action:none;color:#fff;font-family:Arial Black,Arial,sans-serif}#wrap{position:relative;width:360px;height:580px;transform-origin:center}canvas{display:block;width:360px;height:580px;image-rendering:pixelated}#overlay{position:absolute;inset:0;pointer-events:none;text-shadow:2px 2px 0 #000;font-family:monospace;font-weight:900}#life-wrap{position:absolute;top:8px;left:8px;right:8px;height:14px;background:#1a1208;border:2px solid #e8a020;box-shadow:2px 2px 0 #000;overflow:hidden}#life-fill{height:100%;width:100%;background:linear-gradient(90deg,#f44,#fd2,#7f6)}#score-display{position:absolute;top:28px;left:8px;color:#ffec8c;font-size:12px}#target-display{position:absolute;top:46px;left:8px;color:#8cf;font-size:11px}#destroy-display{position:absolute;top:46px;right:8px;color:#fff;font-size:11px;text-align:right}#title,#result{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;white-space:pre-line;font-size:22px;letter-spacing:2px;color:#ffd020;text-shadow:3px 3px 0 #000;pointer-events:none}#title.show,#result.show{display:flex}#sub{position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:10px;color:#aaa}
+  </style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="gameCanvas" width="360" height="580"></canvas>
+  <div id="overlay">
+    <div id="life-wrap"><div id="life-fill"></div></div>
+    <div id="score-display">SCORE 0</div>
+    <div id="target-display">TARGET 0/3</div>
+    <div id="destroy-display">DEST 0%</div>
+    <div id="title" class="show">ONE SCREEN WEBGL\nTAP / CLICK TO START</div>
+    <div id="result"></div>
+    <div id="sub">Vite + TypeScript + WebGL2 Renderer / 既存 constants 使用</div>
+  </div>
+</div>
+<script type="module" src="/src/one-screen-stage.ts"></script>
+</body>
+</html>
