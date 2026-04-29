@@ -12,12 +12,15 @@ export const FLIPPER_PIVOT_Y = -210; // フリッパーピボットY（坂との
 export const FALLOFF_Y = -285;       // これ以下でボールロスト
 
 // ===== ボール =====
-// リアルピンボール寄り: 穏やかな打ち出し + 緩い重力で滞空時間を確保
-// 建物ヒットでの減速は一切なし (HP > 0 なら反射、HP ≤ 0 なら貫通=破壊、速度そのまま)
+// ふんわり寄り: 緩い重力 + 速度上限低めで滞空時間を確保、衝撃感を和らげる
+// 建物ヒットでは反発係数 RESTITUTION_BUILDING を適用してエネルギーを少し失う
 export const BALL_RADIUS = 16;           // ボール半径 (固定)
-export const GRAVITY = 0.28;             // やや控えめにしてホールドタイムを確保
-export const MAX_BALL_SPEED = 22;        // クランプ上限 (ビル通過・降下時に頭打ちしない程度)
-export const WALL_DAMPING = 0.66;        // 壁での反発 (世界端のみ)
+export const GRAVITY = 0.22;             // ふんわり: 弾道を高めにし滞空時間を伸ばす (旧 0.28)
+export const MAX_BALL_SPEED = 15;        // ふんわり: 速度上限を下げ「弾丸感」を和らげる (旧 22 → 19 → 15)
+export const WALL_DAMPING = 0.58;        // ふんわり: 壁の跳ね返りを減衰強めで衝撃感を緩く (旧 0.66)
+// 建物反発係数: 1.0 = 完全弾性、< 1.0 で衝突ごとに減速。下面ヒットには別係数。
+export const RESTITUTION_BUILDING = 0.82;          // 通常の建物反射 (上面/側面)
+export const RESTITUTION_BUILDING_BOTTOM = 0.45;   // 下から建物の底に当たった時 (ふんわり感の主役)
 // ランチャーなし: 左の坂上端付近からスポーン → 坂を滑ってフリッパーへ
 export const BALL_START_X = -150;
 export const BALL_START_Y = -100;
@@ -31,7 +34,7 @@ export const REBUILD_BASE_COOLDOWN = 8;  // 再建基準クールダウン(秒)
 // ===== フリッパー =====
 export const FLIPPER_W = 68;       // 視覚ギャップ ≈38 px (ボール直径 32 × 1.2)
 export const FLIPPER_H = 5;        // フリッパー本体の厚み。先端の丸み半径 = 2.5 で細く、根本は描画で太く見せる
-export const FLIPPER_REST_DEG = -20;
+export const FLIPPER_REST_DEG = -25;   // 待機角度 (より急な V 字、旧 -20)
 export const FLIPPER_ACTIVE_DEG = 25;
 export const FLIPPER_POWER = 14;     // リアルピンボール寄りの穏やかな蹴り出し
 export const FLIPPER_SPEED_DEG = 420; // deg/s
@@ -259,11 +262,11 @@ export const STREET_Y_MAX = 250;
 export const HUMAN_Y_MIN = RIVERSIDE_STREET_Y - 8;  // -88
 export const HUMAN_Y_MAX = HILLTOP_STREET_Y   + 8;  // 248
 
-// 道路・歩道の色
-export const ROAD_COLOR:      readonly [number,number,number,number] = [0.40, 0.40, 0.42, 1];
-export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.60, 0.58, 0.52, 1];
-export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.85, 0.85, 0.45, 1];
-export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.38, 0.38, 0.35, 1];
+// 道路・歩道の色 (v8 ジオラマ調整: 黄色破線を薄く、ロードを暗く)
+export const ROAD_COLOR:      readonly [number,number,number,number] = [0.32, 0.30, 0.30, 1];   // 暗くしてジオラマっぽい砕石路に
+export const SIDEWALK_COLOR:  readonly [number,number,number,number] = [0.50, 0.48, 0.42, 1];   // 少し暗く落ち着かせる
+export const ROAD_LINE_COLOR: readonly [number,number,number,number] = [0.78, 0.74, 0.42, 0.55]; // 半透明で控えめ (元 alpha=1)
+export const ALLEY_COLOR:     readonly [number,number,number,number] = [0.30, 0.28, 0.26, 1];
 
 // 道路ディテール
 export const CURB_COLOR:       readonly [number,number,number,number] = [0.22, 0.22, 0.24, 1];
@@ -277,8 +280,8 @@ export const BRIDGE_RAIL_COLOR: readonly [number,number,number,number] = [0.38, 
 
 // ===== 自動スクロール =====
 // 現在の燃料ゲージ量に応じて線形に変化 (100% = MAX, 0% = MIN)
-export const SCROLL_SPEED_MAX = 45;   // 燃料 100% 時の px/s
-export const SCROLL_SPEED_MIN = 15;   // 燃料 0% 時の px/s
+export const SCROLL_SPEED_MAX = 450;  // 燃料 100% 時の px/s (デバッグ用 10x)
+export const SCROLL_SPEED_MIN = 150;  // 燃料 0% 時の px/s (デバッグ用 10x)
 
 // ===== 燃料ゲージ (ゲームオーバー条件) =====
 // 時間経過で線形に減少し、人間を踏むと線形に回復する。0 でゲームオーバー。

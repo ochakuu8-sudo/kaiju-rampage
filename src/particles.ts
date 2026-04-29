@@ -351,6 +351,51 @@ export class ParticleManager {
     }
   }
 
+  /**
+   * 環境エフェクト (v6.3 SemanticCluster の hero focal 周辺の常時 emit 用)
+   * 各 type は 1 個ずつ低レートで呼ぶ前提 (caller 側で間隔制御)
+   */
+  spawnAmbient(x: number, y: number, type: 'sakura' | 'steam' | 'water' | 'dust' | 'firefly') {
+    switch (type) {
+      case 'sakura':
+        // 桜吹雪 (2 枚) — 視認性向上のため 2 個 emit
+        this.spawnSakuraPetals(x, y, 2);
+        return;
+      case 'steam':
+        // 蒸気 (2 個) — 煙突感を出すため 2 個
+        this.spawnSteam(x, y, 2);
+        return;
+      case 'water':
+        // 水しぶき (2 個) — 池/噴水感を出すため
+        this.spawnWater(x, y, 2);
+        return;
+      case 'dust':
+        // 砂塵 (2 個) — 子供が遊ぶ感、農地の感
+        for (let i = 0; i < 2; i++) {
+          this.emit(
+            x + rand(-12, 12), y + rand(-4, 4),
+            rand(-10, 10), rand(15, 35),
+            rand(0.55, 0.72), rand(0.50, 0.65), rand(0.40, 0.55),
+            rand(2, 4), rand(0.5, 1.0),
+            false, true, 0
+          );
+        }
+        return;
+      case 'firefly':
+        // ホタル (2 個) — 広場の柔らかな光
+        for (let i = 0; i < 2; i++) {
+          this.emit(
+            x + rand(-18, 18), y + rand(-12, 12),
+            rand(-12, 12), rand(-8, 8),
+            rand(0.85, 1.00), rand(0.95, 1.00), rand(0.40, 0.60),
+            rand(2, 3), rand(0.8, 1.5),
+            false, true, 0
+          );
+        }
+        return;
+    }
+  }
+
   /** 花びら */
   spawnFlower(x: number, y: number, count: number) {
     const colors: Array<[number,number,number]> = [

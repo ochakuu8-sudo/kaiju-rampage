@@ -148,6 +148,8 @@ export class Game {
   // チャンク管理
   private loadedChunks: Map<number, ChunkData> = new Map();
   private nextChunkId = 0;
+  // v6.3 SemanticCluster ambient emit のレート制御アキュムレータ
+  private _ambientAccumulator = 0;
   // 初期都市のセル地面タイル
   private initialCityGrounds: GroundTile[] = [];
 
@@ -172,7 +174,7 @@ export class Game {
     return { cx: b.cx, cy: this.camera.y + b.cy_off, hw: b.hw, hh: b.hh, angle: b.angle };
   }
 
-  constructor(canvas: HTMLCanvasElement, opts?: { screenshotMode?: boolean }) {
+  constructor(canvas: HTMLCanvasElement, opts?: { screenshotMode?: boolean; screenshotChunkId?: number | null }) {
     this.renderer  = new Renderer(canvas);
     this.input     = new InputManager(canvas);
     this.sound     = new SoundEngine();
@@ -194,7 +196,23 @@ export class Game {
     if (opts?.screenshotMode) {
       this.initRun();
       this.loadCity();
-      this.addScreenshotDensity();              // stage 1 の街並みに追加ビル・人・車を詰め込み
+      // ?chunk=N が指定されたら: addScreenshotDensity を抑止し、chunk N の真の中身を表示
+      // (Stage 1 ↔ Stage 2-5 の比較用)
+      const debugChunkId = opts.screenshotChunkId;
+      if (typeof debugChunkId === 'number') {
+        // chunkId N を強制 spawn (chunk 世界 Y = WORLD_MAX_Y + (N+1)*CHUNK_HEIGHT で上端)
+        // チャンク中央を画面中央 (camera.y) に持ってくる
+        const chunkBottom = C.WORLD_MAX_Y + debugChunkId * C.CHUNK_HEIGHT;
+        const chunkCenter = chunkBottom + C.CHUNK_HEIGHT / 2;
+        this.nextChunkId = Math.max(0, debugChunkId - 1);
+        this._spawnChunk(debugChunkId);
+        if (debugChunkId > 0) this._spawnChunk(debugChunkId - 1);
+        this._spawnChunk(debugChunkId + 1);
+        this.camera.y = chunkCenter;
+        this.camera.lockY = chunkCenter;
+      } else {
+        this.addScreenshotDensity();            // stage 1 の街並みに追加ビル・人・車を詰め込み
+      }
       this.ball.active = false;                 // ボール非表示
       this.sound.setMuted(true);                // 念のため無音
       // titleActive は既定で true。update() は冒頭で early return するので物理停止
@@ -538,6 +556,7 @@ export class Game {
     this.vehicles.update(dt, this.camera.y);
     this.humans.update(dt, this.ball.x, this.ball.y, this.camera.y);
     this.particles.update(dt);
+    this._updateAmbient(dt);
     this.updateChunks();
 
     // 距離表示を更新
@@ -630,6 +649,13 @@ export class Game {
   private updateBall(dt: number) {
     const b = this.ball;
     if (!b.active) return;
+    // ★ デバッグ: ボールをカメラスクロールに追従 (画面上の位置を維持)
+    //   ただし intro 中 (game start 前) や camera lock 中は追従しない
+    const cameraIsScrolling = !this.introActive &&
+      (this.camera.lockY === null || this.camera.y < this.camera.lockY);
+    if (cameraIsScrolling) {
+      b.y += this.camera.scrollSpeed * dt;
+    }
     const r = b.radius;
     const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
     // 1 substep あたりの移動量を ball 半径未満に抑えてトンネリングを防ぐ
@@ -706,7 +732,7 @@ export class Game {
           }
           break;  // バンパーで処理したのでこのフリッパーの本体は飛ばす
         }
-        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.35, 0.998);
+        const res = resolveCircleCapsule(b.x, b.y, r, b.vx, b.vy, fl.getOBB(), 0.15, 0.998);
         if (res) {
           const preSpd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
           [b.x, b.y, b.vx, b.vy] = res;
@@ -739,10 +765,16 @@ export class Game {
         b.lastPiercedBld = bld;
         this.onBuildingDestroyed(bld);
       } else {
-        // 反射: 向きだけ変えて速度の大きさは維持 (減速なし)
+        // 反射: 反発係数を適用してエネルギーを失わせる (ふんわり感)
+        // 「下から建物の底面に当たった」= ボールが上向き (vy>0) で反射後に下向き (newVy<0) のケース
+        // この場合は鉛直反転が発生するので、強めに減衰させて思い切り弾かれる感を消す
+        const isBottomHit = b.vy > 0.5 && bldResult.newVy < 0;
+        const restitution = isBottomHit ? C.RESTITUTION_BUILDING_BOTTOM : C.RESTITUTION_BUILDING;
+        // resolveCircleAABB は damping=0.78 で反射済み (= 旧コードはこれを巻き戻して 1.0 にしていた)。
+        // 今は preSpd 比で再スケールしてから restitution を掛けて目標反発係数に揃える。
         const preSpd  = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 0.001;
         const postSpd = Math.sqrt(bldResult.newVx ** 2 + bldResult.newVy ** 2) || 0.001;
-        const k = preSpd / postSpd;
+        const k = (preSpd / postSpd) * restitution;
         b.vx = bldResult.newVx * k;
         b.vy = bldResult.newVy * k;
         b.lastPiercedBld = null;
@@ -1325,6 +1357,98 @@ export class Game {
     this.vehicles.removeChunkLanes(chunkId);
     this.humans.removeRoadsBelow(this.camera.bottom - C.CHUNK_DESPAWN_BEHIND);
     this.loadedChunks.delete(chunkId);
+  }
+
+  /**
+   * v6.3 SemanticCluster ambient emit
+   * 各 hero クラスタの focal 周辺で低レートで環境パーティクルを出す
+   * (kominka→steam, sakura_tree→sakura, koi_pond→water, ...)
+   */
+  private _updateAmbient(dt: number) {
+    this._ambientAccumulator += dt;
+    if (this._ambientAccumulator < 0.2) return;  // ~5 emission opportunities/sec (v2: 5x density)
+    this._ambientAccumulator = 0;
+
+    const camTop = this.camera.top + 30;
+    const camBot = this.camera.bottom - 30;
+
+    for (const chunk of this.loadedChunks.values()) {
+      if (!chunk.clusters) continue;
+      for (const c of chunk.clusters) {
+        if (c.role !== 'hero') continue;
+        // focal の世界座標を取得
+        let fx: number, fy: number;
+        if (c.focal.kind === 'b') {
+          const b = chunk.buildings[c.focal.i];
+          if (!b) continue;
+          fx = b.x; fy = b.y;
+        } else {
+          const f = chunk.furniture[c.focal.i];
+          if (!f) continue;
+          fx = f.x; fy = f.y;
+        }
+        // 画面外チャンクはスキップ
+        if (fy > camTop || fy < camBot) continue;
+        // focal 種別から ambient type を派生
+        const ambientType = this._ambientTypeFromFocal(c.focal, chunk);
+        if (ambientType) {
+          this.particles.spawnAmbient(fx, fy, ambientType);
+        }
+      }
+    }
+  }
+
+  /** focal の種別 (建物 size or 家具 type) から ambient particle 種を決定 */
+  private _ambientTypeFromFocal(
+    focal: { kind: 'b' | 'f'; i: number },
+    chunk: ChunkData
+  ): 'sakura' | 'steam' | 'water' | 'dust' | 'firefly' | null {
+    if (focal.kind === 'b') {
+      const size = chunk.buildings[focal.i]?.size;
+      switch (size) {
+        case 'kominka':
+        case 'onsen_inn':
+        case 'train_station':
+          return 'steam';
+        case 'gas_station':
+        case 'school':
+        case 'warehouse':
+          return 'dust';
+        case 'mansion':
+        case 'machiya':
+        case 'duplex':
+          return null; // 住宅は控えめに無し
+        default:
+          return null;
+      }
+    } else {
+      const type = chunk.furniture[focal.i]?.type;
+      switch (type) {
+        case 'koi_pond':
+        case 'fountain':
+        case 'fountain_large':
+        case 'temizuya':
+          return 'water';
+        case 'bathhouse_chimney':
+          return 'steam';
+        case 'sakura_tree':
+        case 'cherry_blossom' as any:
+          return 'sakura';
+        case 'play_structure':
+        case 'sandbox':
+        case 'jungle_gym':
+          return 'dust';
+        case 'statue':
+        case 'plaza_tile_circle':
+          return 'firefly';
+        case 'grain_silo':
+          return 'dust';
+        case 'railroad_crossing':
+          return null; // 踏切は静的
+        default:
+          return null;
+      }
+    }
   }
 
   private onBallLost() {

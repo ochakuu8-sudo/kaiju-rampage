@@ -51,7 +51,7 @@ export function resolveCircleAABB(
   const pen = br - dist;
   const newBx = bx + nx * pen;
   const newBy = by + ny * pen;
-  // 反射
+  // 反射 (反発係数の適用は呼び出し側で行う。ここは形状的な反射のみ)
   const dot = vx * nx + vy * ny;
   const newVx = (vx - 2 * dot * nx) * damping;
   const newVy = (vy - 2 * dot * ny) * damping;
