@@ -632,6 +632,7 @@ export interface StageDef {
   name: string;
   /** 英語表示名 (ゲーム内 UI 用) */
   nameEn: string;
+  acts?: readonly StageAct[];
   templates: ChunkTemplate[];
   sidewalkZone: number;
   /** 背景色 (夜景など暗めにシフトしたい場合) */
@@ -895,7 +896,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 9 },                // townhouse (-45,130)
           { kind: 'b', i: 10 },               // kura (-150,178) 裏蔵
         ],
-        livingTrace: { kind: 'f', i: 96 },    // bicycle (-100,122) 子育て家庭
+        livingTrace: { kind: 'f', i: 43 },    // bicycle (-100,122) 子育て家庭
       },
       // AMBIENT: SE 街角 (mansion 邸 + wagashi 街角)
       { id: 'ch0.SE.corner', role: 'ambient', cell: 'SE',
@@ -905,7 +906,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 14 },               // duplex (85,130)
           { kind: 'b', i: 16 },               // wagashi (70,175) 街角
         ],
-        livingTrace: { kind: 'f', i: 116 },   // laundry_balcony (95,130)
+        livingTrace: { kind: 'f', i: 50 },    // laundry_balcony (95,130)
       },
     ],
     humans: [
@@ -2065,7 +2066,7 @@ const STAGE_1_TEMPLATES: ChunkTemplate[] = [
           { kind: 'b', i: 2 },                // cafe (-45,42)
           { kind: 'b', i: 3 },                // shop (-160,42)
         ],
-              livingTrace: { kind: 'f', i: 87 },     // potted_plant (-45,22)
+              livingTrace: { kind: 'f', i: 35 },     // bicycle_rack (-100,56)
       },
       // AMBIENT: SW 住宅+商店
       { id: 'ch8.SW.residential', role: 'ambient', cell: 'SW',
@@ -8428,8 +8429,184 @@ const STAGE_5_TEMPLATES: ChunkTemplate[] = [
 //   Stage 3: 都心オフィス・公共中枢       (チャンク再構成は後続作業)
 //   Stage 4: 工業港湾・インフラ地帯
 //   Stage 5: 城下町・祭礼・最終決戦       (チャンク再構成は後続作業)
+type StageActMood = 'residential' | 'daily' | 'public' | 'edge' | 'handoff';
+
+type StageActBeat = {
+  grounds: RawChunkBody['grounds'];
+  buildings: RawChunkBody['buildings'];
+  furniture?: RawChunkBody['furniture'];
+  humans?: RawChunkBody['humans'];
+  h?: RawChunkBody['horizontalRoads'];
+  v?: RawChunkBody['verticalRoads'];
+};
+
+type StageAct = {
+  id: string;
+  title: string;
+  concept: string;
+  mood: StageActMood;
+  beats: readonly StageActBeat[];
+};
+
+const stage1ActBeats: StageActBeat[] = [
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('grass', -112, 62, 126, 72), _G('grass', 102, 146, 138, 72), _G('stone_pavement', -8, 102, 86, 36)],
+    buildings: [_B('house', -138, 58), _B('kominka', -78, 58), _B('townhouse', 74, 142), _B('duplex', 132, 142)],
+    furniture: [_F('mailbox', -138, 42), _F('laundry_pole', -78, 82), _F('wood_fence', -112, 94), _F('bicycle', 74, 124), _F('potted_plant', 132, 124), _F('tree', 154, 168)],
+    humans: [_H(-78, 82), _H(74, 124), _H(0, 104)],
+    h: [_HR(102, -180, 180, 'street')],
+    v: [_VR(-10, 18, 188, 'street')],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('concrete', -110, 58, 118, 48), _G('grass', 98, 64, 132, 68), _G('grass', -112, 154, 124, 72), _G('stone_pavement', 108, 154, 126, 54)],
+    buildings: [_B('garage', -142, 58), _B('house', -92, 58), _B('bungalow', 84, 62), _B('mansion', -126, 154), _B('house', 118, 154)],
+    furniture: [_F('car', -142, 42), _F('mailbox', -92, 42), _F('flower_bed', 84, 42), _F('laundry_pole', -126, 174), _F('bicycle', 118, 136), _F('hedge', 154, 154)],
+    humans: [_H(-92, 78), _H(84, 82), _H(-126, 174), _H(118, 136)],
+    h: [_HR(108, -180, 180, 'street')],
+    v: [_VR(26, 24, 182, 'street')],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('grass', -112, 60, 126, 68), _G('residential_tile', 94, 58, 134, 58), _G('grass', -98, 150, 128, 72), _G('stone_pavement', 102, 150, 130, 62)],
+    buildings: [_B('townhouse', -132, 58), _B('house', -72, 58), _B('duplex', 72, 58), _B('kominka', -118, 150), _B('garage', 120, 150), _B('house', 146, 150)],
+    furniture: [_F('mailbox', -132, 42), _F('potted_plant', -72, 42), _F('bicycle_row', 72, 82), _F('wood_fence', -118, 122), _F('car', 120, 132), _F('ac_unit', 146, 132), _F('tree', -154, 176)],
+    humans: [_H(-132, 78), _H(72, 82), _H(-118, 172), _H(0, 106)],
+    h: [_HR(104, -180, 180, 'street')],
+    v: [_VR(-34, 18, 188, 'street'), _VR(92, 18, 188, 'street')],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('wood_deck', 0, 140, 306, 58), _G('stone_pavement', 0, 68, 262, 42)],
+    buildings: [_B('bakery', -112, 136), _B('bookstore', -16, 136), _B('cafe', 102, 136), _B('house', -124, 54), _B('townhouse', 92, 54)],
+    furniture: [_F('parasol', 106, 160), _F('bench', -18, 160), _F('bicycle_rack', -112, 164)],
+    humans: [_H(104, 160), _H(-18, 160), _H(-112, 150), _H(0, 100)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('stone_pavement', -94, 68, 130, 70), _G('stone_pavement', 92, 148, 142, 62)],
+    buildings: [_B('onsen_inn', -120, 72), _B('supermarket', 92, 148), _B('ramen', -52, 148), _B('house', 142, 54)],
+    furniture: [_F('noren', -120, 48), _F('vending', 118, 128), _F('bench', -76, 94)],
+    humans: [_H(-120, 94), _H(92, 168), _H(-52, 166)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('stone_pavement', 0, 136, 264, 88), _G('grass', -128, 54, 72, 58), _G('grass', 128, 54, 72, 58)],
+    buildings: [_B('fountain_pavilion', 0, 142), _B('post_office', -118, 58), _B('clinic', 116, 58), _B('house', -138, 166), _B('house', 138, 166)],
+    furniture: [_F('bench', -70, 154), _F('bench', 70, 154), _F('flag_pole', 0, 92)],
+    humans: [_H(0, 156), _H(-70, 154), _H(70, 154), _H(0, 100)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('dirt', 0, 142, 304, 90), _G('stone_pavement', 0, 52, 224, 42)],
+    buildings: [_B('school', -118, 66), _B('daycare', 92, 66), _B('house', -132, 166), _B('house', 132, 166)],
+    furniture: [_F('flag_pole', -94, 94), _F('swing_set', 42, 142), _F('sandbox', 102, 160)],
+    humans: [_H(-94, 94), _H(42, 142), _H(102, 160), _H(0, 100)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('wood_deck', 0, 92, 304, 56), _G('residential_tile', 0, 156, 304, 62)],
+    buildings: [_B('shotengai_arcade', 0, 98), _B('ramen', -104, 88), _B('bookstore', -42, 88), _B('florist', 46, 88), _B('cafe', 108, 88), _B('house', -116, 158), _B('duplex', 104, 158)],
+    furniture: [_F('chouchin', -104, 66), _F('a_frame_sign', 46, 70), _F('bicycle_rack', 108, 118)],
+    humans: [_H(-104, 110), _H(46, 110), _H(108, 110)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('stone_pavement', 76, 62, 160, 52), _G('concrete', 80, 148, 154, 56), _G('grass', -118, 148, 74, 56)],
+    buildings: [_B('train_station', 76, 70), _B('convenience', -104, 64), _B('house', -118, 150), _B('townhouse', 116, 150)],
+    furniture: [_F('bus_stop', 122, 96), _F('bicycle_rack', -104, 88), _F('street_lamp', 22, 70)],
+    humans: [_H(76, 92), _H(122, 96), _H(-104, 88), _H(0, 100)],
+  },
+  {
+    grounds: [_G('grass', 0, 100, 360, 200), _G('dirt', -108, 144, 114, 94), _G('dirt', 112, 144, 126, 94)],
+    buildings: [_B('kominka', -120, 58), _B('greenhouse', 98, 58), _B('shed', 148, 132), _B('house', -28, 154)],
+    furniture: [_F('wood_fence', -108, 102), _F('wood_fence', 112, 102), _F('bicycle', -28, 134)],
+    humans: [_H(-120, 78), _H(98, 78), _H(0, 96)],
+    h: [_HR(96, -180, 180, 'street')],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('concrete', 0, 62, 304, 78), _G('grass', -118, 154, 82, 62), _G('residential_tile', 110, 154, 102, 62)],
+    buildings: [_B('warehouse', -72, 62), _B('garage', 44, 62), _B('gas_station', 122, 62), _B('house', -118, 154), _B('duplex', 110, 154)],
+    furniture: [_F('traffic_cone', 0, 80), _F('barrier', 70, 82), _F('electric_box', -138, 88)],
+    humans: [_H(-72, 82), _H(122, 82), _H(0, 100)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('gravel', 0, 142, 360, 46), _G('residential_tile', 0, 62, 304, 68)],
+    buildings: [_B('house', -118, 64), _B('ramen', 112, 64), _B('garage', -118, 166), _B('house', 112, 166)],
+    furniture: [_F('railroad_crossing', -34, 142), _F('railroad_crossing', 34, 142), _F('traffic_light', 0, 100), _F('guardrail_short', -92, 142), _F('guardrail_short', 92, 142)],
+    humans: [_H(-118, 84), _H(112, 84), _H(0, 100)],
+    h: [_HR(100, -180, 180, 'street'), _HR(142, -180, 180, 'street')],
+  },
+  {
+    grounds: [_G('grass', 0, 100, 360, 200), _G('stone_pavement', 104, 104, 122, 78)],
+    buildings: [_B('shrine', -108, 86), _B('house', 102, 84), _B('townhouse', 132, 152)],
+    furniture: [_F('stone_lantern', -80, 118), _F('bench', 98, 124), _F('sakura_tree', -144, 142)],
+    humans: [_H(-108, 114), _H(98, 124)],
+  },
+  {
+    grounds: [_G('grass', 0, 100, 360, 200), _G('residential_tile', -100, 68, 114, 60), _G('residential_tile', 98, 142, 128, 66)],
+    buildings: [_B('house', -126, 68), _B('bungalow', -70, 68), _B('mansion', 88, 142), _B('greenhouse', 150, 142)],
+    furniture: [_F('mailbox', -126, 48), _F('laundry_pole', 88, 122), _F('tree', 0, 164)],
+    humans: [_H(-126, 88), _H(88, 160), _H(0, 100)],
+  },
+  {
+    grounds: [_G('residential_tile', 0, 100, 360, 200), _G('stone_pavement', 0, 90, 304, 74), _G('wood_deck', 0, 154, 244, 42)],
+    buildings: [_B('supermarket', -82, 92), _B('pharmacy', 44, 92), _B('bakery', 112, 154), _B('cafe', -112, 154)],
+    furniture: [_F('vending', -44, 72), _F('bench', 64, 116), _F('bicycle_rack', -112, 174)],
+    humans: [_H(-82, 116), _H(44, 116), _H(112, 174), _H(0, 100)],
+  },
+  {
+    grounds: [_G('concrete', 0, 100, 360, 200), _G('stone_pavement', 0, 138, 304, 54)],
+    buildings: [_B('business_hotel', -96, 76), _B('convenience', 58, 76), _B('ramen', 122, 138), _B('apartment', -122, 156)],
+    furniture: [_F('vending', 58, 98), _F('street_lamp', -24, 138), _F('sign_board', 122, 118)],
+    humans: [_H(58, 98), _H(122, 158), _H(0, 100)],
+  },
+];
+
+const STAGE_1_ACTS: StageAct[] = [
+  {
+    id: 'residential_neighborhood',
+    title: '低層住宅街',
+    concept: '低層住宅、庭、駐車スペース、細い生活道路で、ステージ1の基準スケールを住宅街として提示する。',
+    mood: 'residential',
+    beats: stage1ActBeats.slice(0, 3),
+  },
+  {
+    id: 'daily_market',
+    title: '生活商店の表通り',
+    concept: 'パン屋、本屋、温泉宿、広場をゆるく連ね、暮らしの密度を一点に集める。',
+    mood: 'daily',
+    beats: stage1ActBeats.slice(3, 6),
+  },
+  {
+    id: 'school_station',
+    title: '学校から駅前へ',
+    concept: '校庭、商店街アーケード、駅前舗装で公共性と移動の気配を作る。',
+    mood: 'public',
+    beats: stage1ActBeats.slice(6, 9),
+  },
+  {
+    id: 'town_edge',
+    title: '郊外の縁',
+    concept: '畑、倉庫、踏切、神社で住宅街から外縁へ抜ける余白を広げる。',
+    mood: 'edge',
+    beats: stage1ActBeats.slice(9, 13),
+  },
+  {
+    id: 'night_handoff',
+    title: '次ステージへの受け渡し',
+    concept: '住宅の灯り、最後の商店、ホテル街の入口で夜の歓楽街へ接続する。',
+    mood: 'handoff',
+    beats: stage1ActBeats.slice(13, 16),
+  },
+];
+
+const STAGE_1_DIARAMA_TEMPLATES: ChunkTemplate[] = STAGE_1_ACTS.flatMap((act) => act.beats.map((layout, beatIndex): ChunkTemplate => ({
+  patternId: `s1_act_${act.id}_${beatIndex + 1}`,
+  raw: {
+    buildings: layout.buildings,
+    furniture: layout.furniture ?? [],
+    humans: layout.humans ?? [],
+    grounds: layout.grounds,
+    horizontalRoads: layout.h ?? [_HR(100, -180, 180, 'street')],
+    verticalRoads: layout.v ?? [_VR(0, 0, 200, 'avenue')],
+  },
+})));
+
 export const STAGES: StageDef[] = [
-  { id: 0, name: '昼の住宅街',         nameEn: 'SUBURBS',         templates: STAGE_1_TEMPLATES, sidewalkZone: 0,
+  { id: 0, name: '昼の住宅街',         nameEn: 'SUBURBS',         acts: STAGE_1_ACTS, templates: STAGE_1_DIARAMA_TEMPLATES, sidewalkZone: 0,
     bgTop: [0.52, 0.74, 0.96], bgBottom: [0.38, 0.50, 0.38] },
   { id: 1, name: '夜の歓楽街',         nameEn: 'NEON DISTRICT',   templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
     bgTop: [0.10, 0.08, 0.25], bgBottom: [0.22, 0.14, 0.32] },
