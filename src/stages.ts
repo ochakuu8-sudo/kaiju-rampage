@@ -2557,9 +2557,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'bookstore',                         80, 130);                 // 書店 東
     const convSE    = $B(out, 'convenience',   130, 130);                  // ★ SE 焦点 24h コンビニ
 
-    // 下段奥 (dy=175): 集合住宅 (駅近物件)
-    $B(out, 'apartment',                      -130, 175);                  // SW 集合住宅
-    $B(out, 'apartment',                       130, 175);                  // SE 集合住宅
+    // 下段奥 (dy=175): 駅近施設 (カプセル + 居酒屋)
+    $B(out, 'capsule_hotel',                  -130, 175);                  // SW 駅近カプセル
+    $B(out, 'izakaya',                         130, 175);                  // SE 駅近居酒屋
 
     // ═══ FURNITURE ═══
     // ── NE 焦点 4 層: 駅前広場 ──
@@ -2751,8 +2751,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const snackSE = $B(out, 'snack',            50, 130);                  // SE snack (focal)
     $B(out, 'snack',                            95, 130);                  // SE snack 2
 
-    // 下段奥 (dy=175): 路地裏住居 2 棟
-    $B(out, 'apartment',                      -130, 175);                  // SW 奥 集合住宅
+    // 下段奥 (dy=175): 路地裏の飲食店 2 棟
+    $B(out, 'ramen',                          -130, 175);                  // SW 奥 路地裏ラーメン
     $B(out, 'capsule_hotel',                   135, 175);                  // SE 奥 カプセル
 
     // ═══ FURNITURE ═══
@@ -2934,9 +2934,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'cafe',                              120, 130);                // カフェ
     const convSE = $B(out, 'convenience',        160, 130);                // SE 24h コンビニ
 
-    // 下段奥 (dy=175): 集合住宅 (商店街裏手の住居)
-    $B(out, 'apartment',                        -130, 175);                // SW 集合住宅
-    $B(out, 'apartment',                         130, 175);                // SE 集合住宅
+    // 下段奥 (dy=175): 商店街裏手の小店舗
+    $B(out, 'snack',                            -130, 175);                // SW 裏手スナック
+    $B(out, 'cafe',                              130, 175);                // SE 裏手カフェ
 
     // ═══ FURNITURE ═══
     // ── merged 焦点: アーケード提灯帯 ──
@@ -3121,8 +3121,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'club',                             40, 130);                  // SE club
     $B(out, 'mahjong_parlor',                  140, 130);                  // SE 麻雀
 
-    // 下段奥 (dy=175): 集合住宅
-    $B(out, 'apartment',                      -130, 175);                  // SW 集合住宅
+    // 下段奥 (dy=175): 雑居ビル裏手
+    $B(out, 'mahjong_parlor',                 -130, 175);                  // SW 裏手麻雀荘
     $B(out, 'capsule_hotel',                   135, 175);                  // SE カプセル
 
     // ═══ FURNITURE ═══
@@ -3294,9 +3294,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'club',                               80, 130);                // club
     $B(out, 'karaoke',                           140, 130);                // karaoke
 
-    // 下段奥 (dy=175): 集合住宅 (娯楽街裏手)
-    $B(out, 'apartment',                        -130, 175);
-    $B(out, 'apartment',                         135, 175);
+    // 下段奥 (dy=175): 娯楽街裏手の店舗
+    $B(out, 'pachinko',                         -130, 175);                // SW 裏手パチンコ
+    $B(out, 'game_center',                       135, 175);                // SE 裏手ゲーセン
 
     // ═══ FURNITURE ═══
     // ── merged 焦点 4 層 ──
@@ -3494,8 +3494,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const snackE  = $B(out, 'snack',            75, 130);                  // 東 snack
     $B(out, 'mahjong_parlor',                  130, 130);                  // 麻雀 東
 
-    // 下段奥 (dy=175): 集合住宅 + カプセル (路地裏)
-    $B(out, 'apartment',                      -130, 175);                  // SW 集合住宅
+    // 下段奥 (dy=175): 横丁の路地裏
+    $B(out, 'snack',                          -130, 175);                  // SW 路地裏スナック
     $B(out, 'capsule_hotel',                   140, 175);                  // SE カプセル
 
     // ═══ FURNITURE ═══
@@ -3675,9 +3675,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const mahSE = $B(out, 'mahjong_parlor', 110, 130);                     // ★ SE 麻雀
     $B(out, 'club',                        160, 130);                      // SE club
 
-    // 下段奥 (dy=175): 集合住宅
-    $B(out, 'apartment',                  -130, 175);
-    $B(out, 'apartment',                   135, 175);
+    // 下段奥 (dy=175): ラブホ街の裏通り
+    $B(out, 'snack',                      -130, 175);                      // SW 裏通りスナック
+    $B(out, 'mahjong_parlor',              135, 175);                      // SE 深夜麻雀荘
 
     // ═══ FURNITURE ═══
     // ── NW 焦点 4 層 ──
@@ -3847,9 +3847,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'izakaya',                            45, 130);                // 居酒屋
     const chayaSW = $B(out, 'snack',             150, 130);                // SE snack
 
-    // 下段奥 (dy=175): 集合住宅 (路地裏)
-    $B(out, 'apartment',                        -130, 175);
-    $B(out, 'apartment',                         140, 175);
+    // 下段奥 (dy=175): 深夜の路地裏飲食
+    $B(out, 'izakaya',                          -130, 175);                // SW 路地裏居酒屋
+    $B(out, 'snack',                             140, 175);                // SE 深夜スナック
 
     // ═══ FURNITURE ═══
     // ── merged 焦点 4 層: 屋台 5 連 ──
@@ -4038,9 +4038,9 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     const mansSW = $B(out, 'apartment_tall', -65, 130);                    // ★ SW 高層集合住宅
     $B(out, 'bookstore',                  -130, 130);                      // SW 書店 (映画客の予習に)
 
-    // 下段奥 (dy=175): 集合住宅
-    $B(out, 'apartment',                  -130, 175);
-    $B(out, 'apartment',                   135, 175);
+    // 下段奥 (dy=175): 映画館街の裏通り
+    $B(out, 'karaoke',                    -130, 175);                      // SW 裏手カラオケ
+    $B(out, 'club',                        135, 175);                      // SE 深夜クラブ
 
     // ═══ FURNITURE ═══
     // ── SE 焦点 4 層 ──
@@ -4211,15 +4211,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // 下段前列 (dy=130): カプセル + コンビニ + アパート (avenue 南側 静寂)
     const capsSW  = $B(out, 'capsule_hotel', -130, 130);                   // ★ SW カプセル
     $B(out, 'convenience',                -75, 130);                       // 24h コンビニ
-    $B(out, 'apartment',                  -25, 130);                       // 集合住宅
-    const tnSE    = $B(out, 'apartment',   45, 130);                       // ★ SE 集合住宅
+    $B(out, 'snack',                      -25, 130);                       // 閉店後スナック
+    const tnSE    = $B(out, 'gas_station',  45, 130);                      // ★ SE 24h ガソスタ
     $B(out, 'capsule_hotel',              110, 130);                       // SE カプセル
-    $B(out, 'apartment',                  160, 130);                       // SE 端 集合住宅
+    $B(out, 'convenience',                160, 130);                       // SE 端 24h コンビニ
 
-    // 下段奥 (dy=175): 集合住宅 + 閉店 snack
-    $B(out, 'apartment',                 -130, 175);
+    // 下段奥 (dy=175): 深夜の閉店後施設
+    $B(out, 'convenience',               -130, 175);                       // SW 24h コンビニ
     $B(out, 'snack',                      -45, 175);                       // 閉店 snack
-    $B(out, 'apartment',                  135, 175);
+    $B(out, 'shed',                        135, 175);                      // SE 物置小屋 (静寂)
 
     // ═══ FURNITURE ═══
     // ── NE 焦点 4 層 ──
@@ -4392,14 +4392,14 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     // 下段前列 (dy=130): カプセル + コンビニ + アパート
     const convSW  = $B(out, 'convenience',    -160, 130);                  // 24h コンビニ
     const capsSW  = $B(out, 'capsule_hotel',  -100, 130);                  // ★ HERO FOCAL SW カプセル
-    $B(out, 'apartment',                       -45, 130);                  // 集合住宅
-    const aptSE   = $B(out, 'apartment',        50, 130);                  // ★ SE 集合住宅
-    $B(out, 'apartment',                       100, 130);                  // 集合住宅 2
+    $B(out, 'snack',                           -45, 130);                  // 閉店後スナック
+    const aptSE   = $B(out, 'gas_station',      50, 130);                  // ★ SE 24h ガソスタ
+    $B(out, 'convenience',                     100, 130);                  // SE 24h コンビニ
     $B(out, 'capsule_hotel',                   155, 130);                  // SE カプセル
 
-    // 下段奥 (dy=175): 集合住宅
-    $B(out, 'apartment',                      -130, 175);
-    $B(out, 'apartment',                       135, 175);
+    // 下段奥 (dy=175): 夜明けの静寂施設
+    $B(out, 'shed',                           -130, 175);                  // SW 物置小屋
+    $B(out, 'fountain_pavilion',               135, 175);                  // SE 噴水東屋 (Stage 3 先取り)
 
     // ═══ FURNITURE ═══
     // ── SW 焦点 4 層 ──
@@ -4560,24 +4560,24 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'apartment_tall',                 75, 22);                     // 高層 集合住宅
     $B(out, 'apartment_tall',                130, 22);                     // ★ NE 端 高層 (Stage 3 オフィス予告)
 
-    // 上段前列 (dy=70): cafe + bookstore + apartment 列 (avenue 北側、早朝商業)
+    // 上段前列 (dy=70): cafe + bookstore + 早朝施設列 (avenue 北側、早朝商業)
     $B(out, 'cafe',                         -160, 70);                     // 早朝カフェ
     $B(out, 'bookstore',                    -100, 70);                     // 書店
     $B(out, 'cafe',                          -45, 70);                     // 早朝カフェ
-    $B(out, 'apartment',                      45, 70);                     // 集合住宅
+    $B(out, 'convenience',                    45, 70);                     // 24h コンビニ
     $B(out, 'cafe',                          100, 70);                     // 早朝カフェ
-    $B(out, 'apartment',                     160, 70);                     // 集合住宅
+    $B(out, 'gas_station',                   160, 70);                     // 早朝ガソスタ
 
-    // 下段前列 (dy=130): SW パーキング + apartment + SE 書店
+    // 下段前列 (dy=130): SW パーキング + 早朝小店舗 + SE 書店
     const parkSW = $B(out, 'parking',       -130, 130);                    // ★ SW 24h パーキング
-    $B(out, 'apartment',                     -65, 130);                    // 集合住宅
-    $B(out, 'apartment',                     -20, 130);                    // 集合住宅
-    $B(out, 'apartment',                      30, 130);                    // 集合住宅
+    $B(out, 'snack',                         -65, 130);                    // 閉店後スナック
+    $B(out, 'ramen',                         -20, 130);                    // 早朝ラーメン
+    $B(out, 'convenience',                    30, 130);                    // 24h コンビニ
     $B(out, 'cafe',                           80, 130);                    // 早朝カフェ
     const bookSE  = $B(out, 'bookstore',     140, 130);                    // ★ SE 早朝書店
 
-    // 下段奥 (dy=175): 集合住宅 + コンビニ
-    $B(out, 'apartment',                    -130, 175);                    // SW 集合住宅
+    // 下段奥 (dy=175): 夜明けの余白
+    $B(out, 'shed',                         -130, 175);                    // SW 物置小屋
     $B(out, 'convenience',                   140, 175);                    // SE 24h コンビニ
 
     // ═══ FURNITURE ═══
