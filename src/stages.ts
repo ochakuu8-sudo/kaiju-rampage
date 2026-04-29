@@ -2727,7 +2727,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR],
+      horizontalRoads: [_HR(100, 0, 180)],                                // §3 Ch1: 部分幅HR 右(東)半分のみ — 行き止まり感
       verticalRoads: [_AVE],
     };
 
@@ -2908,15 +2908,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR, _TOP_HR],                                 // ✅ Act 境界予告 _TOP_HR
+      horizontalRoads: [_HR(100, -180, 0)],                               // §3 Ch2: 部分幅HR 左(西)半分のみ — Ch1 と逆側が切れる
       verticalRoads: [_AVE],
     };
 
     // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) ═══
     // 上段奥 (dy=22): アーケード門 + 高層背景
-    const arcadeW = $B(out, 'shotengai_arcade', -118, 22);                 // ★ HERO 西柱 (アーケード入口)
-    const arcadeE = $B(out, 'shotengai_arcade',  118, 22);                 // ★ HERO 東柱
-    $B(out, 'apartment_tall',                      0, 22);                 // 中央奥 高層 1 棟 (背景の壁)
+    $B(out, 'apartment_tall',                    -118, 22);                // NW 高層背景
+    $B(out, 'apartment_tall',                     118, 22);                // NE 高層背景
+    $B(out, 'apartment_tall',                       0, 22);                // 中央奥 高層 1 棟 (背景の壁)
 
     // 上段前列 (dy=70): avenue 北側 商業列 (5 棟)
     const bakery1 = $B(out, 'bakery',           -160, 70);                 // ベーカリー 西
@@ -2932,49 +2932,25 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $B(out, 'laundromat',                        -75, 130);                // コインランドリー
     $B(out, 'pharmacy',                           75, 130);                // 薬局
     $B(out, 'cafe',                              120, 130);                // カフェ
-    const convSE = $B(out, 'convenience',        160, 130);                // SE 24h コンビニ
+    const izakayaSE = $B(out, 'izakaya',         130, 130);                // ★ HERO FOCAL SE 居酒屋 (開店最初の暖簾、§3 Ch2)
 
     // 下段奥 (dy=175): 商店街裏手の小店舗
     $B(out, 'snack',                            -130, 175);                // SW 裏手スナック
     $B(out, 'cafe',                              130, 175);                // SE 裏手カフェ
 
     // ═══ FURNITURE ═══
-    // ── merged 焦点: アーケード提灯帯 ──
-    // chouchin × 14 (v8.3 Phase 3: 2 列千鳥 y=20/26 alternating + 黄金比間隔で「提灯トンネル」感)
-    const chouA = $F(out, 'chouchin', -162, 20);                           // ★ 提灯 1 (西端、列 A)
-    $F(out, 'chouchin',              -130, 26);                            // 提灯 2 (列 B、32px 間隔)
-    $F(out, 'chouchin',              -103, 20);                            // 提灯 3 (列 A、27px)
-    $F(out, 'chouchin',               -78, 26);                            // 提灯 4 (列 B、25px)
-    $F(out, 'chouchin',               -50, 20);                            // 提灯 5 (列 A、28px)
-    $F(out, 'chouchin',               -22, 26);                            // 提灯 6 (列 B、28px、中央西)
-    $F(out, 'chouchin',                 5, 20);                            // 提灯 7 (列 A、27px、中央東)
-    $F(out, 'chouchin',                32, 26);                            // 提灯 8 (列 B、27px)
-    $F(out, 'chouchin',                58, 20);                            // 提灯 9 (列 A、26px)
-    $F(out, 'chouchin',                88, 26);                            // 提灯 10 (列 B、30px)
-    $F(out, 'chouchin',               115, 20);                            // 提灯 11 (列 A、27px)
-    $F(out, 'chouchin',               140, 26);                            // 提灯 12 (列 B、25px)
-    $F(out, 'chouchin',               165, 20);                            // 提灯 13 (列 A、東端)
-    $F(out, 'chouchin',                 0, 32);                            // 提灯 14 (中央二段目、奥行き)
-    // banner_pole × 4 (各端)
-    const banA = $F(out, 'banner_pole', -150, 28);                         // 旗ガーランド NW
-    $F(out, 'banner_pole',             -90, 28);                           // 旗 中央西
-    $F(out, 'banner_pole',              90, 28);                           // 旗 中央東
-    $F(out, 'banner_pole',             150, 28);                           // 旗 NE
-    // 境界: flag_pole × 2 + flower_planter
-    const flagA = $F(out, 'flag_pole', -30, 12);                           // 中央上空旗 西
-    const flagB = $F(out, 'flag_pole',  30, 12);                           // 中央上空旗 東
-    const fpA   = $F(out, 'flower_planter_row', -160, 88);                 // プランター 西端
-    $F(out, 'flower_planter_row',      160, 88);                           // プランター 東端
-    // 動線: street_lamp × 2 + puddle × 3 + bollard × 4
+    // ── SE 焦点: 居酒屋 (開店最初の暖簾) ──
+    // chouchin × 2 (点灯 — 居酒屋前のみ、Act I 開店直後)
+    const chouA = $F(out, 'chouchin', 115, 122);                           // ★ 居酒屋前提灯 西
+    const chouB = $F(out, 'chouchin', 145, 122);                           // 居酒屋前提灯 東
+    const norenA = $F(out, 'noren', 130, 132);                             // ★ 暖簾 (半分はみ出した動的位置)
+    const afrA   = $F(out, 'a_frame_sign', 130, 148);                      // 看板 (斜めに出した)
+    const izakayaBike = $F(out, 'bicycle', 115, 155);                      // ★ SE livingTrace (最初の客の自転車)
+    // 動線: street_lamp × 2 + bollard × 2
     const lampA = $F(out, 'street_lamp', -120, 88);                        // 街灯 西
     const lampB = $F(out, 'street_lamp',  120, 88);                        // 街灯 東
-    $F(out, 'puddle_reflection',       -50, 105);                          // 濡路面 中央西
-    $F(out, 'puddle_reflection',        60, 105);                          // 濡路面 中央東
-    $F(out, 'puddle_reflection',         0, 110);                          // 濡路面 中央 (3 個でリズム)
     const bolA  = $F(out, 'bollard',   -65, 92);                           // 横断 NW
-    $F(out, 'bollard',                 -25, 92);                           // 横断 中央西
-    $F(out, 'bollard',                  25, 92);                           // 横断 中央東
-    $F(out, 'bollard',                  65, 92);                           // 横断 NE (4 個 = 横断帯)
+    $F(out, 'bollard',                  65, 92);                           // 横断 NE
 
     // ── SW アンビエント: pachinko 予告 ──
     const pachSign = $F(out, 'sign_board', -130, 130);                     // ★ 赤ネオン (Ch4 予告)
@@ -2998,9 +2974,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'manhole_cover',                -65, 100);                     // 歩道帯
     $F(out, 'manhole_cover',                  0, 100);                     // avenue 中央
     $F(out, 'manhole_cover',                 65, 100);                     // 歩道帯 東
-    // facade 沿い: shop_awning (アーケード両柱の庇)
-    $F(out, 'shop_awning',                 -118, 38);                      // 西柱の庇
-    $F(out, 'shop_awning',                  118, 38);                      // 東柱の庇
 
     // ── 連続軸 ──
     $F(out, 'power_pole',                  -178, 92);
@@ -3023,16 +2996,16 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'recycling_bin',      -100, 38);    // 上段リサイクル 1
 
     // ═══ CLUSTERS ═══
-    // ★ HERO: merged アーケード門 (上空提灯トンネル + 両側商店列)
+    // ★ HERO: SE 居酒屋 (開店最初の暖簾 — §3 Ch2 判断基準)
     _CLUSTER(out, {
-      id: 'ch2.merged.arcade',
+      id: 'ch2.SE.izakaya',
       role: 'hero',
-      cell: 'merged',
-      focal: arcadeW,
-      companions: [arcadeE, chouA, banA, lampA, lampB],
-      boundary: [flagA, flagB, fpA],
-      access: [bolA, lampA, lampB],
-      livingTrace: $F(out, 'newspaper_stand', 0, 88),
+      cell: 'SE',
+      focal: izakayaSE,
+      companions: [chouA, chouB, norenA, afrA],
+      boundary: [bolA],
+      access: [lampA, lampB],
+      livingTrace: izakayaBike,
     });
     // AMBIENT: SW 書店 + 薬局 + ランドリー
     _CLUSTER(out, {
@@ -3042,15 +3015,6 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       focal: bookSW,
       companions: [pachSign],
       livingTrace: swGarb,
-    });
-    // AMBIENT: SE コンビニ + カフェ
-    _CLUSTER(out, {
-      id: 'ch2.SE.convenience',
-      role: 'ambient',
-      cell: 'SE',
-      focal: convSE,
-      companions: [clubSign],
-      livingTrace: seBike,
     });
     // AMBIENT: NW ベーカリー入口
     _CLUSTER(out, {
@@ -3096,13 +3060,13 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR],
-      verticalRoads: [_AVE, _VR(-90, 0, 100)],                             // ✅ NW 雑居ビル間裏路地
+      horizontalRoads: [],                                                 // §3 Ch3: 人の流れHERO — 横道路ゼロで広場感
+      verticalRoads: [_VR(-35, 0, 200)],                                  // §3 Ch3: avenue を西 35px にずらして対称崩し
     };
 
     // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) — Act II 高層雑居 ═══
     // 上段奥 (dy=22): 高層 3 棟 (NE HERO 含む) + NW 高層 club
-    const karao   = $B(out, 'karaoke',         140, 22);                   // ★ HERO FOCAL NE 屋上ネオン karaoke
+    const karao   = $B(out, 'karaoke',         140, 22);                   // NE karaoke (建物HEROなし — §3 Ch3: 人の流れがHERO)
     const aparT   = $B(out, 'apartment_tall',   85, 22);                   // 高層集合住宅 (NE 中央)
     const clubNW  = $B(out, 'club',           -135, 22);                   // ★ NW club (奥)
     $B(out, 'business_hotel',                  -75, 22);                   // NW 高層ホテル
@@ -3177,7 +3141,15 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'manhole_cover',              -65, 100);                       // 歩道帯
     $F(out, 'manhole_cover',               65, 100);                       // 歩道帯 東
     $F(out, 'manhole_cover',                0, 100);                       // avenue 中央
-    // 雑居ビル間裏路地 (x=-90 _VR 沿い)
+    // §3 Ch3: 両側ファサード sign_board 連続 (人の流れHERO — ネオン壁が人を挟む)
+    $F(out, 'sign_board',               -140, 8);                          // ★ 西側ファサード 1
+    $F(out, 'sign_board',               -100, 8);                          // 西側ファサード 2
+    $F(out, 'sign_board',               -160, 50);                         // 西側ファサード 3 (低め)
+    $F(out, 'sign_board',                160, 8);                          // 東側ファサード 1
+    $F(out, 'sign_board',                120, 8);                          // 東側ファサード 2
+    $F(out, 'banner_pole',               -50, 18);                         // 旗 西 (流れを誘導)
+    $F(out, 'banner_pole',                50, 18);                         // 旗 東
+    // 裏路地 (旧 _VR(-90) 沿い)
     $F(out, 'cable_junction_box',         -90, 60);                        // 裏路地 配電箱
     $F(out, 'garbage',                    -90, 75);                        // 裏路地 garbage
 
@@ -3203,9 +3175,10 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'flower_bed',          178, 130);   // 端花壇
 
     // ═══ CLUSTERS ═══
+    // §3 Ch3: 建物HEROなし — 人の流れがHERO。karaoke は NE の ambient として存在
     _CLUSTER(out, {
-      id: 'ch3.NE.highrise',
-      role: 'hero',
+      id: 'ch3.NE.karaoke',
+      role: 'ambient',
       cell: 'NE',
       focal: karao,
       companions: [aparT, clubNE, karaSign, chouA, afA, lampA, lampB],
@@ -3271,7 +3244,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR, _TOP_HR],                                 // ✅ 4 方向交差点感
+      horizontalRoads: [_MID_HR],                                         // §3 Ch4: 全幅HR + AVE で十字 (_TOP_HR は余剰)
       verticalRoads: [_AVE],
     };
 
@@ -3467,8 +3440,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR, _HR(165, -180, 0)],                       // ✅ SW 横丁路地
-      verticalRoads: [_AVE],
+      horizontalRoads: [],                                                 // §3 Ch5: 横丁 — HR全廃で「道が消える」
+      verticalRoads: [],                                                   // §3 Ch5: avenue 完全消去
     };
 
     // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) — Act II 飲屋街横丁 ═══
@@ -3648,8 +3621,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR],
-      verticalRoads: [_AVE],
+      horizontalRoads: [_MID_HR],                                         // §3 Ch6: 全幅HR 維持 (love_hotel の「仕切り」として機能)
+      verticalRoads: [_VR(0, 80, 200)],                                   // §3 Ch6: 部分高さVR — love_hotel(dy=22)前で切れる
     };
 
     // ═══ BUILDINGS ═══
@@ -3820,8 +3793,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [],                                                 // ✅ 横道路ゼロ (Ch7 シグネチャ、閉じた路地感)
-      verticalRoads: [_AVE],
+      horizontalRoads: [],                                                 // §3 Ch7: 道なし — avenue も完全消去
+      verticalRoads: [],                                                   // §3 Ch7: 縦横ゼロで「道が消えた」孤立感
     };
 
     // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) — Act III 深夜ラーメン街 ═══
@@ -4191,8 +4164,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR, _HR(80, 65, 180)],                        // ✅ NE パーキング入口
-      verticalRoads: [_AVE],
+      horizontalRoads: [],                                                 // §3 Ch9: 終電後 — HR ゼロで広い静寂
+      verticalRoads: [_AVE],                                               // §3 Ch9: 中央縦道路のみ残す
     };
 
     // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) — Act IV 24h 駐車場街 ═══
@@ -4370,8 +4343,8 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
   { patternId: 's2_raw', raw: ((): RawChunkBody => {
     const out: RawChunkBody = {
       buildings: [], furniture: [], humans: [], grounds: [],
-      horizontalRoads: [_MID_HR, _HR(165, -180, 0)],                       // ✅ SW 路地小道
-      verticalRoads: [_AVE],
+      horizontalRoads: [_HR(100, -180, 180)],                             // §3 Ch10: 全幅HR 1本 (朝の歩道感)
+      verticalRoads: [_AVE],                                               // §3 Ch10: 中央縦道路 維持
     };
 
     // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) — Act IV 朝のビジネスホテル街 ═══
@@ -4391,7 +4364,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // 下段前列 (dy=130): カプセル + コンビニ + アパート
     const convSW  = $B(out, 'convenience',    -160, 130);                  // 24h コンビニ
-    const capsSW  = $B(out, 'capsule_hotel',  -100, 130);                  // ★ HERO FOCAL SW カプセル
+    const capsSW  = $B(out, 'capsule_hotel',  -100, 130);                  // SW カプセル (ambient、§3 Ch10: Stage3先取りHEROに降格)
     $B(out, 'snack',                           -45, 130);                  // 閉店後スナック
     const aptSE   = $B(out, 'gas_station',      50, 130);                  // ★ SE 24h ガソスタ
     $B(out, 'convenience',                     100, 130);                  // SE 24h コンビニ
@@ -4399,7 +4372,7 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
 
     // 下段奥 (dy=175): 夜明けの静寂施設
     $B(out, 'shed',                           -130, 175);                  // SW 物置小屋
-    $B(out, 'fountain_pavilion',               135, 175);                  // SE 噴水東屋 (Stage 3 先取り)
+    const fountainHero = $B(out, 'fountain_pavilion', 80, 70);             // ★ HERO FOCAL NE 噴水東屋 (Stage 3 先取り、§3 Ch10)
 
     // ═══ FURNITURE ═══
     // ── SW 焦点 4 層 ──
@@ -4484,14 +4457,25 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'recycling_bin',                  -75, 92);                    // 中央リサイクル
 
     // ═══ CLUSTERS ═══
+    // §3 Ch10: Stage3先取りHERO — fountain_pavilion (NE) が主役
+    _CLUSTER(out, {
+      id: 'ch10.NE.fountain',
+      role: 'hero',
+      cell: 'NE',
+      focal: fountainHero,
+      companions: [parkNE],
+      boundary: [$F(out, 'bollard', 80, 55), $F(out, 'bollard', 120, 55)],
+      access: [$F(out, 'street_lamp', 100, 88)],
+      livingTrace: neCat,
+    });
     _CLUSTER(out, {
       id: 'ch10.SW.capsule',
-      role: 'hero',
+      role: 'ambient',
       cell: 'SW',
       focal: capsSW,
       companions: [convSW, vendA, vendB],
       boundary: [bolA, bolB, bolC],
-      access: [$F(out, 'bollard', -130, 168), $F(out, 'street_lamp', -100, 145)],
+      access: [$F(out, 'street_lamp', -100, 145)],
       livingTrace: $F(out, 'mailbox', -130, 130),
     });
     _CLUSTER(out, {
@@ -4552,33 +4536,11 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
       verticalRoads: [_AVE],
     };
 
-    // ═══ BUILDINGS (4 段 dy: 22 / 70 / 130 / 175) — Act IV 早朝オフィス街予告 ═══
-    // 上段奥 (dy=22): 高層オフィス予告 (Stage 3 への素材移行)
-    const convNW  = $B(out, 'convenience',  -130, 22);                     // ★ NW 24h コンビニ
-    $B(out, 'apartment_tall',                -75, 22);                     // 高層 集合住宅
-    $B(out, 'apartment_tall',                  0, 22);                     // 中央 高層 (Stage 3 予告)
-    $B(out, 'apartment_tall',                 75, 22);                     // 高層 集合住宅
-    $B(out, 'apartment_tall',                130, 22);                     // ★ NE 端 高層 (Stage 3 オフィス予告)
-
-    // 上段前列 (dy=70): cafe + bookstore + 早朝施設列 (avenue 北側、早朝商業)
-    $B(out, 'cafe',                         -160, 70);                     // 早朝カフェ
-    $B(out, 'bookstore',                    -100, 70);                     // 書店
-    $B(out, 'cafe',                          -45, 70);                     // 早朝カフェ
-    $B(out, 'convenience',                    45, 70);                     // 24h コンビニ
-    $B(out, 'cafe',                          100, 70);                     // 早朝カフェ
-    $B(out, 'gas_station',                   160, 70);                     // 早朝ガソスタ
-
-    // 下段前列 (dy=130): SW パーキング + 早朝小店舗 + SE 書店
-    const parkSW = $B(out, 'parking',       -130, 130);                    // ★ SW 24h パーキング
-    $B(out, 'snack',                         -65, 130);                    // 閉店後スナック
-    $B(out, 'ramen',                         -20, 130);                    // 早朝ラーメン
-    $B(out, 'convenience',                    30, 130);                    // 24h コンビニ
-    $B(out, 'cafe',                           80, 130);                    // 早朝カフェ
-    const bookSE  = $B(out, 'bookstore',     140, 130);                    // ★ SE 早朝書店
-
-    // 下段奥 (dy=175): 夜明けの余白
-    $B(out, 'shed',                         -130, 175);                    // SW 物置小屋
-    $B(out, 'convenience',                   140, 175);                    // SE 24h コンビニ
+    // ═══ BUILDINGS — Act IV Ch11: 空間の余白がHERO (§3 Ch11: 建物0-1棟) ═══
+    // §3 Ch11 禁則: snack/ramen/izakaya/karaoke/club 等 歓楽街建物は全廃
+    // Stage3 先取り建物 1 棟 + shed 1 棟 = 計 2 棟
+    const fountainNE = $B(out, 'fountain_pavilion', 80, 100);              // ★ HERO FOCAL NE 噴水東屋 (Stage 3 先取り)
+    const shedSW = $B(out, 'shed',          -130, 150);                    // SW 物置小屋 (ambient、余白の証人)
 
     // ═══ FURNITURE ═══
     // ── NE 焦点: 始発のバス停 + オフィス街予告 ──
@@ -4672,47 +4634,29 @@ const STAGE_2_TEMPLATES: ChunkTemplate[] = [
     $F(out, 'recycling_bin',          75, 92);                             // 中央東リサイクル
 
     // ═══ CLUSTERS ═══
+    // §3 Ch11: HERO = 空間の余白。fountain_pavilion が Stage 3 への橋渡し
     _CLUSTER(out, {
-      id: 'ch11.NE.bus_stop',
+      id: 'ch11.NE.fountain',
       role: 'hero',
       cell: 'NE',
-      focal: busStop,
-      companions: [benchA, flagA],
+      focal: fountainNE,
+      companions: [busStop, benchA, flagA],
       boundary: [bolA, $F(out, 'bollard', 10, 110)],
-      access: [$F(out, 'bench', 80, 145), $F(out, 'street_lamp', 80, 60)],
+      access: [$F(out, 'street_lamp', 80, 60)],
       livingTrace: $F(out, 'newspaper_stand', 80, 100),
     });
     _CLUSTER(out, {
-      id: 'ch11.NW.convenience',
-      role: 'ambient',
-      cell: 'NW',
-      focal: convNW,
-      companions: [],
-      livingTrace: nwBike,
-    });
-    _CLUSTER(out, {
-      id: 'ch11.SW.parking',
+      id: 'ch11.SW.shed',
       role: 'ambient',
       cell: 'SW',
-      focal: parkSW,
+      focal: shedSW,
       companions: [],
       livingTrace: swGarb,
-    });
-    _CLUSTER(out, {
-      id: 'ch11.SE.bookstore',
-      role: 'ambient',
-      cell: 'SE',
-      focal: bookSE,
-      companions: [],
-      livingTrace: seMail,
     });
 
     // ═══ HUMANS ═══
     out.humans = [
-      _H(80, 95),                                                          // 始発を待つ通勤者 1 (バス停)
-      _H(60, 95),                                                          // 始発を待つ通勤者 2
-      _H(-100, 38),                                                        // コンビニ前
-      _H(0, 100),                                                          // 中央 (歩き始め)
+      _H(80, 95),                                                          // §3 Ch11: 歩き始める人 1人のみ
     ];
 
     // ═══ GROUNDS ═══
