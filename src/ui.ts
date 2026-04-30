@@ -21,6 +21,12 @@ export class UIManager {
   private elClearDist   = document.getElementById('clear-dist')!;
   private elClearStats  = document.getElementById('clear-stats')!;
   private elClearRecord = document.getElementById('clear-record')!;
+  private elStageClear      = document.getElementById('stage-clear')!;
+  private elStageClearTitle = document.getElementById('stage-clear-title')!;
+  private elStageClearSub   = document.getElementById('stage-clear-sub')!;
+  private elStageClearNext  = document.getElementById('stage-clear-next')!;
+  private elStageClearScore = document.getElementById('stage-clear-score')!;
+  private elStageClearFuel  = document.getElementById('stage-clear-fuel')!;
   private elPopupLayer  = document.getElementById('popup-layer')!;
   private elPause       = document.getElementById('pause')!;
 
@@ -91,7 +97,31 @@ export class UIManager {
     this.elClear.classList.remove('show');
   }
 
+  showStageClear(stageIndex: number, stageNameEn: string, nextStageNameEn: string, score: number, fuel: number) {
+    const fuelPct = Math.max(0, Math.min(100, Math.round((fuel / C.FUEL_MAX) * 100)));
+    this.elStageClearTitle.textContent = `STAGE ${stageIndex + 1} CLEAR`;
+    this.elStageClearSub.textContent   = stageNameEn;
+    this.elStageClearNext.textContent  = `NEXT: ${nextStageNameEn}`;
+    this.elStageClearScore.textContent = `SCORE ${score.toLocaleString()}`;
+    this.elStageClearFuel.textContent  = `FUEL ${fuelPct}%`;
+    this.elStageClear.classList.add('show');
+  }
+
+  hideStageClear() {
+    this.elStageClear.classList.remove('show');
+  }
+
   setPauseVisible(visible: boolean) {
     this.elPause.classList.toggle('show', visible);
+  }
+
+  showWorldPopup(worldX: number, worldY: number, text: string, kind: 'fuel' | 'boom' | 'pierce' | 'score' = 'score') {
+    const el = document.createElement('div');
+    el.className = `world-popup ${kind}`;
+    el.textContent = text;
+    el.style.left = `${worldX + C.CANVAS_WIDTH / 2}px`;
+    el.style.top = `${C.CANVAS_HEIGHT / 2 - worldY}px`;
+    this.elPopupLayer.appendChild(el);
+    setTimeout(() => el.remove(), 850);
   }
 }

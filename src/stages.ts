@@ -8605,8 +8605,215 @@ const STAGE_1_DIARAMA_TEMPLATES: ChunkTemplate[] = STAGE_1_ACTS.flatMap((act) =>
   },
 })));
 
+// Stage 1 fuel-economy layout.
+// Separated-stage premise: this first stage teaches "destroy -> stomp humans -> gain fuel -> advance".
+// Density stays low, but every chunk keeps a reachable recovery pocket so fuel 0 never feels like a dead end.
+const STAGE_1_FUEL_TEMPLATES: ChunkTemplate[] = [
+  {
+    patternId: 's1_fuel_01_start',
+    raw: {
+      grounds: [
+        _G('residential_tile', 0, 100, 360, 200),
+        _G('grass', -120, 66, 96, 74),
+        _G('grass', 122, 150, 112, 76),
+        _G('stone_pavement', 0, 104, 112, 42),
+      ],
+      buildings: [
+        _B('house', -135, 62),
+        _B('garage', -82, 46),
+        _B('house', 116, 148),
+        _B('shed', 156, 132),
+      ],
+      furniture: [
+        _F('mailbox', -135, 42),
+        _F('car', -82, 32),
+        _F('tree', -158, 86),
+        _F('bench', 16, 110),
+        _F('bicycle', 116, 130),
+        _F('hedge', 154, 172),
+      ],
+      humans: [
+        _H(-18, 104), _H(16, 104), _H(52, 104),
+        _H(-135, 84), _H(116, 170),
+      ],
+      horizontalRoads: [_HR(104, -180, 180, 'street')],
+      verticalRoads: [_VR(0, 0, 200, 'avenue')],
+    },
+  },
+  {
+    patternId: 's1_fuel_02_homes',
+    raw: {
+      grounds: [
+        _G('residential_tile', 0, 100, 360, 200),
+        _G('grass', -122, 52, 112, 70),
+        _G('grass', 116, 58, 118, 70),
+        _G('grass', -96, 154, 128, 72),
+        _G('residential_tile', 120, 152, 118, 70),
+      ],
+      buildings: [
+        _B('townhouse', -145, 54),
+        _B('house', -88, 54),
+        _B('house', 92, 56),
+        _B('greenhouse', 150, 62),
+        _B('mansion', -116, 154),
+        _B('garage', 112, 140),
+      ],
+      furniture: [
+        _F('mailbox', -145, 34),
+        _F('potted_plant', -88, 34),
+        _F('laundry_pole', 92, 78),
+        _F('flower_bed', 150, 42),
+        _F('wood_fence', -116, 126),
+        _F('car', 112, 126),
+      ],
+      humans: [
+        _H(-145, 76), _H(-88, 76), _H(92, 78), _H(150, 82),
+        _H(-28, 104), _H(28, 104), _H(-116, 174),
+      ],
+      horizontalRoads: [_HR(104, -180, 180, 'street')],
+      verticalRoads: [_VR(-24, 12, 190, 'street'), _VR(82, 12, 190, 'street')],
+    },
+  },
+  {
+    patternId: 's1_fuel_03_corner_shop',
+    raw: {
+      grounds: [
+        _G('residential_tile', 0, 100, 360, 200),
+        _G('stone_pavement', -104, 64, 132, 62),
+        _G('wood_deck', 92, 64, 132, 52),
+        _G('grass', -126, 152, 104, 72),
+        _G('grass', 128, 154, 112, 72),
+      ],
+      buildings: [
+        _B('convenience', -112, 62),
+        _B('bakery', 42, 62),
+        _B('cafe', 120, 62),
+        _B('house', -132, 152),
+        _B('townhouse', 128, 154),
+      ],
+      furniture: [
+        _F('vending', -86, 42),
+        _F('bicycle_rack', -124, 88),
+        _F('parasol', 116, 84),
+        _F('bench', 60, 84),
+        _F('mailbox', -132, 132),
+        _F('tree', 156, 176),
+      ],
+      humans: [
+        _H(-112, 86), _H(-86, 86), _H(42, 84), _H(120, 84),
+        _H(-32, 104), _H(28, 104), _H(-132, 174), _H(128, 176),
+      ],
+      horizontalRoads: [_HR(104, -180, 180, 'street')],
+      verticalRoads: [_VR(0, 0, 200, 'avenue')],
+    },
+  },
+  {
+    patternId: 's1_fuel_04_breathing_room',
+    raw: {
+      grounds: [
+        _G('grass', 0, 100, 360, 200),
+        _G('residential_tile', -138, 58, 82, 64),
+        _G('residential_tile', 134, 154, 92, 68),
+        _G('dirt', 0, 140, 126, 54),
+      ],
+      buildings: [
+        _B('house', -138, 58),
+        _B('shed', -92, 54),
+        _B('garage', 132, 154),
+        _B('house', 162, 154),
+      ],
+      furniture: [
+        _F('tree', -40, 74),
+        _F('tree', 42, 78),
+        _F('bench', 0, 136),
+        _F('bush', -138, 82),
+        _F('car', 132, 138),
+        _F('mailbox', 162, 134),
+      ],
+      humans: [
+        _H(-138, 80), _H(-92, 72),
+        _H(-18, 104), _H(22, 104),
+        _H(132, 174), _H(162, 174),
+      ],
+      horizontalRoads: [_HR(104, -180, 180, 'street')],
+      verticalRoads: [_VR(0, 8, 192, 'street')],
+    },
+  },
+  {
+    patternId: 's1_fuel_05_recovery_pocket',
+    raw: {
+      grounds: [
+        _G('residential_tile', 0, 100, 360, 200),
+        _G('grass', -116, 64, 124, 76),
+        _G('stone_pavement', 102, 66, 132, 64),
+        _G('grass', -110, 154, 132, 72),
+        _G('stone_pavement', 112, 154, 122, 70),
+      ],
+      buildings: [
+        _B('daycare', -126, 64),
+        _B('house', -66, 64),
+        _B('bookstore', 76, 64),
+        _B('florist', 138, 64),
+        _B('house', -134, 154),
+        _B('greenhouse', -78, 154),
+        _B('convenience', 122, 154),
+      ],
+      furniture: [
+        _F('sandbox', -116, 88),
+        _F('swing_set', -78, 86),
+        _F('a_frame_sign', 76, 44),
+        _F('flower_bed', 138, 44),
+        _F('wood_fence', -134, 126),
+        _F('vending', 98, 134),
+      ],
+      humans: [
+        _H(-126, 88), _H(-102, 88), _H(-78, 88),
+        _H(76, 86), _H(138, 86),
+        _H(-24, 104), _H(24, 104),
+        _H(122, 176),
+      ],
+      horizontalRoads: [_HR(104, -180, 180, 'street')],
+      verticalRoads: [_VR(-18, 0, 200, 'avenue')],
+    },
+  },
+  {
+    patternId: 's1_fuel_06_school_goal',
+    raw: {
+      grounds: [
+        _G('residential_tile', 0, 100, 360, 200),
+        _G('dirt', -92, 78, 168, 106),
+        _G('stone_pavement', 92, 68, 132, 64),
+        _G('grass', 110, 154, 124, 72),
+      ],
+      buildings: [
+        _B('school', -112, 72),
+        _B('daycare', 72, 70),
+        _B('bakery', 142, 70),
+        _B('house', 92, 154),
+        _B('garage', 150, 152),
+      ],
+      furniture: [
+        _F('flag_pole', -84, 108),
+        _F('jungle_gym', -32, 104),
+        _F('sandbox', -138, 116),
+        _F('bus_stop', 70, 96),
+        _F('bicycle_rack', 142, 94),
+        _F('tree', 92, 176),
+      ],
+      humans: [
+        _H(-112, 112), _H(-84, 112), _H(-48, 112), _H(-18, 112),
+        _H(72, 94), _H(142, 94),
+        _H(-28, 104), _H(24, 104),
+        _H(92, 176),
+      ],
+      horizontalRoads: [_HR(104, -180, 180, 'street'), _HR(188, -180, 180, 'street')],
+      verticalRoads: [_VR(0, 0, 200, 'avenue')],
+    },
+  },
+];
+
 export const STAGES: StageDef[] = [
-  { id: 0, name: '昼の住宅街',         nameEn: 'SUBURBS',         acts: STAGE_1_ACTS, templates: STAGE_1_DIARAMA_TEMPLATES, sidewalkZone: 0,
+  { id: 0, name: '昼の住宅街',         nameEn: 'SUBURBS',         templates: STAGE_1_FUEL_TEMPLATES, sidewalkZone: 0,
     bgTop: [0.52, 0.74, 0.96], bgBottom: [0.38, 0.50, 0.38] },
   { id: 1, name: '夜の歓楽街',         nameEn: 'NEON DISTRICT',   templates: STAGE_2_TEMPLATES, sidewalkZone: 5,
     bgTop: [0.10, 0.08, 0.25], bgBottom: [0.22, 0.14, 0.32] },
