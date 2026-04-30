@@ -1,3 +1,5 @@
+export {};
+
 type CellKind =
   | 'empty'
   | 'house'
@@ -76,7 +78,6 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function worldToScreenY(worldY: number): number {
-  // Course row 0 is bottom/start. Higher rows appear upward as camera moves forward.
   return canvas.height - (worldY - cameraY);
 }
 
@@ -121,7 +122,6 @@ function drawLaneGuides(): void {
     ctx.stroke();
   }
 
-  // Center two lanes = main racing line.
   ctx.fillStyle = 'rgba(70,183,255,0.06)';
   ctx.fillRect(CELL, 0, CELL * 2, canvas.height);
 }
