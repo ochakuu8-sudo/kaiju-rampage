@@ -1,18 +1,16 @@
-/**
- * main.ts — エントリーポイント
- *
- * 現在は 90x90 セル構造のプレイアブル試作を本編として起動する。
- * 旧 WebGL 実装は src/game.ts に残しているが、この入口からは使わない。
- */
-import { startCellGame } from './cellGame';
+import { Game } from './game';
 import { initSdk } from './sdk';
 
-const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement | null;
+const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 if (!canvas) throw new Error('Canvas not found');
 
-const wrap = document.getElementById('wrap') as HTMLElement | null;
+const params = new URLSearchParams(window.location.search);
+const screenshotMode = params.has('screenshot');
+const screenshotChunkId = params.has('chunk') ? parseInt(params.get('chunk')!, 10) : null;
+if (screenshotMode) document.body.classList.add('screenshot-mode');
+
+const wrap = document.getElementById('wrap') as HTMLElement;
 function applyScale() {
-  if (!wrap) return;
   const scale = Math.min(window.innerWidth / 360, window.innerHeight / 580);
   wrap.style.transform = `scale(${scale})`;
 }
@@ -22,16 +20,15 @@ applyScale();
 initSdk();
 
 try {
-  startCellGame(canvas);
+  const game = new Game(canvas, { screenshotMode, screenshotChunkId });
+  void game;
   const loading = document.getElementById('loading');
   if (loading) {
     loading.classList.add('hidden');
     setTimeout(() => loading.remove(), 400);
   }
-  const title = document.getElementById('title');
-  if (title) title.classList.remove('show');
 } catch (err) {
-  console.error('Cell game init failed:', err);
+  console.error('Game init failed:', err);
   const loading = document.getElementById('loading');
   if (loading) loading.remove();
   const noWebgl = document.getElementById('no-webgl');
