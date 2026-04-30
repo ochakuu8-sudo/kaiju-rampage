@@ -64,11 +64,17 @@ const LABELS: Record<CellKind, string> = {
   goal: 'K',
 };
 
-const canvas = document.getElementById('prototypeCanvas') as HTMLCanvasElement | null;
-if (!canvas) throw new Error('prototypeCanvas not found');
+const maybeCanvas = document.getElementById('prototypeCanvas');
+if (!(maybeCanvas instanceof HTMLCanvasElement)) {
+  throw new Error('prototypeCanvas not found');
+}
+const canvas: HTMLCanvasElement = maybeCanvas;
 
-const ctx = canvas.getContext('2d');
-if (!ctx) throw new Error('2d context not available');
+const maybeCtx = canvas.getContext('2d');
+if (!maybeCtx) {
+  throw new Error('2d context not available');
+}
+const ctx: CanvasRenderingContext2D = maybeCtx;
 
 let cameraY = 0;
 const maxCameraY = Math.max(0, COURSE.length * CELL - ROWS_VISIBLE_H);
